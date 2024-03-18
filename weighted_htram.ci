@@ -2,8 +2,8 @@ mainmodule weighted
 {
   include "weighted_node_struct.h";
   extern module tramNonSmp;
-  group tramNonSmp<int>;
-  message tramNonSmpMsg<int>;
+  group tramNonSmp<std::pair<int,int>>;
+  message tramNonSmpMsg<std::pair<int,int>>;
   readonly CProxy_Main mainProxy;
   readonly CProxy_WeightedArray arr;
   readonly int N;
@@ -24,6 +24,7 @@ mainmodule weighted
   array [1D] WeightedArray
   {
     entry WeightedArray();
+    entry void initiate_pointers();
     entry void get_graph(CkVec<LongEdge> edges, int partition[N], int N); //gets graph partition
     entry void update_distances(std::pair<int,int> new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares
     entry void print_distances(); // print out the distances on each chare

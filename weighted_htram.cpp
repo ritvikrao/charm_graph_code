@@ -11,8 +11,9 @@
 // htram
 #include "tramNonSmp.h"
 
-using tram_proxy_t = CProxy_tramNonSmp<int>;
-using tram_t = tramNonSmp<int>;
+// set data type for messages
+using tram_proxy_t = CProxy_tramNonSmp<std::pair<int,int>>;
+using tram_t = tramNonSmp<std::pair<int,int>>;
 
 /* readonly */
 tram_proxy_t tram_proxy;
@@ -25,7 +26,7 @@ int average;
 // tram constants
 int buffer_size = 1024;
 double flush_timer = 0.5;
-bool enable_buffer_flushing = true;
+bool enable_buffer_flushing = false;
 
 class Main : public CBase_Main
 {
@@ -70,7 +71,7 @@ public:
 			// string to int
 			int node_num = std::stoi(token);
 			int node_num_2 = std::stoi(token2);
-			// ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
+			ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
 			// ckout << node_num << endl;
 			// ckout << node_num_2 << endl;
 			LongEdge new_edge;
@@ -90,6 +91,7 @@ public:
 		updater_array_gid = arr.ckGetArrayID();
 		tram_proxy = tram_proxy_t::ckNew(updater_array_gid, buffer_size, enable_buffer_flushing, flush_timer);
 		mainProxy = thisProxy;
+		arr.initiate_pointers();
 		// assign nodes to location
 		CkVec<LongEdge> edge_lists[N];
 		// CkVec<CkVec<Node>> node_lists;
@@ -168,9 +170,14 @@ private:
 public:
 	WeightedArray()
 	{
+	}
+
+	void initiate_pointers()
+	{
 		tram_t *tram = tram_proxy.ckLocalBranch();
 		tram->set_func_ptr(WeightedArray::update_distance_caller, this);
 	}
+
 	void get_graph(CkVec<LongEdge> edges, int *partition, int N)
 	{
 		partition_index = new int[N];
@@ -221,7 +228,7 @@ public:
 		tram_t *tram = tram_proxy.ckLocalBranch();
 
 		int local_index = new_vertex_and_distance.first - start_vertex;
-		// ckout << "Local index: " << local_index << endl;
+		ckout << "Incoming pair: " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 		if (new_vertex_and_distance.second < local_graph[local_index].distance)
 		{
 			local_graph[local_index].distance = new_vertex_and_distance.second;
@@ -229,7 +236,6 @@ public:
 			{
 				std::pair<int, int> updated_dist;
 				updated_dist.first = local_graph[local_index].adjacent[i].end;
-				// ckout << "Neighbor: " << updated_dist.end << endl;
 				updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
 				int dest_proc = 0;
 				for (int j = 0; j < N - 1; j++)
@@ -247,6 +253,7 @@ public:
 					// arr[dest_proc].update_distances(updated_dist);
 			}
 		}
+		tram->tflush();
 	}
 
 	void print_distances()
