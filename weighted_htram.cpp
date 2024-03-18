@@ -243,7 +243,8 @@ public:
 				// ckout << "Dest proc: " << dest_proc << endl;
 				if (updated_dist.first > 0 && updated_dist.first < V)
 					//send buffer to pe
-					arr[dest_proc].update_distances(updated_dist);
+					tram->insertValue(updated_dist, dest_proc);
+					// arr[dest_proc].update_distances(updated_dist);
 			}
 		}
 	}
