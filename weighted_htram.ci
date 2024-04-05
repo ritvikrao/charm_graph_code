@@ -1,4 +1,4 @@
-mainmodule weighted
+mainmodule weighted_htram
 {
   include "weighted_node_struct.h";
   extern module tramNonSmp;

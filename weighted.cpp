@@ -90,7 +90,10 @@ public:
 		// reassign edges to move to correct pe
 		for (int i=0; i<N; i++)
 		{
-			for(int j=0; i<edge_lists[i].)
+			for(int j=0; i<edge_lists[i].size(); j++)
+			{
+				//TODO
+			}
 		}
 		// add nodes to node lists
 		// send subgraphs to nodes

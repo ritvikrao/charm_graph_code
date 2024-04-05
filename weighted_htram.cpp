@@ -1,4 +1,4 @@
-#include "weighted.decl.h"
+#include "weighted_htram.decl.h"
 #include <iostream>
 #include <cmath>
 #include <stdio.h>
@@ -391,4 +391,4 @@ public:
 	}
 };
 
-#include "weighted.def.h"
+#include "weighted_htram.def.h"
