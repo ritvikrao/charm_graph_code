@@ -3,10 +3,10 @@ Code for graph algorithms in charm++.
 
 Implemented algorithms:
 * Dijkstra's single-source shortest path
-** Standard TRAM non-smp
-** Standard TRAM smp
-** HTRAM non-smp
-** HTRAM smp
+    * Standard TRAM non-smp
+    * Standard TRAM smp
+    * HTRAM non-smp
+    * HTRAM smp
 
 Dependencies: Charm++ (github.com/UIUC-PPL/charm)
 
