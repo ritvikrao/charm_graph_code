@@ -175,6 +175,19 @@ public:
 			else
 				break;
 		}
+		// reassign edges to move to correct pe
+		for (int i=0; i<N-1; i++)
+		{
+			for(int j=edge_lists[i].size()-1; j>=0; --j)
+			{
+				//TODO
+				if(edge_lists[i][j].begin>=partition_index[i+1])
+				{
+					edge_lists[i+1].insert(0, edge_lists[i][j]);
+					edge_lists[i].remove(j);
+				}
+			}
+		}
 		// ckout << dest_proc << endl;
 		compute_begin = CkWallTimer();
 		arr[dest_proc].update_distances(new_edge);

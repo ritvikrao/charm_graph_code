@@ -148,6 +148,19 @@ public:
 				partition_index[dest_proc] = edges[i].begin;
 			edge_lists[dest_proc].insertAtEnd(edges[i]);
 		}
+		// reassign edges to move to correct pe
+		for (int i=0; i<N-1; i++)
+		{
+			for(int j=edge_lists[i].size()-1; j>=0; --j)
+			{
+				//TODO
+				if(edge_lists[i][j].begin>=partition_index[i+1])
+				{
+					edge_lists[i+1].insert(0, edge_lists[i][j]);
+					edge_lists[i].remove(j);
+				}
+			}
+		}
 		// add nodes to node lists
 		// send subgraphs to nodes
 		for (int i = 0; i < N; i++)

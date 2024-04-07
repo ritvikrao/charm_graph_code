@@ -61,7 +61,7 @@ public:
 			// string to int
 			int node_num = std::stoi(token);
 			int node_num_2 = std::stoi(token2);
-			// ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
+			//ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
 			LongEdge new_edge;
 			new_edge.begin = node_num;
 			new_edge.end = node_num_2;
@@ -86,13 +86,19 @@ public:
 			else if (i % average == 0)
 				partition_index[dest_proc] = edges[i].begin; //if this is the first edge on this pe, mark the beginning of the edge as the first vertex on the pe
 			edge_lists[dest_proc].insertAtEnd(edges[i]);
+			ckout << "Edge " << edges[i].begin << " to " << edges[i].end << " assigned to chare " << dest_proc << endl;
 		}
 		// reassign edges to move to correct pe
-		for (int i=0; i<N; i++)
+		for (int i=0; i<N-1; i++)
 		{
-			for(int j=0; i<edge_lists[i].size(); j++)
+			for(int j=edge_lists[i].size()-1; j>=0; --j)
 			{
 				//TODO
+				if(edge_lists[i][j].begin>=partition_index[i+1])
+				{
+					edge_lists[i+1].insert(0, edge_lists[i][j]);
+					edge_lists[i].remove(j);
+				}
 			}
 		}
 		// add nodes to node lists
