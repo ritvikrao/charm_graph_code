@@ -8,14 +8,14 @@ module htram_group{
   };
 
   message HTramNodeMessage {
-    int *buffer;
+    std::pair<int,int> *buffer;
     int *offset;
   };
 
   group HTram {
     entry HTram(CkGroupID, int, bool, double);
     entry HTram(CkGroupID gid, CkCallback cb);
-    entry void insertValue(int value, int destPE);
+    entry void insertValue(std::pair<int,int> value, int destPE);
     entry void tflush(); 
     entry void receivePerPE(HTramNodeMessage*);
   };

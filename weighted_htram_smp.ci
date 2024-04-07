@@ -1,16 +1,13 @@
-mainmodule weighted_htram
+mainmodule weighted_htram_smp
 {
   include "weighted_node_struct.h";
-  extern module tramNonSmp;
-  group tramNonSmp<std::pair<int,int>>;
-  message tramNonSmpMsg<std::pair<int,int>>;
+  extern module htram_group;
   readonly CProxy_Main mainProxy;
   readonly CProxy_WeightedArray arr;
   readonly int N;
   readonly int V;
   readonly int imax;
   readonly int average;
-  readonly tram_proxy_t tram_proxy; 
   readonly int buffer_size;
   readonly double flush_timer;
   readonly bool enable_buffer_flushing;

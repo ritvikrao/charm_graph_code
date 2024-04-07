@@ -24,7 +24,7 @@ HTram::HTram(CkGroupID cgid, CkCallback ecb){
 #endif
 }
 
-void HTram::set_func_ptr(void (*func)(void*, int), void* obPtr) {
+void HTram::set_func_ptr(void (*func)(void*, std::pair<int,int>), void* obPtr) {
   cb = func;
   objPtr = obPtr;
 }
@@ -33,7 +33,7 @@ HTram::HTram(CkMigrateMessage* msg) {}
 
 //one per node, message, fixed 
 //Client inserts
-void HTram::insertValue(int value, int dest_pe) {
+void HTram::insertValue(std::pair<int,int> value, int dest_pe) {
   int destNode = dest_pe/CkNodeSize(0); //find safer way to find dest node,
   // node size is not always same
 #ifdef NODE_SRC_BUFFER
@@ -105,15 +105,15 @@ HTramRecv::HTramRecv(){
 
 bool comparePayload(itemT a, itemT b)
 {
-    return (a.payload > b.payload);
+    return (a.payload.second > b.payload.second);
 }
 
 bool lower(itemT a, double value) {
-  return a.payload < value;
+  return a.payload.second < value;
 }
 
 bool upper(itemT a, double value) {
-  return a.payload > value;
+  return a.payload.second > value;
 }
 
 HTramRecv::HTramRecv(CkMigrateMessage* msg) {}

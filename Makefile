@@ -4,7 +4,7 @@ CHARMC_SMP =/u/rao1/charm/mpi-linux-x86_64-smp/bin/charmc $(OPTS)
 
 CHARMCFLAGS = $(OPTS) -O3
 
-BINARY=weighted_nonsmp weighted_smp weighted_htram_nonsmp weighted_htram_nonsmp
+BINARY=weighted_nonsmp weighted_smp weighted_htram_nonsmp weighted_htram_smp
 all: $(BINARY)
 
 .PHONY = clean
@@ -17,13 +17,13 @@ weighted_smp: weighted.cpp weighted.ci weighted_node_struct.h
 	$(CHARMC_SMP) weighted.ci
 	$(CHARMC_SMP) $(CHARMCFLAGS) $< -o $@ -module NDMeshStreamer
 
-weighted_htram_nonsmp: weighted_htram.cpp weighted_htram.ci weighted_node_struct.h libtramnonsmp.a
-	$(CHARMC) weighted_htram.ci -DTRAM_NON_SMP
-	$(CHARMC) $(CHARMCFLAGS) libtramnonsmp.a -language charm++ weighted_htram.cpp -std=c++1z -DTRAM_NON_SMP
+weighted_htram_nonsmp: weighted_htram_nonsmp.cpp weighted_htram_nonsmp.ci weighted_node_struct.h libtramnonsmp.a
+	$(CHARMC) weighted_htram_nonsmp.ci -DTRAM_NON_SMP
+	$(CHARMC) $(CHARMCFLAGS) libtramnonsmp.a -language charm++ -o $@ $< -std=c++1z -DTRAM_NON_SMP
 
-weighted_htram_smp: weighted_htram.cpp weighted_htram.ci weighted_node_struct.h libhtram_group.a
-	$(CHARMC_SMP) weighted_htram.ci -DTRAM_SMP -DGROUPBY
-	$(CHARMC) $(CHARMCFLAGS) libhtram_group.a -language charm++ -o $@ $< -std=c++1z -DTRAM_SMP -DGROUPBY
+weighted_htram_smp: weighted_htram_smp.cpp weighted_htram_smp.ci weighted_node_struct.h libhtram_group.a
+	$(CHARMC_SMP) weighted_htram_smp.ci -DTRAM_SMP -DGROUPBY
+	$(CHARMC_SMP) $(CHARMCFLAGS) libhtram_group.a -language charm++ -o $@ $< -std=c++1z -DTRAM_SMP -DGROUPBY
 
 libtramnonsmp.a : tramNonSmp.o
 	$(CHARMC) tramNonSmp.o -o libtramnonsmp.a -language charm++
@@ -52,4 +52,4 @@ clean:
 clean-libs:
 	rm -f *.def.h *.decl.h
 	rm -f *.log.gz *.projrc *.topo *.sts *.sum
-	rm libhtram.a libtramnonsmp.a
+	rm -f *.a

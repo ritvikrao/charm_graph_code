@@ -1,4 +1,4 @@
-#include "weighted_htram.decl.h"
+#include "weighted_htram_smp.decl.h"
 #include <iostream>
 #include <cmath>
 #include <stdio.h>
@@ -9,14 +9,18 @@
 #include <limits>
 
 // htram
-#include "tramNonSmp.h"
+#include "NDMeshStreamer.h"
+#include "TopoManager.h"
+#include "htram_group.h"
 
 // set data type for messages
-using tram_proxy_t = CProxy_tramNonSmp<std::pair<int, int>>;
-using tram_t = tramNonSmp<std::pair<int, int>>;
+using tram_proxy_t = CProxy_HTram;
+using tram_t = HTram;
 
 /* readonly */
 tram_proxy_t tram_proxy;
+CProxy_HTramRecv nodeGrpProxy;
+CProxy_HTramNodeGrp srcNodeGrpProxy;
 CProxy_Main mainProxy;
 CProxy_WeightedArray arr;
 int N;	  // number of processors
@@ -121,6 +125,8 @@ public:
 		CkGroupID updater_array_gid;
 		updater_array_gid = arr.ckGetArrayID();
 		tram_proxy = tram_proxy_t::ckNew(updater_array_gid, buffer_size, enable_buffer_flushing, flush_timer);
+		nodeGrpProxy = CProxy_HTramRecv::ckNew();
+    	srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
 		mainProxy = thisProxy;
 		arr.initiate_pointers();
 		// assign nodes to location
@@ -391,4 +397,4 @@ public:
 	}
 };
 
-#include "weighted_htram.def.h"
+#include "weighted_htram_smp.def.h"
