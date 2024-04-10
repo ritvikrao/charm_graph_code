@@ -20,13 +20,13 @@ mainmodule weighted_htram_nonsmp
     entry [reductiontarget] void begin(int result); //wait for all chares to receive graph partition, register qd callback here (callback to done method), start algorithm
     entry void print(); //bcast to chares to print distances
     entry [reductiontarget] void done(int result); //bcast to chares to print results and end program
-    entry [reductiontarget] void check_buffer_done(int empty_pes);
+    entry [reductiontarget] void check_buffer_done(int msg_stats[N], int N);
   };
   array [1D] WeightedArray
   {
     entry WeightedArray();
     entry void initiate_pointers();
-    entry void get_graph(CkVec<LongEdge> edges, int partition[N], int N); //gets graph partition
+    entry void get_graph(LongEdge edges[E], int E, int partition[N], int N); //gets graph partition
     entry void update_distances(std::pair<int,int> new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares
     entry void check_buffer(); // checks for false quiescence
     entry void keep_going(); // flush buffers

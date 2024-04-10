@@ -6,9 +6,9 @@
 /* readonly */ extern CProxy_HTramNodeGrp srcNodeGrpProxy;
 
 using namespace std;
-#define BUFSIZE 1024
-#define LOCAL_BUFSIZE 32
-#define PPN_COUNT 64
+#define BUFSIZE 131072
+#define LOCAL_BUFSIZE 2048
+#define PPN_COUNT 6
 
 typedef struct item {
   int destPe;

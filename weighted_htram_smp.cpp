@@ -28,7 +28,7 @@ int V;	  // number of vertices
 int imax; // integer maximum
 int average;
 // tram constants
-int buffer_size = 1024;
+int buffer_size = 1024; //meaningless for smp; size changed in htram_group.h
 double flush_timer = 0.5;
 bool enable_buffer_flushing = false;
 
@@ -93,7 +93,7 @@ public:
 		std::string readbuf;
 		std::string delim = ",";
 		// iterate through edge list
-		// ckout << "Loop begins" << endl;
+		ckout << "Loop begins" << endl;
 		CkVec<LongEdge> edges;
 		while (getline(file, readbuf))
 		{
@@ -115,7 +115,7 @@ public:
 			edges.insertAtEnd(new_edge);
 			// ckout << "One loop iteration complete" << endl;
 		}
-		// ckout << "Loop complete" << endl;
+		ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
 		// ckout << "File closed" << endl;
@@ -130,7 +130,7 @@ public:
 		mainProxy = thisProxy;
 		arr.initiate_pointers();
 		// assign nodes to location
-		CkVec<LongEdge> edge_lists[N];
+		std::vector<LongEdge> edge_lists[N];
 		// CkVec<CkVec<Node>> node_lists;
 		int current_vertex = 0;
 		int begin_chunk = 0;
@@ -146,7 +146,7 @@ public:
 				dest_proc = N - 1;
 			else if (i % average == 0)
 				partition_index[dest_proc] = edges[i].begin;
-			edge_lists[dest_proc].insertAtEnd(edges[i]);
+			edge_lists[dest_proc].insert(edge_lists[dest_proc].end(), edges[i]);
 		}
 		// reassign edges to move to correct pe
 		for (int i=0; i<N-1; i++)
@@ -156,8 +156,8 @@ public:
 				//TODO
 				if(edge_lists[i][j].begin>=partition_index[i+1])
 				{
-					edge_lists[i+1].insert(0, edge_lists[i][j]);
-					edge_lists[i].remove(j);
+					edge_lists[i+1].insert(edge_lists[i+1].begin(), edge_lists[i][j]);
+					edge_lists[i].erase(edge_lists[i].begin()+j);
 				}
 			}
 		}
@@ -165,7 +165,7 @@ public:
 		// send subgraphs to nodes
 		for (int i = 0; i < N; i++)
 		{
-			arr[i].get_graph(edge_lists[i], partition_index, N);
+			arr[i].get_graph(edge_lists[i].data(), edge_lists[i].size(), partition_index, N);
 		}
 	}
 
@@ -194,7 +194,7 @@ public:
 			else
 				break;
 		}
-		// ckout << dest_proc << endl;
+		//ckout << "Beginning" << endl;
 		compute_begin = CkWallTimer();
 		arr[dest_proc].update_distances(new_edge);
 		// quiescence detection
@@ -218,9 +218,11 @@ public:
 	/**
 	 * returns when all buffers are checked
 	 */
-	void check_buffer_done(int empty_pes)
+	void check_buffer_done(int* msg_stats, int N)
 	{
-		if (empty_pes == 0)
+		//ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
+		int net_messages = msg_stats[1] - msg_stats[0]; //receives - sends
+		if (net_messages==1) //difference of 1 because of initial send
 		{
 			//ckout << "Real quiescence, terminate" << endl;
 			compute_time = CkWallTimer() - compute_begin;
@@ -256,11 +258,15 @@ private:
 	Node *local_graph;
 	int start_vertex;
 	int num_vertices;
+	int send_updates;
+	int recv_updates;
 	int *partition_index;
 
 public:
 	WeightedArray()
 	{
+		send_updates=0;
+		recv_updates=0;
 	}
 
 	void initiate_pointers()
@@ -269,7 +275,7 @@ public:
 		tram->set_func_ptr(WeightedArray::update_distance_caller, this);
 	}
 
-	void get_graph(CkVec<LongEdge> edges, int *partition, int N)
+	void get_graph(LongEdge* edges, int E, int *partition, int N)
 	{
 		partition_index = new int[N];
 		for (int i = 0; i < N; i++)
@@ -277,7 +283,7 @@ public:
 			partition_index[i] = partition[i];
 		}
 		start_vertex = edges[0].begin;
-		num_vertices = 1 + edges[edges.size() - 1].begin - start_vertex;
+		num_vertices = 1 + edges[E - 1].begin - start_vertex;
 		// ckout << "Num vertices chare " << thisIndex << ": " << num_vertices << endl;
 		local_graph = new Node[num_vertices];
 		for (int i = 0; i < num_vertices; i++)
@@ -290,7 +296,7 @@ public:
 			new_node.adjacent = adj;
 			local_graph[i] = new_node;
 		}
-		for (int i = 0; i < edges.size(); i++)
+		for (int i = 0; i < E; i++)
 		{
 			Edge new_edge;
 			new_edge.end = edges[i].end;
@@ -321,6 +327,9 @@ public:
 	 */
 	void update_distances(std::pair<int, int> new_vertex_and_distance)
 	{
+		//add sends
+		recv_updates++;
+		
 		// get local branch of tram proxy
 		tram_t *tram = tram_proxy.ckLocalBranch();
 
@@ -349,8 +358,11 @@ public:
 				}
 				//ckout << "Outgoing pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
 				if (updated_dist.first > 0 && updated_dist.first < V)
+				{
 					// send buffer to pe
 					tram->insertValue(updated_dist, dest_proc);
+					send_updates++;
+				}
 				// arr[dest_proc].update_distances(updated_dist);
 			}
 		}
@@ -362,23 +374,12 @@ public:
 	 */
 	void check_buffer()
 	{
-		bool all_buffers_empty = true;
-		tram_t *tram = tram_proxy.ckLocalBranch();
-		for (int i = 0; i < CkNumPes(); i++)
-		{
-			if (tram->msgBuffers[i]->next) // first message = buffer size
-			{
-				all_buffers_empty = false;
-				break;
-			}
-		}
-		int empty_buffers = 0;
+		//ckout << "Checking message stats" << endl;
+		int msg_stats[2];
+		msg_stats[0] = send_updates;
+		msg_stats[1] = recv_updates;
 		CkCallback cb(CkReductionTarget(Main, check_buffer_done), mainProxy);
-		if (!all_buffers_empty)
-		{
-			empty_buffers++;
-		}
-		contribute(sizeof(int), &empty_buffers, CkReduction::sum_int, cb);
+		contribute(2*sizeof(int), msg_stats, CkReduction::sum_int, cb);
 	}
 
 	/**

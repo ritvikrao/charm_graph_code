@@ -45,9 +45,7 @@ htram_group.def.h htram_group.decl.h: htram_group.ci
 
 clean:
 	$(MAKE) clean-libs
-	rm -f *.o *.decl.h *.def.h $(BINARY) charmrun* *.stamp
-	rm histo_nonsmp
-	rm histo_smp
+	rm -f *.o *.decl.h *.def.h $(BINARY) charmrun* *.stamp *.out
 
 clean-libs:
 	rm -f *.def.h *.decl.h
