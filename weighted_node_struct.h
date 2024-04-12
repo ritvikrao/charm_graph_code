@@ -21,7 +21,7 @@ class Node{
 	
 	Node(){}
 	explicit operator bool() const
-      	{ return index != NULL; }
+      	{ return index > -1; }
     	void pup(PUP::er &p) {
       	p | index;
       	p | home_process;
@@ -34,12 +34,12 @@ class LongEdge
 {
 	public:
 		int begin;
-                int end;
-                int distance;
+        int end;
+        int distance;
 	LongEdge(){}
         void pup(PUP::er &p) {
         p | begin;
-	p | end;
+		p | end;
         p | distance;
         }
 };
