@@ -211,7 +211,7 @@ public:
 	 */
 	void print()
 	{
-		//ckout << "Quiescence detected" << endl;
+		ckout << "Quiescence detected" << endl;
 		arr.check_buffer();
 	}
 
@@ -220,7 +220,7 @@ public:
 	 */
 	void check_buffer_done(int* msg_stats, int N)
 	{
-		//ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
+		ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
 		int net_messages = msg_stats[1] - msg_stats[0]; //receives - sends
 		if (net_messages==1) //difference of 1 because of initial send
 		{
@@ -334,7 +334,7 @@ public:
 		tram_t *tram = tram_proxy.ckLocalBranch();
 
 		int local_index = new_vertex_and_distance.first - start_vertex;
-		// ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
+		//ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 		// if the incoming distance is actually smaller
 		if (new_vertex_and_distance.second < local_graph[local_index].distance)
 		{
