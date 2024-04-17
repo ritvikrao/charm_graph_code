@@ -35,6 +35,7 @@ HTram::HTram(CkMigrateMessage* msg) {}
 //Client inserts
 void HTram::insertValue(std::pair<int,int> value, int dest_pe) {
   int destNode = dest_pe/CkNodeSize(0); //find safer way to find dest node,
+  //ckout << "PE " << CkMyPe() << " adding value to send to node " << destNode << endl;
   // node size is not always same
 #ifdef NODE_SRC_BUFFER
   HTramNodeGrp* srcNodeGrp = (HTramNodeGrp*)srcNodeGrpProxy.ckLocalBranch();
@@ -71,6 +72,7 @@ void HTram::tflush() {
 #ifdef NODE_SRC_BUFFER
   HTramNodeGrp* srcNodeGrp = (HTramNodeGrp*)srcNodeGrpProxy.ckLocalBranch();
 #endif
+  //ckout << "Flushing from PE: " << CkMyPe() << endl;
   for(int i=0;i<CkNumNodes();i++) {
 #ifdef NODE_SRC_BUFFER
     //if(CkMyRank()==0)
@@ -155,6 +157,7 @@ void HTramRecv::receive(HTramMessage* agg_message) {
 void HTram::receivePerPE(HTramNodeMessage* msg) {
   int llimit = 0;
   int rank = CkMyRank();
+  //ckout << "Receiving on PE: " << CkMyPe() << endl;
   if(rank > 0) llimit = msg->offset[rank-1];
   int ulimit = msg->offset[rank];
   for(int i=llimit; i<ulimit;i++){

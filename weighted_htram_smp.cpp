@@ -94,7 +94,7 @@ public:
 		std::string readbuf;
 		std::string delim = ",";
 		// iterate through edge list
-		ckout << "Loop begins" << endl;
+		//ckout << "Loop begins" << endl;
 		CkVec<LongEdge> edges;
 		max_index=0;
 		while (getline(file, readbuf))
@@ -107,7 +107,7 @@ public:
 			// string to int
 			int node_num = std::stoi(token);
 			int node_num_2 = std::stoi(token2);
-			ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
+			//ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
 			//find the maximum vertex index
 			if(node_num>max_index) max_index=node_num;
 			if(node_num_2>max_index) max_index=node_num_2;
@@ -118,7 +118,7 @@ public:
 			edges.insertAtEnd(new_edge);
 			// ckout << "One loop iteration complete" << endl;
 		}
-		ckout << "Loop complete" << endl;
+		//ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
 		// ckout << "File closed" << endl;
@@ -158,10 +158,12 @@ public:
 				}
 			}
 		}
+		/*
 		for(int i=0; i<N+1; i++)
 		{
 			ckout << "Partition index " << i << ": " << partition_index[i] << endl;
 		}
+		*/
 		// add nodes to node lists
 		// send subgraphs to nodes
 		for (int i = 0; i < N; i++)
@@ -208,7 +210,7 @@ public:
 	 */
 	void print()
 	{
-		ckout << "Quiescence detected" << endl;
+		//ckout << "Quiescence detected" << endl;
 		arr.check_buffer();
 	}
 
@@ -217,17 +219,17 @@ public:
 	 */
 	void check_buffer_done(int* msg_stats, int N)
 	{
-		ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
+		//ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
 		int net_messages = msg_stats[1] - msg_stats[0]; //receives - sends
 		if (net_messages==1) //difference of 1 because of initial send
 		{
-			ckout << "Real quiescence, terminate" << endl;
+			//ckout << "Real quiescence, terminate" << endl;
 			compute_time = CkWallTimer() - compute_begin;
 			arr.print_distances();
 		}
 		else
 		{
-			ckout << "False quiescence, continue execution" << endl;
+			//ckout << "False quiescence, continue execution" << endl;
 			CkCallback cb(CkIndex_Main::print(), mainProxy);
 			CkStartQD(cb);
 			arr.keep_going();
@@ -258,6 +260,7 @@ private:
 	int send_updates;
 	int recv_updates;
 	int *partition_index;
+	tram_t *tram;
 
 public:
 	WeightedArray()
@@ -268,7 +271,7 @@ public:
 
 	void initiate_pointers()
 	{
-		tram_t *tram = tram_proxy.ckLocalBranch();
+		tram = tram_proxy.ckLocalBranch();
 		tram->set_func_ptr(WeightedArray::update_distance_caller, this);
 	}
 
@@ -329,7 +332,7 @@ public:
 		if(new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex+1])
 		{
 		// get local branch of tram proxy
-		tram_t *tram = tram_proxy.ckLocalBranch();
+		//tram_t *tram = tram_proxy.ckLocalBranch();
 
 		int local_index = new_vertex_and_distance.first - start_vertex;
 		//ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
@@ -387,7 +390,7 @@ public:
 	 */
 	void keep_going()
 	{
-		tram_t *tram = tram_proxy.ckLocalBranch();
+		//tram_t *tram = tram_proxy.ckLocalBranch();
 		tram->tflush();
 	}
 
