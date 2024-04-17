@@ -5,7 +5,7 @@
 #SBATCH --output=weighted_no_projections.out
 #SBATCH --partition=cpu
 #SBATCH --account=mzu-delta-cpu
-#SBATCH --job-name=myjobtest
+#SBATCH --job-name=weighted_htram_nonsmp
 #SBATCH --exclusive
 #SBATCH --time=00:10:00      # hh:mm:ss for the job
 
