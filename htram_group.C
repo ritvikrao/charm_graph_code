@@ -1,15 +1,20 @@
 #include "htram_group.h"
 //#define NODE_SRC_BUFFER 1
 //#define DEBUG 1
+
+void periodic_tflush(void *htram_obj, double time);
+
 HTram::HTram(CkGroupID cgid, int buffer_size, bool enable_buffer_flushing, double time_in_ms) {
   // TODO: Implement variable buffer sizes and timed buffer flushing
-
+  flush_time = time_in_ms;
   client_gid = cgid;
 //  cb = delivercb;
   myPE = CkMyPe();
   msgBuffers = new HTramMessage*[CkNumNodes()];
   for(int i=0;i<CkNumNodes();i++)
     msgBuffers[i] = new HTramMessage();
+  if(enable_buffer_flushing)
+    periodic_tflush((void *) this, flush_time);
 }
 
 HTram::HTram(CkGroupID cgid, CkCallback ecb){
@@ -24,7 +29,7 @@ HTram::HTram(CkGroupID cgid, CkCallback ecb){
 #endif
 }
 
-void HTram::set_func_ptr(void (*func)(void*, std::pair<int,int>), void* obPtr) {
+void HTram::set_func_ptr(void (*func)(void*, int), void* obPtr) {
   cb = func;
   objPtr = obPtr;
 }
@@ -33,9 +38,8 @@ HTram::HTram(CkMigrateMessage* msg) {}
 
 //one per node, message, fixed 
 //Client inserts
-void HTram::insertValue(std::pair<int,int> value, int dest_pe) {
+void HTram::insertValue(int value, int dest_pe) {
   int destNode = dest_pe/CkNodeSize(0); //find safer way to find dest node,
-  //ckout << "PE " << CkMyPe() << " adding value to send to node " << destNode << endl;
   // node size is not always same
 #ifdef NODE_SRC_BUFFER
   HTramNodeGrp* srcNodeGrp = (HTramNodeGrp*)srcNodeGrpProxy.ckLocalBranch();
@@ -68,11 +72,14 @@ void HTram::insertValue(std::pair<int,int> value, int dest_pe) {
 #endif
 }
 
+void HTram::registercb() {
+  CcdCallFnAfter(periodic_tflush, (void *) this, flush_time);
+}
+
 void HTram::tflush() {
 #ifdef NODE_SRC_BUFFER
   HTramNodeGrp* srcNodeGrp = (HTramNodeGrp*)srcNodeGrpProxy.ckLocalBranch();
 #endif
-  //ckout << "Flushing from PE: " << CkMyPe() << endl;
   for(int i=0;i<CkNumNodes();i++) {
 #ifdef NODE_SRC_BUFFER
     //if(CkMyRank()==0)
@@ -107,15 +114,15 @@ HTramRecv::HTramRecv(){
 
 bool comparePayload(itemT a, itemT b)
 {
-    return (a.payload.second > b.payload.second);
+    return (a.payload > b.payload);
 }
 
 bool lower(itemT a, double value) {
-  return a.payload.second < value;
+  return a.payload < value;
 }
 
 bool upper(itemT a, double value) {
-  return a.payload.second > value;
+  return a.payload > value;
 }
 
 HTramRecv::HTramRecv(CkMigrateMessage* msg) {}
@@ -157,7 +164,6 @@ void HTramRecv::receive(HTramMessage* agg_message) {
 void HTram::receivePerPE(HTramNodeMessage* msg) {
   int llimit = 0;
   int rank = CkMyRank();
-  //ckout << "Receiving on PE: " << CkMyPe() << endl;
   if(rank > 0) llimit = msg->offset[rank-1];
   int ulimit = msg->offset[rank];
   for(int i=llimit; i<ulimit;i++){
@@ -166,5 +172,11 @@ void HTram::receivePerPE(HTramNodeMessage* msg) {
   CkFreeMsg(msg);
 }
 
+void periodic_tflush(void *htram_obj, double time) {
+//  CkPrintf("\nIn callback_fn on PE#%d at time %lf",CkMyPe(), CkWallTimer());
+  HTram *proper_obj = (HTram *)htram_obj;
+  proper_obj->tflush();
+  proper_obj->registercb();
+}
 #include "htram_group.def.h"
 
