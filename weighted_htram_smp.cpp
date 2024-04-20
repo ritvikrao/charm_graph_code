@@ -29,8 +29,15 @@ int imax; // integer maximum
 int average;
 // tram constants
 int buffer_size = 1024; //meaningless for smp; size changed in htram_group.h
-double flush_timer = 0.5;
-bool enable_buffer_flushing = false;
+double flush_timer = 10; //milliseconds
+bool enable_buffer_flushing = true;
+
+void quick_exit(void* obj, double time)
+{
+	ckout << "Ending program now at time " << CkWallTimer() << endl;
+	arr.stop_periodic_flush();
+	CkExit(0);
+}
 
 class Main : public CBase_Main
 {
@@ -124,6 +131,7 @@ public:
 		// ckout << "File closed" << endl;
 		// define readonly variables
 		arr = CProxy_WeightedArray::ckNew(N);
+		ckout << "Making htram at time " << CkWallTimer() << endl;
 		// create TRAM proxy
 		CkGroupID updater_array_gid;
 		updater_array_gid = arr.ckGetArrayID();
@@ -195,10 +203,13 @@ public:
 		}
 		//ckout << "Beginning" << endl;
 		compute_begin = CkWallTimer();
-		arr[dest_proc].update_distances(new_edge);
 		// quiescence detection
-		CkCallback cb(CkIndex_Main::print(), mainProxy);
-		CkStartQD(cb);
+		//CkCallback cb(CkIndex_Main::print(), mainProxy);
+		//CkStartQD(cb);
+		//temp callback to test flushing
+		ckout << "Registering callback at time " << CkWallTimer() << endl;
+		CcdCallFnAfter(quick_exit, (void *) this, 500.0);
+		arr[dest_proc].update_distances(new_edge);
 		//}
 	}
 
@@ -411,6 +422,11 @@ public:
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
 		contribute(sizeof(int), &done, CkReduction::sum_int, cb);
 		// mainProxy.done();
+	}
+
+	void stop_periodic_flush()
+	{
+		tram->stop_periodic_flush();
 	}
 };
 

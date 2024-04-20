@@ -18,6 +18,8 @@ module htram_group{
     entry void insertValue(std::pair<int,int> value, int destPE);
     entry void tflush(); 
     entry void receivePerPE(HTramNodeMessage*);
+    entry void registercb();
+    entry void stop_periodic_flush();
   };
 
   nodegroup HTramNodeGrp {

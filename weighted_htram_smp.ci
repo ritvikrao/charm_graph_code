@@ -28,6 +28,7 @@ mainmodule weighted_htram_smp
     entry void check_buffer(); // checks for false quiescence
     entry void keep_going(); // flush buffers
     entry void print_distances(); // print out the distances on each chare
+    entry void stop_periodic_flush();
   };
 
 };
