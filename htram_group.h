@@ -64,7 +64,7 @@ class HTram : public CBase_HTram {
     int getAggregatingPE(int dest_pe);
     void insertValue(std::pair<int,int> send_value, int dest_pe);
     void tflush();
-    void receivePerPE(HTramMessage* agg_message);
+    void receivePerPE(HTramNodeMessage* msg);
     void registercb();
     void stop_periodic_flush();
 };

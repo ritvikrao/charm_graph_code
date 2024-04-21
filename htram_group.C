@@ -135,7 +135,6 @@ void HTramRecv::receive(HTramMessage* agg_message) {
   //nodegroup //reference from group
 
   //original implementation (sort before send)
-  /*
   int rank0PE = CkNodeFirst(thisIndex);
   HTramNodeMessage* sorted_agg_message = new HTramNodeMessage();
 
@@ -165,20 +164,12 @@ void HTramRecv::receive(HTramMessage* agg_message) {
     _SET_USED(UsrToEnv(tmpMsg), 0);
     tram_proxy[i].receivePerPE(tmpMsg);
   }
-  */
-
-  //current implementation (send whole message to each pe)
-  for(int i=CkNodeFirst(CkMyNode()); i < CkNodeFirst(CkMyNode())+CkNodeSize(0);i++)
-  {
-    tram_proxy[i].receivePerPE(agg_message);
-  }
 
 }
 
-void HTram::receivePerPE(HTramMessage* agg_message) {
+void HTram::receivePerPE(HTramNodeMessage* msg) {
 
   //current implementation (already sorted on arrival)
-  /*
   int llimit = 0;
   int rank = CkMyRank();
   if(rank > 0) llimit = msg->offset[rank-1];
@@ -187,16 +178,6 @@ void HTram::receivePerPE(HTramMessage* agg_message) {
     cb(objPtr, msg->buffer[i]);
   }
   CkFreeMsg(msg);
-  */
-  int rank0PE = CkNodeFirst(thisIndex);
-  for(int i=0; i<agg_message->next; i++)
-  {
-    int rank = agg_message->buffer[i].destPe;
-    if(rank==CkMyPe())
-    {
-      cb(objPtr, agg_message->buffer[i].payload);
-    }
-  }
 }
 
 void HTram::stop_periodic_flush()
