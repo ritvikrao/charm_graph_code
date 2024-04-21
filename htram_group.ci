@@ -17,7 +17,7 @@ module htram_group{
     entry HTram(CkGroupID gid, CkCallback cb);
     entry void insertValue(std::pair<int,int> value, int destPE);
     entry void tflush(); 
-    entry void receivePerPE(HTramNodeMessage*);
+    entry void receivePerPE(HTramMessage* agg_message);
     entry void registercb();
     entry void stop_periodic_flush();
   };

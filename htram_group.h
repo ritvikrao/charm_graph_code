@@ -21,16 +21,16 @@ class HTramMessage : public CMessage_HTramMessage {
     HTramMessage(int size, itemT *buf): next(size) {
       std::copy(buf, buf+size, buffer);
     }
-    itemT buffer[BUFSIZE];
     int next; //next available slot in buffer
+    itemT buffer[BUFSIZE];
 };
 
 
 class HTramNodeMessage : public CMessage_HTramNodeMessage {
   public:
     HTramNodeMessage() {}
-    std::pair<int,int> buffer[BUFSIZE];
     int offset[PPN_COUNT];
+    std::pair<int,int> buffer[BUFSIZE];
 };
 
 class HTramNodeGrp : public CBase_HTramNodeGrp {
@@ -64,7 +64,7 @@ class HTram : public CBase_HTram {
     int getAggregatingPE(int dest_pe);
     void insertValue(std::pair<int,int> send_value, int dest_pe);
     void tflush();
-    void receivePerPE(HTramNodeMessage *);
+    void receivePerPE(HTramMessage* agg_message);
     void registercb();
     void stop_periodic_flush();
 };

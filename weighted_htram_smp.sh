@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --nodes=2
-#SBATCH --ntasks-per-node=4
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=8
-#SBATCH --output=weighted_no_projections_smp.out
+#SBATCH --output=weighted_htram_smp.out
 #SBATCH --partition=cpu
 #SBATCH --account=mzu-delta-cpu
 #SBATCH --job-name=weighted_htram_smp
