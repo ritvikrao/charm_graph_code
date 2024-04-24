@@ -91,10 +91,13 @@ void HTram::tflush() {
       CmiUnlock(srcNodeGrp->locks[i]);
     }
 #endif
-    envelope *env = UsrToEnv(msgBuffers[i]);
-    env->shrinkUsersize((BUFSIZE - msgBuffers[i]->next) * sizeof(itemT));
-    nodeGrpProxy[i].receive(msgBuffers[i]); //only upto next
-    msgBuffers[i] = new HTramMessage();
+    if(msgBuffers[i]->next)
+    {
+      envelope *env = UsrToEnv(msgBuffers[i]);
+      env->shrinkUsersize((BUFSIZE - msgBuffers[i]->next) * sizeof(itemT));
+      nodeGrpProxy[i].receive(msgBuffers[i]); //only upto next
+      msgBuffers[i] = new HTramMessage();
+    }
   }
 }
 
@@ -139,10 +142,12 @@ void HTramRecv::receive(HTramMessage* agg_message) {
   HTramNodeMessage* sorted_agg_message = new HTramNodeMessage();
 
   int sizes[PPN_COUNT] = {0};
+  int total_size = 0;
 
   for(int i=0;i<agg_message->next;i++) {
     int rank = agg_message->buffer[i].destPe - rank0PE;
     sizes[rank]++;
+    total_size++;
   }
 
   sorted_agg_message->offset[0] = 0;
@@ -159,6 +164,9 @@ void HTramRecv::receive(HTramMessage* agg_message) {
   for(int i=1;i<CkNodeSize(0);i++)
     sorted_agg_message->offset[i] = sorted_agg_message->offset[i-1] + sizes[i];
 
+  envelope *env = UsrToEnv(sorted_agg_message);
+  env->shrinkUsersize((BUFSIZE - total_size) * sizeof(std::pair<int,int>));
+  
   for(int i=CkNodeFirst(CkMyNode()); i < CkNodeFirst(CkMyNode())+CkNodeSize(0);i++) {
     HTramNodeMessage* tmpMsg = (HTramNodeMessage*)CkReferenceMsg(sorted_agg_message);
     _SET_USED(UsrToEnv(tmpMsg), 0);
@@ -186,12 +194,14 @@ void HTram::stop_periodic_flush()
 }
 
 void periodic_tflush(void *htram_obj, double time) {
-  if(CkMyPe()==1)
-    CkPrintf("\nIn callback_fn on PE#%d at time %lf",CkMyPe(), CkWallTimer());
   HTram *proper_obj = (HTram *)htram_obj;
-  proper_obj->tflush();
   if(proper_obj->enable_flush)
-    proper_obj->registercb();
+  {
+    proper_obj->tflush();
+    //if(CkMyPe()==1)
+    // CkPrintf("\nIn callback_fn on PE#%d at time %lf",CkMyPe(), CkWallTimer());
+  }
+  proper_obj->registercb();
 }
 #include "htram_group.def.h"
 

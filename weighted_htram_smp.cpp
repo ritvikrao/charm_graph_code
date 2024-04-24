@@ -29,7 +29,7 @@ int imax; // integer maximum
 int average;
 // tram constants
 int buffer_size = 1024; //meaningless for smp; size changed in htram_group.h
-double flush_timer = 10; //milliseconds
+double flush_timer = 5; //milliseconds
 bool enable_buffer_flushing = true;
 
 void quick_exit(void* obj, double time)
@@ -204,11 +204,11 @@ public:
 		//ckout << "Beginning" << endl;
 		compute_begin = CkWallTimer();
 		// quiescence detection
-		//CkCallback cb(CkIndex_Main::print(), mainProxy);
-		//CkStartQD(cb);
+		CkCallback cb(CkIndex_Main::print(), mainProxy);
+		CkStartQD(cb);
 		//temp callback to test flushing
 		ckout << "Registering callback at time " << CkWallTimer() << endl;
-		CcdCallFnAfter(quick_exit, (void *) this, 500.0);
+		//CcdCallFnAfter(quick_exit, (void *) this, 500.0);
 		arr[dest_proc].update_distances(new_edge);
 		//}
 	}
@@ -221,7 +221,7 @@ public:
 	 */
 	void print()
 	{
-		//ckout << "Quiescence detected" << endl;
+		ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
 		arr.check_buffer();
 	}
 
@@ -230,12 +230,13 @@ public:
 	 */
 	void check_buffer_done(int* msg_stats, int N)
 	{
-		//ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
+		ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
 		int net_messages = msg_stats[1] - msg_stats[0]; //receives - sends
 		if (net_messages==1) //difference of 1 because of initial send
 		{
 			//ckout << "Real quiescence, terminate" << endl;
 			compute_time = CkWallTimer() - compute_begin;
+			arr.stop_periodic_flush();
 			arr.print_distances();
 		}
 		else
