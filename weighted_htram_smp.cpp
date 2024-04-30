@@ -234,14 +234,14 @@ public:
 		int net_messages = msg_stats[1] - msg_stats[0]; //receives - sends
 		if (net_messages==1) //difference of 1 because of initial send
 		{
-			//ckout << "Real quiescence, terminate" << endl;
+			ckout << "Real quiescence, terminate" << endl;
 			compute_time = CkWallTimer() - compute_begin;
 			arr.stop_periodic_flush();
 			arr.print_distances();
 		}
 		else
 		{
-			//ckout << "False quiescence, continue execution" << endl;
+			ckout << "False quiescence, continue execution" << endl;
 			CkCallback cb(CkIndex_Main::print(), mainProxy);
 			CkStartQD(cb);
 			arr.keep_going();
@@ -340,6 +340,7 @@ public:
 	void update_distances(std::pair<int, int> new_vertex_and_distance)
 	{
 		//add sends
+		//traceMemoryUsage();
 		recv_updates++;
 		if(new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex+1])
 		{
@@ -347,7 +348,7 @@ public:
 		//tram_t *tram = tram_proxy.ckLocalBranch();
 
 		int local_index = new_vertex_and_distance.first - start_vertex;
-		//ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
+		// ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 		// if the incoming distance is actually smaller
 		if (new_vertex_and_distance.second < local_graph[local_index].distance)
 		{

@@ -138,6 +138,7 @@ void HTramRecv::receive(HTramMessage* agg_message) {
   //nodegroup //reference from group
 
   //original implementation (sort before send)
+  //traceMemoryUsage();
   int rank0PE = CkNodeFirst(thisIndex);
   HTramNodeMessage* sorted_agg_message = new HTramNodeMessage();
 
@@ -178,6 +179,7 @@ void HTramRecv::receive(HTramMessage* agg_message) {
 void HTram::receivePerPE(HTramNodeMessage* msg) {
 
   //current implementation (already sorted on arrival)
+  //traceMemoryUsage();
   int llimit = 0;
   int rank = CkMyRank();
   if(rank > 0) llimit = msg->offset[rank-1];
