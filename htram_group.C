@@ -68,6 +68,7 @@ void HTram::insertValue(std::pair<int,int> value, int dest_pe) {
 #else
   if(destMsg->next == BUFSIZE) {
     nodeGrpProxy[destNode].receive(destMsg);
+    //free(msgBuffers[destNode]);
     msgBuffers[destNode] = new HTramMessage();
   }
 #endif
@@ -96,6 +97,7 @@ void HTram::tflush() {
       envelope *env = UsrToEnv(msgBuffers[i]);
       env->shrinkUsersize((BUFSIZE - msgBuffers[i]->next) * sizeof(itemT));
       nodeGrpProxy[i].receive(msgBuffers[i]); //only upto next
+      //free(msgBuffers[i]);
       msgBuffers[i] = new HTramMessage();
     }
   }
@@ -138,7 +140,6 @@ void HTramRecv::receive(HTramMessage* agg_message) {
   //nodegroup //reference from group
 
   //original implementation (sort before send)
-  //traceMemoryUsage();
   int rank0PE = CkNodeFirst(thisIndex);
   HTramNodeMessage* sorted_agg_message = new HTramNodeMessage();
 
@@ -173,7 +174,7 @@ void HTramRecv::receive(HTramMessage* agg_message) {
     _SET_USED(UsrToEnv(tmpMsg), 0);
     tram_proxy[i].receivePerPE(tmpMsg);
   }
-
+  CkFreeMsg(sorted_agg_message);
 }
 
 void HTram::receivePerPE(HTramNodeMessage* msg) {
