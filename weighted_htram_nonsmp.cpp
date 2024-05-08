@@ -40,6 +40,7 @@ private:
 	double total_time;
 	double compute_begin;
 	double compute_time;
+	int max_index;
 
 public:
 	/**
@@ -82,7 +83,7 @@ public:
 		int first_node = 0;
 		imax = std::numeric_limits<int>::max();
 		// create graph object
-		partition_index = new int[N];
+		partition_index = new int[N+1];
 		start_time = CkWallTimer();
 		// read file
 		std::ifstream file(file_name);
@@ -91,6 +92,7 @@ public:
 		// iterate through edge list
 		//ckout << "Loop begins" << endl;
 		CkVec<LongEdge> edges;
+		max_index=0;
 		while (getline(file, readbuf))
 		{
 			// get nodes on each edge
@@ -102,8 +104,9 @@ public:
 			int node_num = std::stoi(token);
 			int node_num_2 = std::stoi(token2);
 			//ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
-			// ckout << node_num << endl;
-			// ckout << node_num_2 << endl;
+			//find the maximum vertex index
+			if(node_num>max_index) max_index=node_num;
+			if(node_num_2>max_index) max_index=node_num_2;
 			LongEdge new_edge;
 			new_edge.begin = node_num;
 			new_edge.end = node_num_2;
@@ -117,6 +120,7 @@ public:
 		// ckout << "File closed" << endl;
 		// define readonly variables
 		arr = CProxy_WeightedArray::ckNew(N);
+		ckout << "Making htram at time " << CkWallTimer() << endl;
 		// create TRAM proxy
 		CkGroupID updater_array_gid;
 		updater_array_gid = arr.ckGetArrayID();
@@ -125,14 +129,7 @@ public:
 		arr.initiate_pointers();
 		// assign nodes to location
 		std::vector<LongEdge> edge_lists[N];
-		// CkVec<CkVec<Node>> node_lists;
-		int current_vertex = 0;
-		int begin_chunk = 0;
-		int end_chunk = 0;
 		average = edges.size() / N;
-		int rem = edges.size() % N;
-		int last_v = -1;
-		int curr_proc = 0;
 		for (int i = 0; i < edges.size(); i++)
 		{
 			int dest_proc = i / average;
@@ -142,6 +139,7 @@ public:
 				partition_index[dest_proc] = edges[i].begin;
 			edge_lists[dest_proc].insert(edge_lists[dest_proc].end(), edges[i]);
 		}
+		partition_index[N] = max_index + 1;
 		// reassign edges to move to correct pe
 		for (int i=0; i<N-1; i++)
 		{
@@ -159,7 +157,7 @@ public:
 		// send subgraphs to nodes
 		for (int i = 0; i < N; i++)
 		{
-			arr[i].get_graph(edge_lists[i].data(), edge_lists[i].size(), partition_index, N);
+			arr[i].get_graph(edge_lists[i].data(), edge_lists[i].size(), partition_index, N+1);
 		}
 	}
 
@@ -169,31 +167,28 @@ public:
 	void begin(int result)
 	{
 		// ready to begin algorithm
-		/*
-		for (int i = 0; i < N; i++)
-		{
-			ckout << "Start vertex for partition " << i << ": " << partition_index[i] << endl;
-		}
-		*/
 		std::pair<int, int> new_edge;
 		new_edge.first = start_vertex;
 		new_edge.second = 0;
 		// CkVec<Edge> dist_list;
 		// dist_list.insertAtEnd(new_edge);
 		int dest_proc = 0;
-		for (int i = 0; i < N - 1; i++)
+		for (int i = 0; i < N; i++)
 		{
-			if (start_vertex > partition_index[i + 1])
-				dest_proc++;
-			else
+			if (start_vertex >= partition_index[i] && start_vertex < partition_index[i+1])
+			{
+				dest_proc = i;
 				break;
+			}
+			if(i==N-1) dest_proc=N-1;
 		}
 		//ckout << "Beginning" << endl;
 		compute_begin = CkWallTimer();
-		arr[dest_proc].update_distances(new_edge);
 		// quiescence detection
 		CkCallback cb(CkIndex_Main::print(), mainProxy);
 		CkStartQD(cb);
+		ckout << "Registering callback at time " << CkWallTimer() << endl;
+		arr[dest_proc].update_distances(new_edge);
 		//}
 	}
 
@@ -235,10 +230,11 @@ public:
 	{
 		// ends program, prints that program is ended
 		ckout << "Completed" << endl;
-			total_time = CkWallTimer() - start_time;
-			ckout << "Read time: " << read_time << endl;
-			ckout << "Compute time: " << compute_time << endl;
-			ckout << "Total time: " << total_time << endl;
+		total_time = CkWallTimer() - start_time;
+		ckout << "Read time: " << read_time << endl;
+		ckout << "Compute time: " << compute_time << endl;
+		ckout << "Total time: " << total_time << endl;
+		ckout << "Wasted updates: " << result << endl;
 		CkExit(0);
 	}
 };
@@ -255,6 +251,8 @@ private:
 	int send_updates;
 	int recv_updates;
 	int *partition_index;
+	int *wasted_updates;
+	tram_t *tram;
 
 public:
 	WeightedArray()
@@ -265,39 +263,43 @@ public:
 
 	void initiate_pointers()
 	{
-		tram_t *tram = tram_proxy.ckLocalBranch();
+		tram = tram_proxy.ckLocalBranch();
 		tram->set_func_ptr(WeightedArray::update_distance_caller, this);
 	}
 
-	void get_graph(LongEdge* edges, int E, int *partition, int N)
+	void get_graph(LongEdge* edges, int E, int *partition, int dividers)
 	{
-		partition_index = new int[N];
-		for (int i = 0; i < N; i++)
+		partition_index = new int[dividers];
+		for (int i = 0; i < dividers; i++)
 		{
 			partition_index[i] = partition[i];
 		}
-		start_vertex = edges[0].begin;
-		num_vertices = 1 + edges[E - 1].begin - start_vertex;
-		// ckout << "Num vertices chare " << thisIndex << ": " << num_vertices << endl;
+		start_vertex = partition_index[thisIndex];
+		num_vertices = partition_index[thisIndex+1]-partition_index[thisIndex];
+		//ckout << "Num vertices chare " << thisIndex << ": " << num_vertices << endl;
 		local_graph = new Node[num_vertices];
-		for (int i = 0; i < num_vertices; i++)
-		{
-			Node new_node;
-			new_node.home_process = thisIndex;
-			new_node.index = i + start_vertex;
-			new_node.distance = imax;
-			CkVec<Edge> adj;
-			new_node.adjacent = adj;
-			local_graph[i] = new_node;
-		}
-		//ckout << "Pe " << CkMyPe() << " edge count: " << E << endl;
-		for (int i = 0; i < E; i++)
-		{
-			Edge new_edge;
-			new_edge.end = edges[i].end;
-			new_edge.distance = edges[i].distance;
-			// ckout << "Processor " << thisIndex << " origin " << edges[i].begin << " destination " << new_edge.end << " weight " << new_edge.distance << endl;
-			local_graph[edges[i].begin - start_vertex].adjacent.insertAtEnd(new_edge);
+		wasted_updates = new int[num_vertices];
+		if(num_vertices!=0){
+			for (int i = 0; i < num_vertices; i++)
+			{
+				Node new_node;
+				new_node.home_process = thisIndex;
+				new_node.index = i + start_vertex;
+				new_node.distance = imax;
+				CkVec<Edge> adj;
+				new_node.adjacent = adj;
+				local_graph[i] = new_node;
+				wasted_updates[i] = -1;
+			}
+			//ckout << "Pe " << CkMyPe() << " edge count: " << E << endl;
+			for (int i = 0; i < E; i++)
+			{
+				Edge new_edge;
+				new_edge.end = edges[i].end;
+				new_edge.distance = edges[i].distance;
+				// ckout << "Processor " << thisIndex << " origin " << edges[i].begin << " destination " << new_edge.end << " weight " << new_edge.distance << endl;
+				local_graph[edges[i].begin - start_vertex].adjacent.insertAtEnd(new_edge);
+			}
 		}
 		int now_done = 1;
 		CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
@@ -326,42 +328,45 @@ public:
 		recv_updates++;
 		
 		// get local branch of tram proxy
-		tram_t *tram = tram_proxy.ckLocalBranch();
+		//tram_t *tram = tram_proxy.ckLocalBranch();
 
-		int local_index = new_vertex_and_distance.first - start_vertex;
-		//ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
-		// if the incoming distance is actually smaller
-		if (new_vertex_and_distance.second < local_graph[local_index].distance)
-		{
-			local_graph[local_index].distance = new_vertex_and_distance.second;
-			// for all neighbors
-			for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
+		if(new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex+1]){
+
+			int local_index = new_vertex_and_distance.first - start_vertex;
+			wasted_updates[local_index]++; //wasted update, except for the last one (accounted for by starting from -1)
+			//ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
+			// if the incoming distance is actually smaller
+			if (new_vertex_and_distance.second < local_graph[local_index].distance)
 			{
-				// calculate distance pair for neighbor
-				std::pair<int, int> updated_dist;
-				updated_dist.first = local_graph[local_index].adjacent[i].end;
-				updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
-				// calculate destination pe
-				int dest_proc = 0;
-				for (int j = 0; j < N - 1; j++)
+				local_graph[local_index].distance = new_vertex_and_distance.second;
+				// for all neighbors
+				for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
 				{
-					// find first partition that begins at a higher edge count;
-					if (updated_dist.first >= partition_index[j + 1])
-						dest_proc++;
-					else
-						break;
+					// calculate distance pair for neighbor
+					std::pair<int, int> updated_dist;
+					updated_dist.first = local_graph[local_index].adjacent[i].end;
+					updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
+					// calculate destination pe
+					int dest_proc = 0;
+					for (int j = 0; j < N - 1; j++)
+					{
+						// find first partition that begins at a higher edge count;
+						if (updated_dist.first >= partition_index[j + 1])
+							dest_proc++;
+						else
+							break;
+					}
+					//ckout << "Outgoing pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
+					if (updated_dist.first > 0 && updated_dist.first < V)
+					{
+						// send buffer to pe
+						tram->insertValue(updated_dist, dest_proc);
+						send_updates++;
+					}
+					// arr[dest_proc].update_distances(updated_dist);
 				}
-				//ckout << "Outgoing pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
-				if (updated_dist.first > 0 && updated_dist.first < V)
-				{
-					// send buffer to pe
-					tram->insertValue(updated_dist, dest_proc);
-					send_updates++;
-				}
-				// arr[dest_proc].update_distances(updated_dist);
 			}
 		}
-		// tram->tflush();
 	}
 
 	/**
@@ -382,7 +387,7 @@ public:
 	 */
 	void keep_going()
 	{
-		tram_t *tram = tram_proxy.ckLocalBranch();
+		//tram_t *tram = tram_proxy.ckLocalBranch();
 		tram->tflush();
 	}
 
@@ -399,11 +404,14 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i].index << " distance " << local_graph[i].distance << endl;
 		}
 		*/
-		
-
-		int done = 1; // placeholder
+		int total_wasted = 0;
+		for (int i = 0; i < num_vertices; i++)
+		{
+			if(wasted_updates[i]==-1) wasted_updates[i]=0;
+			total_wasted += wasted_updates[i];
+		}
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-		contribute(sizeof(int), &done, CkReduction::sum_int, cb);
+		contribute(sizeof(int), &total_wasted, CkReduction::sum_int, cb);
 		// mainProxy.done();
 	}
 };

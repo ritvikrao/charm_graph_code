@@ -104,6 +104,7 @@ public:
 		//ckout << "Loop begins" << endl;
 		CkVec<LongEdge> edges;
 		max_index=0;
+		//CkPrintf("Memory usage before file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		while (getline(file, readbuf))
 		{
 			// get nodes on each edge
@@ -128,6 +129,7 @@ public:
 		//ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
+		//CkPrintf("Memory usage after file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		// ckout << "File closed" << endl;
 		// define readonly variables
 		arr = CProxy_WeightedArray::ckNew(N);
@@ -166,18 +168,13 @@ public:
 				}
 			}
 		}
-		/*
-		for(int i=0; i<N+1; i++)
-		{
-			ckout << "Partition index " << i << ": " << partition_index[i] << endl;
-		}
-		*/
 		// add nodes to node lists
 		// send subgraphs to nodes
 		for (int i = 0; i < N; i++)
 		{
 			arr[i].get_graph(edge_lists[i].data(), edge_lists[i].size(), partition_index, N+1);
 		}
+		//CkPrintf("Memory usage before building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 	}
 
 	/**
@@ -186,6 +183,7 @@ public:
 	void begin(int result)
 	{
 		// ready to begin algorithm
+		//CkPrintf("Memory usage after building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		std::pair<int, int> new_edge;
 		new_edge.first = start_vertex;
 		new_edge.second = 0;
@@ -209,6 +207,7 @@ public:
 		//temp callback to test flushing
 		ckout << "Registering callback at time " << CkWallTimer() << endl;
 		//CcdCallFnAfter(quick_exit, (void *) this, 500.0);
+		//CkPrintf("Memory usage before algorithm: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr[dest_proc].update_distances(new_edge);
 		//}
 	}
@@ -221,7 +220,8 @@ public:
 	 */
 	void print()
 	{
-		ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
+		//ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
+		//CkPrintf("Memory usage at quiescence: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr.check_buffer();
 	}
 
@@ -230,18 +230,18 @@ public:
 	 */
 	void check_buffer_done(int* msg_stats, int N)
 	{
-		ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
+		//ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
 		int net_messages = msg_stats[1] - msg_stats[0]; //receives - sends
 		if (net_messages==1) //difference of 1 because of initial send
 		{
-			ckout << "Real quiescence, terminate" << endl;
+			//ckout << "Real quiescence, terminate" << endl;
 			compute_time = CkWallTimer() - compute_begin;
 			arr.stop_periodic_flush();
 			arr.print_distances();
 		}
 		else
 		{
-			ckout << "False quiescence, continue execution" << endl;
+			//ckout << "False quiescence, continue execution" << endl;
 			CkCallback cb(CkIndex_Main::print(), mainProxy);
 			CkStartQD(cb);
 			arr.keep_going();
@@ -252,10 +252,12 @@ public:
 	{
 		// ends program, prints that program is ended
 		ckout << "Completed" << endl;
-			total_time = CkWallTimer() - start_time;
-			ckout << "Read time: " << read_time << endl;
-			ckout << "Compute time: " << compute_time << endl;
-			ckout << "Total time: " << total_time << endl;
+		//CkPrintf("Memory usage at end: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
+		total_time = CkWallTimer() - start_time;
+		ckout << "Read time: " << read_time << endl;
+		ckout << "Compute time: " << compute_time << endl;
+		ckout << "Total time: " << total_time << endl;
+		ckout << "Wasted updates: " << result << endl;
 		CkExit(0);
 	}
 };
@@ -272,6 +274,7 @@ private:
 	int send_updates;
 	int recv_updates;
 	int *partition_index;
+	int *wasted_updates;
 	tram_t *tram;
 
 public:
@@ -297,6 +300,7 @@ public:
 		start_vertex = partition_index[thisIndex];
 		num_vertices = partition_index[thisIndex+1]-partition_index[thisIndex];
 		local_graph = new Node[num_vertices];
+		wasted_updates = new int[num_vertices];
 		if(num_vertices!=0){
 			for (int i = 0; i < num_vertices; i++)
 			{
@@ -307,6 +311,7 @@ public:
 				CkVec<Edge> adj;
 				new_node.adjacent = adj;
 				local_graph[i] = new_node;
+				wasted_updates[i] = -1;
 			}
 			for (int i = 0; i < E; i++)
 			{
@@ -347,41 +352,42 @@ public:
 		// get local branch of tram proxy
 		//tram_t *tram = tram_proxy.ckLocalBranch();
 
-		int local_index = new_vertex_and_distance.first - start_vertex;
-		// ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
-		// if the incoming distance is actually smaller
-		if (new_vertex_and_distance.second < local_graph[local_index].distance)
-		{
-			local_graph[local_index].distance = new_vertex_and_distance.second;
-			// for all neighbors
-			for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
+			int local_index = new_vertex_and_distance.first - start_vertex;
+			wasted_updates[local_index]++; //wasted update, except for the last one (accounted for by starting from -1)
+			// ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
+			// if the incoming distance is actually smaller
+			if (new_vertex_and_distance.second < local_graph[local_index].distance)
 			{
-				// calculate distance pair for neighbor
-				std::pair<int, int> updated_dist;
-				updated_dist.first = local_graph[local_index].adjacent[i].end;
-				updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
-				// calculate destination pe
-				int dest_proc = 0;
-				for (int j = 0; j < N; j++)
+				local_graph[local_index].distance = new_vertex_and_distance.second; //update distance
+				// for all neighbors
+				for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
 				{
-					// find first partition that begins at a higher edge count;
-					if (updated_dist.first >= partition_index[j] && updated_dist.first < partition_index[j+1])
+					// calculate distance pair for neighbor
+					std::pair<int, int> updated_dist;
+					updated_dist.first = local_graph[local_index].adjacent[i].end;
+					updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
+					// calculate destination pe
+					int dest_proc = 0;
+					for (int j = 0; j < N; j++)
 					{
-						dest_proc = j;
-						break;
+						// find first partition that begins at a higher edge count;
+						if (updated_dist.first >= partition_index[j] && updated_dist.first < partition_index[j+1])
+						{
+							dest_proc = j;
+							break;
+						}
+						if(j==N-1) dest_proc=N-1;
 					}
-					if(j==N-1) dest_proc=N-1;
+					//ckout << "Outgoing pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
+					if (updated_dist.first > 0 && updated_dist.first < V)
+					{
+						// send buffer to pe
+						tram->insertValue(updated_dist, dest_proc);
+						send_updates++;
+					}
+					// arr[dest_proc].update_distances(updated_dist);
 				}
-				//ckout << "Outgoing pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
-				if (updated_dist.first > 0 && updated_dist.first < V)
-				{
-					// send buffer to pe
-					tram->insertValue(updated_dist, dest_proc);
-					send_updates++;
-				}
-				// arr[dest_proc].update_distances(updated_dist);
 			}
-		}
 		}
 	}
 
@@ -419,10 +425,14 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i].index << " distance " << local_graph[i].distance << endl;
 		}
 		*/
-
-		int done = 1; // placeholder
+		int total_wasted = 0;
+		for (int i = 0; i < num_vertices; i++)
+		{
+			if(wasted_updates[i]==-1) wasted_updates[i]=0;
+			total_wasted += wasted_updates[i];
+		}
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-		contribute(sizeof(int), &done, CkReduction::sum_int, cb);
+		contribute(sizeof(int), &total_wasted, CkReduction::sum_int, cb);
 		// mainProxy.done();
 	}
 
