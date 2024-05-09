@@ -234,7 +234,7 @@ public:
 		ckout << "Read time: " << read_time << endl;
 		ckout << "Compute time: " << compute_time << endl;
 		ckout << "Total time: " << total_time << endl;
-		ckout << "Wasted updates: " << result << endl;
+		ckout << "Wasted updates: " << result - V << endl;
 		CkExit(0);
 	}
 };
@@ -251,7 +251,7 @@ private:
 	int send_updates;
 	int recv_updates;
 	int *partition_index;
-	int *wasted_updates;
+	int wasted_updates;
 	tram_t *tram;
 
 public:
@@ -278,7 +278,6 @@ public:
 		num_vertices = partition_index[thisIndex+1]-partition_index[thisIndex];
 		//ckout << "Num vertices chare " << thisIndex << ": " << num_vertices << endl;
 		local_graph = new Node[num_vertices];
-		wasted_updates = new int[num_vertices];
 		if(num_vertices!=0){
 			for (int i = 0; i < num_vertices; i++)
 			{
@@ -289,7 +288,7 @@ public:
 				CkVec<Edge> adj;
 				new_node.adjacent = adj;
 				local_graph[i] = new_node;
-				wasted_updates[i] = -1;
+				wasted_updates = 0;
 			}
 			//ckout << "Pe " << CkMyPe() << " edge count: " << E << endl;
 			for (int i = 0; i < E; i++)
@@ -333,7 +332,7 @@ public:
 		if(new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex+1]){
 
 			int local_index = new_vertex_and_distance.first - start_vertex;
-			wasted_updates[local_index]++; //wasted update, except for the last one (accounted for by starting from -1)
+			wasted_updates++; //wasted update, except for the last one (accounted for by starting from -1)
 			//ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 			// if the incoming distance is actually smaller
 			if (new_vertex_and_distance.second < local_graph[local_index].distance)
@@ -404,14 +403,8 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i].index << " distance " << local_graph[i].distance << endl;
 		}
 		*/
-		int total_wasted = 0;
-		for (int i = 0; i < num_vertices; i++)
-		{
-			if(wasted_updates[i]==-1) wasted_updates[i]=0;
-			total_wasted += wasted_updates[i];
-		}
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-		contribute(sizeof(int), &total_wasted, CkReduction::sum_int, cb);
+		contribute(sizeof(int), &wasted_updates, CkReduction::sum_int, cb);
 		// mainProxy.done();
 	}
 };
