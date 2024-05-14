@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <limits>
+#include <queue>
 
 // htram
 #include "NDMeshStreamer.h"
@@ -38,6 +39,13 @@ void quick_exit(void* obj, double time)
 	arr.stop_periodic_flush();
 	CkExit(0);
 }
+
+struct ComparePairs {
+    bool operator()(const std::pair<int,int>& lhs, const std::pair<int,int>& rhs) const {
+        // Compare the second integers of the pairs
+        return lhs.second > rhs.second; // '>' for min heap, '<' for max heap
+    }
+};
 
 class Main : public CBase_Main
 {
@@ -251,7 +259,7 @@ public:
 	void done(int result)
 	{
 		// ends program, prints that program is ended
-		ckout << "Completed" << endl;
+		//ckout << "Completed" << endl;
 		//CkPrintf("Memory usage at end: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		total_time = CkWallTimer() - start_time;
 		ckout << "Read time: " << read_time << endl;
@@ -276,6 +284,7 @@ private:
 	int *partition_index;
 	int wasted_updates;
 	tram_t *tram;
+	std::priority_queue<std::pair<int,int>, std::vector<std::pair<int,int>>, ComparePairs> pq;
 
 public:
 	WeightedArray()
@@ -338,22 +347,20 @@ public:
 	}
 
 	/**
-	 * Update distance. Consumes a vertex and a new distance, potentially updates the distance,
-	 * and then keeps going
-	 */
-	void update_distances(std::pair<int, int> new_vertex_and_distance)
+	 * Update distances, but locally (the incoming pair comes from this PE)
+	 * this is not an entry method
+	*/
+	void update_distances_local(std::pair<int, int> new_vertex_and_distance)
 	{
 		//add sends
-		//traceMemoryUsage();
-		recv_updates++;
+		//recv_updates++;
 		if(new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex+1])
 		{
 		// get local branch of tram proxy
 		//tram_t *tram = tram_proxy.ckLocalBranch();
 
 			int local_index = new_vertex_and_distance.first - start_vertex;
-			wasted_updates++; //wasted update, except for the last one (accounted for by starting from -1)
-			// ckout << "Incoming pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
+			//if (CkMyPe()==1) ckout << "Incoming local pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 			// if the incoming distance is actually smaller
 			if (new_vertex_and_distance.second < local_graph[local_index].distance)
 			{
@@ -377,16 +384,98 @@ public:
 						}
 						if(j==N-1) dest_proc=N-1;
 					}
-					//ckout << "Outgoing pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
 					if (updated_dist.first > 0 && updated_dist.first < V)
 					{
 						// send buffer to pe
-						tram->insertValue(updated_dist, dest_proc);
-						send_updates++;
+						if(dest_proc == CkMyPe())
+						{
+							//if (CkMyPe()==1) ckout << "Outgoing local pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
+							pq.push(updated_dist);
+						}
+						else
+						{
+							//if (CkMyPe()==1) ckout << "Outgoing remote pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
+							tram->insertValue(updated_dist, dest_proc);
+							send_updates++;
+						}
 					}
 					// arr[dest_proc].update_distances(updated_dist);
 				}
 			}
+		}
+		//if(CkMyPe() == 0) CkPrintf("Memory usage after local function: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
+		if(pq.size()>0)
+		{
+			std::pair<int,int> local_pair = pq.top();
+			pq.pop();
+			update_distances_local(local_pair);
+		}
+	}
+	
+	/**
+	 * Update distance. Consumes a vertex and a new distance, potentially updates the distance,
+	 * and then keeps going
+	 */
+	void update_distances(std::pair<int, int> new_vertex_and_distance)
+	{
+		//add sends
+		//traceMemoryUsage();
+		recv_updates++;
+		if(new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex+1])
+		{
+		// get local branch of tram proxy
+		//tram_t *tram = tram_proxy.ckLocalBranch();
+
+			int local_index = new_vertex_and_distance.first - start_vertex;
+			wasted_updates++; //wasted update, except for the last one (accounted for by starting from -1)
+			//if (CkMyPe()==1) ckout << "Incoming remote pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
+			// if the incoming distance is actually smaller
+			if (new_vertex_and_distance.second < local_graph[local_index].distance)
+			{
+				local_graph[local_index].distance = new_vertex_and_distance.second; //update distance
+				// for all neighbors
+				for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
+				{
+					// calculate distance pair for neighbor
+					std::pair<int, int> updated_dist;
+					updated_dist.first = local_graph[local_index].adjacent[i].end;
+					updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
+					// calculate destination pe
+					int dest_proc = 0;
+					for (int j = 0; j < N; j++)
+					{
+						// find first partition that begins at a higher edge count;
+						if (updated_dist.first >= partition_index[j] && updated_dist.first < partition_index[j+1])
+						{
+							dest_proc = j;
+							break;
+						}
+						if(j==N-1) dest_proc=N-1;
+					}
+					if (updated_dist.first > 0 && updated_dist.first < V)
+					{
+						// send buffer to pe
+						if(dest_proc == CkMyPe())
+						{
+							//if (CkMyPe()==1) ckout << "Outgoing local pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
+							pq.push(updated_dist);
+						}
+						else
+						{
+							//if (CkMyPe()==1) ckout << "Outgoing remote pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
+							tram->insertValue(updated_dist, dest_proc);
+							send_updates++;
+						}
+					}
+					// arr[dest_proc].update_distances(updated_dist);
+				}
+			}
+		}
+		if(pq.size()>0)
+		{
+			std::pair<int,int> local_pair = pq.top();
+			pq.pop();
+			update_distances_local(local_pair);
 		}
 	}
 
