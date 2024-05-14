@@ -1,8 +1,8 @@
 # Change Charm build locations based on where the charm build is
-CHARMC =/u/rao1/charm/mpi-linux-x86_64/bin/charmc $(OPTS)
-CHARMC_SMP =/u/rao1/charm/mpi-linux-x86_64-smp/bin/charmc $(OPTS)
+CHARMC =/scratch/mzu/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray/bin/charmc $(OPTS)
+CHARMC_SMP =/scratch/mzu/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp/bin/charmc $(OPTS)
 
-CHARMCFLAGS = $(OPTS) -O3
+CHARMCFLAGS = $(OPTS) -g -O3
 
 BINARY=weighted_nonsmp weighted_smp weighted_htram_nonsmp weighted_htram_smp weighted_htram_nonsmp_projections weighted_htram_smp_projections
 all: $(BINARY)
