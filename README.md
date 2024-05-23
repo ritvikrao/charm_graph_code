@@ -7,7 +7,7 @@ Implemented algorithms:
     * Standard TRAM smp
     * HTRAM non-smp
     * HTRAM smp
-Also, this repo includes code for reading edge lists using CkIO.
+Also, this repo includes code for reading edge lists using CkIO, and just a sequential read based on ifstream.
 
 Dependencies: Charm++ (github.com/UIUC-PPL/charm)
 
@@ -19,6 +19,7 @@ make weighted_smp
 make weighted_htram_nonsmp
 make weighted_htram_smp
 make graph_ckio
+make graph_serial
 ```
 
 Clean:
@@ -34,6 +35,11 @@ Run:
 Run graph_ckio:
 ```
 ./charmrun +pN ./graph_ckio <num_chares> <num_vertices> <graph_file_name> <random_seed>
+```
+
+Run graph_serial:
+```
+./charmrun +p1 ./graph_serial <num_vertices> <graph_file_name> <random_seed>
 ```
 
 Currently, the code accepts a list of edges, sorted by the source index of edge (ascending).
