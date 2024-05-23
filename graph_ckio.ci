@@ -1,0 +1,61 @@
+mainmodule graph_ckio
+{
+  include "weighted_node_struct.h";
+  include "ckio.h";
+  include "graph_ckio.h";
+  readonly CProxy_Main mainProxy;
+  readonly int N;
+  readonly int V;
+  readonly int imax;
+  readonly std::string global_fname;
+  mainchare Main
+  {
+    entry Main(CkArgMsg* m);
+    entry void ready(Ck::IO::FileReadyMsg * m);
+    entry void start_read(Ck::IO::SessionReadyMsg* m);
+    entry void sessionClosed(CkReductionMsg* m);
+    entry void closed(CkReductionMsg* m);
+    entry void run()
+    {
+        serial
+        {
+            Ck::IO::Options opts;
+            opts.numReaders = N;
+            CkCallback opened(CkIndex_Main::ready(NULL), thisProxy);
+            start_time = CkWallTimer();
+            Ck::IO::open(file_name, opened, opts);
+        }
+        when ready(Ck::IO::FileReadyMsg * m) serial
+        {
+            f = m->file;
+            CkCallback sessionStart(CkIndex_Main::start_read(0), thisProxy);
+            Ck::IO::startReadSession(f, file_size, 0, sessionStart);
+            delete m;
+        }
+        when start_read(Ck::IO::SessionReadyMsg * m) serial
+        {
+            session = m->session;
+            read_graph_file(session, file_name);
+            read_time = CkWallTimer() - start_time;
+            ckout << "Read time: " << read_time << endl;
+            CkCallback cb(CkIndex_Main::sessionClosed(0), thisProxy);
+            Ck::IO::closeReadSession(session, cb);
+            delete m;
+        }
+        when sessionClosed(CkReductionMsg* m) serial
+        {
+            delete m;
+            CkCallback closedCb(CkIndex_Main::closed(0), thisProxy);
+            Ck::IO::close(f, closedCb);
+            ckout << "Session closed" << endl;
+        }
+        when closed(CkReductionMsg * m) serial
+        {
+            ckout << "Exiting" << endl;
+            delete m;
+            CkExit();
+        }
+    }
+  };
+
+};
