@@ -1,0 +1,11 @@
+mainmodule graph_serial
+{
+  include "weighted_node_struct.h";
+  readonly CProxy_Main mainProxy;
+  readonly int V;
+  readonly int imax;
+  mainchare Main
+  {
+    entry Main(CkArgMsg* m);
+  };
+};

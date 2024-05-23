@@ -1,6 +1,6 @@
 # Change Charm build locations based on where the charm build is
-CHARMC =/Users/ritvik/charm/netlrts-darwin-x86_64/bin/charmc $(OPTS)
-CHARMC_SMP =/Users/ritvik/charm/netlrts-darwin-x86_64-smp/bin/charmc $(OPTS)
+CHARMC =/u/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray/bin/charmc $(OPTS)
+CHARMC_SMP =/u/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp/bin/charmc $(OPTS)
 
 CHARMCFLAGS = $(OPTS) -g -O3
 
@@ -8,6 +8,10 @@ BINARY= graph_ckio weighted_nonsmp weighted_smp weighted_htram_nonsmp weighted_h
 all: $(BINARY)
 
 .PHONY = clean
+
+graph_serial: graph_serial.cpp
+	$(CHARMC) graph_serial.ci
+	$(CHARMC) graph_serial.cpp -o $@
 
 graph_ckio: graph_ckio.cpp
 	$(CHARMC) graph_ckio.ci
