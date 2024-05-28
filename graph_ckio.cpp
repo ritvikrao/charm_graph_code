@@ -34,7 +34,7 @@ void read_graph_file(Ck::IO::Session session, std::string fname)
         // string to int
         int node_num = std::stoi(token);
         int node_num_2 = std::stoi(token2);
-        ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
+        //ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
         // find the maximum vertex index
         if (node_num > max_index)
             max_index = node_num;

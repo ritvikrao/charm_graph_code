@@ -20,7 +20,7 @@ mainmodule graph_ckio
         serial
         {
             Ck::IO::Options opts;
-            opts.numReaders = N;
+            opts.numReaders = 4 * N;
             CkCallback opened(CkIndex_Main::ready(NULL), thisProxy);
             start_time = CkWallTimer();
             Ck::IO::open(file_name, opened, opts);
