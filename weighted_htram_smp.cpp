@@ -286,10 +286,10 @@ private:
 	int start_vertex;
 	int num_vertices;
 	int send_updates;
-	int recv_updates;
+	int recv_updates; //number of update messages received
 	int *partition_index;
-	int wasted_updates;
-	int rejected_updates;
+	int wasted_updates; //number of updates that don't have the final answer
+	int rejected_updates; //number of updates that don't decrease a distance value/create more messages
 	tram_t *tram;
 	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, ComparePairs> pq;
 
@@ -339,6 +339,8 @@ public:
 				local_graph[edges[i].begin - start_vertex].adjacent.insertAtEnd(new_edge);
 			}
 		}
+		//register idle call to update_distances_local
+		CkCallWhenIdle(CkIndex_WeightedArray::update_distances_local(), this);
 		int now_done = 1;
 		CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
 		contribute(sizeof(int), &now_done, CkReduction::sum_int, cb);
@@ -358,8 +360,9 @@ public:
 	/**
 	 * Update distances, but locally (the incoming pair comes from this PE)
 	 * this is not an entry method
+	 * returns true (runs when pe is idle)
 	 */
-	void update_distances_local()
+	bool update_distances_local()
 	{
 		// add sends
 		while (pq.size() > 0)
@@ -419,73 +422,18 @@ public:
 				else rejected_updates++;
 			}
 		}
+		return true;
 	}
 
 	/**
-	 * Update distance. Consumes a vertex and a new distance, potentially updates the distance,
-	 * and then keeps going
+	 * Takes a distance update and immediately adds it to the local heap/pq
 	 */
 	void update_distances(std::pair<int, int> new_vertex_and_distance)
 	{
-		// add sends
-		// traceMemoryUsage();
+		// stat updates
 		recv_updates++;
-		wasted_updates++; // wasted update, except for the last one (accounted for by starting from -1)
-		if (new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex + 1])
-		{
-			// get local branch of tram proxy
-			// tram_t *tram = tram_proxy.ckLocalBranch();
-
-			int local_index = new_vertex_and_distance.first - start_vertex;
-			// if (CkMyPe()==1) ckout << "Incoming remote pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
-			//  if the incoming distance is actually smaller
-			if (new_vertex_and_distance.second < local_graph[local_index].distance)
-			{
-				local_graph[local_index].distance = new_vertex_and_distance.second; // update distance
-				// for all neighbors
-				for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
-				{
-					// calculate distance pair for neighbor
-					std::pair<int, int> updated_dist;
-					updated_dist.first = local_graph[local_index].adjacent[i].end;
-					updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
-					// calculate destination pe
-					int dest_proc = 0;
-					for (int j = 0; j < N; j++)
-					{
-						// find first partition that begins at a higher edge count;
-						if (updated_dist.first >= partition_index[j] && updated_dist.first < partition_index[j + 1])
-						{
-							dest_proc = j;
-							break;
-						}
-						if (j == N - 1)
-							dest_proc = N - 1;
-					}
-					if (updated_dist.first > 0 && updated_dist.first < V)
-					{
-						// send buffer to pe
-						if (dest_proc == CkMyPe())
-						{
-							// if (CkMyPe()==1) ckout << "Outgoing local pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
-							pq.push(updated_dist);
-						}
-						else
-						{
-							// if (CkMyPe()==1) ckout << "Outgoing remote pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
-							tram->insertValue(updated_dist, dest_proc);
-							send_updates++;
-						}
-					}
-					// arr[dest_proc].update_distances(updated_dist);
-				}
-			}
-			else rejected_updates++;
-		}
-		if (pq.size() > 0)
-		{
-			update_distances_local();
-		}
+		wasted_updates++;
+		pq.push(new_vertex_and_distance);
 	}
 
 	/**

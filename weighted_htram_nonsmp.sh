@@ -9,4 +9,4 @@
 #SBATCH --exclusive
 #SBATCH --time=00:10:00      # hh:mm:ss for the job
 
-srun -n $SLURM_NTASKS ./weighted_htram_nonsmp $SLURM_NTASKS 10000000 graphs/new_mega_graph.csv 100 1
+srun -n $SLURM_NTASKS ./weighted_htram_nonsmp $SLURM_NTASKS 100000 graphs/big_graph.csv 100 1

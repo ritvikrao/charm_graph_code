@@ -24,6 +24,7 @@ mainmodule weighted_htram_smp
     entry WeightedArray();
     entry void initiate_pointers();
     entry void get_graph(LongEdge edges[E], int E, int partition[dividers], int dividers); //gets graph partition
+    entry [whenidle] bool update_distances_local();
     entry void update_distances(std::pair<int,int> new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares
     entry void check_buffer(); // checks for false quiescence
     entry void keep_going(); // flush buffers

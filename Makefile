@@ -1,6 +1,6 @@
 # Change Charm build locations based on where the charm build is
-CHARMC =/u/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray/bin/charmc $(OPTS)
-CHARMC_SMP =/u/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp/bin/charmc $(OPTS)
+CHARMC =/scratch/mzu/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-gcc/bin/charmc $(OPTS)
+CHARMC_SMP =/scratch/mzu/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp-gcc/bin/charmc $(OPTS)
 
 CHARMCFLAGS = $(OPTS) -g -O3
 
