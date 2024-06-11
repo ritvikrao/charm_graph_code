@@ -28,6 +28,7 @@ int N;	  // number of processors
 int V;	  // number of vertices
 int imax; // integer maximum
 int average;
+int max_path;
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
 double flush_timer = 5; // milliseconds
@@ -192,10 +193,12 @@ public:
 	/**
 	 * Start algorithm from source vertex
 	 */
-	void begin(int result)
+	void begin(int max_sum)
 	{
 		// ready to begin algorithm
 		// CkPrintf("Memory usage after building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
+		max_path = max_sum;
+		ckout << "The sum of the maximum out-edges is " << max_path << endl;
 		std::pair<int, int> new_edge;
 		new_edge.first = start_vertex;
 		new_edge.second = 0;
@@ -316,6 +319,7 @@ public:
 		start_vertex = partition_index[thisIndex];
 		num_vertices = partition_index[thisIndex + 1] - partition_index[thisIndex];
 		local_graph = new Node[num_vertices];
+		int largest_outedges[num_vertices] = {0};
 		if (num_vertices != 0)
 		{
 			for (int i = 0; i < num_vertices; i++)
@@ -335,15 +339,24 @@ public:
 				Edge new_edge;
 				new_edge.end = edges[i].end;
 				new_edge.distance = edges[i].distance;
-				// ckout << "Processor " << thisIndex << " origin " << edges[i].begin << " destination " << new_edge.end << " weight " << new_edge.distance << endl;
-				local_graph[edges[i].begin - start_vertex].adjacent.insertAtEnd(new_edge);
+				int new_edge_origin = edges[i].begin - start_vertex;
+				local_graph[new_edge_origin].adjacent.insertAtEnd(new_edge);
+				if(edges[i].distance > largest_outedges[new_edge_origin]) largest_outedges[new_edge_origin] = edges[i].distance;
 			}
 		}
 		//register idle call to update_distances_local
 		CkCallWhenIdle(CkIndex_WeightedArray::update_distances_local(), this);
-		int now_done = 1;
+		//reduce largest edge
+		int max_edges_sum = 0;
+		if (num_vertices != 0)
+		{
+			for(int i=0; i<num_vertices; i++)
+			{
+				max_edges_sum += largest_outedges[i];
+			}
+		}
 		CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
-		contribute(sizeof(int), &now_done, CkReduction::sum_int, cb);
+		contribute(sizeof(int), &max_edges_sum, CkReduction::sum_int, cb);
 	}
 
 	static void update_distance_caller(void *p, std::pair<int, int> new_vertex_and_distance)
