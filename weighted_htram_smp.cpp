@@ -27,8 +27,10 @@ CProxy_WeightedArray arr;
 int N;	  // number of processors
 int V;	  // number of vertices
 int imax; // integer maximum
-int average;
+int average; // average edge count per pe
+int histo_bucket_count = 10; // number of buckets for the histogram needed for message prioritization
 int max_path;
+double reduction_delay = 0.1; // each histogram reduction happens at this interval
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
 double flush_timer = 5; // milliseconds
@@ -39,6 +41,11 @@ void quick_exit(void *obj, double time)
 	ckout << "Ending program now at time " << CkWallTimer() << endl;
 	arr.stop_periodic_flush();
 	CkExit(0);
+}
+
+void start_reductions(void *obj, double time)
+{
+	arr.contribute_histogram();
 }
 
 struct ComparePairs
@@ -112,7 +119,7 @@ public:
 		std::string readbuf;
 		std::string delim = ",";
 		// iterate through edge list
-		// ckout << "Loop begins" << endl;
+		ckout << "Loop begins" << endl;
 		CkVec<LongEdge> edges;
 		max_index = 0;
 		// CkPrintf("Memory usage before file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
@@ -139,7 +146,7 @@ public:
 			edges.insertAtEnd(new_edge);
 			// ckout << "One loop iteration complete" << endl;
 		}
-		// ckout << "Loop complete" << endl;
+		ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
 		// CkPrintf("Memory usage after file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
@@ -222,7 +229,7 @@ public:
 		CkStartQD(cb);
 		// temp callback to test flushing
 		ckout << "Registering callback at time " << CkWallTimer() << endl;
-		// CcdCallFnAfter(quick_exit, (void *) this, 500.0);
+		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		// CkPrintf("Memory usage before algorithm: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr[dest_proc].update_distances(new_edge);
 		//}
@@ -239,6 +246,23 @@ public:
 		// ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
 		// CkPrintf("Memory usage at quiescence: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr.check_buffer();
+	}
+
+	/**
+	 * Receive histo values from pes
+	 * The idea is to get the distribution of update values, then 
+	 * do local processing to select thresholds
+	*/
+	void reduce_histogram(int *histo_values, int N)
+	{
+		int histogram_sum = 0;
+		for(int i=0; i<N; i++)
+		{
+			histogram_sum += histo_values[i];
+		}
+		ckout << "Histogram sum = " << histogram_sum << endl;
+		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
+		
 	}
 
 	/**
@@ -285,16 +309,17 @@ public:
 class WeightedArray : public CBase_WeightedArray
 {
 private:
-	Node *local_graph;
-	int start_vertex;
-	int num_vertices;
-	int send_updates;
+	Node *local_graph; //structure to hold vertices assigned to this pe
+	int start_vertex; //global index of lowest vertex assigned to this pe
+	int num_vertices; //number of vertices assigned to this pe
+	int send_updates; //number of update messages sent
 	int recv_updates; //number of update messages received
-	int *partition_index;
+	int *partition_index; //defines boundaries of indices for each pe
 	int wasted_updates; //number of updates that don't have the final answer
 	int rejected_updates; //number of updates that don't decrease a distance value/create more messages
-	tram_t *tram;
-	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, ComparePairs> pq;
+	tram_t *tram; //tram library
+	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, ComparePairs> pq; //heap of messages
+	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
 
 public:
 	WeightedArray()
@@ -307,6 +332,11 @@ public:
 	{
 		tram = tram_proxy.ckLocalBranch();
 		tram->set_func_ptr(WeightedArray::update_distance_caller, this);
+		histogram = new int[histo_bucket_count];
+		for(int i=0; i<histo_bucket_count; i++)
+		{
+			histogram[i] = 0;
+		}
 	}
 
 	void get_graph(LongEdge *edges, int E, int *partition, int dividers)
@@ -382,6 +412,7 @@ public:
 		{
 			std::pair<int, int> new_vertex_and_distance = pq.top();
 			pq.pop();
+			//histogram[new_vertex_and_distance.second/max_path]--; //remove fron histogram
 			wasted_updates++; // wasted update, except for the last one (accounted for by starting from -1)
 			if (new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex + 1])
 			{
@@ -421,6 +452,7 @@ public:
 							{
 								// if (CkMyPe()==1) ckout << "Outgoing local pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
 								pq.push(updated_dist);
+								//histogram[updated_dist.second/max_path]++; //add to histogram
 							}
 							else
 							{
@@ -447,6 +479,12 @@ public:
 		recv_updates++;
 		wasted_updates++;
 		pq.push(new_vertex_and_distance);
+		//double percentile = (1.0 * new_vertex_and_distance.second) / max_path;
+		//double bucket_to_choose = percentile * histo_bucket_count;
+		//int intpart = (int) bucket_to_choose;
+		//if(intpart == histo_bucket_count) histogram[histo_bucket_count - 1] ++;
+		//else histogram[intpart]++; //add to histogram
+		//histogram[0]++;
 	}
 
 	/**
@@ -460,6 +498,15 @@ public:
 		msg_stats[1] = recv_updates;
 		CkCallback cb(CkReductionTarget(Main, check_buffer_done), mainProxy);
 		contribute(2 * sizeof(int), msg_stats, CkReduction::sum_int, cb);
+	}
+
+	/**
+	 * Contribute to a reduction to get the overall histogram to pe 0/main chare
+	*/
+	void contribute_histogram()
+	{
+		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
+		contribute(histo_bucket_count * sizeof(int), histogram, CkReduction::sum_int, cb);
 	}
 
 	/**
