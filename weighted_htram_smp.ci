@@ -4,12 +4,12 @@ mainmodule weighted_htram_smp
   extern module htram_group;
   readonly CProxy_Main mainProxy;
   readonly CProxy_WeightedArray arr;
+  readonly CProxy_SharedInfo shared;
   readonly int N;
   readonly int V;
   readonly int imax;
   readonly int average;
   readonly int buffer_size;
-  readonly int max_path;
   readonly int histo_bucket_count;
   readonly double reduction_delay;
   readonly double flush_timer;
@@ -35,6 +35,11 @@ mainmodule weighted_htram_smp
     entry void keep_going(); // flush buffers
     entry void print_distances(); // print out the distances on each chare
     entry void stop_periodic_flush();
+  };
+  group SharedInfo
+  {
+    entry SharedInfo();
+    entry void max_path_value(int max_path_val);
   };
 
 };

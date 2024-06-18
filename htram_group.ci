@@ -8,17 +8,23 @@ module htram_group{
   };
 
   message HTramNodeMessage {
-    std::pair<int,int> *buffer;
+    int *buffer;
     int *offset;
   };
-
+//#define SRC_GROUPING
+//#define PER_DESTPE_BUFFER
   group HTram {
-    entry HTram(CkGroupID, int, bool, double);
+    entry HTram(CkGroupID, int, bool, double, bool);
     entry HTram(CkGroupID gid, CkCallback cb);
-    entry void insertValue(std::pair<int,int> value, int destPE);
-    entry void tflush(); 
-    entry void receivePerPE(HTramNodeMessage* msg);
-    entry void registercb();
+//    entry void insertValue(int value, int destPE);
+    entry void tflush();
+#ifdef SRC_GROUPING
+    entry void receivePerPE(HTramMessage*);
+#elif defined PER_DESTPE_BUFFER
+    entry void receiveOnPE(HTramMessage* msg);
+#else
+    entry void receivePerPE(HTramNodeMessage*);
+#endif
     entry void stop_periodic_flush();
   };
 
@@ -28,6 +34,8 @@ module htram_group{
 
   nodegroup HTramRecv {
     entry HTramRecv();
+#ifndef PER_DESTPE_BUFFER
     entry [expedited] void receive(HTramMessage*);
+#endif
   }
 };

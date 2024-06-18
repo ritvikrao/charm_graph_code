@@ -24,12 +24,12 @@ CProxy_HTramRecv nodeGrpProxy;
 CProxy_HTramNodeGrp srcNodeGrpProxy;
 CProxy_Main mainProxy;
 CProxy_WeightedArray arr;
+CProxy_SharedInfo shared;
 int N;	  // number of processors
 int V;	  // number of vertices
 int imax; // integer maximum
 int average; // average edge count per pe
-int histo_bucket_count = 10; // number of buckets for the histogram needed for message prioritization
-int max_path;
+int histo_bucket_count = 100; // number of buckets for the histogram needed for message prioritization
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
@@ -152,12 +152,13 @@ public:
 		// CkPrintf("Memory usage after file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		//  ckout << "File closed" << endl;
 		//  define readonly variables
+		shared = CProxy_SharedInfo::ckNew();
 		arr = CProxy_WeightedArray::ckNew(N);
 		ckout << "Making htram at time " << CkWallTimer() << endl;
 		// create TRAM proxy
 		CkGroupID updater_array_gid;
 		updater_array_gid = arr.ckGetArrayID();
-		tram_proxy = tram_proxy_t::ckNew(updater_array_gid, buffer_size, enable_buffer_flushing, flush_timer);
+		tram_proxy = tram_proxy_t::ckNew(updater_array_gid, buffer_size, enable_buffer_flushing, flush_timer, true);
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
 		mainProxy = thisProxy;
@@ -204,8 +205,8 @@ public:
 	{
 		// ready to begin algorithm
 		// CkPrintf("Memory usage after building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
-		max_path = max_sum;
-		ckout << "The sum of the maximum out-edges is " << max_path << endl;
+		shared.max_path_value(max_sum);
+		ckout << "The sum of the maximum out-edges is " << max_sum << endl;
 		std::pair<int, int> new_edge;
 		new_edge.first = start_vertex;
 		new_edge.second = 0;
@@ -304,6 +305,23 @@ public:
 };
 
 /**
+ * This holds information that needs to be broadcasted
+ * but that is calculated after the Main method
+*/
+class SharedInfo : public CBase_SharedInfo
+{
+	public:
+	int max_path;
+	SharedInfo(){}
+
+	void max_path_value(int max_path_val)
+	{
+		max_path = max_path_val;
+	}
+
+};
+
+/**
  * Array of chares for Dijkstra
  */
 class WeightedArray : public CBase_WeightedArray
@@ -318,6 +336,7 @@ private:
 	int wasted_updates; //number of updates that don't have the final answer
 	int rejected_updates; //number of updates that don't decrease a distance value/create more messages
 	tram_t *tram; //tram library
+	SharedInfo *shared_local;
 	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, ComparePairs> pq; //heap of messages
 	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
 
@@ -332,15 +351,16 @@ public:
 	{
 		tram = tram_proxy.ckLocalBranch();
 		tram->set_func_ptr(WeightedArray::update_distance_caller, this);
+		shared_local = shared.ckLocalBranch();
+	}
+
+	void get_graph(LongEdge *edges, int E, int *partition, int dividers)
+	{
 		histogram = new int[histo_bucket_count];
 		for(int i=0; i<histo_bucket_count; i++)
 		{
 			histogram[i] = 0;
 		}
-	}
-
-	void get_graph(LongEdge *edges, int E, int *partition, int dividers)
-	{
 		partition_index = new int[dividers];
 		for (int i = 0; i < dividers; i++)
 		{
@@ -401,6 +421,21 @@ public:
 	}
 
 	/**
+	 * Gets the histogram bucket for any given distance
+	*/
+	int get_histo_bucket(int distance)
+	{
+		//double percentile = (1.0 * distance) / max_path;
+		//double bucket_to_choose = percentile * histo_bucket_count * (V/100); //V/100 to space out buckets
+		//int intpart = (int) bucket_to_choose;
+		int max_path = shared_local -> max_path;
+		double bucket = (distance * ((double) histo_bucket_count) * 1000) / max_path;
+		int result = (int) bucket;
+		if(result >= histo_bucket_count) return histo_bucket_count - 1;
+		else return result;
+	}
+
+	/**
 	 * Update distances, but locally (the incoming pair comes from this PE)
 	 * this is not an entry method
 	 * returns true (runs when pe is idle)
@@ -412,7 +447,7 @@ public:
 		{
 			std::pair<int, int> new_vertex_and_distance = pq.top();
 			pq.pop();
-			//histogram[new_vertex_and_distance.second/max_path]--; //remove fron histogram
+			histogram[get_histo_bucket(new_vertex_and_distance.second)]--; //remove from histogram
 			wasted_updates++; // wasted update, except for the last one (accounted for by starting from -1)
 			if (new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex + 1])
 			{
@@ -452,7 +487,7 @@ public:
 							{
 								// if (CkMyPe()==1) ckout << "Outgoing local pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
 								pq.push(updated_dist);
-								//histogram[updated_dist.second/max_path]++; //add to histogram
+								histogram[get_histo_bucket(updated_dist.second)]++; //add to histogram
 							}
 							else
 							{
@@ -479,12 +514,8 @@ public:
 		recv_updates++;
 		wasted_updates++;
 		pq.push(new_vertex_and_distance);
-		//double percentile = (1.0 * new_vertex_and_distance.second) / max_path;
-		//double bucket_to_choose = percentile * histo_bucket_count;
-		//int intpart = (int) bucket_to_choose;
-		//if(intpart == histo_bucket_count) histogram[histo_bucket_count - 1] ++;
-		//else histogram[intpart]++; //add to histogram
-		//histogram[0]++;
+		int intpart = get_histo_bucket(new_vertex_and_distance.second);
+		histogram[intpart]++;
 	}
 
 	/**
@@ -543,5 +574,6 @@ public:
 		tram->stop_periodic_flush();
 	}
 };
+
 
 #include "weighted_htram_smp.def.h"
