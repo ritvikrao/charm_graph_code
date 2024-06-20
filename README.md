@@ -9,7 +9,7 @@ Implemented algorithms:
     * HTRAM smp
 Also, this repo includes code for reading edge lists using CkIO, and just a sequential read based on ifstream.
 
-Dependencies: Charm++ (github.com/UIUC-PPL/charm)
+Dependencies: Charm++ (github.com/charmplusplus/charm)
 
 Build:
 
