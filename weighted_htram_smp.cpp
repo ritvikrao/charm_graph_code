@@ -29,12 +29,12 @@ int N;	  // number of processors
 int V;	  // number of vertices
 int imax; // integer maximum
 int average; // average edge count per pe
-int histo_bucket_count = 100; // number of buckets for the histogram needed for message prioritization
+int histo_bucket_count = 128; // number of buckets for the histogram needed for message prioritization
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
 double flush_timer = 5; // milliseconds
-bool enable_buffer_flushing = true;
+bool enable_buffer_flushing = false;
 
 void quick_exit(void *obj, double time)
 {
@@ -119,7 +119,7 @@ public:
 		std::string readbuf;
 		std::string delim = ",";
 		// iterate through edge list
-		ckout << "Loop begins" << endl;
+		//ckout << "Loop begins" << endl;
 		CkVec<LongEdge> edges;
 		max_index = 0;
 		// CkPrintf("Memory usage before file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
@@ -146,7 +146,7 @@ public:
 			edges.insertAtEnd(new_edge);
 			// ckout << "One loop iteration complete" << endl;
 		}
-		ckout << "Loop complete" << endl;
+		//ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
 		// CkPrintf("Memory usage after file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
@@ -154,7 +154,7 @@ public:
 		//  define readonly variables
 		shared = CProxy_SharedInfo::ckNew();
 		arr = CProxy_WeightedArray::ckNew(N);
-		ckout << "Making htram at time " << CkWallTimer() << endl;
+		//ckout << "Making htram at time " << CkWallTimer() << endl;
 		// create TRAM proxy
 		CkGroupID updater_array_gid;
 		updater_array_gid = arr.ckGetArrayID();
@@ -206,7 +206,7 @@ public:
 		// ready to begin algorithm
 		// CkPrintf("Memory usage after building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		shared.max_path_value(max_sum);
-		ckout << "The sum of the maximum out-edges is " << max_sum << endl;
+		//ckout << "The sum of the maximum out-edges is " << max_sum << endl;
 		std::pair<int, int> new_edge;
 		new_edge.first = start_vertex;
 		new_edge.second = 0;
@@ -229,7 +229,7 @@ public:
 		CkCallback cb(CkIndex_Main::print(), mainProxy);
 		CkStartQD(cb);
 		// temp callback to test flushing
-		ckout << "Registering callback at time " << CkWallTimer() << endl;
+		//ckout << "Registering callback at time " << CkWallTimer() << endl;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		// CkPrintf("Memory usage before algorithm: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr[dest_proc].update_distances(new_edge);
@@ -244,7 +244,7 @@ public:
 	 */
 	void print()
 	{
-		// ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
+		ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
 		// CkPrintf("Memory usage at quiescence: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr.check_buffer();
 	}
@@ -254,14 +254,56 @@ public:
 	 * The idea is to get the distribution of update values, then 
 	 * do local processing to select thresholds
 	*/
-	void reduce_histogram(int *histo_values, int N)
+	void reduce_histogram(int *histo_values, int histo_length)
 	{
+		//histo_length = histo_bucket_count always
 		int histogram_sum = 0;
-		for(int i=0; i<N; i++)
+		//calculate the total histogram sum
+		for(int i=0; i<histo_length; i++)
 		{
 			histogram_sum += histo_values[i];
 		}
-		ckout << "Histogram sum = " << histogram_sum << endl;
+		//ckout << "Histogram sum = " << histogram_sum << endl;
+		int selected_bucket = 0;
+		int tram_bucket = 0;
+		int active_counter = 0;
+		//calculate target percentile
+		double target_percent; //heap percentage
+		double tram_percent; //tram percentage
+		if(histogram_sum <= 100) 
+		{
+			target_percent = 1.0;
+			tram_percent = 1.0;
+		}
+		else
+		{
+			target_percent = 0.1;
+			tram_percent = 0.3;
+		}
+		//select bucket limit
+		for(int i=0; i<histo_length; i++)
+		{
+			active_counter += histo_values[i];
+			if((double) active_counter > histogram_sum * target_percent) break;
+			else selected_bucket++;
+		}
+		active_counter = 0;
+		for(int i=0; i<histo_length; i++)
+		{
+			active_counter += histo_values[i];
+			if((double) active_counter > histogram_sum * tram_percent) break;
+			else tram_bucket++;
+		}
+		//in case of floating point weirdness
+		if(histogram_sum==0)
+		{
+			selected_bucket = histo_bucket_count - 1;
+			tram_bucket = histo_bucket_count - 1;
+			
+		}
+		//send percentile value to chares
+		arr.get_bucket_limit(selected_bucket, tram_bucket);
+		//start next reduction round
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		
 	}
@@ -271,18 +313,18 @@ public:
 	 */
 	void check_buffer_done(int *msg_stats, int N)
 	{
-		// ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
+		ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
 		int net_messages = msg_stats[1] - msg_stats[0]; // receives - sends
 		if (net_messages == 1)							// difference of 1 because of initial send
 		{
-			// ckout << "Real quiescence, terminate" << endl;
+			ckout << "Real quiescence, terminate" << endl;
 			compute_time = CkWallTimer() - compute_begin;
 			arr.stop_periodic_flush();
 			arr.print_distances();
 		}
 		else
 		{
-			// ckout << "False quiescence, continue execution" << endl;
+			ckout << "False quiescence, continue execution" << endl;
 			CkCallback cb(CkIndex_Main::print(), mainProxy);
 			CkStartQD(cb);
 			arr.keep_going();
@@ -339,6 +381,10 @@ private:
 	SharedInfo *shared_local;
 	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, ComparePairs> pq; //heap of messages
 	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
+	int bucket_limit;
+	int tram_bucket_limit;
+	std::vector<std::pair<int,int>> tram_hold;
+	std::vector<int> tram_hold_dests;
 
 public:
 	WeightedArray()
@@ -429,8 +475,10 @@ public:
 		//double bucket_to_choose = percentile * histo_bucket_count * (V/100); //V/100 to space out buckets
 		//int intpart = (int) bucket_to_choose;
 		int max_path = shared_local -> max_path;
-		double bucket = (distance * ((double) histo_bucket_count) * 1000) / max_path;
+		double bucket = (distance * ((double) histo_bucket_count) * (V/10)) / max_path;
 		int result = (int) bucket;
+		//if(CkMyPe()==40) ckout << "Distance= " << distance << endl;
+		//if(CkMyPe()==40) ckout << "Bucket= " << result << endl;
 		if(result >= histo_bucket_count) return histo_bucket_count - 1;
 		else return result;
 	}
@@ -446,7 +494,14 @@ public:
 		while (pq.size() > 0)
 		{
 			std::pair<int, int> new_vertex_and_distance = pq.top();
+			if(get_histo_bucket(new_vertex_and_distance.second) > bucket_limit)
+			{
+				//if(CkMyPe()==40) ckout << "Exceeds limit" << endl;
+				break;
+			}
 			pq.pop();
+			recv_updates++;
+			//if(CkMyPe()==40) ckout << "Within limit" << endl;
 			histogram[get_histo_bucket(new_vertex_and_distance.second)]--; //remove from histogram
 			wasted_updates++; // wasted update, except for the last one (accounted for by starting from -1)
 			if (new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex + 1])
@@ -482,21 +537,28 @@ public:
 						}
 						if (updated_dist.first > 0 && updated_dist.first < V)
 						{
+							//we are going to send this, so add to the histogram and the send update count
+							histogram[get_histo_bucket(updated_dist.second)]++;
+							send_updates++;
 							// send buffer to pe
 							if (dest_proc == CkMyPe())
 							{
 								// if (CkMyPe()==1) ckout << "Outgoing local pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
 								pq.push(updated_dist);
-								histogram[get_histo_bucket(updated_dist.second)]++; //add to histogram
 							}
 							else
 							{
-								// if (CkMyPe()==1) ckout << "Outgoing remote pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
-								tram->insertValue(updated_dist, dest_proc);
-								send_updates++;
+								if(get_histo_bucket(updated_dist.second) > tram_bucket_limit)
+								{
+									tram_hold.push_back(updated_dist);
+									tram_hold_dests.push_back(dest_proc);
+								}
+								else
+								{
+									tram->insertValue(updated_dist, dest_proc);
+								}
 							}
 						}
-						// arr[dest_proc].update_distances(updated_dist);
 					}
 				}
 				else rejected_updates++;
@@ -511,11 +573,7 @@ public:
 	void update_distances(std::pair<int, int> new_vertex_and_distance)
 	{
 		// stat updates
-		recv_updates++;
-		wasted_updates++;
 		pq.push(new_vertex_and_distance);
-		int intpart = get_histo_bucket(new_vertex_and_distance.second);
-		histogram[intpart]++;
 	}
 
 	/**
@@ -545,8 +603,22 @@ public:
 	 */
 	void keep_going()
 	{
-		// tram_t *tram = tram_proxy.ckLocalBranch();
+		// everything in the tram hold gets added to tram
+		for(int i=0; i<tram_hold.size(); i++)
+		{
+			tram->insertValue(tram_hold[i], tram_hold_dests[i]);
+		}
+		tram_hold.clear();
 		tram->tflush();
+	}
+
+	/**
+	 * Broadcasts bucket limit
+	*/
+	void get_bucket_limit(int bucket, int tram_bucket)
+	{
+		bucket_limit = bucket;
+		tram_bucket_limit = tram_bucket;
 	}
 
 	/**

@@ -9,7 +9,7 @@
 /* readonly */ extern CProxy_HTramNodeGrp srcNodeGrpProxy;
 
 using namespace std;
-#define BUFSIZE 1024
+#define BUFSIZE 2048
 #define LOCAL_BUFSIZE 32
 #define PPN_COUNT 64
 
