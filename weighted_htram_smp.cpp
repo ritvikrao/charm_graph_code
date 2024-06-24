@@ -70,6 +70,8 @@ private:
 	double compute_begin;
 	double compute_time;
 	int max_index;
+	int threshold_change_counter;
+	int previous_threshold;
 
 public:
 	/**
@@ -230,6 +232,8 @@ public:
 		CkStartQD(cb);
 		// temp callback to test flushing
 		//ckout << "Registering callback at time " << CkWallTimer() << endl;
+		threshold_change_counter = 0;
+		previous_threshold = 0;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		// CkPrintf("Memory usage before algorithm: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr[dest_proc].update_distances(new_edge);
@@ -301,6 +305,11 @@ public:
 			tram_bucket = histo_bucket_count - 1;
 			
 		}
+		if(selected_bucket != previous_threshold)
+		{
+			previous_threshold = selected_bucket;
+			threshold_change_counter++;
+		}
 		//send percentile value to chares
 		arr.get_bucket_limit(selected_bucket, tram_bucket);
 		//start next reduction round
@@ -342,6 +351,7 @@ public:
 		ckout << "Total time: " << total_time << endl;
 		ckout << "Wasted updates: " << msg_stats[0] - V << endl;
 		ckout << "Rejected updates: " << msg_stats[1] << endl;
+		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		CkExit(0);
 	}
 };
@@ -415,6 +425,8 @@ public:
 		start_vertex = partition_index[thisIndex];
 		num_vertices = partition_index[thisIndex + 1] - partition_index[thisIndex];
 		local_graph = new Node[num_vertices];
+		bucket_limit = 0;
+		tram_bucket_limit = 0;
 		int largest_outedges[num_vertices] = {0};
 		if (num_vertices != 0)
 		{
@@ -608,7 +620,12 @@ public:
 		{
 			tram->insertValue(tram_hold[i], tram_hold_dests[i]);
 		}
+		if(CkMyPe()==0) ckout << "Memory usage before clear: " << CmiMemoryUsage() << endl;
 		tram_hold.clear();
+		tram_hold_dests.clear();
+		std::vector<std::pair<int,int>>().swap(tram_hold);
+		std::vector<int>().swap(tram_hold_dests);
+		if(CkMyPe()==0) ckout << "Memory usage after clear: " << CmiMemoryUsage() << endl;
 		tram->tflush();
 	}
 
