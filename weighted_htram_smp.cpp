@@ -29,19 +29,15 @@ int N;	  // number of processors
 int V;	  // number of vertices
 int imax; // integer maximum
 int average; // average edge count per pe
-int histo_bucket_count = 128; // number of buckets for the histogram needed for message prioritization
+int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
+int initial_threshold = 8;
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
 double flush_timer = 5; // milliseconds
 bool enable_buffer_flushing = false;
 
-void quick_exit(void *obj, double time)
-{
-	ckout << "Ending program now at time " << CkWallTimer() << endl;
-	arr.stop_periodic_flush();
-	CkExit(0);
-}
+void quick_exit(void *obj, double time);
 
 void start_reductions(void *obj, double time)
 {
@@ -67,13 +63,17 @@ private:
 	double start_time;
 	double read_time;
 	double total_time;
-	double compute_begin;
-	double compute_time;
 	int max_index;
 	int threshold_change_counter;
 	int previous_threshold;
+	int reduction_counts = 0;
+	std::vector<double> reduction_times;
 
 public:
+
+	double compute_begin;
+	double compute_time;
+
 	/**
 	 * Read in graph from csv (currently sequential)
 	 */
@@ -131,7 +131,7 @@ public:
 			std::string token = readbuf.substr(0, readbuf.find(delim));
 			std::string token2 = readbuf.substr(readbuf.find(delim) + 1, readbuf.length());
 			// make random distance
-			int edge_distance = rand() % 10 + 1;
+			int edge_distance = rand() % 1000 + 1;
 			// string to int
 			int node_num = std::stoi(token);
 			int node_num_2 = std::stoi(token2);
@@ -160,7 +160,7 @@ public:
 		// create TRAM proxy
 		CkGroupID updater_array_gid;
 		updater_array_gid = arr.ckGetArrayID();
-		tram_proxy = tram_proxy_t::ckNew(updater_array_gid, buffer_size, enable_buffer_flushing, flush_timer, true);
+		tram_proxy = tram_proxy_t::ckNew(updater_array_gid, buffer_size, enable_buffer_flushing, flush_timer, false);
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
 		mainProxy = thisProxy;
@@ -208,7 +208,7 @@ public:
 		// ready to begin algorithm
 		// CkPrintf("Memory usage after building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		shared.max_path_value(max_sum);
-		//ckout << "The sum of the maximum out-edges is " << max_sum << endl;
+		ckout << "The sum of the maximum out-edges is " << max_sum << endl;
 		std::pair<int, int> new_edge;
 		new_edge.first = start_vertex;
 		new_edge.second = 0;
@@ -233,10 +233,11 @@ public:
 		// temp callback to test flushing
 		//ckout << "Registering callback at time " << CkWallTimer() << endl;
 		threshold_change_counter = 0;
-		previous_threshold = 0;
+		previous_threshold = initial_threshold;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
+		CcdCallFnAfter(quick_exit, (void *) this, 10000.0); //end after 5 s
 		// CkPrintf("Memory usage before algorithm: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
-		arr[dest_proc].update_distances(new_edge);
+		arr[dest_proc].start_algo(new_edge);
 		//}
 	}
 
@@ -248,7 +249,7 @@ public:
 	 */
 	void print()
 	{
-		ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
+		//ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
 		// CkPrintf("Memory usage at quiescence: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr.check_buffer();
 	}
@@ -260,6 +261,8 @@ public:
 	*/
 	void reduce_histogram(int *histo_values, int histo_length)
 	{
+		reduction_times.push_back(CkWallTimer());
+		reduction_counts++;
 		//histo_length = histo_bucket_count always
 		int histogram_sum = 0;
 		//calculate the total histogram sum
@@ -267,36 +270,43 @@ public:
 		{
 			histogram_sum += histo_values[i];
 		}
-		//ckout << "Histogram sum = " << histogram_sum << endl;
+		//ckout << "Histogram sum = " << histogram_sum << " at time " << CkWallTimer() << endl;
 		int selected_bucket = 0;
 		int tram_bucket = 0;
 		int active_counter = 0;
 		//calculate target percentile
 		double target_percent; //heap percentage
 		double tram_percent; //tram percentage
-		if(histogram_sum <= 100) 
+		if(histogram_sum <= N * 100) 
 		{
 			target_percent = 1.0;
 			tram_percent = 1.0;
 		}
 		else
 		{
-			target_percent = 0.1;
-			tram_percent = 0.3;
+			target_percent = 0.05;
+			tram_percent = 0.1;
 		}
 		//select bucket limit
 		for(int i=0; i<histo_length; i++)
 		{
 			active_counter += histo_values[i];
-			if((double) active_counter > histogram_sum * target_percent) break;
-			else selected_bucket++;
+			if((double) active_counter >= histogram_sum * target_percent) 
+			{
+				selected_bucket = i;
+				break;
+			}
+			
 		}
 		active_counter = 0;
 		for(int i=0; i<histo_length; i++)
 		{
 			active_counter += histo_values[i];
-			if((double) active_counter > histogram_sum * tram_percent) break;
-			else tram_bucket++;
+			if((double) active_counter >= histogram_sum * tram_percent)
+			{
+				tram_bucket = i;
+				break;
+			}
 		}
 		//in case of floating point weirdness
 		if(histogram_sum==0)
@@ -309,9 +319,23 @@ public:
 		{
 			previous_threshold = selected_bucket;
 			threshold_change_counter++;
+			ckout << "Changed threshold to " << selected_bucket << " at time " << CkWallTimer() << endl;
+			/*
+			ckout << "Bucket counts: [" ;
+			for(int i=0; i<histo_length; i+=32)
+			{
+				int counter = 0;
+				for(int j=i; j<i+32; j++)
+				{
+					counter += histo_values[j];
+				}
+				ckout << counter << ", ";
+			}
+			ckout << "]" << endl;
+			*/
+			arr.get_bucket_limit(selected_bucket, tram_bucket);
 		}
-		//send percentile value to chares
-		arr.get_bucket_limit(selected_bucket, tram_bucket);
+		
 		//start next reduction round
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		
@@ -322,18 +346,19 @@ public:
 	 */
 	void check_buffer_done(int *msg_stats, int N)
 	{
-		ckout << "Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
+		//ckout << "Time: " << CkWallTimer();
+		//ckout << " Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
 		int net_messages = msg_stats[1] - msg_stats[0]; // receives - sends
 		if (net_messages == 1)							// difference of 1 because of initial send
 		{
-			ckout << "Real quiescence, terminate" << endl;
+			//ckout << "Real quiescence, terminate" << endl;
 			compute_time = CkWallTimer() - compute_begin;
-			arr.stop_periodic_flush();
+			//arr.stop_periodic_flush();
 			arr.print_distances();
 		}
 		else
 		{
-			ckout << "False quiescence, continue execution" << endl;
+			//ckout << "False quiescence, continue execution" << endl;
 			CkCallback cb(CkIndex_Main::print(), mainProxy);
 			CkStartQD(cb);
 			arr.keep_going();
@@ -352,9 +377,28 @@ public:
 		ckout << "Wasted updates: " << msg_stats[0] - V << endl;
 		ckout << "Rejected updates: " << msg_stats[1] << endl;
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
+		ckout << "Number of reductions: " << reduction_counts << endl;
+		/*
+		int x = reduction_counts / 10;
+		for(int i=0; i<reduction_counts; i++)
+		{
+			if(i%x==0)
+			{
+				ckout << "Time at reduction number " << i << "is: " << reduction_times[i] << endl;
+			}
+		}
+		*/
 		CkExit(0);
 	}
 };
+
+void quick_exit(void *obj, double time)
+{
+	ckout << "Ending program now at time " << CkWallTimer() << endl;
+	((Main*) obj)->compute_time = CkWallTimer() - ((Main*) obj)->compute_begin;
+	arr.print_distances();
+	CkExit(0);
+}
 
 /**
  * This holds information that needs to be broadcasted
@@ -364,7 +408,11 @@ class SharedInfo : public CBase_SharedInfo
 {
 	public:
 	int max_path;
-	SharedInfo(){}
+	int event_id;
+	SharedInfo()
+	{
+		event_id = traceRegisterUserEvent("Contrib reduction");
+	}
 
 	void max_path_value(int max_path_val)
 	{
@@ -395,6 +443,7 @@ private:
 	int tram_bucket_limit;
 	std::vector<std::pair<int,int>> tram_hold;
 	std::vector<int> tram_hold_dests;
+	std::vector<std::pair<int,int>> *new_tram_hold;
 
 public:
 	WeightedArray()
@@ -406,7 +455,7 @@ public:
 	void initiate_pointers()
 	{
 		tram = tram_proxy.ckLocalBranch();
-		tram->set_func_ptr(WeightedArray::update_distance_caller, this);
+		tram->set_func_ptr_retarr(WeightedArray::update_distance_caller, this);
 		shared_local = shared.ckLocalBranch();
 	}
 
@@ -425,8 +474,9 @@ public:
 		start_vertex = partition_index[thisIndex];
 		num_vertices = partition_index[thisIndex + 1] - partition_index[thisIndex];
 		local_graph = new Node[num_vertices];
-		bucket_limit = 0;
-		tram_bucket_limit = 0;
+		bucket_limit = initial_threshold;
+		tram_bucket_limit = initial_threshold + 2;
+		new_tram_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
 		int largest_outedges[num_vertices] = {0};
 		if (num_vertices != 0)
 		{
@@ -453,7 +503,7 @@ public:
 			}
 		}
 		//register idle call to update_distances_local
-		CkCallWhenIdle(CkIndex_WeightedArray::update_distances_local(), this);
+		//CkCallWhenIdle(CkIndex_WeightedArray::update_distances_local(), this);
 		//reduce largest edge
 		int max_edges_sum = 0;
 		if (num_vertices != 0)
@@ -467,9 +517,46 @@ public:
 		contribute(sizeof(int), &max_edges_sum, CkReduction::sum_int, cb);
 	}
 
-	static void update_distance_caller(void *p, std::pair<int, int> new_vertex_and_distance)
+	/**
+	 * Method that accepts initial update to source vertex
+	*/
+	void start_algo(std::pair<int, int> new_vertex_and_distance)
 	{
-		((WeightedArray *)p)->update_distances(new_vertex_and_distance);
+		update_distances(new_vertex_and_distance);
+		arr[thisIndex].update_distances_local();
+	}
+
+	/**
+	 * Gets the destination processor for a given vertex 
+	*/
+	int get_dest_proc(int vertex)
+	{
+		int dest_proc = 0;
+		for (int j = 0; j < N; j++)
+		{
+			// find first partition that begins at a higher edge count;
+			if (vertex >= partition_index[j] && vertex < partition_index[j + 1])
+			{
+				dest_proc = j;
+				break;
+			}
+			if (j == N - 1)
+			{
+				dest_proc = N - 1;
+			}
+		}
+		return dest_proc;
+	}
+
+	static void update_distance_caller(void *p, std::pair<int, int> *new_vertex_and_distances, int count)
+	{
+		//ckout << "PE " << CkMyPe() << " receiving " << count << " updates" << endl;
+		for(int i=0; i<count; i++)
+		{
+			((WeightedArray *)p)->update_distances(new_vertex_and_distances[i]);
+		}
+		((WeightedArray *)p)->update_distances_local();
+
 	}
 
 	// test function
@@ -487,7 +574,7 @@ public:
 		//double bucket_to_choose = percentile * histo_bucket_count * (V/100); //V/100 to space out buckets
 		//int intpart = (int) bucket_to_choose;
 		int max_path = shared_local -> max_path;
-		double bucket = (distance * ((double) histo_bucket_count) * (V/10)) / max_path;
+		double bucket = (distance * ((double) histo_bucket_count) ) / (512 * log(V));
 		int result = (int) bucket;
 		//if(CkMyPe()==40) ckout << "Distance= " << distance << endl;
 		//if(CkMyPe()==40) ckout << "Bucket= " << result << endl;
@@ -500,13 +587,14 @@ public:
 	 * this is not an entry method
 	 * returns true (runs when pe is idle)
 	 */
-	bool update_distances_local()
+	void update_distances_local()
 	{
 		// add sends
 		while (pq.size() > 0)
 		{
 			std::pair<int, int> new_vertex_and_distance = pq.top();
-			if(get_histo_bucket(new_vertex_and_distance.second) > bucket_limit)
+			int this_histo_bucket = get_histo_bucket(new_vertex_and_distance.second);
+			if(this_histo_bucket > bucket_limit)
 			{
 				//if(CkMyPe()==40) ckout << "Exceeds limit" << endl;
 				break;
@@ -514,7 +602,7 @@ public:
 			pq.pop();
 			recv_updates++;
 			//if(CkMyPe()==40) ckout << "Within limit" << endl;
-			histogram[get_histo_bucket(new_vertex_and_distance.second)]--; //remove from histogram
+			histogram[this_histo_bucket]--; //remove from histogram
 			wasted_updates++; // wasted update, except for the last one (accounted for by starting from -1)
 			if (new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex + 1])
 			{
@@ -522,7 +610,7 @@ public:
 				// tram_t *tram = tram_proxy.ckLocalBranch();
 
 				int local_index = new_vertex_and_distance.first - start_vertex;
-				// if (CkMyPe()==1) ckout << "Incoming local pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
+				//if (CkMyPe()==0) ckout << "Incoming local pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 				//  if the incoming distance is actually smaller
 				if (new_vertex_and_distance.second < local_graph[local_index].distance)
 				{
@@ -534,41 +622,29 @@ public:
 						std::pair<int, int> updated_dist;
 						updated_dist.first = local_graph[local_index].adjacent[i].end;
 						updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
-						// calculate destination pe
-						int dest_proc = 0;
-						for (int j = 0; j < N; j++)
-						{
-							// find first partition that begins at a higher edge count;
-							if (updated_dist.first >= partition_index[j] && updated_dist.first < partition_index[j + 1])
-							{
-								dest_proc = j;
-								break;
-							}
-							if (j == N - 1)
-								dest_proc = N - 1;
-						}
+						//if target vertex is in range
 						if (updated_dist.first > 0 && updated_dist.first < V)
 						{
 							//we are going to send this, so add to the histogram and the send update count
-							histogram[get_histo_bucket(updated_dist.second)]++;
+							int neighbor_bucket = get_histo_bucket(updated_dist.second);
+							histogram[neighbor_bucket]++;
 							send_updates++;
-							// send buffer to pe
-							if (dest_proc == CkMyPe())
+							//if exceeds limit, put in hold
+							if(neighbor_bucket > tram_bucket_limit)
 							{
-								// if (CkMyPe()==1) ckout << "Outgoing local pair on PE " << thisIndex << ": " << updated_dist.first << ", " << updated_dist.second << endl;
-								pq.push(updated_dist);
+								//tram_hold.push_back(updated_dist);
+								//tram_hold_dests.push_back(dest_proc);
+								new_tram_hold[neighbor_bucket].push_back(updated_dist);
 							}
 							else
 							{
-								if(get_histo_bucket(updated_dist.second) > tram_bucket_limit)
+								//calculated dest proc
+								int dest_proc = get_dest_proc(updated_dist.first);
+								if(dest_proc==CkMyPe())
 								{
-									tram_hold.push_back(updated_dist);
-									tram_hold_dests.push_back(dest_proc);
+									pq.push(updated_dist);
 								}
-								else
-								{
-									tram->insertValue(updated_dist, dest_proc);
-								}
+								else tram->insertValue(updated_dist, dest_proc);
 							}
 						}
 					}
@@ -576,7 +652,6 @@ public:
 				else rejected_updates++;
 			}
 		}
-		return true;
 	}
 
 	/**
@@ -606,6 +681,7 @@ public:
 	*/
 	void contribute_histogram()
 	{
+		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
 		contribute(histo_bucket_count * sizeof(int), histogram, CkReduction::sum_int, cb);
 	}
@@ -616,17 +692,21 @@ public:
 	void keep_going()
 	{
 		// everything in the tram hold gets added to tram
-		for(int i=0; i<tram_hold.size(); i++)
+		for(int i=0; i<histo_bucket_count; i++)
 		{
-			tram->insertValue(tram_hold[i], tram_hold_dests[i]);
+			for(int j=0; j<new_tram_hold[i].size(); j++)
+			{
+				int dest_proc = get_dest_proc(new_tram_hold[i][j].first);
+				if(dest_proc==CkMyPe())
+				{
+					pq.push(new_tram_hold[i][j]);
+				}
+				else tram->insertValue(new_tram_hold[i][j], dest_proc);
+			}
+			new_tram_hold[i].clear();
 		}
-		if(CkMyPe()==0) ckout << "Memory usage before clear: " << CmiMemoryUsage() << endl;
-		tram_hold.clear();
-		tram_hold_dests.clear();
-		std::vector<std::pair<int,int>>().swap(tram_hold);
-		std::vector<int>().swap(tram_hold_dests);
-		if(CkMyPe()==0) ckout << "Memory usage after clear: " << CmiMemoryUsage() << endl;
 		tram->tflush();
+		arr[thisIndex].update_distances_local();
 	}
 
 	/**
@@ -634,8 +714,28 @@ public:
 	*/
 	void get_bucket_limit(int bucket, int tram_bucket)
 	{
+		if(CkMyPe()==17) ckout << "Wasted on PE 17 = " << wasted_updates << " Rejected= " << rejected_updates << " Time: " << CkWallTimer() << endl;
 		bucket_limit = bucket;
 		tram_bucket_limit = tram_bucket;
+		int counter = 0;
+		//ckout << "Time when threshold received: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << endl;
+		//after every reduction, push out messages in hold that are in limit
+		for(int i=0; i<=tram_bucket_limit; i++)
+		{
+			for(int j=0; j<new_tram_hold[i].size(); j++)
+			{
+				int dest_proc = get_dest_proc(new_tram_hold[i][j].first);
+				if(dest_proc==CkMyPe())
+				{
+					pq.push(new_tram_hold[i][j]);
+				}
+				else tram->insertValue(new_tram_hold[i][j], dest_proc);
+			}
+			new_tram_hold[i].clear();
+		}
+		//ckout << "Timer: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << " count: " << counter << endl;
+		tram->tflush();
+		arr[thisIndex].update_distances_local();
 	}
 
 	/**
