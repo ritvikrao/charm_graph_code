@@ -441,9 +441,8 @@ private:
 	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
 	int bucket_limit;
 	int tram_bucket_limit;
-	std::vector<std::pair<int,int>> tram_hold;
-	std::vector<int> tram_hold_dests;
 	std::vector<std::pair<int,int>> *new_tram_hold;
+	std::vector<std::pair<int,int>> *local_hold;
 
 public:
 	WeightedArray()
@@ -477,6 +476,7 @@ public:
 		bucket_limit = initial_threshold;
 		tram_bucket_limit = initial_threshold + 2;
 		new_tram_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
+		local_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
 		int largest_outedges[num_vertices] = {0};
 		if (num_vertices != 0)
 		{
@@ -642,7 +642,11 @@ public:
 								int dest_proc = get_dest_proc(updated_dist.first);
 								if(dest_proc==CkMyPe())
 								{
-									pq.push(updated_dist);
+									if(neighbor_bucket > bucket_limit)
+									{
+										local_hold[neighbor_bucket].push_back(updated_dist);
+									}
+									else pq.push(updated_dist);
 								}
 								else tram->insertValue(updated_dist, dest_proc);
 							}
@@ -705,6 +709,14 @@ public:
 			}
 			new_tram_hold[i].clear();
 		}
+		for(int i=0; i<histo_bucket_count; i++)
+		{
+			for(int j=0; j<local_hold[i].size(); j++)
+			{
+				pq.push(local_hold[i][j]);
+			}
+			local_hold[i].clear();
+		}
 		tram->tflush();
 		arr[thisIndex].update_distances_local();
 	}
@@ -714,7 +726,7 @@ public:
 	*/
 	void get_bucket_limit(int bucket, int tram_bucket)
 	{
-		if(CkMyPe()==17) ckout << "Wasted on PE 17 = " << wasted_updates << " Rejected= " << rejected_updates << " Time: " << CkWallTimer() << endl;
+		//if(CkMyPe()==17) ckout << "Wasted on PE 17 = " << wasted_updates << " Rejected= " << rejected_updates << " Time: " << CkWallTimer() << endl;
 		bucket_limit = bucket;
 		tram_bucket_limit = tram_bucket;
 		int counter = 0;
@@ -727,11 +739,23 @@ public:
 				int dest_proc = get_dest_proc(new_tram_hold[i][j].first);
 				if(dest_proc==CkMyPe())
 				{
-					pq.push(new_tram_hold[i][j]);
+					if(i > bucket_limit)
+					{
+						local_hold[i].push_back(new_tram_hold[i][j]);
+					}
+					else pq.push(new_tram_hold[i][j]);
 				}
 				else tram->insertValue(new_tram_hold[i][j], dest_proc);
 			}
 			new_tram_hold[i].clear();
+		}
+		for(int i=0; i<=bucket_limit; i++)
+		{
+			for(int j=0; j<local_hold[i].size(); j++)
+			{
+				pq.push(local_hold[i][j]);
+			}
+			local_hold[i].clear();
 		}
 		//ckout << "Timer: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << " count: " << counter << endl;
 		tram->tflush();
