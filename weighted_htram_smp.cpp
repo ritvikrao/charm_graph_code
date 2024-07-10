@@ -8,6 +8,7 @@
 #include <string>
 #include <limits>
 #include <queue>
+#include <algorithm>
 
 // htram
 #include "NDMeshStreamer.h"
@@ -30,11 +31,11 @@ int V;	  // number of vertices
 int imax; // integer maximum
 int average; // average edge count per pe
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
-double reduction_delay = 0.1; // each histogram reduction happens at this interval
+double reduction_delay = 0.01; // each histogram reduction happens at this interval
 int initial_threshold = 8;
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
-double flush_timer = 5; // milliseconds
+double flush_timer = 0.01; // milliseconds
 bool enable_buffer_flushing = false;
 
 void quick_exit(void *obj, double time);
@@ -67,6 +68,7 @@ private:
 	int threshold_change_counter;
 	int previous_threshold;
 	int reduction_counts = 0;
+	int no_incoming = 0;
 	std::vector<double> reduction_times;
 
 public:
@@ -123,6 +125,8 @@ public:
 		// iterate through edge list
 		//ckout << "Loop begins" << endl;
 		CkVec<LongEdge> edges;
+		int *incoming_count = new int[V];
+		for(int i=0; i<V; i++) incoming_count[i] = 0;
 		max_index = 0;
 		// CkPrintf("Memory usage before file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		while (getline(file, readbuf))
@@ -133,8 +137,9 @@ public:
 			// make random distance
 			int edge_distance = rand() % 1000 + 1;
 			// string to int
-			int node_num = std::stoi(token);
-			int node_num_2 = std::stoi(token2);
+			int node_num = std::stoi(token); //v
+			int node_num_2 = std::stoi(token2); //w
+			incoming_count[node_num_2]++;
 			// ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
 			// find the maximum vertex index
 			if (node_num > max_index)
@@ -148,6 +153,11 @@ public:
 			edges.insertAtEnd(new_edge);
 			// ckout << "One loop iteration complete" << endl;
 		}
+		for(int i=0; i<max_index; i++)
+		{
+			if(incoming_count[i]==0) no_incoming++;
+		}
+		ckout << "Vertices with no incoming edges: " << no_incoming << endl;
 		//ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
@@ -228,8 +238,8 @@ public:
 		// ckout << "Beginning" << endl;
 		compute_begin = CkWallTimer();
 		// quiescence detection
-		CkCallback cb(CkIndex_Main::print(), mainProxy);
-		CkStartQD(cb);
+		//CkCallback cb(CkIndex_Main::print(), mainProxy);
+		//CkStartQD(cb);
 		// temp callback to test flushing
 		//ckout << "Registering callback at time " << CkWallTimer() << endl;
 		threshold_change_counter = 0;
@@ -266,9 +276,17 @@ public:
 		//histo_length = histo_bucket_count always
 		int histogram_sum = 0;
 		//calculate the total histogram sum
-		for(int i=0; i<histo_length; i++)
+		for(int i=0; i<histo_bucket_count; i++)
 		{
 			histogram_sum += histo_values[i];
+		}
+		if(histo_values[histo_bucket_count + 1]-histo_values[histo_bucket_count]==1)
+		{
+			ckout << "Receives and sends match" << endl;
+			ckout << "Threshold: " << previous_threshold << endl;
+			compute_time = CkWallTimer() - compute_begin;
+			arr.print_distances();
+			return;
 		}
 		//ckout << "Histogram sum = " << histogram_sum << " at time " << CkWallTimer() << endl;
 		int selected_bucket = 0;
@@ -285,10 +303,10 @@ public:
 		else
 		{
 			target_percent = 0.05;
-			tram_percent = 0.1;
+			tram_percent = 0.15;
 		}
 		//select bucket limit
-		for(int i=0; i<histo_length; i++)
+		for(int i=0; i<histo_bucket_count; i++)
 		{
 			active_counter += histo_values[i];
 			if((double) active_counter >= histogram_sum * target_percent) 
@@ -299,7 +317,7 @@ public:
 			
 		}
 		active_counter = 0;
-		for(int i=0; i<histo_length; i++)
+		for(int i=0; i<histo_bucket_count; i++)
 		{
 			active_counter += histo_values[i];
 			if((double) active_counter >= histogram_sum * tram_percent)
@@ -319,10 +337,10 @@ public:
 		{
 			previous_threshold = selected_bucket;
 			threshold_change_counter++;
-			ckout << "Changed threshold to " << selected_bucket << " at time " << CkWallTimer() << endl;
 			/*
+			ckout << "Changed threshold to " << selected_bucket << " at time " << CkWallTimer() << endl;
 			ckout << "Bucket counts: [" ;
-			for(int i=0; i<histo_length; i+=32)
+			for(int i=0; i<histo_bucket_count; i+=32)
 			{
 				int counter = 0;
 				for(int j=i; j<i+32; j++)
@@ -337,7 +355,8 @@ public:
 		}
 		
 		//start next reduction round
-		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
+		//CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
+		arr.contribute_histogram();
 		
 	}
 
@@ -439,8 +458,10 @@ private:
 	SharedInfo *shared_local;
 	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, ComparePairs> pq; //heap of messages
 	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
+	int *vcount;
 	int bucket_limit;
 	int tram_bucket_limit;
+	double bucket_multiplier;
 	std::vector<std::pair<int,int>> *new_tram_hold;
 	std::vector<std::pair<int,int>> *local_hold;
 
@@ -461,10 +482,13 @@ public:
 	void get_graph(LongEdge *edges, int E, int *partition, int dividers)
 	{
 		histogram = new int[histo_bucket_count];
+		vcount = new int[histo_bucket_count+1]; //histo buckets plus infty
 		for(int i=0; i<histo_bucket_count; i++)
 		{
 			histogram[i] = 0;
+			vcount[i] = 0;
 		}
+		vcount[histo_bucket_count] = 0;
 		partition_index = new int[dividers];
 		for (int i = 0; i < dividers; i++)
 		{
@@ -477,6 +501,7 @@ public:
 		tram_bucket_limit = initial_threshold + 2;
 		new_tram_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
 		local_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
+		bucket_multiplier = histo_bucket_count / (512 * log(V));
 		int largest_outedges[num_vertices] = {0};
 		if (num_vertices != 0)
 		{
@@ -491,6 +516,7 @@ public:
 				local_graph[i] = new_node;
 				wasted_updates = 0;
 				rejected_updates = 0;
+				vcount[histo_bucket_count]++;
 			}
 			for (int i = 0; i < E; i++)
 			{
@@ -503,7 +529,7 @@ public:
 			}
 		}
 		//register idle call to update_distances_local
-		//CkCallWhenIdle(CkIndex_WeightedArray::update_distances_local(), this);
+		CkCallWhenIdle(CkIndex_WeightedArray::update_distances_local(), this);
 		//reduce largest edge
 		int max_edges_sum = 0;
 		if (num_vertices != 0)
@@ -573,8 +599,7 @@ public:
 		//double percentile = (1.0 * distance) / max_path;
 		//double bucket_to_choose = percentile * histo_bucket_count * (V/100); //V/100 to space out buckets
 		//int intpart = (int) bucket_to_choose;
-		int max_path = shared_local -> max_path;
-		double bucket = (distance * ((double) histo_bucket_count) ) / (512 * log(V));
+		double bucket = distance * bucket_multiplier;
 		int result = (int) bucket;
 		//if(CkMyPe()==40) ckout << "Distance= " << distance << endl;
 		//if(CkMyPe()==40) ckout << "Bucket= " << result << endl;
@@ -587,7 +612,7 @@ public:
 	 * this is not an entry method
 	 * returns true (runs when pe is idle)
 	 */
-	void update_distances_local()
+	bool update_distances_local()
 	{
 		// add sends
 		while (pq.size() > 0)
@@ -601,8 +626,6 @@ public:
 			}
 			pq.pop();
 			recv_updates++;
-			//if(CkMyPe()==40) ckout << "Within limit" << endl;
-			histogram[this_histo_bucket]--; //remove from histogram
 			wasted_updates++; // wasted update, except for the last one (accounted for by starting from -1)
 			if (new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex + 1])
 			{
@@ -614,6 +637,10 @@ public:
 				//  if the incoming distance is actually smaller
 				if (new_vertex_and_distance.second < local_graph[local_index].distance)
 				{
+					//update vcount
+					if(local_graph[local_index].distance == imax) vcount[histo_bucket_count]--;
+					else vcount[get_histo_bucket(local_graph[local_index].distance)]--;
+					vcount[this_histo_bucket]++;
 					local_graph[local_index].distance = new_vertex_and_distance.second; // update distance
 					// for all neighbors
 					for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
@@ -655,7 +682,9 @@ public:
 				}
 				else rejected_updates++;
 			}
+			histogram[this_histo_bucket]--;
 		}
+		return true;
 	}
 
 	/**
@@ -687,7 +716,11 @@ public:
 	{
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
-		contribute(histo_bucket_count * sizeof(int), histogram, CkReduction::sum_int, cb);
+		int *info_array = new int[histo_bucket_count+2];
+		std::copy(histogram, histogram + histo_bucket_count, info_array);
+		info_array[histo_bucket_count] = send_updates;
+		info_array[histo_bucket_count+1] = recv_updates;
+		contribute((histo_bucket_count+2) * sizeof(int), info_array, CkReduction::sum_int, cb);
 	}
 
 	/**
