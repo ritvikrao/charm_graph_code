@@ -292,15 +292,17 @@ void HTram::tflush(bool idleflush) {
       local_idx[i] = 0;
     }
     //If you're last rank on node to flush, then flush your buffer and by setting idx to a high count, node level buffer as well
-    if(flush_count+1==CkNodeSize(0))
+//    if(flush_count+1==CkNodeSize(0))
     {
       for(int i=0;i<CkNumNodes();i++) {
         if(srcNodeGrp->done_count[i]) {
           flush_msg_count++;
+#if 1
           int idx = srcNodeGrp->get_idx[i].fetch_add(BUFSIZE, std::memory_order_relaxed);
           int done_count = srcNodeGrp->done_count[i].fetch_add(0, std::memory_order_relaxed);
           if(idx >= BUFSIZE) continue;
           while(idx!=done_count) { done_count = srcNodeGrp->done_count[i].fetch_add(0, std::memory_order_relaxed);}
+#endif
   //          CkPrintf("\nCalling TFLUSH---\n");
           srcNodeGrp->msgBuffers[i]->next = srcNodeGrp->done_count[i];
           ((envelope *)UsrToEnv(srcNodeGrp->msgBuffers[i]))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*srcNodeGrp->msgBuffers[i]->next);
