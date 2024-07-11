@@ -20,7 +20,7 @@ using tram_proxy_t = CProxy_HTram;
 using tram_t = HTram;
 
 /* readonly */
-tram_proxy_t tram_proxy;
+//tram_proxy_t tram_proxy;
 CProxy_HTramRecv nodeGrpProxy;
 CProxy_HTramNodeGrp srcNodeGrpProxy;
 CProxy_Main mainProxy;
@@ -164,16 +164,17 @@ public:
 		// CkPrintf("Memory usage after file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		//  ckout << "File closed" << endl;
 		//  define readonly variables
-		shared = CProxy_SharedInfo::ckNew();
-		arr = CProxy_WeightedArray::ckNew(N);
 		//ckout << "Making htram at time " << CkWallTimer() << endl;
 		// create TRAM proxy
-		CkGroupID updater_array_gid;
-		CkCallback ignore_cb(CkCallback::ignore);
-		updater_array_gid = arr.ckGetArrayID();
-		tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), srcNodeGrpProxy.ckGetGroupID(), buffer_size, enable_buffer_flushing, flush_timer, false, true, ignore_cb);
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
+
+		CkCallback ignore_cb(CkCallback::ignore);
+		tram_proxy_t tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), srcNodeGrpProxy.ckGetGroupID(), buffer_size, enable_buffer_flushing, flush_timer, false, true, ignore_cb);
+
+		shared = CProxy_SharedInfo::ckNew();
+		arr = CProxy_WeightedArray::ckNew(tram_proxy.ckGetGroupID(), N);
+
 		mainProxy = thisProxy;
 		arr.initiate_pointers();
 		// assign nodes to location
@@ -455,6 +456,7 @@ private:
 	int *partition_index; //defines boundaries of indices for each pe
 	int wasted_updates; //number of updates that don't have the final answer
 	int rejected_updates; //number of updates that don't decrease a distance value/create more messages
+	tram_proxy_t tram_proxy;
 	tram_t *tram; //tram library
 	SharedInfo *shared_local;
 	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, ComparePairs> pq; //heap of messages
@@ -467,8 +469,9 @@ private:
 	std::vector<std::pair<int,int>> *local_hold;
 
 public:
-	WeightedArray()
+	WeightedArray(CkGroupID tram_id)
 	{
+		tram_proxy = CProxy_HTram(tram_id);
 		send_updates = 0;
 		recv_updates = 0;
 	}

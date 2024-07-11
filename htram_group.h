@@ -10,10 +10,10 @@
 #endif
 #define ALL_BUF_TYPES
 #include "htram_group.decl.h"
-/* readonly */ extern CProxy_HTram tram_proxy;
+///* readonly */ extern CProxy_HTram tram_proxy;
 ///* readonly */ extern CProxy_HTramRecv nodeGrpProxy;
 ///* readonly */ extern CProxy_HTramNodeGrp srcNodeGrpProxy;
-#include "packet.h"
+//#include "packet.h"
 using namespace std;
 #define SIZE_LIST (int[]){1024, 512, 2048}
 #define BUFSIZE 1024//4096//2048//512//1024//256//1024//2048//1024//4096//2048//4096//2048//1024

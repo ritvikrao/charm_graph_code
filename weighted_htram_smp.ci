@@ -26,7 +26,7 @@ mainmodule weighted_htram_smp
   };
   array [1D] WeightedArray
   {
-    entry WeightedArray();
+    entry WeightedArray(CkGroupID tram_id);
     entry void initiate_pointers();
     entry void get_graph(LongEdge edges[E], int E, int partition[dividers], int dividers); //gets graph partition
     entry void start_algo(std::pair<int, int> new_vertex_and_distance);
