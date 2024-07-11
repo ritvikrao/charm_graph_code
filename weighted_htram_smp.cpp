@@ -169,8 +169,9 @@ public:
 		//ckout << "Making htram at time " << CkWallTimer() << endl;
 		// create TRAM proxy
 		CkGroupID updater_array_gid;
+		CkCallback ignore_cb(CkCallback::ignore);
 		updater_array_gid = arr.ckGetArrayID();
-		tram_proxy = tram_proxy_t::ckNew(updater_array_gid, buffer_size, enable_buffer_flushing, flush_timer, false);
+		tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), srcNodeGrpProxy.ckGetGroupID(), buffer_size, enable_buffer_flushing, flush_timer, false, true, ignore_cb);
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
 		mainProxy = thisProxy;
@@ -207,7 +208,7 @@ public:
 		{
 			arr[i].get_graph(edge_lists[i].data(), edge_lists[i].size(), partition_index, N + 1);
 		}
-		// CkPrintf("Memory usage before building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
+		CkPrintf("Memory usage before building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 	}
 
 	/**
