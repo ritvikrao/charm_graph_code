@@ -297,6 +297,10 @@ void HTram::tflush(bool idleflush) {
       for(int i=0;i<CkNumNodes();i++) {
         if(srcNodeGrp->done_count[i]) {
           flush_msg_count++;
+          int idx = srcNodeGrp->get_idx[i].fetch_add(BUFSIZE, std::memory_order_relaxed);
+          int done_count = srcNodeGrp->done_count[i].fetch_add(0, std::memory_order_relaxed);
+          if(idx >= BUFSIZE) continue;
+          while(idx!=done_count) { done_count = srcNodeGrp->done_count[i].fetch_add(0, std::memory_order_relaxed);}
   //          CkPrintf("\nCalling TFLUSH---\n");
           srcNodeGrp->msgBuffers[i]->next = srcNodeGrp->done_count[i];
           ((envelope *)UsrToEnv(srcNodeGrp->msgBuffers[i]))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*srcNodeGrp->msgBuffers[i]->next);
