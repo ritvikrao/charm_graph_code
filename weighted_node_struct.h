@@ -18,6 +18,7 @@ class Node{
 		int home_process;
 		int distance;
 		CkVec<Edge> adjacent;
+		bool send_updates;
 	
 	Node(){}
 	explicit operator bool() const
@@ -25,8 +26,9 @@ class Node{
     	void pup(PUP::er &p) {
       	p | index;
       	p | home_process;
-	p | distance;
+		p | distance;
       	p | adjacent;
+		p | send_updates;
     	}
 };
 

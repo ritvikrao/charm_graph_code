@@ -35,7 +35,7 @@ mainmodule weighted_htram_smp
     entry void check_buffer(); // checks for false quiescence
     entry [expedited] void contribute_histogram(); //contributes histogram to main pe
     entry void keep_going(); // flush buffers
-    entry void get_bucket_limit(int bucket, int tram_bucket); // broadcast bucket limit
+    entry void get_bucket_limit(int bucket, int tram_bucket, int behind_first_nonzero); // broadcast bucket limit
     entry void print_distances(); // print out the distances on each chare
     entry void stop_periodic_flush();
   };
