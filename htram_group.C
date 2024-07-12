@@ -44,13 +44,14 @@ HTram::HTram(CkGroupID recv_ngid, CkGroupID src_ngid, int buffer_size, bool enab
     if(thisIndex==0) CkPrintf("\nDest-node side grouping/sorting enabled (1 buffer per src-pe, per dest-node)\n");
 */
   ret_list = !ret_item;
-  agg = NNs;//PP;//NNs;//NNs;//PNs;//NNs;//PP;
+  agg = PNs;//NNs;//PP;
+
   myPE = CkMyPe();
   msgBuffers = (new HTramMessage*[CkNumPes()]);
 
   if(thisIndex == 0) {
     if(agg == PNs) CkPrintf("\nAggregation type: PNs with buffer size %d", BUFSIZE);
-    else if(agg == NNs) CkPrintf("\nAggregation type: NNs with buffer size %d",BUFSIZE);
+    else if(agg == NNs) CkPrintf("\nAggregation type: NNs with buffer size %d and local buffer size %d",BUFSIZE, LOCAL_BUFSIZE);
     else if(agg == PP) CkPrintf("\nAggregation type: PP with buffer size %d", BUFSIZE);
   }
 
@@ -465,9 +466,15 @@ void HTram::receiveOnPE(HTramMessage* msg) {
   }
 #endif
 
-//  CkPrintf("\nrcv-msg size = %d", msg->next);
-  for(int i=0;i<msg->next;i++)
-    cb(objPtr, msg->buffer[i].payload);
+  if(!ret_list) {
+    for(int i=0;i<msg->next;i++)
+      cb(objPtr, msg->buffer[i].payload);
+  } else {
+    datatype *buf = new datatype[msg->next];
+    for(int i=0;i<msg->next;i++)
+      buf[i] = msg->buffer[i].payload;
+    cb_retarr(objPtr, buf, msg->next);
+  }
   delete msg;
 }
 
