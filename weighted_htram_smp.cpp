@@ -38,7 +38,7 @@ int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
 double flush_timer = 0.01; // milliseconds
 bool enable_buffer_flushing = false;
 
-void quick_exit(void *obj, double time);
+void fast_exit(void *obj, double time);
 
 void start_reductions(void *obj, double time)
 {
@@ -248,7 +248,7 @@ public:
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
-		CcdCallFnAfter(quick_exit, (void *) this, 10000.0); //end after 5 s
+		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
 		// CkPrintf("Memory usage before algorithm: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr[dest_proc].start_algo(new_edge);
 		//}
@@ -428,7 +428,7 @@ public:
 	}
 };
 
-void quick_exit(void *obj, double time)
+void fast_exit(void *obj, double time)
 {
 	ckout << "Ending program now at time " << CkWallTimer() << endl;
 	((Main*) obj)->compute_time = CkWallTimer() - ((Main*) obj)->compute_begin;
@@ -465,7 +465,7 @@ class WeightedArray : public CBase_WeightedArray
 private:
 	Node *local_graph; //structure to hold vertices assigned to this pe
 	int start_vertex; //global index of lowest vertex assigned to this pe
-	int num_vertices; //number of vertices assigned to this pe
+	int num_vertices=0; //number of vertices assigned to this pe
 	int send_updates; //number of update messages sent
 	int recv_updates; //number of update messages received
 	int *partition_index; //defines boundaries of indices for each pe
