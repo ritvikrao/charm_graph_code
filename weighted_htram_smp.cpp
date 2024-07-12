@@ -523,7 +523,7 @@ public:
 		new_tram_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
 		local_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
 		bucket_multiplier = histo_bucket_count / (512 * log(V));
-		int largest_outedges[num_vertices] = {0};
+		int *largest_outedges = new int[num_vertices];
 		if (num_vertices != 0)
 		{
 			for (int i = 0; i < num_vertices; i++)
@@ -539,6 +539,7 @@ public:
 				wasted_updates = 0;
 				rejected_updates = 0;
 				vcount[histo_bucket_count]++;
+				largest_outedges[i] = 0;
 			}
 			for (int i = 0; i < E; i++)
 			{
