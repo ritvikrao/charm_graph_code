@@ -766,8 +766,8 @@ public:
 			}
 			else
 			{ 
-				local_graph[local_index].distance = cost;
 				vcount[get_histo_bucket(local_graph[local_index].distance)]--;
+				local_graph[local_index].distance = cost;
 				local_graph[local_index].send_updates = true;
 				if(this_bucket > bucket_limit)
 				{
