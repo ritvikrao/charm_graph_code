@@ -44,7 +44,7 @@ HTram::HTram(CkGroupID recv_ngid, CkGroupID src_ngid, int buffer_size, bool enab
     if(thisIndex==0) CkPrintf("\nDest-node side grouping/sorting enabled (1 buffer per src-pe, per dest-node)\n");
 */
   ret_list = !ret_item;
-  agg = NNs;//NNs;//PP;
+  agg = PNs;//NNs;//PP;
 
   myPE = CkMyPe();
   msgBuffers = (new HTramMessage*[CkNumPes()]);

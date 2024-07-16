@@ -19,7 +19,7 @@ mainmodule weighted_htram_smp
   {
     entry Main(CkArgMsg* m);
     entry [reductiontarget] void begin(int max_sum); //wait for all chares to receive graph partition, register qd callback here (callback to done method), start algorithm
-    entry void print(); //bcast to chares to print distances
+    entry void quiescence_detected(); //bcast to chares to print distances
     entry [reductiontarget, expedited] void reduce_histogram(int histo_values[N], int histo_length);
     entry [reductiontarget] void done(int msg_stats[N], int N); //bcast to chares to print results and end program
     entry [reductiontarget] void check_buffer_done(int msg_stats[N], int N);

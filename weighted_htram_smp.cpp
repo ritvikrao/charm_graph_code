@@ -32,7 +32,7 @@ int imax; // integer maximum
 int average; // average edge count per pe
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
 double reduction_delay = 0.01; // each histogram reduction happens at this interval
-int initial_threshold = 8;
+int initial_threshold = 3;
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
 double flush_timer = 0.01; // milliseconds
@@ -71,6 +71,8 @@ private:
 	int no_incoming = 0;
 	std::vector<double> reduction_times;
 	bool first_qd_done = false;
+	bool second_qd_done = false;
+	int activeBucketMax = 10;
 
 public:
 
@@ -238,16 +240,16 @@ public:
 			if (i == N - 1)
 				dest_proc = N - 1;
 		}
-		// ckout << "Beginning" << endl;
 		compute_begin = CkWallTimer();
+		ckout << "Beginning at time: " << compute_begin << endl;
 		// quiescence detection
-		CkCallback cb(CkIndex_Main::print(), mainProxy);
+		CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
 		CkStartQD(cb);
 		// temp callback to test flushing
 		//ckout << "Registering callback at time " << CkWallTimer() << endl;
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
-		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
+		//CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
 		// CkPrintf("Memory usage before algorithm: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr[dest_proc].start_algo(new_edge);
@@ -260,12 +262,24 @@ public:
 	 * also restart qd
 	 * If empty, end execution by printing the distances
 	 */
-	void print()
+	void quiescence_detected()
 	{
-		first_qd_done = true;
-		ckout << "Quiescence detected at time: " << CkWallTimer() << endl;
-		// CkPrintf("Memory usage at quiescence: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
-		arr.contribute_histogram();
+		if (first_qd_done == false) 
+		{
+			first_qd_done = true;
+			ckout << "First Quiescence detected at time: " << CkWallTimer() << endl;
+			CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
+			CkStartQD(cb);
+			// Ask everyone to call flush
+			arr.get_bucket_limit(initial_threshold, initial_threshold+2, 0); // dummy values.. hopefully no damage. Just get tflush called
+ 	  	}
+ 	  	else 
+		{
+			second_qd_done = true;
+			ckout << "Second Quiescence detected at time: " << CkWallTimer() << "  starting reductions. "<< endl;
+			// CkPrintf("Memory usage at quiescence: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
+			arr.contribute_histogram();
+ 	  	}
 	}
 
 	/**
@@ -309,8 +323,8 @@ public:
 		//calculate target percentile
 		double target_percent; //heap percentage
 		double tram_percent; //tram percentage
-		if(first_qd_done)
-			{
+		if(second_qd_done)
+		{
 			if(histogram_sum <= N * 100) 
 			{
 				target_percent = 1.0;
@@ -342,6 +356,13 @@ public:
 					break;
 				}
 			}
+			/*
+			if ((selected_bucket-first_nonzero) > activeBucketMax)
+ 			  selected_bucket = first_nonzero + activeBucketMax;
+ 			
+ 			  if ((tram_bucket - selected_bucket) > 5)
+ 			  tram_bucket = selected_bucket + 5;  // tram_bucket no more than 5 buckets ahead of selected_bucket
+ 			*/
 			//in case of floating point weirdness
 			if(histogram_sum==0)
 			{
@@ -353,7 +374,8 @@ public:
 			{
 				previous_threshold = selected_bucket;
 				threshold_change_counter++;
-				ckout << "Changed threshold to " << selected_bucket << " at time " << CkWallTimer() << endl;
+				ckout << "Changed threshold to " << selected_bucket << " and tram threshold to" << 
+				tram_bucket << " first nonzero: " << first_nonzero << " at time " << CkWallTimer() << endl;
 				/*
 				ckout << "Bucket counts: [" ;
 				for(int i=0; i<histo_bucket_count; i+=32)
@@ -395,7 +417,7 @@ public:
 		else
 		{
 			//ckout << "False quiescence, continue execution" << endl;
-			CkCallback cb(CkIndex_Main::print(), mainProxy);
+			CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
 			CkStartQD(cb);
 			arr.keep_going();
 		}
@@ -782,6 +804,7 @@ public:
 	*/
 	void contribute_histogram()
 	{
+		if (CkMyPe() == 0) ckout << "on 0 contributing histogram reduction at: " << CkWallTimer() << endl;
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
 		int *info_array = new int[histo_bucket_count+3];
