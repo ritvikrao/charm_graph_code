@@ -42,7 +42,7 @@ void fast_exit(void *obj, double time);
 
 void start_reductions(void *obj, double time)
 {
-	arr.contribute_histogram();
+	arr.contribute_histogram(0);
 }
 
 struct ComparePairs
@@ -126,12 +126,10 @@ public:
 		std::string readbuf;
 		std::string delim = ",";
 		// iterate through edge list
-		//ckout << "Loop begins" << endl;
 		CkVec<LongEdge> edges;
 		int *incoming_count = new int[V];
 		for(int i=0; i<V; i++) incoming_count[i] = 0;
 		max_index = 0;
-		// CkPrintf("Memory usage before file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		while (getline(file, readbuf))
 		{
 			// get nodes on each edge
@@ -143,7 +141,6 @@ public:
 			int node_num = std::stoi(token); //v
 			int node_num_2 = std::stoi(token2); //w
 			incoming_count[node_num_2]++;
-			// ckout << "Edge begin " << node_num << " Edge end " << node_num_2 << " Edge length " << edge_distance << endl;
 			// find the maximum vertex index
 			if (node_num > max_index)
 				max_index = node_num;
@@ -164,10 +161,6 @@ public:
 		//ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
-		// CkPrintf("Memory usage after file read: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
-		//  ckout << "File closed" << endl;
-		//  define readonly variables
-		//ckout << "Making htram at time " << CkWallTimer() << endl;
 		// create TRAM proxy
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
@@ -212,7 +205,6 @@ public:
 		{
 			arr[i].get_graph(edge_lists[i].data(), edge_lists[i].size(), partition_index, N + 1);
 		}
-		//CkPrintf("Memory usage before building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 	}
 
 	/**
@@ -221,14 +213,11 @@ public:
 	void begin(int max_sum)
 	{
 		// ready to begin algorithm
-		// CkPrintf("Memory usage after building graph: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		shared.max_path_value(max_sum);
 		ckout << "The sum of the maximum out-edges is " << max_sum << endl;
 		std::pair<int, int> new_edge;
 		new_edge.first = start_vertex;
 		new_edge.second = 0;
-		// CkVec<Edge> dist_list;
-		// dist_list.insertAtEnd(new_edge);
 		int dest_proc = 0;
 		for (int i = 0; i < N; i++)
 		{
@@ -246,14 +235,11 @@ public:
 		CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
 		CkStartQD(cb);
 		// temp callback to test flushing
-		//ckout << "Registering callback at time " << CkWallTimer() << endl;
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
 		//CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
-		// CkPrintf("Memory usage before algorithm: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		arr[dest_proc].start_algo(new_edge);
-		//}
 	}
 
 	/**
@@ -277,8 +263,7 @@ public:
 		{
 			second_qd_done = true;
 			ckout << "Second Quiescence detected at time: " << CkWallTimer() << "  starting reductions. "<< endl;
-			// CkPrintf("Memory usage at quiescence: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
-			arr.contribute_histogram();
+			arr.contribute_histogram(0);
  	  	}
 	}
 
@@ -291,12 +276,12 @@ public:
 	{
 		reduction_times.push_back(CkWallTimer());
 		reduction_counts++;
-		//histo_length = histo_bucket_count always
 		int histogram_sum = 0;
 		int first_nonzero = -1;
 		int receives = histo_values[histo_bucket_count + 1];
 		int sends = histo_values[histo_bucket_count];
 		int bfs_processed = histo_values[histo_bucket_count+2];
+		int done_vertex_count = histo_values[histo_bucket_count+3];
 		//calculate the total histogram sum
 		for(int i=0; i<histo_bucket_count; i++)
 		{
@@ -308,6 +293,13 @@ public:
 		}
 		ckout << "Receives: " << receives << " Sends: " 
 		<< sends << " BFS Processed: " << bfs_processed << " Time: " << CkWallTimer() << endl;
+		if (bfs_processed == done_vertex_count) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
+		{
+		    ckout << "all reachable vertices are done. " << bfs_processed << ":" << done_vertex_count << "at time: " << CkWallTimer() << endl; 
+		    compute_time = CkWallTimer() - compute_begin;
+		    arr.print_distances();
+		    return;
+		}
 		if(receives-sends==1)
 		{
 			ckout << "Receives and sends match" << endl;
@@ -391,7 +383,7 @@ public:
 				*/
 				arr.get_bucket_limit(selected_bucket, tram_bucket, first_nonzero - 1);
 			}
-			arr.contribute_histogram();
+			arr.contribute_histogram(first_nonzero-1);
 		}
 		
 		//start next reduction round
@@ -404,8 +396,6 @@ public:
 	 */
 	void check_buffer_done(int *msg_stats, int N)
 	{
-		//ckout << "Time: " << CkWallTimer();
-		//ckout << " Receives: " << msg_stats[1] << ", Sends: " << msg_stats[0] << endl;
 		int net_messages = msg_stats[1] - msg_stats[0]; // receives - sends
 		if (net_messages == 1)							// difference of 1 because of initial send
 		{
@@ -518,7 +508,7 @@ public:
 	void initiate_pointers()
 	{
 		tram = tram_proxy.ckLocalBranch();
-		tram->set_func_ptr_retarr(WeightedArray::update_distance_caller, this);
+		tram->set_func_ptr_retarr(WeightedArray::process_update_caller, this);
 		shared_local = shared.ckLocalBranch();
 	}
 
@@ -573,8 +563,8 @@ public:
 				if(edges[i].distance > largest_outedges[new_edge_origin]) largest_outedges[new_edge_origin] = edges[i].distance;
 			}
 		}
-		//register idle call to update_distances_local
-		CkCallWhenIdle(CkIndex_WeightedArray::update_distances_local(), this);
+		//register idle call to process_heap
+		CkCallWhenIdle(CkIndex_WeightedArray::process_heap(), this);
 		//reduce largest edge
 		int max_edges_sum = 0;
 		if (num_vertices != 0)
@@ -593,8 +583,8 @@ public:
 	*/
 	void start_algo(std::pair<int, int> new_vertex_and_distance)
 	{
-		update_distances(new_vertex_and_distance);
-		arr[thisIndex].update_distances_local();
+		process_update(new_vertex_and_distance);
+		arr[thisIndex].process_heap();
 	}
 
 	/**
@@ -619,14 +609,14 @@ public:
 		return dest_proc;
 	}
 
-	static void update_distance_caller(void *p, std::pair<int, int> *new_vertex_and_distances, int count)
+	static void process_update_caller(void *p, std::pair<int, int> *new_vertex_and_distances, int count)
 	{
 		//ckout << "PE " << CkMyPe() << " receiving " << count << " updates" << endl;
 		for(int i=0; i<count; i++)
 		{
-			((WeightedArray *)p)->update_distances(new_vertex_and_distances[i]);
+			((WeightedArray *)p)->process_update(new_vertex_and_distances[i]);
 		}
-		((WeightedArray *)p)->update_distances_local();
+		((WeightedArray *)p)->process_heap();
 
 	}
 
@@ -641,13 +631,8 @@ public:
 	*/
 	int get_histo_bucket(int distance)
 	{
-		//double percentile = (1.0 * distance) / max_path;
-		//double bucket_to_choose = percentile * histo_bucket_count * (V/100); //V/100 to space out buckets
-		//int intpart = (int) bucket_to_choose;
 		double bucket = distance * bucket_multiplier;
 		int result = (int) bucket;
-		//if(CkMyPe()==40) ckout << "Distance= " << distance << endl;
-		//if(CkMyPe()==40) ckout << "Bucket= " << result << endl;
 		if(result >= histo_bucket_count) return histo_bucket_count - 1;
 		else return result;
 	}
@@ -675,7 +660,7 @@ public:
 				int dest_proc = get_dest_proc(updated_dist.first);
 				if(dest_proc==CkMyPe())
 				{
-					update_distances(updated_dist);
+					process_update(updated_dist);
 				}
 				else tram->insertValue(updated_dist, dest_proc);
 			}
@@ -687,7 +672,7 @@ public:
 	 * this is not an entry method
 	 * returns true (runs when pe is idle)
 	 */
-	bool update_distances_local()
+	bool process_heap()
 	{
 		// add sends
 		while (pq.size() > 0)
@@ -714,11 +699,6 @@ public:
 				}
 				else if (new_vertex_and_distance.second == local_graph[local_index].distance)
 				{
-					//update vcount
-					//if(local_graph[local_index].distance == imax) vcount[histo_bucket_count]--;
-					//else vcount[get_histo_bucket(local_graph[local_index].distance)]--;
-					//vcount[this_histo_bucket]++;
-					//local_graph[local_index].distance = new_vertex_and_distance.second; // update distance
 					if(local_graph[local_index].send_updates)
 					{
 						local_graph[local_index].send_updates = false;
@@ -744,9 +724,8 @@ public:
 
 	/**
 	 * Takes a distance update and immediately adds it to the local heap/pq
-	 * todo: change update_distances to process_update
 	 */
-	void update_distances(std::pair<int, int> new_vertex_and_distance)
+	void process_update(std::pair<int, int> new_vertex_and_distance)
 	{
 		int local_index = new_vertex_and_distance.first - start_vertex;
 		int cost = new_vertex_and_distance.second;
@@ -802,17 +781,20 @@ public:
 	/**
 	 * Contribute to a reduction to get the overall histogram to pe 0/main chare
 	*/
-	void contribute_histogram()
+	void contribute_histogram(int behind_first_nonzero)
 	{
+		int donecount = 0;
 		if (CkMyPe() == 0) ckout << "on 0 contributing histogram reduction at: " << CkWallTimer() << endl;
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
-		int *info_array = new int[histo_bucket_count+3];
+		int *info_array = new int[histo_bucket_count+4];
 		std::copy(histogram, histogram + histo_bucket_count, info_array);
 		info_array[histo_bucket_count] = send_updates;
 		info_array[histo_bucket_count+1] = recv_updates;
 		info_array[histo_bucket_count+2] = bfs_processed;
-		contribute((histo_bucket_count+3) * sizeof(int), info_array, CkReduction::sum_int, cb);
+		for (int i=0; i<=behind_first_nonzero;i++) donecount += vcount[i];
+		info_array[histo_bucket_count+3] = donecount;
+		contribute((histo_bucket_count+4) * sizeof(int), info_array, CkReduction::sum_int, cb);
 	}
 
 	/**
@@ -843,7 +825,7 @@ public:
 			local_hold[i].clear();
 		}
 		tram->tflush();
-		arr[thisIndex].update_distances_local();
+		arr[thisIndex].process_heap();
 	}
 
 	/**
@@ -864,7 +846,7 @@ public:
 				int dest_proc = get_dest_proc(new_tram_hold[i][j].first);
 				if(dest_proc==CkMyPe())
 				{
-					update_distances(new_tram_hold[i][j]);
+					process_update(new_tram_hold[i][j]);
 				}
 				else tram->insertValue(new_tram_hold[i][j], dest_proc);
 			}
@@ -880,7 +862,7 @@ public:
 		}
 		//ckout << "Timer: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << " count: " << counter << endl;
 		tram->tflush();
-		arr[thisIndex].update_distances_local();
+		arr[thisIndex].process_heap();
 	}
 
 	/**

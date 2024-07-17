@@ -30,10 +30,10 @@ mainmodule weighted_htram_smp
     entry void initiate_pointers();
     entry void get_graph(LongEdge edges[E], int E, int partition[dividers], int dividers); //gets graph partition
     entry void start_algo(std::pair<int, int> new_vertex_and_distance);
-    entry [whenidle] bool update_distances_local();
-    entry void update_distances(std::pair<int,int> new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares
+    entry [whenidle] bool process_heap();
+    entry void process_update(std::pair<int,int> new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares
     entry void check_buffer(); // checks for false quiescence
-    entry [expedited] void contribute_histogram(); //contributes histogram to main pe
+    entry [expedited] void contribute_histogram(int behind_first_nonzero); //contributes histogram to main pe
     entry void keep_going(); // flush buffers
     entry void get_bucket_limit(int bucket, int tram_bucket, int behind_first_nonzero); // broadcast bucket limit
     entry void print_distances(); // print out the distances on each chare
