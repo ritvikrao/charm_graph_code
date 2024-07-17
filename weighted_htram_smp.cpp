@@ -370,19 +370,6 @@ public:
 				threshold_change_counter++;
 				ckout << "Changed threshold to " << selected_bucket << " and tram threshold to " << 
 				tram_bucket << " first nonzero: " << first_nonzero << " at time " << CkWallTimer() << endl;
-				/*
-				ckout << "Bucket counts: [" ;
-				for(int i=0; i<histo_bucket_count; i+=32)
-				{
-					int counter = 0;
-					for(int j=i; j<i+32; j++)
-					{
-						counter += histo_values[j];
-					}
-					ckout << counter << ", ";
-				}
-				ckout << "]" << endl;
-				*/
 				arr.get_bucket_limit(selected_bucket, tram_bucket, first_nonzero - 1);
 			}
 			arr.contribute_histogram(first_nonzero-1);
@@ -430,12 +417,15 @@ public:
 		ckout << "Rejected updates normalized to V: " << (double) msg_stats[1] / V << endl;
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		ckout << "Number of reductions: " << reduction_counts << endl;
+		int vcount_sum = 0;
 		ckout << "Vcount: [ ";
 		for(int i=0; i<histo_bucket_count+1; i++)
 		{
 			ckout << msg_stats[i+2] << ", ";
+			vcount_sum += msg_stats[i+2];
 		}
 		ckout << endl;
+		ckout << "Vcount sum: " << vcount_sum << endl;
 		arr.get_max_cost();
 	}
 
