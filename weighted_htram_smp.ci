@@ -23,6 +23,7 @@ mainmodule weighted_htram_smp
     entry [reductiontarget, expedited] void reduce_histogram(int histo_values[N], int histo_length);
     entry [reductiontarget] void done(int msg_stats[N], int N); //bcast to chares to print results and end program
     entry [reductiontarget] void check_buffer_done(int msg_stats[N], int N);
+    entry [reductiontarget] void done_max_cost(cost max_cost);
   };
   array [1D] SsspChares
   {
@@ -38,6 +39,7 @@ mainmodule weighted_htram_smp
     entry void get_bucket_limit(int bucket, int tram_bucket, int behind_first_nonzero); // broadcast bucket limit
     entry void print_distances(); // print out the distances on each chare
     entry void stop_periodic_flush();
+    entry void get_max_cost(); // get max cost as correctness check
   };
   group SharedInfo
   {

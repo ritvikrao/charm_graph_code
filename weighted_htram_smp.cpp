@@ -293,7 +293,7 @@ public:
 			}
 		}
 		ckout << "Receives: " << receives << " Sends: " 
-		<< sends << " BFS Processed: " << bfs_processed << " Time: " << CkWallTimer() << endl;
+		<< sends << " BFS Processed: " << bfs_processed << " Done vertex count: " << done_vertex_count << " Time: " << CkWallTimer() << endl;
 		if (bfs_processed == done_vertex_count) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
 		{
 		    ckout << "all reachable vertices are done. " << bfs_processed << ":" << done_vertex_count << " at time: " << CkWallTimer() << endl; 
@@ -320,8 +320,8 @@ public:
 		{
 			if(histogram_sum <= N * 100) 
 			{
-				target_percent = 1.0;
-				tram_percent = 1.0;
+				target_percent = 0.9999;
+				tram_percent = 0.9999;
 			}
 			else
 			{
@@ -367,7 +367,7 @@ public:
 			{
 				previous_threshold = selected_bucket;
 				threshold_change_counter++;
-				ckout << "Changed threshold to " << selected_bucket << " and tram threshold to" << 
+				ckout << "Changed threshold to " << selected_bucket << " and tram threshold to " << 
 				tram_bucket << " first nonzero: " << first_nonzero << " at time " << CkWallTimer() << endl;
 				/*
 				ckout << "Bucket counts: [" ;
@@ -424,7 +424,9 @@ public:
 		ckout << "Compute time: " << compute_time << endl;
 		ckout << "Total time: " << total_time << endl;
 		ckout << "Wasted updates: " << msg_stats[0] - V << endl;
+		ckout << "Wasted updates normalized to V: " << (double) (msg_stats[0] - V) / V << endl;
 		ckout << "Rejected updates: " << msg_stats[1] << endl;
+		ckout << "Rejected updates normalized to V: " << (double) msg_stats[1] / V << endl;
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		ckout << "Number of reductions: " << reduction_counts << endl;
 		/*
@@ -437,6 +439,12 @@ public:
 			}
 		}
 		*/
+		arr.get_max_cost();
+	}
+
+	void done_max_cost(cost max_cost)
+	{
+		ckout << "Maximum vertex cost, not counting unreachable: " << max_cost << endl;
 		CkExit(0);
 	}
 };
@@ -969,6 +977,24 @@ public:
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
 		contribute(2 * sizeof(int), msg_stats, CkReduction::sum_int, cb);
 		// mainProxy.done();
+	}
+
+	void get_max_cost()
+	{
+		cost max_cost = 0;
+		for (int i = 0; i < num_vertices; i++)
+		{
+			cost vertex_cost = local_graph[i].distance;
+			if(vertex_cost != lmax)
+			{
+				if(vertex_cost > max_cost)
+				{
+					max_cost = vertex_cost;
+				}
+			}
+		}
+		CkCallback cb(CkReductionTarget(Main, done_max_cost), mainProxy);
+		contribute(sizeof(cost), &max_cost, CkReduction::max_long, cb);
 	}
 
 	void stop_periodic_flush()
