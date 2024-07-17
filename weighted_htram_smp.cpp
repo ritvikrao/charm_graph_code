@@ -497,7 +497,8 @@ private:
 	std::vector<Update> *local_hold; //hold for heap messages
 	int bfs_created=0; //bfs created messages
 	int bfs_processed=0; //bfs processed messages
-	int *dest_table;
+	int *dest_table; //destination table for faster pe calculation
+	std::vector<Update> *bfs_hold; // bfs hold (control distance explosion due to bfs)
 
 public:
 
@@ -609,8 +610,9 @@ public:
 		tram_bucket_limit = initial_threshold + 2;
 		new_tram_hold = new std::vector<Update>[histo_bucket_count];
 		local_hold = new std::vector<Update>[histo_bucket_count];
+		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		bucket_multiplier = histo_bucket_count / (512 * log(V));
-		int *largest_outedges = new int[num_vertices];
+		cost *largest_outedges = new cost[num_vertices];
 		if (num_vertices != 0)
 		{
 			for (int i = 0; i < num_vertices; i++)
@@ -641,7 +643,7 @@ public:
 		//register idle call to process_heap
 		CkCallWhenIdle(CkIndex_SsspChares::process_heap(), this);
 		//reduce largest edge
-		int max_edges_sum = 0;
+		cost max_edges_sum = 0;
 		if (num_vertices != 0)
 		{
 			for(int i=0; i<num_vertices; i++)
@@ -650,7 +652,7 @@ public:
 			}
 		}
 		CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
-		contribute(sizeof(int), &max_edges_sum, CkReduction::sum_int, cb);
+		contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
 	}
 
 	/**
@@ -786,12 +788,20 @@ public:
 			if(local_graph[local_index].distance == lmax)
 			{ 
 				local_graph[local_index].distance = this_cost;
-				bfs_processed++;
 				vcount[histo_bucket_count]--;
-				generate_updates(local_index, true);
-				recv_updates++;
-				wasted_updates++;
-				histogram[this_bucket]--;
+				if (this_bucket > bucket_limit)
+				{
+					local_graph[local_index].send_updates = true;
+			      	bfs_hold[this_bucket].push_back(new_vertex_and_distance);
+				}
+				else
+				{
+					bfs_processed++;
+					generate_updates(local_index, true);
+					recv_updates++;
+					wasted_updates++;
+					histogram[this_bucket]--;
+				}
 			}
 			else
 			{ 
@@ -909,6 +919,32 @@ public:
 				pq.push(local_hold[i][j]);
 			}
 			local_hold[i].clear();
+		}
+		for(int i=0; i<=bucket_limit; i++)
+		{
+			for(int j=0; j<bfs_hold[i].size(); j++)
+			{ 
+			  int local_index = bfs_hold[i][j].dest_vertex - start_vertex;
+			  int this_cost = bfs_hold[i][j].distance;
+			  int this_bucket = get_histo_bucket(this_cost);
+			  if (this_cost == local_graph[local_index].distance)
+			    {
+			      bfs_processed++;
+			      generate_updates(local_index, true);
+			      recv_updates++;
+			      wasted_updates++;
+			      histogram[this_bucket]--;
+			    }
+			  else if (this_cost > local_graph[local_index].distance)
+			  {
+			    bfs_processed++;
+			    recv_updates++;
+			    wasted_updates++;
+			    rejected_updates++;
+			    histogram[this_bucket]--;
+			  }
+			}
+			bfs_hold[i].clear();
 		}
 		//ckout << "Timer: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << " count: " << counter << endl;
 		tram->tflush();
