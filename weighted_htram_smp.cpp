@@ -159,6 +159,7 @@ public:
 			if(incoming_count[i]==0) no_incoming++;
 		}
 		ckout << "Vertices with no incoming edges: " << no_incoming << endl;
+		ckout << "Max index: " << max_index << endl;
 		//ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
@@ -294,7 +295,7 @@ public:
 		}
 		ckout << "Receives: " << receives << " Sends: " 
 		<< sends << " BFS Processed: " << bfs_processed << " Done vertex count: " << done_vertex_count << " Time: " << CkWallTimer() << endl;
-		if (bfs_processed == done_vertex_count) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
+		if ((bfs_processed == done_vertex_count) && (bfs_processed > 1000)) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
 		{
 		    ckout << "all reachable vertices are done. " << bfs_processed << ":" << done_vertex_count << " at time: " << CkWallTimer() << endl; 
 		    compute_time = CkWallTimer() - compute_begin;
@@ -429,16 +430,12 @@ public:
 		ckout << "Rejected updates normalized to V: " << (double) msg_stats[1] / V << endl;
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		ckout << "Number of reductions: " << reduction_counts << endl;
-		/*
-		int x = reduction_counts / 10;
-		for(int i=0; i<reduction_counts; i++)
+		ckout << "Vcount: [ ";
+		for(int i=0; i<histo_bucket_count+1; i++)
 		{
-			if(i%x==0)
-			{
-				ckout << "Time at reduction number " << i << "is: " << reduction_times[i] << endl;
-			}
+			ckout << msg_stats[i+2] << ", ";
 		}
-		*/
+		ckout << endl;
 		arr.get_max_cost();
 	}
 
@@ -971,11 +968,15 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i].index << " distance " << local_graph[i].distance << endl;
 		}
 		*/
-		int msg_stats[2];
+		int msg_stats[3+histo_bucket_count];
 		msg_stats[0] = wasted_updates;
 		msg_stats[1] = rejected_updates;
+		for(int i=0; i<histo_bucket_count + 1; i++)
+		{
+			msg_stats[i+2] = vcount[i];
+		}
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-		contribute(2 * sizeof(int), msg_stats, CkReduction::sum_int, cb);
+		contribute((3+histo_bucket_count) * sizeof(int), msg_stats, CkReduction::sum_int, cb);
 		// mainProxy.done();
 	}
 
