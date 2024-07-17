@@ -2,7 +2,7 @@ mainmodule weighted_htram_smp
 {
   extern module htram_group;
   readonly CProxy_Main mainProxy;
-  readonly CProxy_WeightedArray arr;
+  readonly CProxy_SsspChares arr;
   readonly CProxy_SharedInfo shared;
   readonly int N;
   readonly int V;
@@ -23,9 +23,9 @@ mainmodule weighted_htram_smp
     entry [reductiontarget] void done(int msg_stats[N], int N); //bcast to chares to print results and end program
     entry [reductiontarget] void check_buffer_done(int msg_stats[N], int N);
   };
-  array [1D] WeightedArray
+  array [1D] SsspChares
   {
-    entry WeightedArray(CkGroupID tram_id);
+    entry SsspChares(CkGroupID tram_id);
     entry void initiate_pointers();
     entry void get_graph(LongEdge edges[E], int E, int partition[dividers], int dividers); //gets graph partition
     entry void start_algo(Update new_vertex_and_distance);

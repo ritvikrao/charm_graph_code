@@ -24,7 +24,7 @@ using tram_t = HTram;
 CProxy_HTramRecv nodeGrpProxy;
 CProxy_HTramNodeGrp srcNodeGrpProxy;
 CProxy_Main mainProxy;
-CProxy_WeightedArray arr;
+CProxy_SsspChares arr;
 CProxy_SharedInfo shared;
 int N;	  // number of processors
 int V;	  // number of vertices
@@ -169,7 +169,7 @@ public:
 		tram_proxy_t tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), srcNodeGrpProxy.ckGetGroupID(), buffer_size, enable_buffer_flushing, flush_timer, false, true, ignore_cb);
 
 		shared = CProxy_SharedInfo::ckNew();
-		arr = CProxy_WeightedArray::ckNew(tram_proxy.ckGetGroupID(), N);
+		arr = CProxy_SsspChares::ckNew(tram_proxy.ckGetGroupID(), N);
 
 		mainProxy = thisProxy;
 		arr.initiate_pointers();
@@ -472,7 +472,7 @@ class SharedInfo : public CBase_SharedInfo
 /**
  * Array of chares for Dijkstra
  */
-class WeightedArray : public CBase_WeightedArray
+class SsspChares : public CBase_SsspChares
 {
 private:
 	Node *local_graph; //structure to hold vertices assigned to this pe
@@ -498,7 +498,7 @@ private:
 	int bfs_processed=0;
 
 public:
-	WeightedArray(CkGroupID tram_id)
+	SsspChares(CkGroupID tram_id)
 	{
 		tram_proxy = CProxy_HTram(tram_id);
 		send_updates = 0;
@@ -508,7 +508,7 @@ public:
 	void initiate_pointers()
 	{
 		tram = tram_proxy.ckLocalBranch();
-		tram->set_func_ptr_retarr(WeightedArray::process_update_caller, this);
+		tram->set_func_ptr_retarr(SsspChares::process_update_caller, this);
 		shared_local = shared.ckLocalBranch();
 	}
 
@@ -564,7 +564,7 @@ public:
 			}
 		}
 		//register idle call to process_heap
-		CkCallWhenIdle(CkIndex_WeightedArray::process_heap(), this);
+		CkCallWhenIdle(CkIndex_SsspChares::process_heap(), this);
 		//reduce largest edge
 		int max_edges_sum = 0;
 		if (num_vertices != 0)
@@ -614,9 +614,9 @@ public:
 		//ckout << "PE " << CkMyPe() << " receiving " << count << " updates" << endl;
 		for(int i=0; i<count; i++)
 		{
-			((WeightedArray *)p)->process_update(new_vertex_and_distances[i]);
+			((SsspChares *)p)->process_update(new_vertex_and_distances[i]);
 		}
-		((WeightedArray *)p)->process_heap();
+		((SsspChares *)p)->process_heap();
 
 	}
 
