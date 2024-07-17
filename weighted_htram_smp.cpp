@@ -584,7 +584,7 @@ public:
 	void start_algo(Update new_vertex_and_distance)
 	{
 		process_update(new_vertex_and_distance);
-		arr[thisIndex].process_heap();
+		//arr[thisIndex].process_heap();
 	}
 
 	/**
@@ -616,7 +616,7 @@ public:
 		{
 			((SsspChares *)p)->process_update(new_vertex_and_distances[i]);
 		}
-		((SsspChares *)p)->process_heap();
+		//((SsspChares *)p)->process_heap();
 
 	}
 
@@ -822,7 +822,7 @@ public:
 			local_hold[i].clear();
 		}
 		tram->tflush();
-		arr[thisIndex].process_heap();
+		//arr[thisIndex].process_heap();
 	}
 
 	/**
@@ -859,7 +859,7 @@ public:
 		}
 		//ckout << "Timer: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << " count: " << counter << endl;
 		tram->tflush();
-		arr[thisIndex].process_heap();
+		//arr[thisIndex].process_heap();
 	}
 
 	/**
