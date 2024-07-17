@@ -10,6 +10,7 @@
 #endif
 #define ALL_BUF_TYPES
 #include "htram_group.decl.h"
+#include "weighted_node_struct.h"
 ///* readonly */ extern CProxy_HTram tram_proxy;
 ///* readonly */ extern CProxy_HTramRecv nodeGrpProxy;
 ///* readonly */ extern CProxy_HTramNodeGrp srcNodeGrpProxy;
@@ -40,7 +41,7 @@ struct item {
   T payload;
 };
 
-typedef std::pair<int,int> datatype;
+typedef Update datatype;
 //typedef int datatype;
 
 //typedef packet1 datatype;

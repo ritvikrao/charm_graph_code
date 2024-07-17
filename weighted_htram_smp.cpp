@@ -1,3 +1,6 @@
+#include "NDMeshStreamer.h"
+#include "TopoManager.h"
+#include "htram_group.h"
 #include "weighted_htram_smp.decl.h"
 #include <iostream>
 #include <cmath>
@@ -11,9 +14,6 @@
 #include <algorithm>
 
 // htram
-#include "NDMeshStreamer.h"
-#include "TopoManager.h"
-#include "htram_group.h"
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -28,7 +28,7 @@ CProxy_WeightedArray arr;
 CProxy_SharedInfo shared;
 int N;	  // number of processors
 int V;	  // number of vertices
-int imax; // integer maximum
+cost lmax; // integer maximum
 int average; // average edge count per pe
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
 double reduction_delay = 0.01; // each histogram reduction happens at this interval
@@ -47,10 +47,10 @@ void start_reductions(void *obj, double time)
 
 struct ComparePairs
 {
-	bool operator()(const std::pair<int, int> &lhs, const std::pair<int, int> &rhs) const
+	bool operator()(const Update &lhs, const Update &rhs) const
 	{
 		// Compare the second integers of the pairs
-		return lhs.second > rhs.second; // '>' for min heap, '<' for max heap
+		return lhs.distance > rhs.distance; // '>' for min heap, '<' for max heap
 	}
 };
 
@@ -117,7 +117,7 @@ public:
 		unsigned int seed = (unsigned int)S;
 		srand(seed);
 		int first_node = 0;
-		imax = std::numeric_limits<int>::max();
+		lmax = std::numeric_limits<cost>::max();
 		// create graph object
 		partition_index = new int[N + 1]; // last index=maximum index
 		start_time = CkWallTimer();
@@ -136,7 +136,7 @@ public:
 			std::string token = readbuf.substr(0, readbuf.find(delim));
 			std::string token2 = readbuf.substr(readbuf.find(delim) + 1, readbuf.length());
 			// make random distance
-			int edge_distance = rand() % 1000 + 1;
+			cost edge_distance = (cost) rand() % 1000 + 1;
 			// string to int
 			int node_num = std::stoi(token); //v
 			int node_num_2 = std::stoi(token2); //w
@@ -210,14 +210,14 @@ public:
 	/**
 	 * Start algorithm from source vertex
 	 */
-	void begin(int max_sum)
+	void begin(cost max_sum)
 	{
 		// ready to begin algorithm
 		shared.max_path_value(max_sum);
 		ckout << "The sum of the maximum out-edges is " << max_sum << endl;
-		std::pair<int, int> new_edge;
-		new_edge.first = start_vertex;
-		new_edge.second = 0;
+		Update new_edge;
+		new_edge.dest_vertex = start_vertex;
+		new_edge.distance = 0;
 		int dest_proc = 0;
 		for (int i = 0; i < N; i++)
 		{
@@ -455,14 +455,14 @@ void fast_exit(void *obj, double time)
 class SharedInfo : public CBase_SharedInfo
 {
 	public:
-	int max_path;
+	cost max_path;
 	int event_id;
 	SharedInfo()
 	{
 		event_id = traceRegisterUserEvent("Contrib reduction");
 	}
 
-	void max_path_value(int max_path_val)
+	void max_path_value(cost max_path_val)
 	{
 		max_path = max_path_val;
 	}
@@ -486,14 +486,14 @@ private:
 	tram_proxy_t tram_proxy;
 	tram_t *tram; //tram library
 	SharedInfo *shared_local;
-	std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, ComparePairs> pq; //heap of messages
+	std::priority_queue<Update, std::vector<Update>, ComparePairs> pq; //heap of messages
 	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
 	int *vcount;
 	int bucket_limit;
 	int tram_bucket_limit;
 	double bucket_multiplier;
-	std::vector<std::pair<int,int>> *new_tram_hold;
-	std::vector<std::pair<int,int>> *local_hold;
+	std::vector<Update> *new_tram_hold;
+	std::vector<Update> *local_hold;
 	int bfs_created=0;
 	int bfs_processed=0;
 
@@ -532,8 +532,8 @@ public:
 		local_graph = new Node[num_vertices];
 		bucket_limit = initial_threshold;
 		tram_bucket_limit = initial_threshold + 2;
-		new_tram_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
-		local_hold = new std::vector<std::pair<int,int>>[histo_bucket_count];
+		new_tram_hold = new std::vector<Update>[histo_bucket_count];
+		local_hold = new std::vector<Update>[histo_bucket_count];
 		bucket_multiplier = histo_bucket_count / (512 * log(V));
 		int *largest_outedges = new int[num_vertices];
 		if (num_vertices != 0)
@@ -543,7 +543,7 @@ public:
 				Node new_node;
 				new_node.home_process = thisIndex;
 				new_node.index = i + start_vertex;
-				new_node.distance = imax;
+				new_node.distance = lmax;
 				new_node.send_updates = false;
 				CkVec<Edge> adj;
 				new_node.adjacent = adj;
@@ -581,7 +581,7 @@ public:
 	/**
 	 * Method that accepts initial update to source vertex
 	*/
-	void start_algo(std::pair<int, int> new_vertex_and_distance)
+	void start_algo(Update new_vertex_and_distance)
 	{
 		process_update(new_vertex_and_distance);
 		arr[thisIndex].process_heap();
@@ -609,7 +609,7 @@ public:
 		return dest_proc;
 	}
 
-	static void process_update_caller(void *p, std::pair<int, int> *new_vertex_and_distances, int count)
+	static void process_update_caller(void *p, Update *new_vertex_and_distances, int count)
 	{
 		//ckout << "PE " << CkMyPe() << " receiving " << count << " updates" << endl;
 		for(int i=0; i<count; i++)
@@ -620,16 +620,10 @@ public:
 
 	}
 
-	// test function
-	static void update_distance_test(void *p, int new_vertex_and_distance)
-	{
-		return;
-	}
-
 	/**
 	 * Gets the histogram bucket for any given distance
 	*/
-	int get_histo_bucket(int distance)
+	int get_histo_bucket(cost distance)
 	{
 		double bucket = distance * bucket_multiplier;
 		int result = (int) bucket;
@@ -642,27 +636,27 @@ public:
 		for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
 		{ 
 			// calculate distance pair for neighbor
-			std::pair<int, int> updated_dist;
-			updated_dist.first = local_graph[local_index].adjacent[i].end;
-			updated_dist.second = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
+			Update new_update;
+			new_update.dest_vertex = local_graph[local_index].adjacent[i].end;
+			new_update.distance = local_graph[local_index].distance + local_graph[local_index].adjacent[i].distance;
 			//we are going to send this, so add to the histogram and the send update count
-			int neighbor_bucket = get_histo_bucket(updated_dist.second);
+			int neighbor_bucket = get_histo_bucket(new_update.distance);
 			histogram[neighbor_bucket]++;
 			send_updates++;
 			//if exceeds limit, put in hold
 			if((neighbor_bucket > tram_bucket_limit) && !bfs)
 			{
-				new_tram_hold[neighbor_bucket].push_back(updated_dist);
+				new_tram_hold[neighbor_bucket].push_back(new_update);
 			}
 			else
 			{
 				//calculated dest proc
-				int dest_proc = get_dest_proc(updated_dist.first);
+				int dest_proc = get_dest_proc(new_update.dest_vertex);
 				if(dest_proc==CkMyPe())
 				{
-					process_update(updated_dist);
+					process_update(new_update);
 				}
-				else tram->insertValue(updated_dist, dest_proc);
+				else tram->insertValue(new_update, dest_proc);
 			}
 		}
 	}
@@ -677,27 +671,29 @@ public:
 		// add sends
 		while (pq.size() > 0)
 		{
-			std::pair<int, int> new_vertex_and_distance = pq.top();
-			int this_histo_bucket = get_histo_bucket(new_vertex_and_distance.second);
+			Update new_vertex_and_distance = pq.top();
+			int dest_vertex = new_vertex_and_distance.dest_vertex;
+			cost new_distance = new_vertex_and_distance.distance;
+			int this_histo_bucket = get_histo_bucket(new_distance);
 			if(this_histo_bucket > bucket_limit)
 			{
 				//if(CkMyPe()==40) ckout << "Exceeds limit" << endl;
 				break;
 			}
 			pq.pop();
-			if (new_vertex_and_distance.first >= partition_index[thisIndex] && new_vertex_and_distance.first < partition_index[thisIndex + 1])
+			if (dest_vertex >= partition_index[thisIndex] && dest_vertex < partition_index[thisIndex + 1])
 			{
 				// get local branch of tram proxy
 				// tram_t *tram = tram_proxy.ckLocalBranch();
 
-				int local_index = new_vertex_and_distance.first - start_vertex;
+				int local_index = dest_vertex - start_vertex;
 				//if (CkMyPe()==0) ckout << "Incoming local pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 				//  if the incoming distance is actually smaller
-				if (new_vertex_and_distance.second < local_graph[local_index].distance)
+				if (new_distance < local_graph[local_index].distance)
 				{
 					ckout << "**Error: picked cost from heap smaller than vertex cost" << endl;
 				}
-				else if (new_vertex_and_distance.second == local_graph[local_index].distance)
+				else if (new_distance == local_graph[local_index].distance)
 				{
 					if(local_graph[local_index].send_updates)
 					{
@@ -725,17 +721,18 @@ public:
 	/**
 	 * Takes a distance update and immediately adds it to the local heap/pq
 	 */
-	void process_update(std::pair<int, int> new_vertex_and_distance)
+	void process_update(Update new_vertex_and_distance)
 	{
-		int local_index = new_vertex_and_distance.first - start_vertex;
-		int cost = new_vertex_and_distance.second;
-		int this_bucket = get_histo_bucket(cost);
-		if (cost < local_graph[local_index].distance)
+		int dest_vertex = new_vertex_and_distance.dest_vertex;
+		int local_index = dest_vertex - start_vertex;
+		cost this_cost = new_vertex_and_distance.distance;
+		int this_bucket = get_histo_bucket(this_cost);
+		if (this_cost < local_graph[local_index].distance)
 		{
 			vcount[this_bucket]++;
-			if(local_graph[local_index].distance == imax)
+			if(local_graph[local_index].distance == lmax)
 			{ 
-				local_graph[local_index].distance = cost;
+				local_graph[local_index].distance = this_cost;
 				bfs_processed++;
 				vcount[histo_bucket_count]--;
 				generate_updates(local_index, true);
@@ -746,7 +743,7 @@ public:
 			else
 			{ 
 				vcount[get_histo_bucket(local_graph[local_index].distance)]--;
-				local_graph[local_index].distance = cost;
+				local_graph[local_index].distance = this_cost;
 				local_graph[local_index].send_updates = true;
 				if(this_bucket > bucket_limit)
 				{
@@ -807,7 +804,7 @@ public:
 		{
 			for(int j=0; j<new_tram_hold[i].size(); j++)
 			{
-				int dest_proc = get_dest_proc(new_tram_hold[i][j].first);
+				int dest_proc = get_dest_proc(new_tram_hold[i][j].dest_vertex);
 				if(dest_proc==CkMyPe())
 				{
 					pq.push(new_tram_hold[i][j]);
@@ -843,7 +840,7 @@ public:
 		{
 			for(int j=0; j<new_tram_hold[i].size(); j++)
 			{
-				int dest_proc = get_dest_proc(new_tram_hold[i][j].first);
+				int dest_proc = get_dest_proc(new_tram_hold[i][j].dest_vertex);
 				if(dest_proc==CkMyPe())
 				{
 					process_update(new_tram_hold[i][j]);
