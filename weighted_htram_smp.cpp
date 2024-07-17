@@ -28,6 +28,7 @@ CProxy_SsspChares arr;
 CProxy_SharedInfo shared;
 int N;	  // number of processors
 int V;	  // number of vertices
+int M = 1024; // divisor for dest_table (must be power of 2)
 cost lmax; // integer maximum
 int average; // average edge count per pe
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
@@ -295,7 +296,7 @@ public:
 		<< sends << " BFS Processed: " << bfs_processed << " Time: " << CkWallTimer() << endl;
 		if (bfs_processed == done_vertex_count) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
 		{
-		    ckout << "all reachable vertices are done. " << bfs_processed << ":" << done_vertex_count << "at time: " << CkWallTimer() << endl; 
+		    ckout << "all reachable vertices are done. " << bfs_processed << ":" << done_vertex_count << " at time: " << CkWallTimer() << endl; 
 		    compute_time = CkWallTimer() - compute_begin;
 		    arr.print_distances();
 		    return;
@@ -488,16 +489,84 @@ private:
 	SharedInfo *shared_local;
 	std::priority_queue<Update, std::vector<Update>, ComparePairs> pq; //heap of messages
 	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
-	int *vcount;
-	int bucket_limit;
-	int tram_bucket_limit;
-	double bucket_multiplier;
-	std::vector<Update> *new_tram_hold;
-	std::vector<Update> *local_hold;
-	int bfs_created=0;
-	int bfs_processed=0;
+	int *vcount; //array of vertex distances, calculated with same formula as histogram
+	int bucket_limit; //
+	int tram_bucket_limit; //highest bucket where messages can be pushed to tram
+	double bucket_multiplier; //constant to calculate bucket
+	std::vector<Update> *new_tram_hold; //hold buffer for messages not in tram limit
+	std::vector<Update> *local_hold; //hold for heap messages
+	int bfs_created=0; //bfs created messages
+	int bfs_processed=0; //bfs processed messages
+	int *dest_table;
 
 public:
+
+	/**
+	 * Gets the destination processor for a given vertex 
+	*/
+	int get_dest_proc(int vertex)
+	{
+		int dest_proc = 0;
+		for (int j = 0; j < N; j++)
+		{
+			// find first partition that begins at a higher edge count;
+			if (vertex >= partition_index[j] && vertex < partition_index[j + 1])
+			{
+				dest_proc = j;
+				break;
+			}
+			if (j == N - 1)
+			{
+				dest_proc = N - 1;
+			}
+		}
+		return dest_proc;
+	}
+
+	int get_dest_proc_fast(int vertex)
+	{
+		//look up x/M and 1+x/M
+		int xm_pe, xm_plus_one_pe;
+		int dest_table_index = vertex / M;
+		// if this points to the end of dest_table
+		if(dest_table_index >= (V / M) - 1)
+		{
+			xm_pe = dest_table[(V / M) - 1];
+			int dest_proc = xm_pe;
+			for (int j = xm_pe; j < N; j++)
+			{
+				// find first partition that begins at a higher edge count;
+				if (vertex >= partition_index[j] && vertex < partition_index[j + 1])
+				{
+					dest_proc = j;
+					break;
+				}
+				if (j == N - 1)
+				{
+					dest_proc = N - 1;
+				}
+			}
+			return dest_proc;
+		}
+		xm_pe = dest_table[dest_table_index];
+		xm_plus_one_pe = dest_table[dest_table_index+1];
+		int dest_proc = xm_pe;
+		for (int j = xm_pe; j <= xm_plus_one_pe; j++)
+		{
+			// find first partition that begins at a higher edge count;
+			if (vertex >= partition_index[j] && vertex < partition_index[j + 1])
+			{
+				dest_proc = j;
+				break;
+			}
+			if (j == N - 1)
+			{
+				dest_proc = N - 1;
+			}
+		}
+		return dest_proc;
+	}
+
 	SsspChares(CkGroupID tram_id)
 	{
 		tram_proxy = CProxy_HTram(tram_id);
@@ -529,6 +598,12 @@ public:
 		}
 		start_vertex = partition_index[thisIndex];
 		num_vertices = partition_index[thisIndex + 1] - partition_index[thisIndex];
+		dest_table = new int[V / M];
+		for(int i=0, j=0; i < V; j++, i=j*M)
+		{
+			//if(CkMyPe()==0) ckout << "Calculating dest table for vertex " << i << endl;
+			dest_table[j] = get_dest_proc(i);
+		}
 		local_graph = new Node[num_vertices];
 		bucket_limit = initial_threshold;
 		tram_bucket_limit = initial_threshold + 2;
@@ -587,28 +662,6 @@ public:
 		//arr[thisIndex].process_heap();
 	}
 
-	/**
-	 * Gets the destination processor for a given vertex 
-	*/
-	int get_dest_proc(int vertex)
-	{
-		int dest_proc = 0;
-		for (int j = 0; j < N; j++)
-		{
-			// find first partition that begins at a higher edge count;
-			if (vertex >= partition_index[j] && vertex < partition_index[j + 1])
-			{
-				dest_proc = j;
-				break;
-			}
-			if (j == N - 1)
-			{
-				dest_proc = N - 1;
-			}
-		}
-		return dest_proc;
-	}
-
 	static void process_update_caller(void *p, Update *new_vertex_and_distances, int count)
 	{
 		//ckout << "PE " << CkMyPe() << " receiving " << count << " updates" << endl;
@@ -651,7 +704,7 @@ public:
 			else
 			{
 				//calculated dest proc
-				int dest_proc = get_dest_proc(new_update.dest_vertex);
+				int dest_proc = get_dest_proc_fast(new_update.dest_vertex);
 				if(dest_proc==CkMyPe())
 				{
 					process_update(new_update);
@@ -804,7 +857,7 @@ public:
 		{
 			for(int j=0; j<new_tram_hold[i].size(); j++)
 			{
-				int dest_proc = get_dest_proc(new_tram_hold[i][j].dest_vertex);
+				int dest_proc = get_dest_proc_fast(new_tram_hold[i][j].dest_vertex);
 				if(dest_proc==CkMyPe())
 				{
 					pq.push(new_tram_hold[i][j]);
@@ -840,7 +893,7 @@ public:
 		{
 			for(int j=0; j<new_tram_hold[i].size(); j++)
 			{
-				int dest_proc = get_dest_proc(new_tram_hold[i][j].dest_vertex);
+				int dest_proc = get_dest_proc_fast(new_tram_hold[i][j].dest_vertex);
 				if(dest_proc==CkMyPe())
 				{
 					process_update(new_tram_hold[i][j]);

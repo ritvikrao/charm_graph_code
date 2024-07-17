@@ -6,6 +6,7 @@ mainmodule weighted_htram_smp
   readonly CProxy_SharedInfo shared;
   readonly int N;
   readonly int V;
+  readonly int M;
   readonly cost lmax;
   readonly int average;
   readonly int buffer_size;
