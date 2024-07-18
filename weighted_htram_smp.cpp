@@ -234,12 +234,12 @@ public:
 		compute_begin = CkWallTimer();
 		ckout << "Beginning at time: " << compute_begin << endl;
 		// quiescence detection
-		CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
-		CkStartQD(cb);
+		//CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
+		//CkStartQD(cb);
 		// temp callback to test flushing
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
-		//CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
+		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
 		arr[dest_proc].start_algo(new_edge);
 	}
@@ -295,6 +295,7 @@ public:
 		}
 		ckout << "Receives: " << receives << " Sends: " 
 		<< sends << " BFS Processed: " << bfs_processed << " Done vertex count: " << done_vertex_count << " Time: " << CkWallTimer() << endl;
+		/*
 		if ((bfs_processed == done_vertex_count) && (bfs_processed > 1000)) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
 		{
 		    ckout << "all reachable vertices are done. " << bfs_processed << ":" << done_vertex_count << " at time: " << CkWallTimer() << endl; 
@@ -302,6 +303,7 @@ public:
 		    arr.print_distances();
 		    return;
 		}
+		*/
 		if(receives-sends==1)
 		{
 			ckout << "Receives and sends match" << endl;
@@ -317,7 +319,7 @@ public:
 		//calculate target percentile
 		double target_percent; //heap percentage
 		double tram_percent; //tram percentage
-		if(second_qd_done)
+		if(1) //if(second_qd_done)
 		{
 			if(histogram_sum <= N * 100) 
 			{
@@ -718,9 +720,10 @@ public:
 	 */
 	bool process_heap()
 	{
-		// add sends
+		int heap_count = 0;
 		while (pq.size() > 0)
 		{
+			if (++heap_count > 500) { thisProxy[thisIndex].process_heap(); break; } // give other eps a chance to run  
 			Update new_vertex_and_distance = pq.top();
 			int dest_vertex = new_vertex_and_distance.dest_vertex;
 			cost new_distance = new_vertex_and_distance.distance;
@@ -943,7 +946,7 @@ public:
 		}
 		//ckout << "Timer: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << " count: " << counter << endl;
 		tram->tflush();
-		//arr[thisIndex].process_heap();
+		arr[thisIndex].process_heap();
 	}
 
 	/**
