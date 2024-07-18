@@ -579,6 +579,12 @@ public:
 		shared_local = shared.ckLocalBranch();
 	}
 
+	bool idle_triggered()
+	{
+		process_heap();
+		return true;
+	}
+
 	void get_graph(LongEdge *edges, int E, int *partition, int dividers)
 	{
 		histogram = new int[histo_bucket_count];
@@ -638,7 +644,7 @@ public:
 			}
 		}
 		//register idle call to process_heap
-		CkCallWhenIdle(CkIndex_SsspChares::process_heap(), this);
+		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		//reduce largest edge
 		cost max_edges_sum = 0;
 		if (num_vertices != 0)
@@ -718,7 +724,7 @@ public:
 	 * this is not an entry method
 	 * returns true (runs when pe is idle)
 	 */
-	bool process_heap()
+	void process_heap()
 	{
 		int heap_count = 0;
 		while (pq.size() > 0)
@@ -768,7 +774,7 @@ public:
 			wasted_updates++;
 			histogram[this_histo_bucket]--;
 		}
-		return true;
+		//return true;
 	}
 
 	/**
