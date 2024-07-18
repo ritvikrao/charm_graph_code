@@ -27,9 +27,14 @@ Clean:
 make clean
 ```
 
-Run:
+Run weighted_htram_nonsmp:
 ```
 ./charmrun +pN ./<executable> <num_chares> <num_vertices> <graph_file_name> <random_seed> <source_vertex>
+```
+
+Run weighted_htram_smp:
+```
+./charmrun +pN ./<executable> <num_vertices> <graph_file_name> <random_seed> <source_vertex>
 ```
 
 Run graph_ckio:
