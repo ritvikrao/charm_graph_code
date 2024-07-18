@@ -13,4 +13,4 @@
 export PPN=6
 # +commap 0-31:8 +pemap 1-31:8.6
 # single node: --network=single_node_vni
-srun --network=single_node_vni ./weighted_htram_smp $((SLURM_NTASKS*PPN)) 1875000 /lustre/orion/bip249/scratch/rrao/30M.csv 100 1 +ppn 6 +setcpuaffinity
+srun --network=single_node_vni ./weighted_htram_smp 1875000 /lustre/orion/bip249/scratch/rrao/30M.csv 100 1 +ppn 6 +setcpuaffinity #+traceroot weighted_htram_Smp_projections

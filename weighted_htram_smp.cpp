@@ -13,7 +13,7 @@
 #include <queue>
 #include <algorithm>
 
-// htram
+//#define INFO_PRINTS
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -85,32 +85,27 @@ public:
 	 */
 	Main(CkArgMsg *m)
 	{
-		N = atoi(m->argv[1]); // read in number of processes
+		N = CkNumPes();
+		V = atoi(m->argv[1]); // read in number of vertices
 		if (!m->argv[1])
-		{
-			ckout << "Missing processor count" << endl;
-			CkExit(0);
-		}
-		V = atoi(m->argv[2]); // read in number of vertices
-		if (!m->argv[2])
 		{
 			ckout << "Missing vertex count" << endl;
 			CkExit(0);
 		}
-		std::string file_name = m->argv[3]; // read file name
-		if (!m->argv[3])
+		std::string file_name = m->argv[2]; // read file name
+		if (!m->argv[2])
 		{
 			ckout << "Missing file name" << endl;
 			CkExit(0);
 		}
-		int S = atoi(m->argv[4]); // randomize seed
-		if (!m->argv[4])
+		int S = atoi(m->argv[3]); // randomize seed
+		if (!m->argv[3])
 		{
 			ckout << "Missing random seed" << endl;
 			CkExit(0);
 		}
-		start_vertex = atoi(m->argv[5]); // number of beginning vertex
-		if (!m->argv[5])
+		start_vertex = atoi(m->argv[4]); // number of beginning vertex
+		if (!m->argv[4])
 		{
 			ckout << "Missing start vertex" << endl;
 			CkExit(0);
@@ -158,8 +153,10 @@ public:
 		{
 			if(incoming_count[i]==0) no_incoming++;
 		}
+		#ifdef INFO_PRINTS
 		ckout << "Vertices with no incoming edges: " << no_incoming << endl;
 		ckout << "Max index: " << max_index << endl;
+		#endif
 		//ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
@@ -216,7 +213,9 @@ public:
 	{
 		// ready to begin algorithm
 		shared.max_path_value(max_sum);
+		#ifdef INFO_PRINTS
 		ckout << "The sum of the maximum out-edges is " << max_sum << endl;
+		#endif
 		Update new_edge;
 		new_edge.dest_vertex = start_vertex;
 		new_edge.distance = 0;
@@ -232,7 +231,9 @@ public:
 				dest_proc = N - 1;
 		}
 		compute_begin = CkWallTimer();
+		#ifdef INFO_PRINTS
 		ckout << "Beginning at time: " << compute_begin << endl;
+		#endif
 		// quiescence detection
 		//CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
 		//CkStartQD(cb);
@@ -255,7 +256,9 @@ public:
 		if (first_qd_done == false) 
 		{
 			first_qd_done = true;
+			#ifdef INFO_PRINTS
 			ckout << "First Quiescence detected at time: " << CkWallTimer() << endl;
+			#endif
 			CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
 			CkStartQD(cb);
 			// Ask everyone to call flush
@@ -264,7 +267,9 @@ public:
  	  	else 
 		{
 			second_qd_done = true;
+			#ifdef INFO_PRINTS
 			ckout << "Second Quiescence detected at time: " << CkWallTimer() << "  starting reductions. "<< endl;
+			#endif
 			arr.contribute_histogram(0);
  	  	}
 	}
@@ -293,8 +298,10 @@ public:
 				first_nonzero = i;
 			}
 		}
+		#ifdef INFO_PRINTS
 		ckout << "Receives: " << receives << " Sends: " 
 		<< sends << " BFS Processed: " << bfs_processed << " Done vertex count: " << done_vertex_count << " Time: " << CkWallTimer() << endl;
+		#endif
 		/*
 		if ((bfs_processed == done_vertex_count) && (bfs_processed > 1000)) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
 		{
@@ -307,7 +314,9 @@ public:
 		if(receives-sends==1)
 		{
 			ckout << "Receives and sends match" << endl;
+			#ifdef INFO_PRINTS
 			ckout << "Threshold: " << previous_threshold << endl;
+			#endif
 			compute_time = CkWallTimer() - compute_begin;
 			arr.print_distances();
 			return;
@@ -370,8 +379,10 @@ public:
 			{
 				previous_threshold = selected_bucket;
 				threshold_change_counter++;
+				#ifdef INFO_PRINTS
 				ckout << "Changed threshold to " << selected_bucket << " and tram threshold to " << 
 				tram_bucket << " first nonzero: " << first_nonzero << " at time " << CkWallTimer() << endl;
+				#endif
 				arr.get_bucket_limit(selected_bucket, tram_bucket, first_nonzero - 1);
 			}
 			arr.contribute_histogram(first_nonzero-1);
@@ -848,7 +859,6 @@ public:
 	void contribute_histogram(int behind_first_nonzero)
 	{
 		int donecount = 0;
-		if (CkMyPe() == 0) ckout << "on 0 contributing histogram reduction at: " << CkWallTimer() << endl;
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
 		int *info_array = new int[histo_bucket_count+4];
