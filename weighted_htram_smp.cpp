@@ -74,6 +74,7 @@ private:
 	bool first_qd_done = false;
 	bool second_qd_done = false;
 	int activeBucketMax = 10;
+	int current_phase = 0; //0=initial, 1=bfs, 2=converged_bfs
 
 public:
 
@@ -241,7 +242,7 @@ public:
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
-		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
+		//CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
 		arr[dest_proc].start_algo(new_edge);
 	}
 
@@ -253,6 +254,7 @@ public:
 	 */
 	void quiescence_detected()
 	{
+		/*
 		if (first_qd_done == false) 
 		{
 			first_qd_done = true;
@@ -272,7 +274,9 @@ public:
 			#endif
 			arr.contribute_histogram(0);
  	  	}
+		*/
 	}
+
 
 	/**
 	 * Receive histo values from pes
@@ -285,8 +289,8 @@ public:
 		reduction_counts++;
 		int histogram_sum = 0;
 		int first_nonzero = -1;
-		int receives = histo_values[histo_bucket_count + 1];
-		int sends = histo_values[histo_bucket_count];
+		int updates_processed = histo_values[histo_bucket_count + 1];
+		int updates_created = histo_values[histo_bucket_count];
 		int bfs_processed = histo_values[histo_bucket_count+2];
 		int done_vertex_count = histo_values[histo_bucket_count+3];
 		//calculate the total histogram sum
@@ -299,8 +303,8 @@ public:
 			}
 		}
 		#ifdef INFO_PRINTS
-		ckout << "Receives: " << receives << " Sends: " 
-		<< sends << " BFS Processed: " << bfs_processed << " Done vertex count: " << done_vertex_count << " Time: " << CkWallTimer() << endl;
+		ckout << "updates_processed: " << updates_processed << " updates_created: " 
+		<< updates_created << " BFS Processed: " << bfs_processed << " Done vertex count: " << done_vertex_count << " Time: " << CkWallTimer() << endl;
 		#endif
 		/*
 		if ((bfs_processed == done_vertex_count) && (bfs_processed > 1000)) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
@@ -311,9 +315,9 @@ public:
 		    return;
 		}
 		*/
-		if(receives-sends==1)
+		if(updates_processed-updates_created==1)
 		{
-			ckout << "Receives and sends match" << endl;
+			ckout << "updates_processed and updates_created match" << endl;
 			#ifdef INFO_PRINTS
 			ckout << "Threshold: " << previous_threshold << endl;
 			#endif
@@ -322,71 +326,69 @@ public:
 			return;
 		}
 		//ckout << "Histogram sum = " << histogram_sum << " at time " << CkWallTimer() << endl;
-		int selected_bucket = 0;
-		int tram_bucket = 0;
+		int heap_threshold = 0;
+		int tram_threshold = 0;
 		int active_counter = 0;
 		//calculate target percentile
 		double target_percent; //heap percentage
 		double tram_percent; //tram percentage
-		if(1) //if(second_qd_done)
+		if(histogram_sum <= N * 100) 
 		{
-			if(histogram_sum <= N * 100) 
-			{
-				target_percent = 0.9999;
-				tram_percent = 0.9999;
-			}
-			else
-			{
-				target_percent = 0.05;
-				tram_percent = 0.15;
-			}
-			//select bucket limit
-			for(int i=0; i<histo_bucket_count; i++)
-			{
-				active_counter += histo_values[i];
-				if((double) active_counter >= histogram_sum * target_percent) 
-				{
-					selected_bucket = i;
-					break;
-				}
-				
-			}
-			active_counter = 0;
-			for(int i=0; i<histo_bucket_count; i++)
-			{
-				active_counter += histo_values[i];
-				if((double) active_counter >= histogram_sum * tram_percent)
-				{
-					tram_bucket = i;
-					break;
-				}
-			}
-			/*
-			if ((selected_bucket-first_nonzero) > activeBucketMax)
- 			  selected_bucket = first_nonzero + activeBucketMax;
- 			
- 			  if ((tram_bucket - selected_bucket) > 5)
- 			  tram_bucket = selected_bucket + 5;  // tram_bucket no more than 5 buckets ahead of selected_bucket
- 			*/
-			//in case of floating point weirdness
-			if(histogram_sum==0)
-			{
-				selected_bucket = histo_bucket_count - 1;
-				tram_bucket = histo_bucket_count - 1;
-				
-			}
-			if(selected_bucket != previous_threshold)
-			{
-				previous_threshold = selected_bucket;
-				threshold_change_counter++;
-				#ifdef INFO_PRINTS
-				ckout << "Changed threshold to " << selected_bucket << " and tram threshold to " << 
-				tram_bucket << " first nonzero: " << first_nonzero << " at time " << CkWallTimer() << endl;
-				#endif
-				arr.get_bucket_limit(selected_bucket, tram_bucket, first_nonzero - 1);
-			}
-			arr.contribute_histogram(first_nonzero-1);
+			target_percent = 0.9999;
+			tram_percent = 0.9999;
 		}
+		else
+		{
+			target_percent = 0.03;
+			tram_percent = 0.10;
+		}
+		//select bucket limit
+		for(int i=0; i<histo_bucket_count; i++)
+		{
+			active_counter += histo_values[i];
+			if((double) active_counter >= histogram_sum * target_percent) 
+			{
+				heap_threshold = i;
+				break;
+			}
+			
+		}
+		active_counter = 0;
+		for(int i=0; i<histo_bucket_count; i++)
+		{
+			active_counter += histo_values[i];
+			if((double) active_counter >= histogram_sum * tram_percent)
+			{
+				tram_threshold = i;
+				break;
+			}
+		}
+		/*
+		if ((heap_threshold-first_nonzero) > activeBucketMax)
+			heap_threshold = first_nonzero + activeBucketMax;
+		
+			if ((tram_threshold - heap_threshold) > 5)
+			tram_threshold = heap_threshold + 5;  // tram_threshold no more than 5 buckets ahead of heap_threshold
+		*/
+		//in case of floating point weirdness
+		if(histogram_sum==0)
+		{
+			heap_threshold = histo_bucket_count - 1;
+			tram_threshold = histo_bucket_count - 1;
+			
+		}
+		if(heap_threshold != previous_threshold)
+		{
+			previous_threshold = heap_threshold;
+			threshold_change_counter++;
+			#ifdef INFO_PRINTS
+			ckout << "Changed threshold to " << heap_threshold << " and tram threshold to " << 
+			tram_threshold << " first nonzero: " << first_nonzero << " at time " << CkWallTimer() << endl;
+			#endif
+			//arr.get_bucket_limit(heap_threshold, tram_threshold, first_nonzero - 1);
+		}
+		//arr.contribute_histogram(first_nonzero-1);
+		arr.current_thresholds(heap_threshold, tram_threshold, first_nonzero - 1, current_phase);
 		
 		//start next reduction round
 		//CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
@@ -398,7 +400,7 @@ public:
 	 */
 	void check_buffer_done(int *msg_stats, int N)
 	{
-		int net_messages = msg_stats[1] - msg_stats[0]; // receives - sends
+		int net_messages = msg_stats[1] - msg_stats[0]; // updates_processed - updates_created
 		if (net_messages == 1)							// difference of 1 because of initial send
 		{
 			//ckout << "Real quiescence, terminate" << endl;
@@ -498,8 +500,8 @@ private:
 	std::priority_queue<Update, std::vector<Update>, ComparePairs> pq; //heap of messages
 	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
 	int *vcount; //array of vertex distances, calculated with same formula as histogram
-	int bucket_limit; //
-	int tram_bucket_limit; //highest bucket where messages can be pushed to tram
+	int heap_threshold; //highest bucket where messages can be pushed to heap
+	int tram_threshold; //highest bucket where messages can be pushed to tram
 	double bucket_multiplier; //constant to calculate bucket
 	std::vector<Update> *new_tram_hold; //hold buffer for messages not in tram limit
 	std::vector<Update> *local_hold; //hold for heap messages
@@ -507,6 +509,7 @@ private:
 	int bfs_processed=0; //bfs processed messages
 	int *dest_table; //destination table for faster pe calculation
 	std::vector<Update> *bfs_hold; // bfs hold (control distance explosion due to bfs)
+	int current_phase=0;
 
 public:
 
@@ -620,8 +623,8 @@ public:
 			dest_table[j] = get_dest_proc(i);
 		}
 		local_graph = new Node[num_vertices];
-		bucket_limit = initial_threshold;
-		tram_bucket_limit = initial_threshold + 2;
+		heap_threshold = initial_threshold;
+		tram_threshold = initial_threshold + 2;
 		new_tram_hold = new std::vector<Update>[histo_bucket_count];
 		local_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
@@ -713,7 +716,7 @@ public:
 			histogram[neighbor_bucket]++;
 			send_updates++;
 			//if exceeds limit, put in hold
-			if((neighbor_bucket > tram_bucket_limit) && !bfs)
+			if((neighbor_bucket > tram_threshold) && !bfs)
 			{
 				new_tram_hold[neighbor_bucket].push_back(new_update);
 			}
@@ -731,6 +734,58 @@ public:
 	}
 
 	/**
+	 * Takes a distance update and immediately adds it to the local heap/pq
+	 */
+	void process_update(Update new_vertex_and_distance)
+	{
+		int dest_vertex = new_vertex_and_distance.dest_vertex;
+		int local_index = dest_vertex - start_vertex;
+		cost this_cost = new_vertex_and_distance.distance;
+		int this_bucket = get_histo_bucket(this_cost);
+		if (this_cost < local_graph[local_index].distance)
+		{
+			vcount[this_bucket]++;
+			if(local_graph[local_index].distance == lmax)
+			{ 
+				local_graph[local_index].distance = this_cost;
+				vcount[histo_bucket_count]--;
+				if (this_bucket > heap_threshold)
+				{
+					local_graph[local_index].send_updates = true;
+			      	bfs_hold[this_bucket].push_back(new_vertex_and_distance);
+				}
+				else
+				{
+					bfs_processed++;
+					generate_updates(local_index, true);
+					recv_updates++;
+					wasted_updates++;
+					histogram[this_bucket]--;
+				}
+			}
+			else
+			{ 
+				vcount[get_histo_bucket(local_graph[local_index].distance)]--;
+				local_graph[local_index].distance = this_cost;
+				local_graph[local_index].send_updates = true;
+				if(this_bucket > heap_threshold)
+				{
+					local_hold[this_bucket].push_back(new_vertex_and_distance);
+				}
+				else pq.push(new_vertex_and_distance);
+			}
+		}
+		else
+		{
+			recv_updates++;
+			wasted_updates++;
+			rejected_updates++;
+			histogram[this_bucket]--;
+		}
+		
+	}
+
+	/**
 	 * Update distances, but locally (the incoming pair comes from this PE)
 	 * this is not an entry method
 	 * returns true (runs when pe is idle)
@@ -745,7 +800,7 @@ public:
 			int dest_vertex = new_vertex_and_distance.dest_vertex;
 			cost new_distance = new_vertex_and_distance.distance;
 			int this_histo_bucket = get_histo_bucket(new_distance);
-			if(this_histo_bucket > bucket_limit)
+			if(this_histo_bucket > heap_threshold)
 			{
 				//if(CkMyPe()==40) ckout << "Exceeds limit" << endl;
 				break;
@@ -788,57 +843,6 @@ public:
 		//return true;
 	}
 
-	/**
-	 * Takes a distance update and immediately adds it to the local heap/pq
-	 */
-	void process_update(Update new_vertex_and_distance)
-	{
-		int dest_vertex = new_vertex_and_distance.dest_vertex;
-		int local_index = dest_vertex - start_vertex;
-		cost this_cost = new_vertex_and_distance.distance;
-		int this_bucket = get_histo_bucket(this_cost);
-		if (this_cost < local_graph[local_index].distance)
-		{
-			vcount[this_bucket]++;
-			if(local_graph[local_index].distance == lmax)
-			{ 
-				local_graph[local_index].distance = this_cost;
-				vcount[histo_bucket_count]--;
-				if (this_bucket > bucket_limit)
-				{
-					local_graph[local_index].send_updates = true;
-			      	bfs_hold[this_bucket].push_back(new_vertex_and_distance);
-				}
-				else
-				{
-					bfs_processed++;
-					generate_updates(local_index, true);
-					recv_updates++;
-					wasted_updates++;
-					histogram[this_bucket]--;
-				}
-			}
-			else
-			{ 
-				vcount[get_histo_bucket(local_graph[local_index].distance)]--;
-				local_graph[local_index].distance = this_cost;
-				local_graph[local_index].send_updates = true;
-				if(this_bucket > bucket_limit)
-				{
-					local_hold[this_bucket].push_back(new_vertex_and_distance);
-				}
-				else pq.push(new_vertex_and_distance);
-			}
-		}
-		else
-		{
-			recv_updates++;
-			wasted_updates++;
-			rejected_updates++;
-			histogram[this_bucket]--;
-		}
-		
-	}
 
 	/**
 	 * Checks if anything is in the buffer (false quiescence)
@@ -905,15 +909,16 @@ public:
 	/**
 	 * Broadcasts bucket limit
 	*/
-	void get_bucket_limit(int bucket, int tram_bucket, int behind_first_nonzero)
+	void current_thresholds(int _heap_threshold, int _tram_threshold, int behind_first_nonzero, int phase)
 	{
 		//if(CkMyPe()==17) ckout << "Wasted on PE 17 = " << wasted_updates << " Rejected= " << rejected_updates << " Time: " << CkWallTimer() << endl;
-		bucket_limit = bucket;
-		tram_bucket_limit = tram_bucket;
+		heap_threshold = _heap_threshold;
+		tram_threshold = _tram_threshold;
+		current_phase = phase;
 		int counter = 0;
 		//ckout << "Time when threshold received: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << endl;
 		//after every reduction, push out messages in hold that are in limit
-		for(int i=0; i<=tram_bucket_limit; i++)
+		for(int i=0; i<=tram_threshold; i++)
 		{
 			for(int j=0; j<new_tram_hold[i].size(); j++)
 			{
@@ -926,7 +931,7 @@ public:
 			}
 			new_tram_hold[i].clear();
 		}
-		for(int i=0; i<=bucket_limit; i++)
+		for(int i=0; i<=heap_threshold; i++)
 		{
 			for(int j=0; j<local_hold[i].size(); j++)
 			{
@@ -934,7 +939,7 @@ public:
 			}
 			local_hold[i].clear();
 		}
-		for(int i=0; i<=bucket_limit; i++)
+		for(int i=0; i<=heap_threshold; i++)
 		{
 			for(int j=0; j<bfs_hold[i].size(); j++)
 			{ 
@@ -963,6 +968,7 @@ public:
 		//ckout << "Timer: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << " count: " << counter << endl;
 		tram->tflush();
 		arr[thisIndex].process_heap();
+		contribute_histogram(behind_first_nonzero);
 	}
 
 	/**

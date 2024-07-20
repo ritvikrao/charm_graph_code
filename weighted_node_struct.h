@@ -2,7 +2,6 @@
 
 typedef long cost;
 
-
 class Edge{
 	public:
 		int end;

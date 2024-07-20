@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH -N 1
+#SBATCH -N 2
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=7
-#SBATCH --output=weighted_htram_smp.out
+#SBATCH --output=weighted_htram_smp_2.out
 #SBATCH -A bip249
 #SBATCH --job-name=weighted_htram_smp
 #SBATCH --exclusive
-#SBATCH --time=00:05:00      # hh:mm:ss for the job
+#SBATCH --time=00:20:00      # hh:mm:ss for the job
 
 # module swap PrgEnv-cray PrgEnv-gnu
 # mkdir weighted_htram_Smp_projections
