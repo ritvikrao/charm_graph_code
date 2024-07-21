@@ -32,7 +32,7 @@ int M = 1024; // divisor for dest_table (must be power of 2)
 cost lmax; // integer maximum
 int average; // average edge count per pe
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
-double reduction_delay = 0.01; // each histogram reduction happens at this interval
+double reduction_delay = 0.1; // each histogram reduction happens at this interval
 int initial_threshold = 3;
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
@@ -315,7 +315,7 @@ public:
 		    return;
 		}
 		*/
-		if(updates_processed-updates_created==1)
+		if((updates_processed-updates_created==1)&&(updates_created>1000))
 		{
 			ckout << "updates_processed and updates_created match" << endl;
 			#ifdef INFO_PRINTS
