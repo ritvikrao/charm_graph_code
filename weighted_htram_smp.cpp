@@ -132,97 +132,129 @@ public:
 		arr = CProxy_SsspChares::ckNew(tram_proxy.ckGetGroupID(), N);
 		mainProxy = thisProxy;
 		arr.initiate_pointers();
+		partition_index = new int[N + 1]; // last index=maximum index
+		lmax = std::numeric_limits<cost>::max();
 		if(generate_mode==1)
 		{
 			num_global_edges = std::stoi(file_name);
+			#ifdef INFO_PRINTS
+			ckout << "Graph will be automatically generated with " << V << " vertices and " << num_global_edges << " edges" << endl;
+			#endif
 			average_degree = num_global_edges / V;
-			arr.generate_local_graph(num_global_edges / N);
-		}
-		unsigned int seed = (unsigned int)S;
-		srand(seed);
-		int first_node = 0;
-		lmax = std::numeric_limits<cost>::max();
-		// create graph object
-		partition_index = new int[N + 1]; // last index=maximum index
-		start_time = CkWallTimer();
-		// read file
-		std::ifstream file(file_name);
-		std::string readbuf;
-		std::string delim = ",";
-		// iterate through edge list
-		CkVec<LongEdge> edges;
-		int *incoming_count = new int[V];
-		for(int i=0; i<V; i++) incoming_count[i] = 0;
-		max_index = 0;
-		int edges_read = 0;
-		while (getline(file, readbuf))
-		{
-			// get nodes on each edge
-			std::string token = readbuf.substr(0, readbuf.find(delim));
-			std::string token2 = readbuf.substr(readbuf.find(delim) + 1, readbuf.length());
-			// make random distance
-			cost edge_distance = (cost) rand() % 1000 + 1;
-			// string to int
-			int node_num = std::stoi(token); //v
-			int node_num_2 = std::stoi(token2); //w
-			incoming_count[node_num_2]++;
-			// find the maximum vertex index
-			if (node_num > max_index)
-				max_index = node_num;
-			if (node_num_2 > max_index)
-				max_index = node_num_2;
-			LongEdge new_edge;
-			new_edge.begin = node_num;
-			new_edge.end = node_num_2;
-			new_edge.distance = edge_distance;
-			edges.insertAtEnd(new_edge);
-			edges_read++;
-			//if(edges_read%10000000==0) ckout << "Read " << edges_read << " edges" << endl;
-			// ckout << "One loop iteration complete" << endl;
-		}
-		average_degree = edges_read / V;
-		for(int i=0; i<max_index; i++)
-		{
-			if(incoming_count[i]==0) no_incoming++;
-		}
-		#ifdef INFO_PRINTS
-		ckout << "Vertices with no incoming edges: " << no_incoming << endl;
-		ckout << "Max index: " << max_index << endl;
-		#endif
-		//ckout << "Loop complete" << endl;
-		file.close();
-		read_time = CkWallTimer() - start_time;
-		// assign nodes to location
-		std::vector<LongEdge> edge_lists[N];
-		average = edges.size() / N;
-		for (int i = 0; i < edges.size(); i++)
-		{
-			int dest_proc = i / average;
-			if (dest_proc >= N)
-				dest_proc = N - 1;
-			else if (i % average == 0)
-				partition_index[dest_proc] = edges[i].begin;
-			edge_lists[dest_proc].insert(edge_lists[dest_proc].end(), edges[i]);
-		}
-		partition_index[N] = max_index + 1;
-		// reassign edges to move to correct pe
-		for (int i = 0; i < N - 1; i++)
-		{
-			for (int j = edge_lists[i].size() - 1; j >= 0; --j)
+			//for each pe, generate a random vertex and edge count, and send to pes
+			int remaining_vertices = V;
+			int current_start_index = 0; //tracks start vertex for indices 
+			std::mt19937 generator(S);
+			std::uniform_int_distribution<int> edge_count_distribution(((num_global_edges * 4) / (N * 5)), (num_global_edges * 6 / (N * 5))); //average += 20%
+			std::uniform_int_distribution<int> vertex_count_distribution(((V * 4) / (N * 5)), ((V * 6) / (N * 5))); //average += 20%
+			int *vertex_counts = new int[N];
+			int *edge_counts = new int[N];
+			for(int i=0; i<N; i++)
 			{
-				// TODO
-				if (edge_lists[i][j].begin >= partition_index[i + 1])
-				{
-					edge_lists[i + 1].insert(edge_lists[i + 1].begin(), edge_lists[i][j]);
-					edge_lists[i].erase(edge_lists[i].begin() + j);
-				}
+				partition_index[i] = current_start_index;
+				int vertex_count = vertex_count_distribution(generator);
+				int edge_count = edge_count_distribution(generator);
+				if(i == N - 1) vertex_count = remaining_vertices; //make sure num_vertices = V
+				remaining_vertices -= vertex_count;
+				vertex_counts[i] = vertex_count;
+				edge_counts[i] = edge_count;
+				current_start_index += vertex_count;
+			}
+			partition_index[N] = V;
+			for(int i=0; i<N; i++)
+			{
+				arr[i].generate_local_graph(vertex_counts[i], edge_counts[i], partition_index, N+1);
 			}
 		}
-		// add nodes to node lists
-		// send subgraphs to nodes
-		for (int i = 0; i < N; i++)
+		else
 		{
-			arr[i].get_graph(edge_lists[i].data(), edge_lists[i].size(), partition_index, N + 1);
+			#ifdef INFO_PRINTS
+			ckout << "Graph will be read from file" << endl;
+			#endif
+			unsigned int seed = (unsigned int)S;
+			srand(seed);
+			int first_node = 0;
+			// create graph object
+			start_time = CkWallTimer();
+			// read file
+			std::ifstream file(file_name);
+			std::string readbuf;
+			std::string delim = ",";
+			// iterate through edge list
+			CkVec<LongEdge> edges;
+			int *incoming_count = new int[V];
+			for(int i=0; i<V; i++) incoming_count[i] = 0;
+			max_index = 0;
+			int edges_read = 0;
+			while (getline(file, readbuf))
+			{
+				// get nodes on each edge
+				std::string token = readbuf.substr(0, readbuf.find(delim));
+				std::string token2 = readbuf.substr(readbuf.find(delim) + 1, readbuf.length());
+				// make random distance
+				cost edge_distance = (cost) rand() % 1000 + 1;
+				// string to int
+				int node_num = std::stoi(token); //v
+				int node_num_2 = std::stoi(token2); //w
+				incoming_count[node_num_2]++;
+				// find the maximum vertex index
+				if (node_num > max_index)
+					max_index = node_num;
+				if (node_num_2 > max_index)
+					max_index = node_num_2;
+				LongEdge new_edge;
+				new_edge.begin = node_num;
+				new_edge.end = node_num_2;
+				new_edge.distance = edge_distance;
+				edges.insertAtEnd(new_edge);
+				edges_read++;
+				//if(edges_read%10000000==0) ckout << "Read " << edges_read << " edges" << endl;
+				// ckout << "One loop iteration complete" << endl;
+			}
+			average_degree = edges_read / V;
+			for(int i=0; i<max_index; i++)
+			{
+				if(incoming_count[i]==0) no_incoming++;
+			}
+			#ifdef INFO_PRINTS
+			ckout << "Vertices with no incoming edges: " << no_incoming << endl;
+			ckout << "Max index: " << max_index << endl;
+			#endif
+			//ckout << "Loop complete" << endl;
+			file.close();
+			read_time = CkWallTimer() - start_time;
+			// assign nodes to location
+			std::vector<LongEdge> edge_lists[N];
+			average = edges.size() / N;
+			for (int i = 0; i < edges.size(); i++)
+			{
+				int dest_proc = i / average;
+				if (dest_proc >= N)
+					dest_proc = N - 1;
+				else if (i % average == 0)
+					partition_index[dest_proc] = edges[i].begin;
+				edge_lists[dest_proc].insert(edge_lists[dest_proc].end(), edges[i]);
+			}
+			partition_index[N] = max_index + 1;
+			// reassign edges to move to correct pe
+			for (int i = 0; i < N - 1; i++)
+			{
+				for (int j = edge_lists[i].size() - 1; j >= 0; --j)
+				{
+					// TODO
+					if (edge_lists[i][j].begin >= partition_index[i + 1])
+					{
+						edge_lists[i + 1].insert(edge_lists[i + 1].begin(), edge_lists[i][j]);
+						edge_lists[i].erase(edge_lists[i].begin() + j);
+					}
+				}
+			}
+			// add nodes to node lists
+			// send subgraphs to nodes
+			for (int i = 0; i < N; i++)
+			{
+				arr[i].get_graph(edge_lists[i].data(), edge_lists[i].size(), partition_index, N + 1);
+			}
 		}
 	}
 
@@ -618,43 +650,101 @@ public:
 		return true;
 	}
 
-	void generate_local_graph(int num_edges)
+	void generate_local_graph(int _num_vertices, int _num_edges, int *partition, int dividers)
 	{
-		std::vector<Node> temp_local_graph;
-		int remaining_edges = num_edges;
-		std::vector<cost> largest_outedges;
+		#ifdef INFO_PRINTS
+		ckout << "Generating local graph on PE " << CkMyPe() << " with " << _num_vertices << " vertices and " << _num_edges << " edges" << endl;
+		#endif
+		num_vertices = _num_vertices;
+		histogram = new int[histo_bucket_count];
+		vcount = new int[histo_bucket_count+1]; //histo buckets plus infty
+		for(int i=0; i<histo_bucket_count; i++)
+		{
+			histogram[i] = 0;
+			vcount[i] = 0;
+		}
+		vcount[histo_bucket_count] = 0;
+		partition_index = new int[dividers];
+		for (int i = 0; i < dividers; i++)
+		{
+			partition_index[i] = partition[i];
+		}
+		start_vertex = partition_index[thisIndex];
+		dest_table = new int[V / M];
+		for(int i=0, j=0; i < V; j++, i=j*M)
+		{
+			dest_table[j] = get_dest_proc(i);
+		}
+		local_graph = new Node[num_vertices];
+		heap_threshold = initial_threshold;
+		tram_threshold = initial_threshold + 2;
+		tram_hold = new std::vector<Update>[histo_bucket_count];
+		pq_hold = new std::vector<Update>[histo_bucket_count];
+		bfs_hold = new std::vector<Update>[histo_bucket_count];
+		bucket_multiplier = histo_bucket_count / (512 * log(V));
+		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
+		int remaining_edges = _num_edges;
+		cost *largest_outedges = new cost[num_vertices];
 		std::mt19937 generator(S);
 		std::uniform_int_distribution<int> edge_count_distribution(0,2*average_degree);
 		std::uniform_int_distribution<int> edge_dest_distribution(0,V);
 		std::uniform_int_distribution<int> edge_weight_distribution(1,1000);
-		while(remaining_edges>0)
+		for(int i=0; i<num_vertices; i++)
 		{
 			Node new_node;
 			new_node.home_process = thisIndex;
+			new_node.index = i + start_vertex;
 			new_node.distance = lmax;
 			new_node.send_updates = false;
 			CkVec<Edge> adj;
 			new_node.adjacent = adj;
 			vcount[histo_bucket_count]++;
-			int num_edges = edge_count_distribution(generator);
-			if(num_edges > remaining_edges) num_edges = remaining_edges;
-			remaining_edges -= num_edges;
 			int largest_outedge = 0;
-			for(int i=0; i<num_edges; i++)
+			if(remaining_edges>0)
 			{
-				Edge new_edge;
-				new_edge.end = edge_dest_distribution(generator);
-				new_edge.distance = edge_weight_distribution(generator);
-				if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
-				new_node.adjacent.insertAtEnd(new_edge);
+				int num_edges = edge_count_distribution(generator);
+				if((num_edges > remaining_edges) || (i == num_vertices - 1)) num_edges = remaining_edges;
+				remaining_edges -= num_edges;
+				int *edge_destinations = new int[num_edges];
+				for(int i=0; i<num_edges; i++)
+				{
+					edge_destinations[i] = -1;
+				}
+				for(int i=0; i<num_edges; i++)
+				{
+					Edge new_edge;
+					bool repeated = true;
+					int candidate_end = edge_dest_distribution(generator);
+					//logic to keep destinations different
+					while(repeated)
+					{
+						bool different = true;
+						for(int j=0; j<i; j++)
+						{
+							if(edge_destinations[j] == candidate_end)
+							{
+								different = false;
+								break;
+							}
+						}
+						if(different)
+						{
+							new_edge.end = candidate_end;
+							repeated = false;
+							edge_destinations[i] = candidate_end;
+						}
+						else candidate_end = edge_dest_distribution(generator);
+					}
+					new_edge.distance = edge_weight_distribution(generator);
+					if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
+					new_node.adjacent.insertAtEnd(new_edge);
+				}
 			}
-			temp_local_graph.push_back(new_node);
-			largest_outedges.push_back(largest_outedge);
+			local_graph[i] = new_node;
+			largest_outedges[i] = largest_outedge;
 		}
-		local_graph = temp_local_graph.data();
-		num_vertices = temp_local_graph.size();
 		int max_edges_sum = 0;
-		for(int i=0; i<largest_outedges.size(); i++)
+		for(int i=0; i<num_vertices; i++)
 		{
 			max_edges_sum += largest_outedges[i];
 		}
@@ -682,7 +772,6 @@ public:
 		dest_table = new int[V / M];
 		for(int i=0, j=0; i < V; j++, i=j*M)
 		{
-			//if(CkMyPe()==0) ckout << "Calculating dest table for vertex " << i << endl;
 			dest_table[j] = get_dest_proc(i);
 		}
 		local_graph = new Node[num_vertices];
