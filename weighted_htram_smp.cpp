@@ -134,6 +134,7 @@ public:
 		arr.initiate_pointers();
 		partition_index = new int[N + 1]; // last index=maximum index
 		lmax = std::numeric_limits<cost>::max();
+		start_time = CkWallTimer();
 		if(generate_mode==1)
 		{
 			num_global_edges = std::stoi(file_name);
@@ -174,8 +175,6 @@ public:
 			unsigned int seed = (unsigned int)S;
 			srand(seed);
 			int first_node = 0;
-			// create graph object
-			start_time = CkWallTimer();
 			// read file
 			std::ifstream file(file_name);
 			std::string readbuf;
@@ -265,6 +264,7 @@ public:
 	{
 		// ready to begin algorithm
 		shared.max_path_value(max_sum);
+		if(generate_mode==1) read_time = CkWallTimer() - start_time;
 		#ifdef INFO_PRINTS
 		ckout << "The sum of the maximum out-edges is " << max_sum << endl;
 		#endif
@@ -743,7 +743,7 @@ public:
 			local_graph[i] = new_node;
 			largest_outedges[i] = largest_outedge;
 		}
-		int max_edges_sum = 0;
+		cost max_edges_sum = 0;
 		for(int i=0; i<num_vertices; i++)
 		{
 			max_edges_sum += largest_outedges[i];
