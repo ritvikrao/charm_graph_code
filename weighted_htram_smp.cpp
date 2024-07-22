@@ -12,8 +12,9 @@
 #include <limits>
 #include <queue>
 #include <algorithm>
+#include <random>
 
-//#define INFO_PRINTS
+#define INFO_PRINTS
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -29,6 +30,10 @@ CProxy_SharedInfo shared;
 int N;	  // number of processors
 int V;	  // number of vertices
 int M = 1024; // divisor for dest_table (must be power of 2)
+int num_global_edges;
+int average_degree;
+int generate_mode;
+int S;
 cost lmax; // integer maximum
 int average; // average edge count per pe
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
@@ -93,13 +98,13 @@ public:
 			ckout << "Missing vertex count" << endl;
 			CkExit(0);
 		}
-		std::string file_name = m->argv[2]; // read file name
+		std::string file_name = m->argv[2]; // read file name or edge count
 		if (!m->argv[2])
 		{
-			ckout << "Missing file name" << endl;
+			ckout << "Missing file name/edge count" << endl;
 			CkExit(0);
 		}
-		int S = atoi(m->argv[3]); // randomize seed
+		S = atoi(m->argv[3]); // randomize seed
 		if (!m->argv[3])
 		{
 			ckout << "Missing random seed" << endl;
@@ -110,6 +115,28 @@ public:
 		{
 			ckout << "Missing start vertex" << endl;
 			CkExit(0);
+		}
+		generate_mode = atoi(m->argv[5]); //0 for read from csv, 1 for generation
+		if (!m->argv[5])
+		{
+			ckout << "Missing generate mode" << endl;
+			CkExit(0);
+		}
+		// create TRAM proxy
+		nodeGrpProxy = CProxy_HTramRecv::ckNew();
+		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
+		CkCallback ignore_cb(CkCallback::ignore);
+		tram_proxy_t tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), 
+		srcNodeGrpProxy.ckGetGroupID(), buffer_size, enable_buffer_flushing, flush_timer, false, true, ignore_cb);
+		shared = CProxy_SharedInfo::ckNew();
+		arr = CProxy_SsspChares::ckNew(tram_proxy.ckGetGroupID(), N);
+		mainProxy = thisProxy;
+		arr.initiate_pointers();
+		if(generate_mode==1)
+		{
+			num_global_edges = std::stoi(file_name);
+			average_degree = num_global_edges / V;
+			arr.generate_local_graph(num_global_edges / N);
 		}
 		unsigned int seed = (unsigned int)S;
 		srand(seed);
@@ -127,6 +154,7 @@ public:
 		int *incoming_count = new int[V];
 		for(int i=0; i<V; i++) incoming_count[i] = 0;
 		max_index = 0;
+		int edges_read = 0;
 		while (getline(file, readbuf))
 		{
 			// get nodes on each edge
@@ -148,8 +176,11 @@ public:
 			new_edge.end = node_num_2;
 			new_edge.distance = edge_distance;
 			edges.insertAtEnd(new_edge);
+			edges_read++;
+			//if(edges_read%10000000==0) ckout << "Read " << edges_read << " edges" << endl;
 			// ckout << "One loop iteration complete" << endl;
 		}
+		average_degree = edges_read / V;
 		for(int i=0; i<max_index; i++)
 		{
 			if(incoming_count[i]==0) no_incoming++;
@@ -161,18 +192,6 @@ public:
 		//ckout << "Loop complete" << endl;
 		file.close();
 		read_time = CkWallTimer() - start_time;
-		// create TRAM proxy
-		nodeGrpProxy = CProxy_HTramRecv::ckNew();
-		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
-
-		CkCallback ignore_cb(CkCallback::ignore);
-		tram_proxy_t tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), srcNodeGrpProxy.ckGetGroupID(), buffer_size, enable_buffer_flushing, flush_timer, false, true, ignore_cb);
-
-		shared = CProxy_SharedInfo::ckNew();
-		arr = CProxy_SsspChares::ckNew(tram_proxy.ckGetGroupID(), N);
-
-		mainProxy = thisProxy;
-		arr.initiate_pointers();
 		// assign nodes to location
 		std::vector<LongEdge> edge_lists[N];
 		average = edges.size() / N;
@@ -242,7 +261,7 @@ public:
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
-		//CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
+		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
 		arr[dest_proc].start_algo(new_edge);
 	}
 
@@ -432,6 +451,7 @@ public:
 		ckout << "Rejected updates normalized to V: " << (double) msg_stats[1] / V << endl;
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		ckout << "Number of reductions: " << reduction_counts << endl;
+		ckout << "Updates noted: " << msg_stats[3+histo_bucket_count] << endl;
 		int vcount_sum = 0;
 		ckout << "Vcount: [ ";
 		for(int i=0; i<histo_bucket_count+1; i++)
@@ -492,8 +512,8 @@ private:
 	int updates_created_locally=0; //number of update messages sent
 	int updates_processed_locally=0; //number of update messages received
 	int *partition_index; //defines boundaries of indices for each pe
-	int wasted_updates; //number of updates that don't have the final answer
-	int rejected_updates; //number of updates that don't decrease a distance value/create more messages
+	int wasted_updates=0; //number of updates that don't have the final answer
+	int rejected_updates=0; //number of updates that don't decrease a distance value/create more messages
 	tram_proxy_t tram_proxy;
 	tram_t *tram; //tram library
 	SharedInfo *shared_local;
@@ -598,6 +618,50 @@ public:
 		return true;
 	}
 
+	void generate_local_graph(int num_edges)
+	{
+		std::vector<Node> temp_local_graph;
+		int remaining_edges = num_edges;
+		std::vector<cost> largest_outedges;
+		std::mt19937 generator(S);
+		std::uniform_int_distribution<int> edge_count_distribution(0,2*average_degree);
+		std::uniform_int_distribution<int> edge_dest_distribution(0,V);
+		std::uniform_int_distribution<int> edge_weight_distribution(1,1000);
+		while(remaining_edges>0)
+		{
+			Node new_node;
+			new_node.home_process = thisIndex;
+			new_node.distance = lmax;
+			new_node.send_updates = false;
+			CkVec<Edge> adj;
+			new_node.adjacent = adj;
+			vcount[histo_bucket_count]++;
+			int num_edges = edge_count_distribution(generator);
+			if(num_edges > remaining_edges) num_edges = remaining_edges;
+			remaining_edges -= num_edges;
+			int largest_outedge = 0;
+			for(int i=0; i<num_edges; i++)
+			{
+				Edge new_edge;
+				new_edge.end = edge_dest_distribution(generator);
+				new_edge.distance = edge_weight_distribution(generator);
+				if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
+				new_node.adjacent.insertAtEnd(new_edge);
+			}
+			temp_local_graph.push_back(new_node);
+			largest_outedges.push_back(largest_outedge);
+		}
+		local_graph = temp_local_graph.data();
+		num_vertices = temp_local_graph.size();
+		int max_edges_sum = 0;
+		for(int i=0; i<largest_outedges.size(); i++)
+		{
+			max_edges_sum += largest_outedges[i];
+		}
+		CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
+		contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
+	}
+
 	void get_graph(LongEdge *edges, int E, int *partition, int dividers)
 	{
 		histogram = new int[histo_bucket_count];
@@ -641,8 +705,6 @@ public:
 				CkVec<Edge> adj;
 				new_node.adjacent = adj;
 				local_graph[i] = new_node;
-				wasted_updates = 0;
-				rejected_updates = 0;
 				vcount[histo_bucket_count]++;
 				largest_outedges[i] = 0;
 			}
@@ -977,18 +1039,19 @@ public:
 		 //enable only for smaller graphs
 		for (int i = 0; i < num_vertices; i++)
 		{
-			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i].index << " distance " << local_graph[i].distance << endl;
+			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i] << " distance " << local_graph[i].distance << endl;
 		}
 		*/
-		int msg_stats[3+histo_bucket_count];
+		int msg_stats[4+histo_bucket_count];
 		msg_stats[0] = wasted_updates;
 		msg_stats[1] = rejected_updates;
 		for(int i=0; i<histo_bucket_count + 1; i++)
 		{
 			msg_stats[i+2] = vcount[i];
 		}
+		msg_stats[3+histo_bucket_count] = updates_noted;
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-		contribute((3+histo_bucket_count) * sizeof(int), msg_stats, CkReduction::sum_int, cb);
+		contribute((4+histo_bucket_count) * sizeof(int), msg_stats, CkReduction::sum_int, cb);
 		// mainProxy.done();
 	}
 

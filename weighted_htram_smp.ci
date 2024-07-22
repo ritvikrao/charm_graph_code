@@ -7,6 +7,10 @@ mainmodule weighted_htram_smp
   readonly int N;
   readonly int V;
   readonly int M;
+  readonly int average_degree;
+  readonly int S;
+  readonly int num_global_edges;
+  readonly int generate_mode;
   readonly cost lmax;
   readonly int average;
   readonly int buffer_size;
@@ -30,6 +34,7 @@ mainmodule weighted_htram_smp
     entry SsspChares(CkGroupID tram_id);
     entry void initiate_pointers();
     entry [whenidle] bool idle_triggered();
+    entry void generate_local_graph(int num_edges);
     entry void get_graph(LongEdge edges[E], int E, int partition[dividers], int dividers); //gets graph partition
     entry void start_algo(Update new_vertex_and_distance);
     entry void process_heap();
