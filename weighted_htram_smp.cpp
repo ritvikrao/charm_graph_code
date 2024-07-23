@@ -344,6 +344,10 @@ public:
 		int updates_created = histo_values[histo_bucket_count];
 		int bfs_processed = histo_values[histo_bucket_count+2];
 		int done_vertex_count = histo_values[histo_bucket_count+3];
+		int updates_noted = histo_values[histo_bucket_count+4];
+		int heap_threshold = 0;
+		int tram_threshold = 0;
+		int active_counter = 0;
 		//calculate the total histogram sum
 		for(int i=0; i<histo_bucket_count; i++)
 		{
@@ -354,8 +358,8 @@ public:
 			}
 		}
 		#ifdef INFO_PRINTS
-		ckout << "updates_processed: " << updates_processed << " updates_created: " 
-		<< updates_created << " BFS Processed: " << bfs_processed << " Done vertex count: " << done_vertex_count << " Time: " << CkWallTimer() << endl;
+		ckout << "Updates: created: " << updates_created << ", noted: " << updates_noted << ", processed: " << updates_processed << 
+		", BFS: " << bfs_processed << ", Done vertices: " << done_vertex_count;
 		#endif
 		/*
 		if ((bfs_processed == done_vertex_count) && (bfs_processed > 1000)) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
@@ -368,7 +372,7 @@ public:
 		*/
 		if((updates_processed-updates_created==1)&&(updates_created>1000))
 		{
-			ckout << "updates_processed and updates_created match" << endl;
+			ckout << endl << "updates_processed and updates_created match" << endl;
 			#ifdef INFO_PRINTS
 			ckout << "Threshold: " << previous_threshold << endl;
 			#endif
@@ -376,10 +380,6 @@ public:
 			arr.print_distances();
 			return;
 		}
-		//ckout << "Histogram sum = " << histogram_sum << " at time " << CkWallTimer() << endl;
-		int heap_threshold = 0;
-		int tram_threshold = 0;
-		int active_counter = 0;
 		//calculate target percentile
 		double target_percent; //heap percentage
 		double tram_percent; //tram percentage
@@ -432,12 +432,12 @@ public:
 		{
 			previous_threshold = heap_threshold;
 			threshold_change_counter++;
-			#ifdef INFO_PRINTS
-			ckout << "Changed threshold to " << heap_threshold << " and tram threshold to " << 
-			tram_threshold << " first nonzero: " << first_nonzero << " at time " << CkWallTimer() << endl;
-			#endif
 			//arr.get_bucket_limit(heap_threshold, tram_threshold, first_nonzero - 1);
 		}
+		#ifdef INFO_PRINTS
+		ckout << ", Heap threshold: " << heap_threshold << ", Tram: " << 
+		tram_threshold << ", first nonzero: " << first_nonzero << ", t= " << CkWallTimer() << endl;
+		#endif
 		//arr.contribute_histogram(first_nonzero-1);
 		arr.current_thresholds(heap_threshold, tram_threshold, first_nonzero - 1, current_phase);
 		
@@ -1016,14 +1016,15 @@ public:
 		int donecount = 0;
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
-		int *info_array = new int[histo_bucket_count+4];
+		int *info_array = new int[histo_bucket_count+5];
 		std::copy(histogram, histogram + histo_bucket_count, info_array);
 		info_array[histo_bucket_count] = updates_created_locally;
 		info_array[histo_bucket_count+1] = updates_processed_locally;
 		info_array[histo_bucket_count+2] = bfs_processed;
 		for (int i=0; i<=behind_first_nonzero;i++) donecount += vcount[i];
 		info_array[histo_bucket_count+3] = donecount;
-		contribute((histo_bucket_count+4) * sizeof(int), info_array, CkReduction::sum_int, cb);
+		info_array[histo_bucket_count+4] = updates_noted;
+		contribute((histo_bucket_count+5) * sizeof(int), info_array, CkReduction::sum_int, cb);
 	}
 
 	/**
