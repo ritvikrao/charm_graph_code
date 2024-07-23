@@ -390,8 +390,8 @@ public:
 		}
 		else
 		{
-			target_percent = 0.03;
-			tram_percent = 0.10;
+			target_percent = 0.05;
+			tram_percent = 0.15;
 		}
 		//select bucket limit
 		for(int i=0; i<histo_bucket_count; i++)
@@ -474,6 +474,7 @@ public:
 		// ckout << "Completed" << endl;
 		// CkPrintf("Memory usage at end: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		total_time = CkWallTimer() - start_time;
+		ckout << "Actual edges: " << msg_stats[4+histo_bucket_count] << endl;
 		ckout << "Read time: " << read_time << endl;
 		ckout << "Compute time: " << compute_time << endl;
 		ckout << "Total time: " << total_time << endl;
@@ -563,6 +564,7 @@ private:
 	int *dest_table; //destination table for faster pe calculation
 	std::vector<Update> *bfs_hold; // bfs hold (control distance explosion due to bfs)
 	int current_phase=0;
+	int actual_edges=0;
 
 public:
 
@@ -683,12 +685,12 @@ public:
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		bucket_multiplier = histo_bucket_count / (512 * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
-		int remaining_edges = _num_edges;
 		cost *largest_outedges = new cost[num_vertices];
 		std::mt19937 generator(S);
+		int average_degree = (_num_edges / _num_vertices) + 1;
 		std::uniform_int_distribution<int> edge_count_distribution(0,2*average_degree);
 		std::uniform_int_distribution<int> edge_dest_distribution(0,V);
-		std::uniform_int_distribution<int> edge_weight_distribution(1,1000);
+		std::uniform_int_distribution<cost> edge_weight_distribution(1,1000);
 		for(int i=0; i<num_vertices; i++)
 		{
 			Node new_node;
@@ -700,45 +702,41 @@ public:
 			new_node.adjacent = adj;
 			vcount[histo_bucket_count]++;
 			int largest_outedge = 0;
-			if(remaining_edges>0)
+			int num_edges = edge_count_distribution(generator);
+			int *edge_destinations = new int[num_edges];
+			for(int i=0; i<num_edges; i++)
 			{
-				int num_edges = edge_count_distribution(generator);
-				if((num_edges > remaining_edges) || (i == num_vertices - 1)) num_edges = remaining_edges;
-				remaining_edges -= num_edges;
-				int *edge_destinations = new int[num_edges];
-				for(int i=0; i<num_edges; i++)
+				edge_destinations[i] = -1;
+			}
+			for(int i=0; i<num_edges; i++)
+			{
+				actual_edges++;
+				Edge new_edge;
+				bool repeated = true;
+				int candidate_end = edge_dest_distribution(generator);
+				//logic to keep destinations different
+				while(repeated)
 				{
-					edge_destinations[i] = -1;
-				}
-				for(int i=0; i<num_edges; i++)
-				{
-					Edge new_edge;
-					bool repeated = true;
-					int candidate_end = edge_dest_distribution(generator);
-					//logic to keep destinations different
-					while(repeated)
+					bool different = true;
+					for(int j=0; j<i; j++)
 					{
-						bool different = true;
-						for(int j=0; j<i; j++)
+						if(edge_destinations[j] == candidate_end)
 						{
-							if(edge_destinations[j] == candidate_end)
-							{
-								different = false;
-								break;
-							}
+							different = false;
+							break;
 						}
-						if(different)
-						{
-							new_edge.end = candidate_end;
-							repeated = false;
-							edge_destinations[i] = candidate_end;
-						}
-						else candidate_end = edge_dest_distribution(generator);
 					}
-					new_edge.distance = edge_weight_distribution(generator);
-					if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
-					new_node.adjacent.insertAtEnd(new_edge);
+					if(different)
+					{
+						new_edge.end = candidate_end;
+						repeated = false;
+						edge_destinations[i] = candidate_end;
+					}
+					else candidate_end = edge_dest_distribution(generator);
 				}
+				new_edge.distance = edge_weight_distribution(generator);
+				if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
+				new_node.adjacent.insertAtEnd(new_edge);
 			}
 			local_graph[i] = new_node;
 			largest_outedges[i] = largest_outedge;
@@ -754,6 +752,7 @@ public:
 
 	void get_graph(LongEdge *edges, int E, int *partition, int dividers)
 	{
+		actual_edges = E;
 		histogram = new int[histo_bucket_count];
 		vcount = new int[histo_bucket_count+1]; //histo buckets plus infty
 		for(int i=0; i<histo_bucket_count; i++)
@@ -947,7 +946,7 @@ public:
 		int heap_count = 0;
 		while (pq.size() > 0)
 		{
-			if (++heap_count > 500) { thisProxy[thisIndex].process_heap(); break; } // give other eps a chance to run  
+			if (++heap_count > 100) { thisProxy[thisIndex].process_heap(); break; } // give other eps a chance to run  
 			Update new_vertex_and_distance = pq.top();
 			int dest_vertex = new_vertex_and_distance.dest_vertex;
 			cost new_distance = new_vertex_and_distance.distance;
@@ -1131,7 +1130,7 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i] << " distance " << local_graph[i].distance << endl;
 		}
 		*/
-		int msg_stats[4+histo_bucket_count];
+		int msg_stats[5+histo_bucket_count];
 		msg_stats[0] = wasted_updates;
 		msg_stats[1] = rejected_updates;
 		for(int i=0; i<histo_bucket_count + 1; i++)
@@ -1139,8 +1138,9 @@ public:
 			msg_stats[i+2] = vcount[i];
 		}
 		msg_stats[3+histo_bucket_count] = updates_noted;
+		msg_stats[4+histo_bucket_count] = actual_edges;
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-		contribute((4+histo_bucket_count) * sizeof(int), msg_stats, CkReduction::sum_int, cb);
+		contribute((5+histo_bucket_count) * sizeof(int), msg_stats, CkReduction::sum_int, cb);
 		// mainProxy.done();
 	}
 
