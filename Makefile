@@ -9,6 +9,9 @@ all: $(BINARY)
 
 .PHONY = clean
 
+run_sssp_smp: weighted_htram_smp
+	./weighted_htram_smp 10000 160000 100 1 1 +p8 +ppn 1 +setcpuaffinity ++local
+
 graph_serial: graph_serial.cpp
 	$(CHARMC) graph_serial.ci
 	$(CHARMC) graph_serial.cpp -o $@
