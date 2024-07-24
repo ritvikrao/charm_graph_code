@@ -5,14 +5,14 @@ mainmodule weighted_htram_smp
   readonly CProxy_SsspChares arr;
   readonly CProxy_SharedInfo shared;
   readonly int N;
-  readonly int V;
+  readonly long V;
   readonly int M;
-  readonly int average_degree;
+  readonly long average_degree;
   readonly int S;
-  readonly int num_global_edges;
+  readonly long num_global_edges;
   readonly int generate_mode;
   readonly cost lmax;
-  readonly int average;
+  readonly long average;
   readonly int buffer_size;
   readonly int histo_bucket_count;
   readonly int initial_threshold;
@@ -24,9 +24,9 @@ mainmodule weighted_htram_smp
     entry Main(CkArgMsg* m);
     entry [reductiontarget] void begin(cost max_sum); //wait for all chares to receive graph partition, register qd callback here (callback to done method), start algorithm
     entry void quiescence_detected(); //bcast to chares to print distances
-    entry [reductiontarget, expedited] void reduce_histogram(int histo_values[N], int histo_length);
-    entry [reductiontarget] void done(int msg_stats[N], int N); //bcast to chares to print results and end program
-    entry [reductiontarget] void check_buffer_done(int msg_stats[N], int N);
+    entry [reductiontarget, expedited] void reduce_histogram(long histo_values[N], int histo_length);
+    entry [reductiontarget] void done(long msg_stats[N], int N); //bcast to chares to print results and end program
+    entry [reductiontarget] void check_buffer_done(long msg_stats[N], int N);
     entry [reductiontarget] void done_max_cost(cost max_cost);
   };
   array [1D] SsspChares
@@ -34,8 +34,8 @@ mainmodule weighted_htram_smp
     entry SsspChares(CkGroupID tram_id);
     entry void initiate_pointers();
     entry [whenidle] bool idle_triggered();
-    entry void generate_local_graph(int _num_vertices, int _num_edges, int partition[dividers], int dividers);
-    entry void get_graph(LongEdge edges[E], int E, int partition[dividers], int dividers); //gets graph partition
+    entry void generate_local_graph(long _num_vertices, long _num_edges, long partition[dividers], int dividers);
+    entry void get_graph(LongEdge edges[E], long E, long partition[dividers], int dividers); //gets graph partition
     entry void start_algo(Update new_vertex_and_distance);
     entry void process_heap();
     entry void process_update(Update new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares

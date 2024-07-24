@@ -28,21 +28,21 @@ CProxy_Main mainProxy;
 CProxy_SsspChares arr;
 CProxy_SharedInfo shared;
 int N;	  // number of processors
-int V;	  // number of vertices
+long V;	  // number of vertices
 int M = 1024; // divisor for dest_table (must be power of 2)
-int num_global_edges;
-int average_degree;
-int generate_mode;
-int S;
-cost lmax; // integer maximum
-int average; // average edge count per pe
+long num_global_edges; //number of global edges in the graph (used when graph is generated)
+long average_degree; //average degree of graph
+int generate_mode; //0 = read from file, 1 = generate automatically
+int S; //seed for randomization
+cost lmax; // long maximum
+long average; // average edge count per pe
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
-int initial_threshold = 3;
+int initial_threshold = 3; //initial histo threshold
 // tram constants
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
 double flush_timer = 0.01; // milliseconds
-bool enable_buffer_flushing = false;
+bool enable_buffer_flushing = false; //true = buffer flushes at interval specified by flush_timer
 
 void fast_exit(void *obj, double time);
 
@@ -62,15 +62,13 @@ struct ComparePairs
 
 class Main : public CBase_Main
 {
-	// CkVec<Node> graph;
 private:
-	// int not_returned;
-	int start_vertex;
-	int *partition_index;
+	long start_vertex;
+	long *partition_index;
 	double start_time;
 	double read_time;
 	double total_time;
-	int max_index;
+	long max_index;
 	int threshold_change_counter;
 	int previous_threshold;
 	int reduction_counts = 0;
@@ -92,7 +90,7 @@ public:
 	Main(CkArgMsg *m)
 	{
 		N = CkNumPes();
-		V = atoi(m->argv[1]); // read in number of vertices
+		V = atol(m->argv[1]); // read in number of vertices
 		if (!m->argv[1])
 		{
 			ckout << "Missing vertex count" << endl;
@@ -110,7 +108,7 @@ public:
 			ckout << "Missing random seed" << endl;
 			CkExit(0);
 		}
-		start_vertex = atoi(m->argv[4]); // number of beginning vertex
+		start_vertex = atol(m->argv[4]); // number of beginning vertex
 		if (!m->argv[4])
 		{
 			ckout << "Missing start vertex" << endl;
@@ -132,29 +130,29 @@ public:
 		arr = CProxy_SsspChares::ckNew(tram_proxy.ckGetGroupID(), N);
 		mainProxy = thisProxy;
 		arr.initiate_pointers();
-		partition_index = new int[N + 1]; // last index=maximum index
+		partition_index = new long[N + 1]; // last index=maximum index
 		lmax = std::numeric_limits<cost>::max();
 		start_time = CkWallTimer();
 		if(generate_mode==1)
 		{
-			num_global_edges = std::stoi(file_name);
+			num_global_edges = std::stol(file_name);
 			#ifdef INFO_PRINTS
 			ckout << "Graph will be automatically generated with " << V << " vertices and " << num_global_edges << " edges" << endl;
 			#endif
 			average_degree = num_global_edges / V;
 			//for each pe, generate a random vertex and edge count, and send to pes
-			int remaining_vertices = V;
-			int current_start_index = 0; //tracks start vertex for indices 
+			long remaining_vertices = V;
+			long current_start_index = 0; //tracks start vertex for indices 
 			std::mt19937 generator(S);
-			std::uniform_int_distribution<int> edge_count_distribution(((num_global_edges * 4) / (N * 5)), (num_global_edges * 6 / (N * 5))); //average += 20%
-			std::uniform_int_distribution<int> vertex_count_distribution(((V * 4) / (N * 5)), ((V * 6) / (N * 5))); //average += 20%
-			int *vertex_counts = new int[N];
-			int *edge_counts = new int[N];
+			std::uniform_int_distribution<long> edge_count_distribution(((num_global_edges * 4) / (N * 5)), (num_global_edges * 6 / (N * 5))); //average += 20%
+			std::uniform_int_distribution<long> vertex_count_distribution(((V * 4) / (N * 5)), ((V * 6) / (N * 5))); //average += 20%
+			long *vertex_counts = new long[N];
+			long *edge_counts = new long[N];
 			for(int i=0; i<N; i++)
 			{
 				partition_index[i] = current_start_index;
-				int vertex_count = vertex_count_distribution(generator);
-				int edge_count = edge_count_distribution(generator);
+				long vertex_count = vertex_count_distribution(generator);
+				long edge_count = edge_count_distribution(generator);
 				if(i == N - 1) vertex_count = remaining_vertices; //make sure num_vertices = V
 				remaining_vertices -= vertex_count;
 				vertex_counts[i] = vertex_count;
@@ -174,17 +172,16 @@ public:
 			#endif
 			unsigned int seed = (unsigned int)S;
 			srand(seed);
-			int first_node = 0;
 			// read file
 			std::ifstream file(file_name);
 			std::string readbuf;
 			std::string delim = ",";
 			// iterate through edge list
 			CkVec<LongEdge> edges;
-			int *incoming_count = new int[V];
+			int *incoming_count = new int[V]; //how many times does each vertex appear in the edge list
 			for(int i=0; i<V; i++) incoming_count[i] = 0;
-			max_index = 0;
-			int edges_read = 0;
+			max_index = 0; //maximum vertex index
+			long edges_read = 0; //number of edges read
 			while (getline(file, readbuf))
 			{
 				// get nodes on each edge
@@ -193,8 +190,8 @@ public:
 				// make random distance
 				cost edge_distance = (cost) rand() % 1000 + 1;
 				// string to int
-				int node_num = std::stoi(token); //v
-				int node_num_2 = std::stoi(token2); //w
+				long node_num = std::stol(token); //v
+				long node_num_2 = std::stol(token2); //w
 				incoming_count[node_num_2]++;
 				// find the maximum vertex index
 				if (node_num > max_index)
@@ -334,20 +331,20 @@ public:
 	 * The idea is to get the distribution of update values, then 
 	 * do local processing to select thresholds
 	*/
-	void reduce_histogram(int *histo_values, int histo_length)
+	void reduce_histogram(long *histo_values, int histo_length)
 	{
 		reduction_times.push_back(CkWallTimer());
 		reduction_counts++;
-		int histogram_sum = 0;
+		long histogram_sum = 0;
 		int first_nonzero = -1;
-		int updates_processed = histo_values[histo_bucket_count + 1];
-		int updates_created = histo_values[histo_bucket_count];
-		int bfs_processed = histo_values[histo_bucket_count+2];
-		int done_vertex_count = histo_values[histo_bucket_count+3];
-		int updates_noted = histo_values[histo_bucket_count+4];
+		long updates_processed = histo_values[histo_bucket_count + 1];
+		long updates_created = histo_values[histo_bucket_count];
+		long bfs_processed = histo_values[histo_bucket_count+2];
+		long done_vertex_count = histo_values[histo_bucket_count+3];
+		long updates_noted = histo_values[histo_bucket_count+4];
 		int heap_threshold = 0;
 		int tram_threshold = 0;
-		int active_counter = 0;
+		long active_counter = 0;
 		//calculate the total histogram sum
 		for(int i=0; i<histo_bucket_count; i++)
 		{
@@ -449,8 +446,9 @@ public:
 	/**
 	 * returns when all buffers are checked
 	 */
-	void check_buffer_done(int *msg_stats, int N)
+	void check_buffer_done(long *msg_stats, int N)
 	{
+		/*
 		int net_messages = msg_stats[1] - msg_stats[0]; // updates_processed - updates_created
 		if (net_messages == 1)							// difference of 1 because of initial send
 		{
@@ -466,9 +464,10 @@ public:
 			CkStartQD(cb);
 			arr.keep_going();
 		}
+		*/
 	}
 
-	void done(int *msg_stats, int N)
+	void done(long *msg_stats, int N)
 	{
 		// ends program, prints that program is ended
 		// ckout << "Completed" << endl;
@@ -485,7 +484,7 @@ public:
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		ckout << "Number of reductions: " << reduction_counts << endl;
 		ckout << "Updates noted: " << msg_stats[3+histo_bucket_count] << endl;
-		int vcount_sum = 0;
+		long vcount_sum = 0;
 		ckout << "Vcount: [ ";
 		for(int i=0; i<histo_bucket_count+1; i++)
 		{
@@ -540,38 +539,38 @@ class SsspChares : public CBase_SsspChares
 {
 private:
 	Node *local_graph; //structure to hold vertices assigned to this pe
-	int start_vertex; //global index of lowest vertex assigned to this pe
-	int num_vertices=0; //number of vertices assigned to this pe
-	int updates_created_locally=0; //number of update messages sent
-	int updates_processed_locally=0; //number of update messages received
-	int *partition_index; //defines boundaries of indices for each pe
-	int wasted_updates=0; //number of updates that don't have the final answer
-	int rejected_updates=0; //number of updates that don't decrease a distance value/create more messages
+	long start_vertex; //global index of lowest vertex assigned to this pe
+	long num_vertices=0; //number of vertices assigned to this pe
+	long updates_created_locally=0; //number of update messages sent
+	long updates_processed_locally=0; //number of update messages received
+	long *partition_index; //defines boundaries of indices for each pe
+	long wasted_updates=0; //number of updates that don't have the final answer
+	long rejected_updates=0; //number of updates that don't decrease a distance value/create more messages
 	tram_proxy_t tram_proxy;
 	tram_t *tram; //tram library
 	SharedInfo *shared_local;
 	std::priority_queue<Update, std::vector<Update>, ComparePairs> pq; //heap of messages
-	int *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
-	int *vcount; //array of vertex distances, calculated with same formula as histogram
+	long *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
+	long *vcount; //array of vertex distances, calculated with same formula as histogram
 	int heap_threshold; //highest bucket where messages can be pushed to heap
 	int tram_threshold; //highest bucket where messages can be pushed to tram
 	double bucket_multiplier; //constant to calculate bucket
 	std::vector<Update> *tram_hold; //hold buffer for messages not in tram limit
 	std::vector<Update> *pq_hold; //hold for heap messages
-	int bfs_created=0; //bfs created messages
-	int bfs_processed=0; //bfs processed messages
-	int updates_noted=0;
+	long bfs_created=0; //bfs created messages
+	long bfs_processed=0; //bfs processed messages
+	int updates_noted=0; //updates that have either updated a vertex value, or are confirmed to not be an improvement
 	int *dest_table; //destination table for faster pe calculation
 	std::vector<Update> *bfs_hold; // bfs hold (control distance explosion due to bfs)
 	int current_phase=0;
-	int actual_edges=0;
+	long actual_edges=0; //when graph is generated, here's how many edges actually got generated
 
 public:
 
 	/**
 	 * Gets the destination processor for a given vertex 
 	*/
-	int get_dest_proc(int vertex)
+	int get_dest_proc(long vertex)
 	{
 		int dest_proc = 0;
 		for (int j = 0; j < N; j++)
@@ -590,11 +589,11 @@ public:
 		return dest_proc;
 	}
 
-	int get_dest_proc_fast(int vertex)
+	int get_dest_proc_fast(long vertex)
 	{
 		//look up x/M and 1+x/M
 		int xm_pe, xm_plus_one_pe;
-		int dest_table_index = vertex / M;
+		long dest_table_index = vertex / M;
 		// if this points to the end of dest_table
 		if(dest_table_index >= (V / M) - 1)
 		{
@@ -652,21 +651,21 @@ public:
 		return true;
 	}
 
-	void generate_local_graph(int _num_vertices, int _num_edges, int *partition, int dividers)
+	void generate_local_graph(long _num_vertices, long _num_edges, long *partition, int dividers)
 	{
 		#ifdef INFO_PRINTS
 		ckout << "Generating local graph on PE " << CkMyPe() << " with " << _num_vertices << " vertices and " << _num_edges << " edges" << endl;
 		#endif
 		num_vertices = _num_vertices;
-		histogram = new int[histo_bucket_count];
-		vcount = new int[histo_bucket_count+1]; //histo buckets plus infty
+		histogram = new long[histo_bucket_count];
+		vcount = new long[histo_bucket_count+1]; //histo buckets plus infty
 		for(int i=0; i<histo_bucket_count; i++)
 		{
 			histogram[i] = 0;
 			vcount[i] = 0;
 		}
 		vcount[histo_bucket_count] = 0;
-		partition_index = new int[dividers];
+		partition_index = new long[dividers];
 		for (int i = 0; i < dividers; i++)
 		{
 			partition_index[i] = partition[i];
@@ -687,9 +686,9 @@ public:
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		cost *largest_outedges = new cost[num_vertices];
 		std::mt19937 generator(S);
-		int average_degree = (_num_edges / _num_vertices) + 1;
-		std::uniform_int_distribution<int> edge_count_distribution(0,2*average_degree);
-		std::uniform_int_distribution<int> edge_dest_distribution(0,V);
+		long average_degree = (_num_edges / _num_vertices) + 1;
+		std::uniform_int_distribution<long> edge_count_distribution(0,2*average_degree);
+		std::uniform_int_distribution<long> edge_dest_distribution(0,V);
 		std::uniform_int_distribution<cost> edge_weight_distribution(1,1000);
 		for(int i=0; i<num_vertices; i++)
 		{
@@ -701,9 +700,9 @@ public:
 			CkVec<Edge> adj;
 			new_node.adjacent = adj;
 			vcount[histo_bucket_count]++;
-			int largest_outedge = 0;
-			int num_edges = edge_count_distribution(generator);
-			int *edge_destinations = new int[num_edges];
+			long largest_outedge = 0;
+			long num_edges = edge_count_distribution(generator);
+			long *edge_destinations = new long[num_edges];
 			for(int i=0; i<num_edges; i++)
 			{
 				edge_destinations[i] = -1;
@@ -713,7 +712,7 @@ public:
 				actual_edges++;
 				Edge new_edge;
 				bool repeated = true;
-				int candidate_end = edge_dest_distribution(generator);
+				long candidate_end = edge_dest_distribution(generator);
 				//logic to keep destinations different
 				while(repeated)
 				{
@@ -750,18 +749,18 @@ public:
 		contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
 	}
 
-	void get_graph(LongEdge *edges, int E, int *partition, int dividers)
+	void get_graph(LongEdge *edges, long E, long *partition, int dividers)
 	{
 		actual_edges = E;
-		histogram = new int[histo_bucket_count];
-		vcount = new int[histo_bucket_count+1]; //histo buckets plus infty
-		for(int i=0; i<histo_bucket_count; i++)
+		histogram = new long[histo_bucket_count];
+		vcount = new long[histo_bucket_count+1]; //histo buckets plus infty
+		for(long i=0; i<histo_bucket_count; i++)
 		{
 			histogram[i] = 0;
 			vcount[i] = 0;
 		}
 		vcount[histo_bucket_count] = 0;
-		partition_index = new int[dividers];
+		partition_index = new long[dividers];
 		for (int i = 0; i < dividers; i++)
 		{
 			partition_index[i] = partition[i];
@@ -852,7 +851,7 @@ public:
 		else return result;
 	}
 
-	void generate_updates(int local_index, bool bfs)
+	void generate_updates(long local_index, bool bfs)
 	{
 		for (int i = 0; i < local_graph[local_index].adjacent.size(); i++)
 		{ 
@@ -887,8 +886,8 @@ public:
 	 */
 	void process_update(Update new_vertex_and_distance)
 	{
-		int dest_vertex = new_vertex_and_distance.dest_vertex;
-		int local_index = dest_vertex - start_vertex;
+		long dest_vertex = new_vertex_and_distance.dest_vertex;
+		long local_index = dest_vertex - start_vertex;
 		cost this_cost = new_vertex_and_distance.distance;
 		int this_bucket = get_histo_bucket(this_cost);
 		if (this_cost < local_graph[local_index].distance)
@@ -948,7 +947,7 @@ public:
 		{
 			if (++heap_count > 100) { thisProxy[thisIndex].process_heap(); break; } // give other eps a chance to run  
 			Update new_vertex_and_distance = pq.top();
-			int dest_vertex = new_vertex_and_distance.dest_vertex;
+			long dest_vertex = new_vertex_and_distance.dest_vertex;
 			cost new_distance = new_vertex_and_distance.distance;
 			int this_histo_bucket = get_histo_bucket(new_distance);
 			if(this_histo_bucket > heap_threshold)
@@ -962,7 +961,7 @@ public:
 				// get local branch of tram proxy
 				// tram_t *tram = tram_proxy.ckLocalBranch();
 
-				int local_index = dest_vertex - start_vertex;
+				long local_index = dest_vertex - start_vertex;
 				//if (CkMyPe()==0) ckout << "Incoming local pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 				//  if the incoming distance is actually smaller
 				if (new_distance < local_graph[local_index].distance)
@@ -1001,11 +1000,13 @@ public:
 	void check_buffer()
 	{
 		// ckout << "Checking message stats" << endl;
+		/*
 		int msg_stats[2];
 		msg_stats[0] = updates_created_locally;
 		msg_stats[1] = updates_processed_locally;
 		CkCallback cb(CkReductionTarget(Main, check_buffer_done), mainProxy);
 		contribute(2 * sizeof(int), msg_stats, CkReduction::sum_int, cb);
+		*/
 	}
 
 	/**
@@ -1013,10 +1014,10 @@ public:
 	*/
 	void contribute_histogram(int behind_first_nonzero)
 	{
-		int donecount = 0;
+		long donecount = 0;
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
-		int *info_array = new int[histo_bucket_count+5];
+		long *info_array = new long[histo_bucket_count+5];
 		std::copy(histogram, histogram + histo_bucket_count, info_array);
 		info_array[histo_bucket_count] = updates_created_locally;
 		info_array[histo_bucket_count+1] = updates_processed_locally;
@@ -1024,7 +1025,7 @@ public:
 		for (int i=0; i<=behind_first_nonzero;i++) donecount += vcount[i];
 		info_array[histo_bucket_count+3] = donecount;
 		info_array[histo_bucket_count+4] = updates_noted;
-		contribute((histo_bucket_count+5) * sizeof(int), info_array, CkReduction::sum_int, cb);
+		contribute((histo_bucket_count+5) * sizeof(long), info_array, CkReduction::sum_long, cb);
 	}
 
 	/**
@@ -1063,12 +1064,9 @@ public:
 	*/
 	void current_thresholds(int _heap_threshold, int _tram_threshold, int behind_first_nonzero, int phase)
 	{
-		//if(CkMyPe()==17) ckout << "Wasted on PE 17 = " << wasted_updates << " Rejected= " << rejected_updates << " Time: " << CkWallTimer() << endl;
 		heap_threshold = _heap_threshold;
 		tram_threshold = _tram_threshold;
 		current_phase = phase;
-		int counter = 0;
-		//ckout << "Time when threshold received: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << endl;
 		//after every reduction, push out messages in hold that are in limit
 		for(int i=0; i<=tram_threshold; i++)
 		{
@@ -1095,8 +1093,8 @@ public:
 		{
 			for(int j=0; j<bfs_hold[i].size(); j++)
 			{ 
-				int local_index = bfs_hold[i][j].dest_vertex - start_vertex;
-				int this_cost = bfs_hold[i][j].distance;
+				long local_index = bfs_hold[i][j].dest_vertex - start_vertex;
+				cost this_cost = bfs_hold[i][j].distance;
 				int this_bucket = get_histo_bucket(this_cost);
 				if (this_cost == local_graph[local_index].distance)
 				{
@@ -1113,7 +1111,6 @@ public:
 			}
 			bfs_hold[i].clear();
 		}
-		//ckout << "Timer: " << CkWallTimer() << " PE: " << CkMyPe() << " size: " << tram_hold.size() << " count: " << counter << endl;
 		tram->tflush();
 		arr[thisIndex].process_heap();
 		contribute_histogram(behind_first_nonzero);
@@ -1131,7 +1128,7 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i] << " distance " << local_graph[i].distance << endl;
 		}
 		*/
-		int msg_stats[5+histo_bucket_count];
+		long msg_stats[5+histo_bucket_count];
 		msg_stats[0] = wasted_updates;
 		msg_stats[1] = rejected_updates;
 		for(int i=0; i<histo_bucket_count + 1; i++)
@@ -1141,7 +1138,7 @@ public:
 		msg_stats[3+histo_bucket_count] = updates_noted;
 		msg_stats[4+histo_bucket_count] = actual_edges;
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-		contribute((5+histo_bucket_count) * sizeof(int), msg_stats, CkReduction::sum_int, cb);
+		contribute((5+histo_bucket_count) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
 		// mainProxy.done();
 	}
 

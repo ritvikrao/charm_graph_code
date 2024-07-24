@@ -4,7 +4,7 @@ typedef long cost;
 
 class Edge{
 	public:
-		int end;
+		long end;
 		cost distance;
 	Edge(){}
 	void pup(PUP::er &p) 
@@ -16,7 +16,7 @@ class Edge{
 
 class Update{
 	public:
-		int dest_vertex;
+		long dest_vertex;
 		cost distance;
 	Update(){}
 	void pup(PUP::er &p) 
@@ -28,7 +28,7 @@ class Update{
 
 class Node{
 	public:
-		int index;
+		long index;
 		int home_process;
 		cost distance;
 		CkVec<Edge> adjacent;
@@ -37,27 +37,29 @@ class Node{
 	Node(){}
 	explicit operator bool() const
       	{ return index > -1; }
-    	void pup(PUP::er &p) {
-			p | index;
-			p | home_process;
-			p | distance;
-			p | adjacent;
-			p | send_updates;
-    	}
+	void pup(PUP::er &p) 
+	{
+		p | index;
+		p | home_process;
+		p | distance;
+		p | adjacent;
+		p | send_updates;
+	}
 };
 
 class LongEdge
 {
 	public:
-		int begin;
-        int end;
+		long begin;
+        long end;
         cost distance;
 	LongEdge(){}
-        void pup(PUP::er &p) {
-        p | begin;
+	void pup(PUP::er &p) 
+	{
+		p | begin;
 		p | end;
-        p | distance;
-        }
+		p | distance;
+	}
 };
 
 
