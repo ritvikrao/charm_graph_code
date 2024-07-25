@@ -28,18 +28,14 @@ class Update{
 
 class Node{
 	public:
-		long index;
 		int home_process;
 		cost distance;
 		CkVec<Edge> adjacent;
 		bool send_updates;
 	
 	Node(){}
-	explicit operator bool() const
-      	{ return index > -1; }
 	void pup(PUP::er &p) 
 	{
-		p | index;
 		p | home_process;
 		p | distance;
 		p | adjacent;

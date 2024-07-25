@@ -35,7 +35,6 @@ long average_degree; //average degree of graph
 int generate_mode; //0 = read from file, 1 = generate automatically
 int S; //seed for randomization
 cost lmax; // long maximum
-long average; // average edge count per pe
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
 int initial_threshold = 3; //initial histo threshold
@@ -221,7 +220,7 @@ public:
 			read_time = CkWallTimer() - start_time;
 			// assign nodes to location
 			std::vector<LongEdge> edge_lists[N];
-			average = edges.size() / N;
+			long average = edges.size() / N;
 			for (int i = 0; i < edges.size(); i++)
 			{
 				int dest_proc = i / average;
@@ -342,8 +341,10 @@ public:
 		long bfs_processed = histo_values[histo_bucket_count+2];
 		long done_vertex_count = histo_values[histo_bucket_count+3];
 		long updates_noted = histo_values[histo_bucket_count+4];
+		long bfs_noted = histo_values[histo_bucket_count+5];
 		int heap_threshold = 0;
 		int tram_threshold = 0;
+		int bfs_threshold = heap_threshold;
 		long active_counter = 0;
 		//calculate the total histogram sum
 		for(int i=0; i<histo_bucket_count; i++)
@@ -356,7 +357,7 @@ public:
 		}
 		#ifdef INFO_PRINTS
 		ckout << "Updates: created: " << updates_created << ", noted: " << updates_noted << ", processed: " << updates_processed << 
-		", BFS: " << bfs_processed << ", Done vertices: " << done_vertex_count;
+		", BFS: " << bfs_processed << ", Done vertices: " << done_vertex_count << ", BFS noted: " << bfs_noted;
 		#endif
 		/*
 		if ((bfs_processed == done_vertex_count) && (bfs_processed > 1000)) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
@@ -401,6 +402,7 @@ public:
 			}
 			
 		}
+		bfs_threshold = heap_threshold;
 		active_counter = 0;
 		for(int i=0; i<histo_bucket_count; i++)
 		{
@@ -411,32 +413,24 @@ public:
 				break;
 			}
 		}
-		/*
-		if ((heap_threshold-first_nonzero) > activeBucketMax)
-			heap_threshold = first_nonzero + activeBucketMax;
-		
-			if ((tram_threshold - heap_threshold) > 5)
-			tram_threshold = heap_threshold + 5;  // tram_threshold no more than 5 buckets ahead of heap_threshold
-		*/
 		//in case of floating point weirdness
 		if(histogram_sum==0)
 		{
 			heap_threshold = histo_bucket_count - 1;
 			tram_threshold = histo_bucket_count - 1;
-			
+			bfs_threshold = histo_bucket_count - 1;
 		}
 		if(heap_threshold != previous_threshold)
 		{
 			previous_threshold = heap_threshold;
 			threshold_change_counter++;
-			//arr.get_bucket_limit(heap_threshold, tram_threshold, first_nonzero - 1);
 		}
 		#ifdef INFO_PRINTS
 		ckout << ", Heap threshold: " << heap_threshold << ", Tram: " << 
-		tram_threshold << ", first nonzero: " << first_nonzero << ", t= " << CkWallTimer() << endl;
+		tram_threshold << ", BFS threshold: " << bfs_threshold << ", first nonzero: " << first_nonzero << ", t= " << CkWallTimer() << endl;
 		#endif
 		//arr.contribute_histogram(first_nonzero-1);
-		arr.current_thresholds(heap_threshold, tram_threshold, first_nonzero - 1, current_phase);
+		arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold, first_nonzero - 1, current_phase);
 		
 		//start next reduction round
 		//CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
@@ -554,6 +548,7 @@ private:
 	long *vcount; //array of vertex distances, calculated with same formula as histogram
 	int heap_threshold; //highest bucket where messages can be pushed to heap
 	int tram_threshold; //highest bucket where messages can be pushed to tram
+	int bfs_threshold;
 	double bucket_multiplier; //constant to calculate bucket
 	std::vector<Update> *tram_hold; //hold buffer for messages not in tram limit
 	std::vector<Update> *pq_hold; //hold for heap messages
@@ -564,6 +559,7 @@ private:
 	std::vector<Update> *bfs_hold; // bfs hold (control distance explosion due to bfs)
 	int current_phase=0;
 	long actual_edges=0; //when graph is generated, here's how many edges actually got generated
+	long bfs_noted=0;
 
 public:
 
@@ -679,29 +675,34 @@ public:
 		local_graph = new Node[num_vertices];
 		heap_threshold = initial_threshold;
 		tram_threshold = initial_threshold + 2;
+		bfs_threshold = heap_threshold;
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		bucket_multiplier = histo_bucket_count / (512 * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		cost *largest_outedges = new cost[num_vertices];
-		std::mt19937 generator(S);
-		long average_degree = (_num_edges / _num_vertices) + 1;
-		std::uniform_int_distribution<long> edge_count_distribution(0,2*average_degree);
-		std::uniform_int_distribution<long> edge_dest_distribution(0,V);
-		std::uniform_int_distribution<cost> edge_weight_distribution(1,1000);
 		for(int i=0; i<num_vertices; i++)
 		{
 			Node new_node;
 			new_node.home_process = thisIndex;
-			new_node.index = i + start_vertex;
 			new_node.distance = lmax;
 			new_node.send_updates = false;
 			CkVec<Edge> adj;
 			new_node.adjacent = adj;
 			vcount[histo_bucket_count]++;
 			long largest_outedge = 0;
+			std::mt19937 generator( (long) i + start_vertex);
+			std::uniform_int_distribution<long> edge_count_distribution(0,2*average_degree);
+			std::uniform_int_distribution<long> edge_dest_distribution(0,V);
+			std::uniform_int_distribution<cost> edge_weight_distribution(1,1000);
 			long num_edges = edge_count_distribution(generator);
+			/*
+			if(i+start_vertex < 10) 
+			{
+				ckout << "Vertex " << i+start_vertex << " has " << num_edges << " edges" << endl;
+			}
+			*/
 			long *edge_destinations = new long[num_edges];
 			for(int i=0; i<num_edges; i++)
 			{
@@ -775,6 +776,7 @@ public:
 		local_graph = new Node[num_vertices];
 		heap_threshold = initial_threshold;
 		tram_threshold = initial_threshold + 2;
+		bfs_threshold = heap_threshold;
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
@@ -786,7 +788,6 @@ public:
 			{
 				Node new_node;
 				new_node.home_process = thisIndex;
-				new_node.index = i + start_vertex;
 				new_node.distance = lmax;
 				new_node.send_updates = false;
 				CkVec<Edge> adj;
@@ -896,9 +897,10 @@ public:
 			updates_noted++;
 			if(local_graph[local_index].distance == lmax)
 			{ 
+				bfs_noted++;
 				local_graph[local_index].distance = this_cost;
 				vcount[histo_bucket_count]--;
-				if (this_bucket > heap_threshold)
+				if (this_bucket > bfs_threshold)
 				{
 					local_graph[local_index].send_updates = true;
 			      	bfs_hold[this_bucket].push_back(new_vertex_and_distance);
@@ -1017,7 +1019,7 @@ public:
 		long donecount = 0;
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
-		long *info_array = new long[histo_bucket_count+5];
+		long *info_array = new long[histo_bucket_count+6];
 		std::copy(histogram, histogram + histo_bucket_count, info_array);
 		info_array[histo_bucket_count] = updates_created_locally;
 		info_array[histo_bucket_count+1] = updates_processed_locally;
@@ -1025,7 +1027,8 @@ public:
 		for (int i=0; i<=behind_first_nonzero;i++) donecount += vcount[i];
 		info_array[histo_bucket_count+3] = donecount;
 		info_array[histo_bucket_count+4] = updates_noted;
-		contribute((histo_bucket_count+5) * sizeof(long), info_array, CkReduction::sum_long, cb);
+		info_array[histo_bucket_count+5] = bfs_noted;
+		contribute((histo_bucket_count+6) * sizeof(long), info_array, CkReduction::sum_long, cb);
 	}
 
 	/**
@@ -1062,10 +1065,11 @@ public:
 	/**
 	 * Broadcasts bucket limit
 	*/
-	void current_thresholds(int _heap_threshold, int _tram_threshold, int behind_first_nonzero, int phase)
+	void current_thresholds(int _heap_threshold, int _tram_threshold, int _bfs_threshold, int behind_first_nonzero, int phase)
 	{
 		heap_threshold = _heap_threshold;
 		tram_threshold = _tram_threshold;
+		bfs_threshold = _bfs_threshold;
 		current_phase = phase;
 		//after every reduction, push out messages in hold that are in limit
 		for(int i=0; i<=tram_threshold; i++)
@@ -1089,7 +1093,7 @@ public:
 			}
 			pq_hold[i].clear();
 		}
-		for(int i=0; i<=heap_threshold; i++)
+		for(int i=0; i<=bfs_threshold; i++)
 		{
 			for(int j=0; j<bfs_hold[i].size(); j++)
 			{ 
