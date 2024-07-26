@@ -152,7 +152,7 @@ public:
 				partition_index[i] = current_start_index;
 				long vertex_count = vertex_count_distribution(generator);
 				long edge_count = edge_count_distribution(generator);
-				if(i == N - 1) vertex_count = remaining_vertices; //make sure num_vertices = V
+				if((i == N - 1) && (vertex_count > remaining_vertices)) vertex_count = remaining_vertices; //make sure num_vertices = V
 				remaining_vertices -= vertex_count;
 				vertex_counts[i] = vertex_count;
 				edge_counts[i] = edge_count;
@@ -652,7 +652,7 @@ public:
 		#ifdef INFO_PRINTS
 		ckout << "Generating local graph on PE " << CkMyPe() << " with " << _num_vertices << " vertices and " << _num_edges << " edges" << endl;
 		#endif
-		num_vertices = _num_vertices;
+		//num_vertices = _num_vertices;
 		histogram = new long[histo_bucket_count];
 		vcount = new long[histo_bucket_count+1]; //histo buckets plus infty
 		for(int i=0; i<histo_bucket_count; i++)
@@ -667,6 +667,7 @@ public:
 			partition_index[i] = partition[i];
 		}
 		start_vertex = partition_index[thisIndex];
+		num_vertices = partition_index[CkMyPe()+1] - partition_index[CkMyPe()];
 		dest_table = new int[V / M];
 		for(int i=0, j=0; i < V; j++, i=j*M)
 		{
@@ -708,6 +709,7 @@ public:
 			{
 				edge_destinations[i] = -1;
 			}
+			if((CkMyPe()==N-1) && (i >= _num_vertices)) continue; 
 			for(int i=0; i<num_edges; i++)
 			{
 				actual_edges++;
