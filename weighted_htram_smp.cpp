@@ -159,6 +159,12 @@ public:
 				current_start_index += vertex_count;
 			}
 			partition_index[N] = V;
+			ckout << "Partition index: ["; 
+			for(int i=0; i<N+1; i++)
+			{
+				ckout << partition_index[i] << ", ";
+			}
+			ckout << "]" << endl;
 			for(int i=0; i<N; i++)
 			{
 				arr[i].generate_local_graph(vertex_counts[i], edge_counts[i], partition_index, N+1);
@@ -695,15 +701,9 @@ public:
 			long largest_outedge = 0;
 			std::mt19937 generator( (long) i + start_vertex);
 			std::uniform_int_distribution<long> edge_count_distribution(0,2*average_degree);
-			std::uniform_int_distribution<long> edge_dest_distribution(0,V);
+			std::uniform_int_distribution<long> edge_dest_distribution(0,V-1);
 			std::uniform_int_distribution<cost> edge_weight_distribution(1,1000);
 			long num_edges = edge_count_distribution(generator);
-			/*
-			if(i+start_vertex < 10) 
-			{
-				ckout << "Vertex " << i+start_vertex << " has " << num_edges << " edges" << endl;
-			}
-			*/
 			long *edge_destinations = new long[num_edges];
 			for(int i=0; i<num_edges; i++)
 			{
