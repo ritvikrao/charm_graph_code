@@ -895,6 +895,7 @@ public:
 		int this_bucket = get_histo_bucket(this_cost);
 		if (this_cost < local_graph[local_index].distance)
 		{
+			/*
 			vcount[this_bucket]++;
 			updates_noted++;
 			if(local_graph[local_index].distance == lmax)
@@ -927,6 +928,22 @@ public:
 				}
 				else pq.push(new_vertex_and_distance);
 			}
+			*/
+			vcount[this_bucket]++;
+			if(local_graph[local_index].distance == lmax)
+			{
+				vcount[histo_bucket_count]--;
+			}
+			else vcount[get_histo_bucket(local_graph[local_index].distance)]--;
+			local_graph[local_index].distance = this_cost;
+			updates_noted++;
+			local_graph[local_index].send_updates = true;
+			if(this_bucket > heap_threshold)
+			{
+				pq_hold[this_bucket].push_back(new_vertex_and_distance);
+			}
+			else pq.push(new_vertex_and_distance);
+			//pq_hold[this_bucket].push_back(new_vertex_and_distance);
 		}
 		else
 		{
@@ -946,6 +963,52 @@ public:
 	 */
 	void process_heap()
 	{
+		/*
+		for(int i=0; i<=heap_threshold; i++)//iterate to heap threshold
+		{
+			bool items_processed = false;
+			for(int j=pq_hold[i].size()-1; j>=0; j--)//iterate pq bucket in reverse
+			{
+				items_processed = true;
+				Update new_vertex_and_distance = pq_hold[i][j];
+				long dest_vertex = new_vertex_and_distance.dest_vertex;
+				cost new_distance = new_vertex_and_distance.distance;
+				int this_histo_bucket = get_histo_bucket(new_distance);
+				if(i !=this_histo_bucket) ckout << "Wrong bucket assigned" << endl;
+				pq_hold[i].pop_back();
+				long local_index = dest_vertex - start_vertex;
+				if (new_distance < local_graph[local_index].distance)
+				{
+					ckout << "**Error: picked cost from heap smaller than vertex cost" << endl;
+				}
+				else if (new_distance == local_graph[local_index].distance)
+				{
+					if(local_graph[local_index].send_updates)
+					{
+						local_graph[local_index].send_updates = false;
+						// for all neighbors
+						generate_updates(local_index, false);
+					}
+					else 
+					{
+						ckout << "**Error: picked cost that is equal to vertex cost but send_updates is false" << endl;
+					}
+				}
+				else
+				{
+					rejected_updates++;
+				}
+				wasted_updates++;
+				histogram[this_histo_bucket]--;
+				updates_processed_locally++;
+			}
+			if(items_processed)
+			{
+				arr[thisIndex].process_heap();
+				break;
+			}
+		}
+		*/
 		int heap_count = 0;
 		while (pq.size() > 0)
 		{
@@ -982,7 +1045,7 @@ public:
 					}
 					else 
 					{
-						ckout << "**Error: picked cost that is equal to vertex cost but send_updates is false" << endl;
+						//ckout << "**Error: picked cost that is equal to vertex cost but send_updates is false" << endl;
 					}
 				}
 				else
@@ -994,7 +1057,6 @@ public:
 			histogram[this_histo_bucket]--;
 			updates_processed_locally++;
 		}
-		//return true;
 	}
 
 
@@ -1038,6 +1100,7 @@ public:
 	 */
 	void keep_going()
 	{
+		/*
 		// everything in the tram hold gets added to tram
 		for(int i=0; i<histo_bucket_count; i++)
 		{
@@ -1062,6 +1125,7 @@ public:
 		}
 		tram->tflush();
 		//arr[thisIndex].process_heap();
+		*/
 	}
 
 	/**
@@ -1095,6 +1159,7 @@ public:
 			}
 			pq_hold[i].clear();
 		}
+		/*
 		for(int i=0; i<=bfs_threshold; i++)
 		{
 			for(int j=0; j<bfs_hold[i].size(); j++)
@@ -1117,6 +1182,7 @@ public:
 			}
 			bfs_hold[i].clear();
 		}
+		*/
 		tram->tflush();
 		arr[thisIndex].process_heap();
 		contribute_histogram(behind_first_nonzero);

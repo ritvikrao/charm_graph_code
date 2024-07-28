@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --nodes=1
+#SBATCH --mem=0
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=8
 #SBATCH --output=weighted_htram_smp.out
@@ -13,4 +14,4 @@
 # mkdir weighted_htram_Smp_projections
 export PPN=6
 # +commap 0-31:8 +pemap 1-31:8.6
-srun -n $SLURM_NTASKS ./weighted_htram_smp 1875000 graphs/30M.csv 100 1 +ppn $PPN +setcpuaffinity
+srun ./weighted_htram_smp 62500000 1000000000 100 1 1 +ppn $PPN +setcpuaffinity
