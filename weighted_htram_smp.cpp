@@ -15,6 +15,7 @@
 #include <random>
 
 #define INFO_PRINTS
+//#define PQ_HOLD_ONLY
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -566,6 +567,7 @@ private:
 	int current_phase=0;
 	long actual_edges=0; //when graph is generated, here's how many edges actually got generated
 	long bfs_noted=0;
+	std::vector<Update> local_updates;
 
 public:
 
@@ -938,12 +940,15 @@ public:
 			local_graph[local_index].distance = this_cost;
 			updates_noted++;
 			local_graph[local_index].send_updates = true;
+			#ifndef PQ_HOLD_ONLY
 			if(this_bucket > heap_threshold)
 			{
 				pq_hold[this_bucket].push_back(new_vertex_and_distance);
 			}
 			else pq.push(new_vertex_and_distance);
-			//pq_hold[this_bucket].push_back(new_vertex_and_distance);
+			#else
+			pq_hold[this_bucket].push_back(new_vertex_and_distance);
+			#endif
 		}
 		else
 		{
@@ -963,7 +968,7 @@ public:
 	 */
 	void process_heap()
 	{
-		/*
+		#ifdef PQ_HOLD_ONLY
 		for(int i=0; i<=heap_threshold; i++)//iterate to heap threshold
 		{
 			bool items_processed = false;
@@ -1008,7 +1013,7 @@ public:
 				break;
 			}
 		}
-		*/
+		#else
 		int heap_count = 0;
 		while (pq.size() > 0)
 		{
@@ -1057,6 +1062,7 @@ public:
 			histogram[this_histo_bucket]--;
 			updates_processed_locally++;
 		}
+		#endif
 	}
 
 
@@ -1128,6 +1134,28 @@ public:
 		*/
 	}
 
+	void clear_pq_hold()
+	{
+		//we should maintain lower bound
+		for(int i=0; i<=heap_threshold; i++)
+		{
+			for(int j=0; j<pq_hold[i].size(); j++)
+			{
+				pq.push(pq_hold[i][j]);
+			}
+			pq_hold[i].clear();
+		}
+	}
+
+	void process_local_updates()
+	{
+		for(int i=0; i<local_updates.size(); i++)
+		{
+			process_update(local_updates[i]);
+		}
+		local_updates.clear();
+	}
+
 	/**
 	 * Broadcasts bucket limit
 	*/
@@ -1138,6 +1166,7 @@ public:
 		bfs_threshold = _bfs_threshold;
 		current_phase = phase;
 		//after every reduction, push out messages in hold that are in limit
+		//replace this loop with call to tram->changethreshold(tram_threshold)
 		for(int i=0; i<=tram_threshold; i++)
 		{
 			for(int j=0; j<tram_hold[i].size(); j++)
@@ -1145,20 +1174,17 @@ public:
 				int dest_proc = get_dest_proc_fast(tram_hold[i][j].dest_vertex);
 				if(dest_proc==CkMyPe())
 				{
-					process_update(tram_hold[i][j]);
+					//process_update(tram_hold[i][j]); //todo: put it in a vector, then loop over it and call process_update
+					local_updates.push_back(tram_hold[i][j]);
 				}
-				else tram->insertValue(tram_hold[i][j], dest_proc);
+				else tram->insertValue(tram_hold[i][j], dest_proc); 
 			}
 			tram_hold[i].clear();
 		}
-		for(int i=0; i<=heap_threshold; i++)
-		{
-			for(int j=0; j<pq_hold[i].size(); j++)
-			{
-				pq.push(pq_hold[i][j]);
-			}
-			pq_hold[i].clear();
-		}
+		#ifndef PQ_HOLD_ONLY
+		arr[thisIndex].clear_pq_hold();
+		#endif
+		process_local_updates();
 		/*
 		for(int i=0; i<=bfs_threshold; i++)
 		{
