@@ -8,6 +8,7 @@
 #ifdef IDLE_FLUSH
 #define PARTIAL_FLUSH 0.2
 #endif
+#define _K 40
 #define ALL_BUF_TYPES
 #include "htram_group.decl.h"
 #include "weighted_node_struct.h"
@@ -51,6 +52,9 @@ typedef item<datatype> itemT;
 class HTramMessage : public CMessage_HTramMessage {
   public:
     int next{0}; //next available slot in buffer
+    int track_count{0};
+    int srcPe{-1};
+    int ack_count{0};
     itemT buffer[BUFSIZE];
 };
 
@@ -86,6 +90,8 @@ class HTramNodeGrp : public CBase_HTramNodeGrp {
 
 typedef void (*callback_function)(void*, datatype);
 typedef void (*callback_function_retarr)(void*, datatype*, int);
+typedef int (*destproc_function)(void*, datatype);
+typedef void (*end_function)(void*);
 
 class HTram : public CBase_HTram {
   HTram_SDAG_CODE
@@ -93,6 +99,8 @@ class HTram : public CBase_HTram {
   private:
     callback_function cb;
     callback_function_retarr cb_retarr;
+    destproc_function get_dest_proc;
+    end_function tram_done;
     CkGroupID client_gid;
     CProxy_HTramRecv nodeGrpProxy;
     CProxy_HTramNodeGrp srcNodeGrpProxy;
@@ -100,11 +108,13 @@ class HTram : public CBase_HTram {
     CkCallback return_cb;
     int myPE, buf_type;
     int agg;
+    int local_recv_count, tot_recv_count, tot_send_count;
     bool ret_list;
     bool request;
     double flush_time;
     double msg_stats[STATS_COUNT] {0.0};
     int local_idx[NODE_COUNT];
+    std::vector<datatype> *tram_hold;
     void* objPtr;
     HTramNodeGrp* srcNodeGrp;
     HTramRecv* nodeGrp;
@@ -113,6 +123,7 @@ class HTram : public CBase_HTram {
     HTramLocalMessage **local_buf;
     HTramMessage *localMsgBuffer;
     std::vector<itemT>* localBuffers;
+    std::vector<std::vector<HTramMessage*>> overflowBuffers;
   public:
     bool enable_flush;
     int bufSize;
@@ -123,13 +134,20 @@ class HTram : public CBase_HTram {
     HTram(CkGroupID gid, CkCallback cb);
     HTram(CkMigrateMessage* msg);
     void set_func_ptr(void (*func)(void*, datatype), void*);
-    void set_func_ptr_retarr(void (*func)(void*, datatype*, int), void*);
+    void set_func_ptr_retarr(void (*func)(void*, datatype*, int), int (*func2)(void*, datatype), void (*func3)(void*), void*);
     int getAggregatingPE(int dest_pe);
     void copyToNodeBuf(int destnode, int increment);
     void insertValue(datatype send_value, int dest_pe);
     void reset_stats(int buf_type, int buf_size, int agtype);
     void enableIdleFlush();
     void tflush(bool idleflush=false);
+    void shareArrayOfBuckets(std::vector<datatype> *new_tram_hold);
+    void insertBuckets(int);
+    void changeThreshold(int);
+    void sanityCheck();
+    void getTotSendCount(int);
+    void getTotRecvCount(int);
+    void getTotTramHCount(int);
     bool idleFlush();
     void avgLatency(CkCallback cb);
 //#ifdef SRC_GROUPING
@@ -151,6 +169,8 @@ class HTramRecv : public CBase_HTramRecv {
   public:
     CProxy_HTram tram_proxy;
     double msg_stats[STATS_COUNT] {0.0};
+    std::atomic_int *msgs_in_transit;
+    std::atomic_int *msgs_received_from;
     HTramRecv();
     HTramRecv(CkMigrateMessage* msg);
     void setTramProxy(CkGroupID);

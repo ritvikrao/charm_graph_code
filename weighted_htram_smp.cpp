@@ -637,6 +637,15 @@ public:
 		return dest_proc;
 	}
 
+  int get_dest_proc_local(Update upd) {
+    int dest_proc = get_dest_proc_fast(upd.dest_vertex);
+    if(dest_proc==CkMyPe()) {
+      local_updates.push_back(upd);
+      return -1;
+    }
+    return dest_proc;
+  }
+
 	SsspChares(CkGroupID tram_id)
 	{
 		tram_proxy = CProxy_HTram(tram_id);
@@ -645,7 +654,7 @@ public:
 	void initiate_pointers()
 	{
 		tram = tram_proxy.ckLocalBranch();
-		tram->set_func_ptr_retarr(SsspChares::process_update_caller, this);
+		tram->set_func_ptr_retarr(SsspChares::process_update_caller, get_dest_proc_local_caller, done_caller, this);
 		shared_local = shared.ckLocalBranch();
 	}
 
@@ -844,6 +853,15 @@ public:
 		//((SsspChares *)p)->process_heap();
 
 	}
+
+  static int get_dest_proc_local_caller(void *p, Update new_upd)
+  {
+    return ((SsspChares *)p)->get_dest_proc_local(new_upd);
+  }
+
+  static void done_caller(void *p) {
+    ((SsspChares *)p)->process_local_updates();
+  }
 
 	/**
 	 * Gets the histogram bucket for any given distance
@@ -1165,6 +1183,9 @@ public:
 		tram_threshold = _tram_threshold;
 		bfs_threshold = _bfs_threshold;
 		current_phase = phase;
+    tram->shareArrayOfBuckets(tram_hold);
+    tram->changeThreshold(tram_threshold);
+#if 0
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
 		for(int i=0; i<=tram_threshold; i++)
@@ -1181,6 +1202,7 @@ public:
 			}
 			tram_hold[i].clear();
 		}
+#endif 
 		#ifndef PQ_HOLD_ONLY
 		arr[thisIndex].clear_pq_hold();
 		#endif
