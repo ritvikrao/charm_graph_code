@@ -967,7 +967,7 @@ public:
 		for(int i=0; i<=heap_threshold; i++)//iterate to heap threshold
 		{
 			bool items_processed = false;
-			for(int j=pq_hold[i].size()-1; j>=0; j--)//iterate pq bucket in reverse
+			for(int j=0; j<pq_hold[i].size(); j++)//iterate pq bucket in reverse
 			{
 				items_processed = true;
 				Update new_vertex_and_distance = pq_hold[i][j];
@@ -975,7 +975,6 @@ public:
 				cost new_distance = new_vertex_and_distance.distance;
 				int this_histo_bucket = get_histo_bucket(new_distance);
 				if(i !=this_histo_bucket) ckout << "Wrong bucket assigned" << endl;
-				pq_hold[i].pop_back();
 				long local_index = dest_vertex - start_vertex;
 				if (new_distance < local_graph[local_index].distance)
 				{
@@ -1004,6 +1003,7 @@ public:
 			}
 			if(items_processed)
 			{
+				pq_hold[i].clear();
 				arr[thisIndex].process_heap();
 				break;
 			}
@@ -1045,7 +1045,7 @@ public:
 					}
 					else 
 					{
-						//ckout << "**Error: picked cost that is equal to vertex cost but send_updates is false" << endl;
+						ckout << "**Error: picked cost that is equal to vertex cost but send_updates is false" << endl;
 					}
 				}
 				else
