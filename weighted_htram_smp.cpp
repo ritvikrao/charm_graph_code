@@ -1183,7 +1183,7 @@ public:
 		tram_threshold = _tram_threshold;
 		bfs_threshold = _bfs_threshold;
 		current_phase = phase;
-    tram->shareArrayOfBuckets(tram_hold);
+    tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
     tram->changeThreshold(tram_threshold);
 #if 0
 		//after every reduction, push out messages in hold that are in limit

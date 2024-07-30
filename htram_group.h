@@ -109,6 +109,7 @@ class HTram : public CBase_HTram {
     int myPE, buf_type;
     int agg;
     int local_recv_count, tot_recv_count, tot_send_count;
+    int histo_bucket_count, tram_threshold;
     bool ret_list;
     bool request;
     double flush_time;
@@ -141,7 +142,7 @@ class HTram : public CBase_HTram {
     void reset_stats(int buf_type, int buf_size, int agtype);
     void enableIdleFlush();
     void tflush(bool idleflush=false);
-    void shareArrayOfBuckets(std::vector<datatype> *new_tram_hold);
+    void shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket_count);
     void insertBuckets(int);
     void changeThreshold(int);
     void sanityCheck();
