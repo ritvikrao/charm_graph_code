@@ -16,6 +16,7 @@
 
 #define INFO_PRINTS
 //#define PQ_HOLD_ONLY
+//#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -947,15 +948,39 @@ public:
 			local_graph[local_index].distance = this_cost;
 			updates_noted++;
 			local_graph[local_index].send_updates = true;
-			#ifndef PQ_HOLD_ONLY
-			if(this_bucket > heap_threshold)
+			int pq_bucket;
+			if(local_graph[local_index].adjacent.size()>0)
 			{
+				#ifdef PQ_EDGE_DIST
+				pq_bucket = get_histo_bucket(local_graph[local_index].adjacent[0].distance + this_cost);
+				#ifndef PQ_HOLD_ONLY
+				if(pq_bucket > heap_threshold)
+				{
+					pq_hold[pq_bucket].push_back(new_vertex_and_distance);
+				}
+				else pq.push(new_vertex_and_distance);
+				#else
+				pq_hold[pq_bucket].push_back(new_vertex_and_distance);
+				#endif
+				#else
+				#ifndef PQ_HOLD_ONLY
+				if(this_bucket > heap_threshold)
+				{
+					pq_hold[this_bucket].push_back(new_vertex_and_distance);
+				}
+				else pq.push(new_vertex_and_distance);
+				#else
 				pq_hold[this_bucket].push_back(new_vertex_and_distance);
+				#endif
+				#endif
 			}
-			else pq.push(new_vertex_and_distance);
-			#else
-			pq_hold[this_bucket].push_back(new_vertex_and_distance);
-			#endif
+			else
+			{
+				wasted_updates++;
+				histogram[this_bucket]--;
+				updates_noted++;
+				updates_processed_locally++;
+			}
 		}
 		else
 		{
@@ -986,7 +1011,6 @@ public:
 				long dest_vertex = new_vertex_and_distance.dest_vertex;
 				cost new_distance = new_vertex_and_distance.distance;
 				int this_histo_bucket = get_histo_bucket(new_distance);
-				if(i !=this_histo_bucket) ckout << "Wrong bucket assigned" << endl;
 				long local_index = dest_vertex - start_vertex;
 				if (new_distance < local_graph[local_index].distance)
 				{
