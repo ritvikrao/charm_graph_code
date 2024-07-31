@@ -160,12 +160,14 @@ public:
 				current_start_index += vertex_count;
 			}
 			partition_index[N] = V;
+			#ifdef INFO_PRINTS
 			ckout << "Partition index: ["; 
 			for(int i=0; i<N+1; i++)
 			{
 				ckout << partition_index[i] << ", ";
 			}
 			ckout << "]" << endl;
+			#endif
 			for(int i=0; i<N; i++)
 			{
 				arr[i].generate_local_graph(vertex_counts[i], edge_counts[i], partition_index, N+1);
@@ -395,7 +397,7 @@ public:
 		}
 		else
 		{
-			target_percent = 0.05;
+			target_percent = 0.3;
 			tram_percent = 0.15;
 		}
 		//select bucket limit
@@ -697,7 +699,7 @@ public:
 			new_node.home_process = thisIndex;
 			new_node.distance = lmax;
 			new_node.send_updates = false;
-			CkVec<Edge> adj;
+			std::vector<Edge> adj;
 			new_node.adjacent = adj;
 			vcount[histo_bucket_count]++;
 			long largest_outedge = 0;
@@ -707,12 +709,12 @@ public:
 			std::uniform_int_distribution<cost> edge_weight_distribution(1,1000);
 			long num_edges = edge_count_distribution(generator);
 			long *edge_destinations = new long[num_edges];
-			for(int i=0; i<num_edges; i++)
+			for(int j=0; j<num_edges; j++)
 			{
-				edge_destinations[i] = -1;
+				edge_destinations[j] = -1;
 			}
 			if((CkMyPe()==N-1) && (i >= _num_vertices)) continue; 
-			for(int i=0; i<num_edges; i++)
+			for(int j=0; j<num_edges; j++)
 			{
 				actual_edges++;
 				Edge new_edge;
@@ -722,9 +724,9 @@ public:
 				while(repeated)
 				{
 					bool different = true;
-					for(int j=0; j<i; j++)
+					for(int k=0; k<j; k++)
 					{
-						if(edge_destinations[j] == candidate_end)
+						if(edge_destinations[k] == candidate_end)
 						{
 							different = false;
 							break;
@@ -734,14 +736,15 @@ public:
 					{
 						new_edge.end = candidate_end;
 						repeated = false;
-						edge_destinations[i] = candidate_end;
+						edge_destinations[j] = candidate_end;
 					}
 					else candidate_end = edge_dest_distribution(generator);
 				}
 				new_edge.distance = edge_weight_distribution(generator);
 				if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
-				new_node.adjacent.insertAtEnd(new_edge);
+				new_node.adjacent.push_back(new_edge);
 			}
+			std::sort(new_node.adjacent.begin(), new_node.adjacent.end(), [](Edge a, Edge b){return a.distance < b.distance;});
 			local_graph[i] = new_node;
 			largest_outedges[i] = largest_outedge;
 		}
@@ -794,7 +797,7 @@ public:
 				new_node.home_process = thisIndex;
 				new_node.distance = lmax;
 				new_node.send_updates = false;
-				CkVec<Edge> adj;
+				std::vector<Edge> adj;
 				new_node.adjacent = adj;
 				local_graph[i] = new_node;
 				vcount[histo_bucket_count]++;
@@ -806,8 +809,12 @@ public:
 				new_edge.end = edges[i].end;
 				new_edge.distance = edges[i].distance;
 				int new_edge_origin = edges[i].begin - start_vertex;
-				local_graph[new_edge_origin].adjacent.insertAtEnd(new_edge);
+				local_graph[new_edge_origin].adjacent.push_back(new_edge);
 				if(edges[i].distance > largest_outedges[new_edge_origin]) largest_outedges[new_edge_origin] = edges[i].distance;
+			}
+			for(int i=0; i < num_vertices; i++)
+			{
+				std::sort(local_graph[i].adjacent.begin(), local_graph[i].adjacent.end(), [](Edge a, Edge b){return a.distance < b.distance;});
 			}
 		}
 		//register idle call to process_heap

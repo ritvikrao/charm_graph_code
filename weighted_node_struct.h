@@ -30,7 +30,7 @@ class Node{
 	public:
 		int home_process;
 		cost distance;
-		CkVec<Edge> adjacent;
+		std::vector<Edge> adjacent;
 		bool send_updates;
 	
 	Node(){}
