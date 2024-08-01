@@ -37,7 +37,7 @@ long average_degree; //average degree of graph
 int generate_mode; //0 = read from file, 1 = generate automatically
 int S; //seed for randomization
 cost lmax; // long maximum
-int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
+int histo_bucket_count = 256; // number of buckets for the histogram needed for message prioritization
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
 int initial_threshold = 3; //initial histo threshold
 // tram constants
@@ -691,7 +691,7 @@ public:
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
-		bucket_multiplier = histo_bucket_count / (512 * log(V));
+		bucket_multiplier = histo_bucket_count / (256 * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		cost *largest_outedges = new cost[num_vertices];
 		for(int i=0; i<num_vertices; i++)
@@ -788,7 +788,7 @@ public:
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
-		bucket_multiplier = histo_bucket_count / (512 * log(V));
+		bucket_multiplier = histo_bucket_count / (256 * log(V));
 		cost *largest_outedges = new cost[num_vertices];
 		if (num_vertices != 0)
 		{
