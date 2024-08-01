@@ -796,7 +796,7 @@ public:
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+6];
-		bucket_multiplier = histo_bucket_count / (256 * log(V));
+		bucket_multiplier = histo_bucket_count / (512 * log(V));
 		cost *largest_outedges = new cost[num_vertices];
 		if (num_vertices != 0)
 		{
