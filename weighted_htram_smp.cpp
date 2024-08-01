@@ -37,7 +37,8 @@ long average_degree; //average degree of graph
 int generate_mode; //0 = read from file, 1 = generate automatically
 int S; //seed for randomization
 cost lmax; // long maximum
-int histo_bucket_count = 256; // number of buckets for the histogram needed for message prioritization
+int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
+int histo_reduction_width = histo_bucket_count/2;
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
 int initial_threshold = 3; //initial histo threshold
 // tram constants
@@ -79,6 +80,7 @@ private:
 	bool second_qd_done = false;
 	int activeBucketMax = 10;
 	int current_phase = 0; //0=initial, 1=bfs, 2=converged_bfs
+	int last_first_nonzero = 0;
 
 public:
 
@@ -346,23 +348,23 @@ public:
 		reduction_counts++;
 		long histogram_sum = 0;
 		int first_nonzero = -1;
-		long updates_processed = histo_values[histo_bucket_count + 1];
-		long updates_created = histo_values[histo_bucket_count];
-		long bfs_processed = histo_values[histo_bucket_count+2];
-		long done_vertex_count = histo_values[histo_bucket_count+3];
-		long updates_noted = histo_values[histo_bucket_count+4];
-		long bfs_noted = histo_values[histo_bucket_count+5];
+		long updates_processed = histo_values[histo_reduction_width + 1];
+		long updates_created = histo_values[histo_reduction_width];
+		long bfs_processed = histo_values[histo_reduction_width+2];
+		long done_vertex_count = histo_values[histo_reduction_width+3];
+		long updates_noted = histo_values[histo_reduction_width+4];
+		long bfs_noted = histo_values[histo_reduction_width+5];
 		int heap_threshold = 0;
 		int tram_threshold = 0;
 		int bfs_threshold = heap_threshold;
 		long active_counter = 0;
 		//calculate the total histogram sum
-		for(int i=0; i<histo_bucket_count; i++)
+		for(int i=0; i<histo_reduction_width; i++)
 		{
 			histogram_sum += histo_values[i];
 			if((histo_values[i]>0)&&(first_nonzero==-1))
 			{
-				first_nonzero = i;
+				first_nonzero = i + last_first_nonzero;
 			}
 		}
 		#ifdef INFO_PRINTS
@@ -389,41 +391,43 @@ public:
 			return;
 		}
 		//calculate target percentile
-		double target_percent; //heap percentage
+		double heap_percent; //heap percentage
 		double tram_percent; //tram percentage
 		if(histogram_sum <= N * 100) 
 		{
-			target_percent = 0.9999;
+			heap_percent = 0.9999;
 			tram_percent = 0.9999;
 		}
 		else
 		{
-			target_percent = 0.3;
-			tram_percent = 0.15;
+			heap_percent = 0.20;
+			tram_percent = 0.10;
 		}
 		//select bucket limit
-		for(int i=0; i<histo_bucket_count; i++)
+		for(int i=0; i<histo_reduction_width; i++)
 		{
 			active_counter += histo_values[i];
-			if((double) active_counter >= histogram_sum * target_percent) 
+			if((double) active_counter >= histogram_sum * heap_percent) 
 			{
-				heap_threshold = i;
+				heap_threshold = i + last_first_nonzero;
 				break;
 			}
 			
 		}
 		bfs_threshold = heap_threshold;
 		active_counter = 0;
-		for(int i=0; i<histo_bucket_count; i++)
+		for(int i=0; i<histo_reduction_width; i++)
 		{
 			active_counter += histo_values[i];
 			if((double) active_counter >= histogram_sum * tram_percent)
 			{
-				tram_threshold = i;
+				tram_threshold = i + last_first_nonzero;
 				break;
 			}
 		}
 		//in case of floating point weirdness
+		if(heap_threshold >= histo_bucket_count) heap_threshold = histo_bucket_count - 1;
+		if(tram_threshold >= histo_bucket_count) tram_threshold = histo_bucket_count - 1;
 		if(histogram_sum==0)
 		{
 			heap_threshold = histo_bucket_count - 1;
@@ -440,6 +444,7 @@ public:
 		tram_threshold << ", BFS threshold: " << bfs_threshold << ", first nonzero: " << first_nonzero << ", t= " << CkWallTimer() << endl;
 		#endif
 		//arr.contribute_histogram(first_nonzero-1);
+		last_first_nonzero = first_nonzero;
 		arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold, first_nonzero - 1, current_phase);
 		
 		//start next reduction round
@@ -692,7 +697,7 @@ public:
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
-		info_array = new long[histo_bucket_count+6];
+		info_array = new long[histo_reduction_width+6];
 		bucket_multiplier = histo_bucket_count / (256 * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		cost *largest_outedges = new cost[num_vertices];
@@ -787,10 +792,10 @@ public:
 		heap_threshold = initial_threshold;
 		tram_threshold = initial_threshold + 2;
 		bfs_threshold = heap_threshold;
-		info_array = new long[histo_bucket_count+6];
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
+		info_array = new long[histo_reduction_width+6];
 		bucket_multiplier = histo_bucket_count / (256 * log(V));
 		cost *largest_outedges = new cost[num_vertices];
 		if (num_vertices != 0)
@@ -1123,16 +1128,20 @@ public:
 		long donecount = 0;
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
-		//long *info_array = new long[histo_bucket_count+6];
-		std::copy(histogram, histogram + histo_bucket_count, info_array);
-		info_array[histo_bucket_count] = updates_created_locally;
-		info_array[histo_bucket_count+1] = updates_processed_locally;
-		info_array[histo_bucket_count+2] = bfs_processed;
+		int first_nonzero = behind_first_nonzero + 1;
+		for(int i = first_nonzero; i < (first_nonzero + histo_reduction_width); i++)
+		{
+			if(i >= histo_bucket_count) info_array[i-first_nonzero] = 0;
+			else info_array[i-first_nonzero] = histogram[i];
+		}
+		info_array[histo_reduction_width] = updates_created_locally;
+		info_array[histo_reduction_width+1] = updates_processed_locally;
+		info_array[histo_reduction_width+2] = bfs_processed;
 		for (int i=0; i<=behind_first_nonzero;i++) donecount += vcount[i];
-		info_array[histo_bucket_count+3] = donecount;
-		info_array[histo_bucket_count+4] = updates_noted;
-		info_array[histo_bucket_count+5] = bfs_noted;
-		contribute((histo_bucket_count+6) * sizeof(long), info_array, CkReduction::sum_long, cb);
+		info_array[histo_reduction_width+3] = donecount;
+		info_array[histo_reduction_width+4] = updates_noted;
+		info_array[histo_reduction_width+5] = bfs_noted;
+		contribute((histo_reduction_width+6) * sizeof(long), info_array, CkReduction::sum_long, cb);
 	}
 
 	/**
