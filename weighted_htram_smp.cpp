@@ -571,6 +571,7 @@ private:
 	long actual_edges=0; //when graph is generated, here's how many edges actually got generated
 	long bfs_noted=0;
 	std::vector<Update> local_updates;
+	long *info_array;
 
 public:
 
@@ -691,6 +692,7 @@ public:
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
+		info_array = new long[histo_bucket_count+6];
 		bucket_multiplier = histo_bucket_count / (256 * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		cost *largest_outedges = new cost[num_vertices];
@@ -785,6 +787,7 @@ public:
 		heap_threshold = initial_threshold;
 		tram_threshold = initial_threshold + 2;
 		bfs_threshold = heap_threshold;
+		info_array = new long[histo_bucket_count+6];
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
@@ -1120,7 +1123,7 @@ public:
 		long donecount = 0;
 		traceUserEvent(shared_local -> event_id);
 		CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
-		long *info_array = new long[histo_bucket_count+6];
+		//long *info_array = new long[histo_bucket_count+6];
 		std::copy(histogram, histogram + histo_bucket_count, info_array);
 		info_array[histo_bucket_count] = updates_created_locally;
 		info_array[histo_bucket_count+1] = updates_processed_locally;
