@@ -15,6 +15,7 @@
 #include <random>
 
 #define INFO_PRINTS
+#define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 //#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
 
@@ -698,7 +699,7 @@ public:
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+6];
-		bucket_multiplier = histo_bucket_count / (512 * log(V));
+		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		cost *largest_outedges = new cost[num_vertices];
 		for(int i=0; i<num_vertices; i++)
@@ -796,7 +797,7 @@ public:
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+6];
-		bucket_multiplier = histo_bucket_count / (512 * log(V));
+		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
 		cost *largest_outedges = new cost[num_vertices];
 		if (num_vertices != 0)
 		{
@@ -893,11 +894,15 @@ public:
 			{
 				//calculated dest proc
 				int dest_proc = get_dest_proc_fast(new_update.dest_vertex);
+				#ifndef LOCAL_TO_TRAM
 				if(dest_proc==CkMyPe())
 				{
 					process_update(new_update);
 				}
 				else tram->insertValue(new_update, dest_proc);
+				#else
+				tram->insertValue(new_update, dest_proc);
+				#endif
 			}
 		}
 	}
@@ -986,7 +991,6 @@ public:
 			{
 				wasted_updates++;
 				histogram[this_bucket]--;
-				updates_noted++;
 				updates_processed_locally++;
 			}
 		}
