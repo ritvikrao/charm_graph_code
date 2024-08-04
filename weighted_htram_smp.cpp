@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <random>
 
-#define INFO_PRINTS
+//#define INFO_PRINTS
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 //#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
@@ -84,6 +84,7 @@ private:
 	int last_first_nonzero = 0;
 	long previous_updates_created = 0;
 	long previous_updates_processed = 0;
+	double tram_percentile = 0.0;
 
 public:
 
@@ -126,6 +127,7 @@ public:
 			ckout << "Missing generate mode" << endl;
 			CkExit(0);
 		}
+		tram_percentile = std::stod(m->argv[6]);
 		// create TRAM proxy
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
@@ -406,7 +408,7 @@ public:
 		else
 		{
 			heap_percent = 0.20;
-			tram_percent = 0.10;
+			tram_percent = tram_percentile;
 		}
 		//select bucket limit
 		for(int i=0; i<histo_reduction_width; i++)
