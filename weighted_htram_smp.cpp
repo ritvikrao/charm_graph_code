@@ -82,6 +82,8 @@ private:
 	int activeBucketMax = 10;
 	int current_phase = 0; //0=initial, 1=bfs, 2=converged_bfs
 	int last_first_nonzero = 0;
+	long previous_updates_created = 0;
+	long previous_updates_processed = 0;
 
 public:
 
@@ -291,10 +293,6 @@ public:
 			if (i == N - 1)
 				dest_proc = N - 1;
 		}
-		compute_begin = CkWallTimer();
-		#ifdef INFO_PRINTS
-		ckout << "Beginning at time: " << compute_begin << endl;
-		#endif
 		// quiescence detection
 		//CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
 		//CkStartQD(cb);
@@ -303,6 +301,10 @@ public:
 		previous_threshold = initial_threshold;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
 		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
+		compute_begin = CkWallTimer();
+		#ifdef INFO_PRINTS
+		ckout << "Beginning at time: " << compute_begin << endl;
+		#endif
 		arr[dest_proc].start_algo(new_edge);
 	}
 
@@ -381,7 +383,7 @@ public:
 		    return;
 		}
 		*/
-		if((updates_processed-updates_created==1)&&(updates_created>1000))
+		if((updates_processed-updates_created==1)&&(updates_created>1000)&&(updates_created==previous_updates_created)&&(updates_processed==previous_updates_processed))
 		{
 			ckout << endl << "updates_processed and updates_created match" << endl;
 			#ifdef INFO_PRINTS
@@ -391,6 +393,8 @@ public:
 			arr.print_distances();
 			return;
 		}
+		previous_updates_created = updates_created;
+		previous_updates_processed = updates_processed;
 		//calculate target percentile
 		double heap_percent; //heap percentage
 		double tram_percent; //tram percentage
