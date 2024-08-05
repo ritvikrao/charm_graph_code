@@ -14,9 +14,5 @@
 # mkdir weighted_htram_Smp_projections
 export PPN=6
 # +commap 0-31:8 +pemap 1-31:8.6
-for i in {1..19}
-do
-    export MULT=$(echo "$i * 0.05" | bc)
-    srun ./weighted_htram_smp 62500000 1000000000 100 1 1 $MULT +ppn $PPN +setcpuaffinity
-done
+srun ./weighted_htram_smp 62500000 1000000000 100 1 1 0.999 0.05 +ppn $PPN +setcpuaffinity
 # srun ./weighted_htram_smp 1875000 graphs/30M.csv 100 1 0 +ppn $PPN +setcpuaffinity

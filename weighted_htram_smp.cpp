@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <random>
 
-//#define INFO_PRINTS
+#define INFO_PRINTS
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 //#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
@@ -84,7 +84,8 @@ private:
 	int last_first_nonzero = 0;
 	long previous_updates_created = 0;
 	long previous_updates_processed = 0;
-	double tram_percentile = 0.0;
+	double tram_percentile = 0.01;
+	double heap_percentile = 0.01;
 
 public:
 
@@ -128,6 +129,7 @@ public:
 			CkExit(0);
 		}
 		tram_percentile = std::stod(m->argv[6]);
+		heap_percentile = std::stod(m->argv[7]);
 		// create TRAM proxy
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
@@ -359,6 +361,7 @@ public:
 		long done_vertex_count = histo_values[histo_reduction_width+3];
 		long updates_noted = histo_values[histo_reduction_width+4];
 		long bfs_noted = histo_values[histo_reduction_width+5];
+		long distance_changes = histo_values[histo_reduction_width+6];
 		int heap_threshold = 0;
 		int tram_threshold = 0;
 		int bfs_threshold = heap_threshold;
@@ -374,7 +377,7 @@ public:
 		}
 		#ifdef INFO_PRINTS
 		ckout << "Updates: created: " << updates_created << ", noted: " << updates_noted << ", processed: " << updates_processed << 
-		", BFS: " << bfs_processed << ", Done vertices: " << done_vertex_count << ", BFS noted: " << bfs_noted;
+		", distance changes: " << distance_changes << ", Done vertices: " << done_vertex_count << ", BFS noted: " << bfs_noted;
 		#endif
 		/*
 		if ((bfs_processed == done_vertex_count) && (bfs_processed > 1000)) // not quite correct.. this should be affter we are sure bfs_processed has converged.. maybe via qd
@@ -407,7 +410,7 @@ public:
 		}
 		else
 		{
-			heap_percent = 0.20;
+			heap_percent = heap_percentile;
 			tram_percent = tram_percentile;
 		}
 		//select bucket limit
@@ -500,6 +503,7 @@ public:
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		ckout << "Number of reductions: " << reduction_counts << endl;
 		ckout << "Updates noted: " << msg_stats[3+histo_bucket_count] << endl;
+		ckout << "Distance changes: " << msg_stats[5+histo_bucket_count] << ", per vertex: " << msg_stats[5+histo_bucket_count] * 1.0 / V << endl;
 		long vcount_sum = 0;
 		ckout << "Vcount: [ ";
 		for(int i=0; i<histo_bucket_count+1; i++)
@@ -584,6 +588,7 @@ private:
 	long bfs_noted=0;
 	std::vector<Update> local_updates;
 	long *info_array;
+    long distance_changes=0;
 
 public:
 
@@ -704,7 +709,7 @@ public:
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
-		info_array = new long[histo_reduction_width+6];
+		info_array = new long[histo_reduction_width+7];
 		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		cost *largest_outedges = new cost[num_vertices];
@@ -802,7 +807,7 @@ public:
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
-		info_array = new long[histo_reduction_width+6];
+		info_array = new long[histo_reduction_width+7];
 		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
 		cost *largest_outedges = new cost[num_vertices];
 		if (num_vertices != 0)
@@ -965,6 +970,7 @@ public:
 			}
 			else vcount[get_histo_bucket(local_graph[local_index].distance)]--;
 			local_graph[local_index].distance = this_cost;
+			distance_changes++;
 			updates_noted++;
 			local_graph[local_index].send_updates = true;
 			int pq_bucket;
@@ -1151,7 +1157,8 @@ public:
 		info_array[histo_reduction_width+3] = donecount;
 		info_array[histo_reduction_width+4] = updates_noted;
 		info_array[histo_reduction_width+5] = bfs_noted;
-		contribute((histo_reduction_width+6) * sizeof(long), info_array, CkReduction::sum_long, cb);
+		info_array[histo_reduction_width+6] = distance_changes;
+		contribute((histo_reduction_width+7) * sizeof(long), info_array, CkReduction::sum_long, cb);
 	}
 
 	/**
@@ -1279,7 +1286,7 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i] << " distance " << local_graph[i].distance << endl;
 		}
 		*/
-		long msg_stats[5+histo_bucket_count];
+		long msg_stats[6+histo_bucket_count];
 		msg_stats[0] = wasted_updates;
 		msg_stats[1] = rejected_updates;
 		for(int i=0; i<histo_bucket_count + 1; i++)
@@ -1288,8 +1295,9 @@ public:
 		}
 		msg_stats[3+histo_bucket_count] = updates_noted;
 		msg_stats[4+histo_bucket_count] = actual_edges;
+		msg_stats[5+histo_bucket_count] = distance_changes;
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-		contribute((5+histo_bucket_count) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
+		contribute((6+histo_bucket_count) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
 		// mainProxy.done();
 	}
 
