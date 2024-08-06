@@ -589,6 +589,7 @@ private:
 	std::vector<Update> local_updates;
 	long *info_array;
     long distance_changes=0;
+	long updates_in_tram = 0;
 
 public:
 
@@ -658,6 +659,15 @@ public:
 		return dest_proc;
 	}
 
+	int get_dest_proc_local(Update upd) {
+		int dest_proc = get_dest_proc_fast(upd.dest_vertex);
+		if(dest_proc==CkMyPe()) {
+		local_updates.push_back(upd);
+		return -1;
+		}
+		return dest_proc;
+	}
+
 	SsspChares(CkGroupID tram_id)
 	{
 		tram_proxy = CProxy_HTram(tram_id);
@@ -666,7 +676,7 @@ public:
 	void initiate_pointers()
 	{
 		tram = tram_proxy.ckLocalBranch();
-		tram->set_func_ptr_retarr(SsspChares::process_update_caller, this);
+		tram->set_func_ptr_retarr(SsspChares::process_update_caller, get_dest_proc_local_caller, done_caller, this);
 		shared_local = shared.ckLocalBranch();
 	}
 
@@ -708,6 +718,15 @@ public:
 		bfs_threshold = heap_threshold;
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
+		for(int i=0; i<histo_bucket_count; i++)
+		{
+			std::vector<Update> new_tram_bucket(512);
+			new_tram_bucket.clear();
+			tram_hold[i] = new_tram_bucket;
+			std::vector<Update> new_pq_bucket(512);
+			new_pq_bucket.clear();
+			pq_hold[i] = new_pq_bucket;
+		}
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+7];
 		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
@@ -718,7 +737,6 @@ public:
 			Node new_node;
 			new_node.home_process = thisIndex;
 			new_node.distance = lmax;
-			new_node.send_updates = false;
 			std::vector<Edge> adj;
 			new_node.adjacent = adj;
 			vcount[histo_bucket_count]++;
@@ -806,6 +824,15 @@ public:
 		bfs_threshold = heap_threshold;
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
+		for(int i=0; i<histo_bucket_count; i++)
+		{
+			std::vector<Update> new_tram_bucket(512);
+			new_tram_bucket.clear();
+			tram_hold[i] = new_tram_bucket;
+			std::vector<Update> new_pq_bucket(512);
+			new_pq_bucket.clear();
+			pq_hold[i] = new_pq_bucket;
+		}
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+7];
 		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
@@ -817,7 +844,6 @@ public:
 				Node new_node;
 				new_node.home_process = thisIndex;
 				new_node.distance = lmax;
-				new_node.send_updates = false;
 				std::vector<Edge> adj;
 				new_node.adjacent = adj;
 				local_graph[i] = new_node;
@@ -873,6 +899,16 @@ public:
 
 	}
 
+	static int get_dest_proc_local_caller(void *p, Update new_upd)
+	{
+		return ((SsspChares *)p)->get_dest_proc_local(new_upd);
+	}
+
+	static void done_caller(void *p) 
+	{
+		((SsspChares *)p)->process_local_updates();
+	}
+
 	/**
 	 * Gets the histogram bucket for any given distance
 	*/
@@ -899,6 +935,7 @@ public:
 			//if exceeds limit, put in hold
 			if((neighbor_bucket > tram_threshold) && !bfs)
 			{
+				updates_in_tram++;
 				tram_hold[neighbor_bucket].push_back(new_update);
 			}
 			else
@@ -910,18 +947,30 @@ public:
 				{
 					process_update(new_update);
 				}
-				else tram->insertValue(new_update, dest_proc);
+				else
+				{
+					updates_in_tram++;
+					tram->insertValue(new_update, dest_proc);
+				} 
 				#else
+				updates_in_tram++;
 				tram->insertValue(new_update, dest_proc);
 				#endif
 			}
+			/*
+			if(updates_in_tram == 8000) 
+			{
+      			tram->insertBuckets(tram_threshold);
+      			updates_in_tram = 0;
+    		}
+			*/
 		}
 	}
 
 	/**
 	 * Takes a distance update and immediately adds it to the local heap/pq
 	 */
-	void process_update(Update new_vertex_and_distance)
+	inline void process_update(Update new_vertex_and_distance)
 	{
 		long dest_vertex = new_vertex_and_distance.dest_vertex;
 		long local_index = dest_vertex - start_vertex;
@@ -972,7 +1021,6 @@ public:
 			local_graph[local_index].distance = this_cost;
 			distance_changes++;
 			updates_noted++;
-			local_graph[local_index].send_updates = true;
 			int pq_bucket;
 			if(local_graph[local_index].adjacent.size()>0)
 			{
@@ -1036,22 +1084,10 @@ public:
 				cost new_distance = new_vertex_and_distance.distance;
 				int this_histo_bucket = get_histo_bucket(new_distance);
 				long local_index = dest_vertex - start_vertex;
-				if (new_distance < local_graph[local_index].distance)
+				if (new_distance == local_graph[local_index].distance)
 				{
-					ckout << "**Error: picked cost from heap smaller than vertex cost" << endl;
-				}
-				else if (new_distance == local_graph[local_index].distance)
-				{
-					if(local_graph[local_index].send_updates)
-					{
-						local_graph[local_index].send_updates = false;
 						// for all neighbors
 						generate_updates(local_index, false);
-					}
-					else 
-					{
-						ckout << "**Error: picked cost that is equal to vertex cost but send_updates is false" << endl;
-					}
 				}
 				else
 				{
@@ -1079,34 +1115,16 @@ public:
 			int this_histo_bucket = get_histo_bucket(new_distance);
 			if(this_histo_bucket > heap_threshold)
 			{
-				//if(CkMyPe()==40) ckout << "Exceeds limit" << endl;
 				break;
 			}
 			pq.pop();
 			if (dest_vertex >= partition_index[thisIndex] && dest_vertex < partition_index[thisIndex + 1])
 			{
-				// get local branch of tram proxy
-				// tram_t *tram = tram_proxy.ckLocalBranch();
-
 				long local_index = dest_vertex - start_vertex;
-				//if (CkMyPe()==0) ckout << "Incoming local pair on PE " << thisIndex << ": " << new_vertex_and_distance.first << ", " << new_vertex_and_distance.second << endl;
 				//  if the incoming distance is actually smaller
-				if (new_distance < local_graph[local_index].distance)
+				if (new_distance == local_graph[local_index].distance)
 				{
-					ckout << "**Error: picked cost from heap smaller than vertex cost" << endl;
-				}
-				else if (new_distance == local_graph[local_index].distance)
-				{
-					if(local_graph[local_index].send_updates)
-					{
-						local_graph[local_index].send_updates = false;
-						// for all neighbors
 						generate_updates(local_index, false);
-					}
-					else 
-					{
-						ckout << "**Error: picked cost that is equal to vertex cost but send_updates is false" << endl;
-					}
 				}
 				else
 				{
@@ -1227,6 +1245,9 @@ public:
 		current_phase = phase;
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
+		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
+    	tram->changeThreshold(tram_threshold);
+		#if 0
 		for(int i=0; i<=tram_threshold; i++)
 		{
 			for(int j=0; j<tram_hold[i].size(); j++)
@@ -1241,6 +1262,7 @@ public:
 			}
 			tram_hold[i].clear();
 		}
+		#endif
 		#ifndef PQ_HOLD_ONLY
 		arr[thisIndex].clear_pq_hold();
 		#endif

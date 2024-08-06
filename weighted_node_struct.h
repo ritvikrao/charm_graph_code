@@ -31,7 +31,6 @@ class Node{
 		int home_process;
 		cost distance;
 		std::vector<Edge> adjacent;
-		bool send_updates;
 	
 	Node(){}
 	void pup(PUP::er &p) 
@@ -39,7 +38,6 @@ class Node{
 		p | home_process;
 		p | distance;
 		p | adjacent;
-		p | send_updates;
 	}
 };
 
