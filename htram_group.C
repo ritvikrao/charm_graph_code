@@ -180,6 +180,12 @@ void HTram::changeThreshold(int high) {
 
 #define FACTOR 3
 
+int sum_of_sent(vector<int> sent) {
+  int sum = 0;
+  for(int i=0;i<CkNumNodes();i++) sum += sent[i];
+  return sum;
+}
+
 void HTram::insertBuckets(int high) {
   est_total_items_in_bucket_arr += 8000;
   if(est_total_items_in_bucket_arr < CkNumNodes()*BUFSIZE*FACTOR)
@@ -200,7 +206,7 @@ void HTram::insertBuckets(int high) {
       overflow++;
   }
   //copy from vectors in order of index into messages
-
+  vector<int> sent(CkNumNodes(),0);
   int overflowed = 0;
   for(int i=0;i<=high/*histo_bucket_count*/;i++) {
     for(int j=0;j<tram_hold[i].size();j++) {
@@ -220,15 +226,18 @@ void HTram::insertBuckets(int high) {
           destMsg->ack_count = (nodeGrp->msgs_received_from[dest_node]).exchange(0);
           tot_send_count += destMsg->next;
           nodeGrpProxy[dest_node].receive(destMsg);
+          sent[dest_node] = 1;
         }
         else {
           overflowed = 1;
           overflowBuffers[dest_node].push_back(destMsg);
         }
+        est_total_items_in_bucket_arr -= destMsg->next;
         msgBuffers[dest_node] = new HTramMessage();
       }
     }
     tram_hold[i].clear();
+    if(sum_of_sent(sent) == CkNumNodes()) break;
     if(overflowed) break;
   }
   tram_done(objPtr);

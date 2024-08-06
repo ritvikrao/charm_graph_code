@@ -887,10 +887,10 @@ public:
 			int neighbor_bucket = get_histo_bucket(new_update.distance);
 			histogram[neighbor_bucket]++;
 			updates_created_locally++;
+      updates_in_tram++;
 			//if exceeds limit, put in hold
 			if((neighbor_bucket > tram_threshold) && !bfs)
 			{
-        updates_in_tram++;
 				tram_hold[neighbor_bucket].push_back(new_update);
 			}
 			else
