@@ -172,10 +172,19 @@ void HTram::shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket
 
 void HTram::changeThreshold(int high) {
   tram_threshold = high;
+  est_total_items_in_bucket_arr = 0;
+  for(int i=0;i<=high;i++)
+    est_total_items_in_bucket_arr += tram_hold[i].size();
   insertBuckets(high);
 }
 
+#define FACTOR 3
+
 void HTram::insertBuckets(int high) {
+  est_total_items_in_bucket_arr += 8000;
+  if(est_total_items_in_bucket_arr < CkNumNodes()*BUFSIZE*FACTOR)
+    return;
+
   int overflow = 0;
   for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
     if(nodeGrp->msgs_in_transit[dest_node] < _K) { //TODO: fix, not atomically done
@@ -455,8 +464,9 @@ void HTram::tflush(bool idleflush) {
         overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
     }
 
+#if 1
     int filler_item_count = 0;
-    for(int i=tram_threshold+1;i<histo_bucket_count;i++) {
+    for(int i=0/*tram_threshold+1*/;i<histo_bucket_count;i++) {
       for(int j=0;j<tram_hold[i].size();j++) {
         datatype item = tram_hold[i][j];
         int dest_proc = get_dest_proc(objPtr, item);
@@ -481,6 +491,7 @@ void HTram::tflush(bool idleflush) {
     //Last filler count is 0, fix to send last set of message buffers
 //    CkPrintf("\nFlush sent these items from fillers %d from buckets[%d-%d]", filler_item_count, tram_threshold+1, histo_bucket_count);
     tram_done(objPtr);
+#endif
   }
 }
 

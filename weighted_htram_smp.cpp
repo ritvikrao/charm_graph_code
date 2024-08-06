@@ -544,6 +544,7 @@ private:
 	long num_vertices=0; //number of vertices assigned to this pe
 	long updates_created_locally=0; //number of update messages sent
 	long updates_processed_locally=0; //number of update messages received
+  long updates_in_tram = 0;
 	long *partition_index; //defines boundaries of indices for each pe
 	long wasted_updates=0; //number of updates that don't have the final answer
 	long rejected_updates=0; //number of updates that don't decrease a distance value/create more messages
@@ -889,6 +890,7 @@ public:
 			//if exceeds limit, put in hold
 			if((neighbor_bucket > tram_threshold) && !bfs)
 			{
+        updates_in_tram++;
 				tram_hold[neighbor_bucket].push_back(new_update);
 			}
 			else
@@ -902,6 +904,10 @@ public:
 				else tram->insertValue(new_update, dest_proc);
 			}
 		}
+    if(updates_in_tram == 8000) {
+      tram->insertBuckets(tram_threshold);
+      updates_in_tram = 0;
+    }
 	}
 
 	/**

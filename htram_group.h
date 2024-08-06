@@ -110,6 +110,7 @@ class HTram : public CBase_HTram {
     int agg;
     int local_recv_count, tot_recv_count, tot_send_count;
     int histo_bucket_count, tram_threshold;
+    int est_total_items_in_bucket_arr;
     bool ret_list;
     bool request;
     double flush_time;
