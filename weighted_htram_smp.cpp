@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <random>
 
-#define INFO_PRINTS
+//#define INFO_PRINTS
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 //#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
