@@ -18,6 +18,7 @@
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 //#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
+//#define VCOUNT
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -504,6 +505,7 @@ public:
 		ckout << "Number of reductions: " << reduction_counts << endl;
 		ckout << "Updates noted: " << msg_stats[3+histo_bucket_count] << endl;
 		ckout << "Distance changes: " << msg_stats[5+histo_bucket_count] << ", per vertex: " << msg_stats[5+histo_bucket_count] * 1.0 / V << endl;
+		#ifdef VCOUNT
 		long vcount_sum = 0;
 		ckout << "Vcount: [ ";
 		for(int i=0; i<histo_bucket_count+1; i++)
@@ -513,6 +515,7 @@ public:
 		}
 		ckout << endl;
 		ckout << "Vcount sum: " << vcount_sum << endl;
+		#endif
 		arr.get_max_cost();
 	}
 
@@ -720,12 +723,8 @@ public:
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		for(int i=0; i<histo_bucket_count; i++)
 		{
-			std::vector<Update> new_tram_bucket(512);
-			new_tram_bucket.clear();
-			tram_hold[i] = new_tram_bucket;
-			std::vector<Update> new_pq_bucket(512);
-			new_pq_bucket.clear();
-			pq_hold[i] = new_pq_bucket;
+			tram_hold[i].reserve(4096);
+			pq_hold[i].reserve(4096);
 		}
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+7];
@@ -826,12 +825,8 @@ public:
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		for(int i=0; i<histo_bucket_count; i++)
 		{
-			std::vector<Update> new_tram_bucket(512);
-			new_tram_bucket.clear();
-			tram_hold[i] = new_tram_bucket;
-			std::vector<Update> new_pq_bucket(512);
-			new_pq_bucket.clear();
-			pq_hold[i] = new_pq_bucket;
+			tram_hold[i].reserve(4096);
+			pq_hold[i].reserve(4096);
 		}
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+7];
@@ -1012,12 +1007,14 @@ public:
 				else pq.push(new_vertex_and_distance);
 			}
 			*/
+			#ifdef VCOUNT
 			vcount[this_bucket]++;
 			if(local_graph[local_index].distance == lmax)
 			{
 				vcount[histo_bucket_count]--;
 			}
 			else vcount[get_histo_bucket(local_graph[local_index].distance)]--;
+			#endif
 			local_graph[local_index].distance = this_cost;
 			distance_changes++;
 			updates_noted++;

@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH -N 16
+#SBATCH -N 4
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=7
-#SBATCH --output=weighted_htram_smp_16.out
+#SBATCH --output=weighted_htram_smp_4.out
 #SBATCH -A bip249
 #SBATCH --job-name=weighted_htram_smp
 #SBATCH --exclusive
