@@ -85,6 +85,7 @@ private:
 	int last_first_nonzero = 0;
 	long previous_updates_created = 0;
 	long previous_updates_processed = 0;
+	long previous_distance_changes = 0;
 	double tram_percentile = 0.01;
 	double heap_percentile = 0.01;
 
@@ -409,11 +410,18 @@ public:
 			heap_percent = 0.9999;
 			tram_percent = 0.9999;
 		}
+		else if(((previous_distance_changes*1.0/(previous_updates_processed+1))<0.08)&&(done_vertex_count/4>V))
+		{
+			heap_percent = 0.3;
+			tram_percent = tram_percentile;
+		}
 		else
 		{
 			heap_percent = heap_percentile;
 			tram_percent = tram_percentile;
 		}
+		previous_distance_changes = distance_changes;
+		previous_updates_processed = updates_processed;
 		//select bucket limit
 		for(int i=0; i<histo_reduction_width; i++)
 		{
