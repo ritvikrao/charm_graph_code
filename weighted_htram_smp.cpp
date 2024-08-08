@@ -410,11 +410,6 @@ public:
 			heap_percent = 0.9999;
 			tram_percent = 0.9999;
 		}
-		else if(((previous_distance_changes*1.0/(previous_updates_processed+1))<0.08)&&(done_vertex_count/4>V))
-		{
-			heap_percent = 0.3;
-			tram_percent = tram_percentile;
-		}
 		else
 		{
 			heap_percent = heap_percentile;
