@@ -34,7 +34,7 @@ Run weighted_htram_nonsmp:
 
 Run weighted_htram_smp:
 ```
-./charmrun +pN ./<executable> <num_vertices> <graph_file_name> <random_seed> <source_vertex>
+./charmrun +pN ./<executable> <num_vertices> <graph_file_name> <random_seed> <source_vertex> <create_option> <p_tram> <p_pq>
 ```
 
 Run graph_ckio:
