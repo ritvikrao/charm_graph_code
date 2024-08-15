@@ -19,6 +19,7 @@
 //#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
 //#define VCOUNT
+//#define ALL_TO_TRAM_HOLD //place all updates in the tram hold at first
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -931,9 +932,9 @@ public:
 			histogram[neighbor_bucket]++;
 			updates_created_locally++;
 			//if exceeds limit, put in hold
+			#ifndef ALL_TO_TRAM_HOLD
 			if((neighbor_bucket > tram_threshold) && !bfs)
 			{
-				updates_in_tram++;
 				tram_hold[neighbor_bucket].push_back(new_update);
 			}
 			else
@@ -947,21 +948,21 @@ public:
 				}
 				else
 				{
-					updates_in_tram++;
 					tram->insertValue(new_update, dest_proc);
 				} 
 				#else
-				updates_in_tram++;
 				tram->insertValue(new_update, dest_proc);
 				#endif
 			}
-			/*
-			if(updates_in_tram == 8000) 
+			#else
+			tram_hold[neighbor_bucket].push_back(new_update);
+			if(neighbor_bucket <= tram_threshold) updates_in_tram++;
+			if(updates_in_tram == 8192) 
 			{
       			tram->insertBuckets(tram_threshold);
       			updates_in_tram = 0;
     		}
-			*/
+			#endif
 		}
 	}
 
