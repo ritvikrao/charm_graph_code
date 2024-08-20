@@ -101,37 +101,47 @@ public:
 	Main(CkArgMsg *m)
 	{
 		N = CkNumPes();
-		V = atol(m->argv[1]); // read in number of vertices
 		if (!m->argv[1])
 		{
 			ckout << "Missing vertex count" << endl;
 			CkExit(0);
 		}
-		std::string file_name = m->argv[2]; // read file name or edge count
+		V = atol(m->argv[1]); // read in number of vertices
 		if (!m->argv[2])
 		{
 			ckout << "Missing file name/edge count" << endl;
 			CkExit(0);
 		}
-		S = atoi(m->argv[3]); // randomize seed
+		std::string file_name = m->argv[2]; // read file name or edge count
 		if (!m->argv[3])
 		{
 			ckout << "Missing random seed" << endl;
 			CkExit(0);
 		}
-		start_vertex = atol(m->argv[4]); // number of beginning vertex
+		S = atoi(m->argv[3]); // randomize seed
 		if (!m->argv[4])
 		{
 			ckout << "Missing start vertex" << endl;
 			CkExit(0);
 		}
-		generate_mode = atoi(m->argv[5]); //0 for read from csv, 1 for generation
+		start_vertex = atol(m->argv[4]); // number of beginning vertex
 		if (!m->argv[5])
 		{
 			ckout << "Missing generate mode" << endl;
 			CkExit(0);
 		}
+		generate_mode = atoi(m->argv[5]); //0 for read from csv, 1 for generation
+		if (!m->argv[6])
+		{
+			ckout << "Missing tram percentile" << endl;
+			CkExit(0);
+		}
 		tram_percentile = std::stod(m->argv[6]);
+		if (!m->argv[7])
+		{
+			ckout << "Missing heap percentile" << endl;
+			CkExit(0);
+		}
 		heap_percentile = std::stod(m->argv[7]);
 		// create TRAM proxy
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
