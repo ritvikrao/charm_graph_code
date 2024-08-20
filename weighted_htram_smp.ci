@@ -30,7 +30,7 @@ mainmodule weighted_htram_smp
   };
   array [1D] SsspChares
   {
-    entry SsspChares(CkGroupID tram_id);
+    entry SsspChares(CProxy_HTram htram);
     entry void initiate_pointers();
     entry [whenidle] bool idle_triggered();
     entry void generate_local_graph(long _num_vertices, long _num_edges, long partition[dividers], int dividers);

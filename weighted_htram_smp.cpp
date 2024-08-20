@@ -150,7 +150,7 @@ public:
 		tram_proxy_t tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), 
 		srcNodeGrpProxy.ckGetGroupID(), buffer_size, enable_buffer_flushing, flush_timer, false, true, ignore_cb);
 		shared = CProxy_SharedInfo::ckNew();
-		arr = CProxy_SsspChares::ckNew(tram_proxy.ckGetGroupID(), N);
+		arr = CProxy_SsspChares::ckNew(tram_proxy, N);
 		mainProxy = thisProxy;
 		arr.initiate_pointers();
 		partition_index = new long[N + 1]; // last index=maximum index
@@ -685,9 +685,9 @@ public:
 		return dest_proc;
 	}
 
-	SsspChares(CkGroupID tram_id)
+	SsspChares(CProxy_HTram htram)
 	{
-		tram_proxy = CProxy_HTram(tram_id);
+		tram_proxy = htram;
 	}
 
 	void initiate_pointers()
@@ -1256,9 +1256,9 @@ public:
 		current_phase = phase;
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
-		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
-    	tram->changeThreshold(tram_threshold);
-		#if 0
+		//tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
+    	//tram->changeThreshold(tram_threshold);
+		#if 1
 		for(int i=0; i<=tram_threshold; i++)
 		{
 			for(int j=0; j<tram_hold[i].size(); j++)

@@ -473,7 +473,7 @@ void HTram::tflush(bool idleflush) {
         overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
     }
 
-#if 1
+#if 0
     int filler_item_count = 0;
     for(int i=0/*tram_threshold+1*/;i<histo_bucket_count;i++) {
       for(int j=0;j<tram_hold[i].size();j++) {
