@@ -191,22 +191,32 @@ void HTram::insertBuckets(int high) {
   if(est_total_items_in_bucket_arr < CkNumNodes()*BUFSIZE*FACTOR)
     return;
 
-  int overflow = 0;
+  vector<int> sent(CkNumNodes(),0);
   for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
-    if(nodeGrp->msgs_in_transit[dest_node] < _K) { //TODO: fix, not atomically done
+#ifdef THROTTLE
+    if(nodeGrp->msgs_in_transit[dest_node] < _K) //TODO: fix, not atomically done
+#endif
+    {
       int j=0;
-      for(;j<overflowBuffers[dest_node].size() && nodeGrp->msgs_in_transit[dest_node] < _K;j++) {
+#ifdef THROTTLE
+      for(;j<overflowBuffers[dest_node].size() && nodeGrp->msgs_in_transit[dest_node] < _K;j++)
+#else
+      for(;j<overflowBuffers[dest_node].size();j++)
+#endif
+      {
         tot_send_count += overflowBuffers[dest_node][j]->next;
         nodeGrpProxy[dest_node].receive(overflowBuffers[dest_node][j]);
         nodeGrp->msgs_in_transit[dest_node]++;
+#ifndef THROTTLE
+        sent[dest_node] = 1;
+#endif
       }
       if(j)
         overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
-    } else
-      overflow++;
+    }
   }
+
   //copy from vectors in order of index into messages
-  vector<int> sent(CkNumNodes(),0);
   int overflowed = 0;
   for(int i=0;i<=high/*histo_bucket_count*/;i++) {
     for(int j=0;j<tram_hold[i].size();j++) {
@@ -220,18 +230,24 @@ void HTram::insertBuckets(int high) {
       destMsg->next++;
       if(destMsg->next == BUFSIZE) {
         destMsg->srcPe = CkMyPe();
+#ifdef THROTTLE
         if(nodeGrp->msgs_in_transit[dest_node] < _K)
+#endif
         {
+#ifdef THROTTLE
           nodeGrp->msgs_in_transit[dest_node]++;
           destMsg->ack_count = (nodeGrp->msgs_received_from[dest_node]).exchange(0);
+#endif
           tot_send_count += destMsg->next;
           nodeGrpProxy[dest_node].receive(destMsg);
           sent[dest_node] = 1;
         }
+#ifdef THROTTLE
         else {
           overflowed = 1;
           overflowBuffers[dest_node].push_back(destMsg);
         }
+#endif
         est_total_items_in_bucket_arr -= destMsg->next;
         msgBuffers[dest_node] = new HTramMessage();
       }
@@ -448,7 +464,9 @@ void HTram::tflush(bool idleflush) {
 //          nodeGrpProxy[i].receive(destMsg); //todo - Resize only upto next
           destMsg->srcPe = CkMyPe();
           tot_send_count += destMsg->next;
+#ifdef THROTTLE
           destMsg->ack_count = (nodeGrp->msgs_received_from[i]).exchange(0);
+#endif
           nodeGrpProxy[i].receive(destMsg);
         } else if(agg == PP) {
           ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*destMsg->next);
@@ -466,8 +484,10 @@ void HTram::tflush(bool idleflush) {
       for(;j<overflowBuffers[dest_node].size();j++) {
         tot_send_count += overflowBuffers[dest_node][j]->next;
         nodeGrpProxy[dest_node].receive(overflowBuffers[dest_node][j]);
+#ifdef THROTTLE
         nodeGrp->msgs_in_transit[CkMyRank()*CkNumNodes()+dest_node]++;
 //        CkPrintf("\n[PE-%d Sending overflow messages to node %d, in transit for the src-dest pair #[%d]", CkMyPe(), dest_node, nodeGrp->msgs_in_transit[CkMyRank()*CkNumNodes()+dest_node].load());
+#endif
       }
       if(j)
         overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
@@ -488,8 +508,10 @@ void HTram::tflush(bool idleflush) {
         destMsg->next++;
         if(destMsg->next == BUFSIZE) {
           destMsg->srcPe = CkMyPe();
+#ifdef THROTTLE
           nodeGrp->msgs_in_transit[dest_node]++;
           destMsg->ack_count = (nodeGrp->msgs_received_from[dest_node]).exchange(0);
+#endif
           tot_send_count += destMsg->next;
           nodeGrpProxy[dest_node].receive(destMsg);
           msgBuffers[dest_node] = new HTramMessage();
@@ -517,13 +539,15 @@ HTramNodeGrp::HTramNodeGrp(CkMigrateMessage* msg) {}
 
 
 HTramRecv::HTramRecv(){
+#ifdef THROTTLE
   msgs_received_from = new std::atomic_int[CkNumNodes()];
   msgs_in_transit = new std::atomic_int[CkNumNodes()];
-  msg_stats[MIN_LATENCY] = 100.0;
   for(int i=0;i<CkNumNodes();i++) {
     msgs_in_transit[i] = 0;
     msgs_received_from[i] = 0;
   }
+#endif
+  msg_stats[MIN_LATENCY] = 100.0;
 }
 
 #if 0
@@ -582,6 +606,7 @@ void HTram::receiveOnPE(HTramMessage* msg) {
 }
 
 void HTramRecv::receive(HTramMessage* agg_message) {
+#ifdef THROTTLE
   int src_node = agg_message->srcPe/CkNodeSize(0);
   msgs_received_from[src_node]++;
 
@@ -594,6 +619,7 @@ void HTramRecv::receive(HTramMessage* agg_message) {
 #endif
 //     CkPrintf("\n[PE-%d] Reducing msg_in_transit(to)[%d] from %d to %d", CkMyPe(), src_node, msgs_in_transit[k*CkNumNodes()+src_node].load()+agg_message->ack_count[k], msgs_in_transit[k*CkNumNodes()+src_node].load());
   }
+#endif
 
   
   //broadcast to each PE and decr refcount
