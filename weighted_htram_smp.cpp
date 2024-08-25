@@ -15,6 +15,7 @@
 #include <random>
 
 //#define INFO_PRINTS
+#define PRINT_HISTO //print histograms to file
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 //#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
@@ -65,6 +66,57 @@ struct ComparePairs
 	}
 };
 
+struct histoInstance
+{
+public:
+  int fnz;
+  int width;
+  int *reducedValues;
+};
+  
+class histogramSequence
+{
+private:
+  int maxBuckets;
+  std::vector<histoInstance> histos;
+public: 
+
+  histogramSequence(int _maxBuckets)
+  {
+    maxBuckets = _maxBuckets;
+    histoInstance h;
+    h.fnz = 0;
+    h.width = 10;
+    h.reducedValues = new int[10];
+    histos.push_back(h);
+  }
+
+  void insert(int fnz, int width, long* histo)
+  {
+    histoInstance h;
+    h.fnz = fnz;
+    h.width = width;
+    h.reducedValues = new int[width];
+    for (int i = 0; i< width; i++) h.reducedValues[i] = histo[i];
+    histos.push_back(h);
+  }
+
+  void putout()
+  {
+    // using cout instead of ckout to avoid buffer overflow. (should be output to a file)
+	std::ofstream out_file;
+	out_file.open("histos.txt");
+    for (int i=0; i<histos.size(); i++)
+      {
+        for (int j=0; j<histos[i].fnz; j++) out_file << "0 ";
+		for (int j=0; j<histos[i].width; j++) out_file << histos[i].reducedValues[j] << " ";
+		for (int j=0; j < ( maxBuckets - histos[i].fnz - histos[i].width); j++) out_file << "0 "; 
+		out_file << endl;
+      }
+  }
+};
+
+
 class Main : public CBase_Main
 {
 private:
@@ -89,6 +141,9 @@ private:
 	long previous_distance_changes = 0;
 	double tram_percentile = 0.01;
 	double heap_percentile = 0.01;
+	#ifdef PRINT_HISTO
+	histogramSequence *histoSeq;
+	#endif
 
 public:
 
@@ -143,6 +198,9 @@ public:
 			CkExit(0);
 		}
 		heap_percentile = std::stod(m->argv[7]);
+		#ifdef PRINT_HISTO
+		histoSeq = new histogramSequence(histo_bucket_count);
+		#endif
 		// create TRAM proxy
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
@@ -388,6 +446,9 @@ public:
 				first_nonzero = i + last_first_nonzero;
 			}
 		}
+		#ifdef PRINT_HISTO
+		histoSeq->insert(last_first_nonzero, histo_reduction_width, histo_values);
+		#endif
 		#ifdef INFO_PRINTS
 		ckout << "Updates: created: " << updates_created << ", noted: " << updates_noted << ", processed: " << updates_processed << 
 		", distance changes: " << distance_changes << ", Done vertices: " << done_vertex_count << ", BFS noted: " << bfs_noted;
@@ -536,6 +597,9 @@ public:
 	void done_max_cost(cost max_cost)
 	{
 		ckout << "Maximum vertex cost, not counting unreachable: " << max_cost << endl;
+		#ifdef PRINT_HISTO
+		histoSeq->putout();
+		#endif
 		CkExit(0);
 	}
 };
