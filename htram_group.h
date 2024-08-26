@@ -126,6 +126,7 @@ class HTram : public CBase_HTram {
     HTramMessage *localMsgBuffer;
     std::vector<itemT>* localBuffers;
     std::vector<std::vector<HTramMessage*>> overflowBuffers;
+    std::vector<std::vector<HTramMessage*>> fillerOverflowBuffers;
   public:
     bool enable_flush;
     int bufSize;
@@ -143,6 +144,7 @@ class HTram : public CBase_HTram {
     void reset_stats(int buf_type, int buf_size, int agtype);
     void enableIdleFlush();
     void tflush(bool idleflush=false);
+    void flush_everything();
     void shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket_count);
     void insertBuckets(int);
     void changeThreshold(int);
