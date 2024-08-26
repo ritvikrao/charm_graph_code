@@ -179,7 +179,7 @@ void HTram::changeThreshold(int high) {
   est_total_items_in_bucket_arr = 0;
   for(int i=0;i<=high;i++)
     est_total_items_in_bucket_arr += tram_hold[i].size();
-//  insertBuckets(high);
+  insertBuckets(high);
 }
 
 #define FACTOR 3
@@ -196,7 +196,7 @@ void HTram::insertBuckets(int high) {
     return;
 
   vector<int> sent(CkNumNodes(),0);
-#if 0
+#if 1
   for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
       int j=0;
       for(;j<overflowBuffers[dest_node].size();j++)
@@ -397,7 +397,7 @@ void HTram::tflush(bool idleflush) {
   */
 //          *(srcNodeGrp->msgBuffers[i]->getDoTimer()) = 0;
           nodeGrpProxy[i].receive(srcNodeGrp->msgBuffers[i]);
-//          srcNodeGrp->msgBuffers[i] = new HTramMessageSmall();//new HTramMessage();//localMsgBuffer;
+//          srcNodeGrp->msgBuffers[i] = localMsgBuffer;
           srcNodeGrp->msgBuffers[i] = new HTramMessage();
           srcNodeGrp->done_count[i] = 0;
           srcNodeGrp->flush_count = 0;
@@ -456,7 +456,7 @@ void HTram::tflush(bool idleflush) {
     }
   }
   if(agg == PNs) {
-#if 0
+#if 1
     for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
       int j=0;
       for(;j<overflowBuffers[dest_node].size();j++) {
@@ -469,7 +469,7 @@ void HTram::tflush(bool idleflush) {
 #endif
 
 #if 1
-    for(int i=0;i<tram_threshold;i++) {
+    for(int i=0;i<=tram_threshold;i++) {
       for(int j=0;j<tram_hold[i].size();j++) {
         datatype item = tram_hold[i][j];
         int dest_proc = get_dest_proc(objPtr, item);
@@ -501,23 +501,23 @@ void HTram::tflush(bool idleflush) {
 //      while(destMsg->next < BUFSIZE/2 && (fillerOverflowBuffers[node].size() > 0 || tram_filler_items))
       { //If buffer is less than half full, fill it with filler items before send
         //Take filler items from filler overflow buffers
-#if 0
-        CkPrintf("\n[PE-%d] Attempting to use fillers for msg buffer[to node %d] size = %d [%d > 0 or %d > 0]", thisIndex, node, destMsg->next, fillerOverflowBuffers[node].size(), tram_filler_items);
+#if 1
+//        CkPrintf("\n[PE-%d] Attempting to use fillers for msg buffer[to node %d] size = %d [%d > 0 or %d > 0]", thisIndex, node, destMsg->next, fillerOverflowBuffers[node].size(), tram_filler_items);
         if(fillerOverflowBuffers[node].size() > 0) {
           int j = 0;
           int fillers = BUFSIZE/2-destMsg->next;
           int k = 0;
           for(;k<fillers;k++) {
-            if(k >= fillerOverflowBuffers[node][j]->next) break;
+            if(k >= fillerOverflowBuffers[node][j]->next) break; //todo:this will check only one fille buffer, check other (do j++)
             datatype item = fillerOverflowBuffers[node][j]->buffer[k].payload;
             int dest_proc = get_dest_proc(objPtr, item);
             destMsg->buffer[destMsg->next].payload = item;
             destMsg->buffer[destMsg->next++].destPe = dest_proc;
           }
-          fillerOverflowBuffers[node][j]->next -= k;
-          //if(!fillerOverflowBuffers[node][j]->next) fillerOverflowBuffers[node].erase(fillerOverflowBuffers[node].begin(), fillerOverflowBuffers[node].begin() + j);
+          fillerOverflowBuffers[node][j]->next -= (k-1);
+          if(!fillerOverflowBuffers[node][j]->next) fillerOverflowBuffers[node].erase(fillerOverflowBuffers[node].begin(), fillerOverflowBuffers[node].begin() + j);
         }
-        else
+        if(destMsg->next < BUFSIZE/2) //still
 #endif
         {
 #if 1
@@ -537,13 +537,19 @@ void HTram::tflush(bool idleflush) {
                   filled_msg = 1;
                 }
               } else {
-#if 0
+#if 1
                 //CkPrintf("\ndest_node = %d, number of fill_ov_bufs = %d", dest_node, fillerOverflowBuffers.size());
 //                int size = 1;//fillerOverflowBuffers[dest_node].size();
-                HTramMessage* msg = fillerOverflowBuffers[dest_node].back();
-                if(msg == NULL || msg->next == BUFSIZE) {
+                HTramMessage* msg;
+                if(fillerOverflowBuffers[dest_node].size()==0) {
                   msg = new HTramMessage();
                   fillerOverflowBuffers[dest_node].push_back(msg);
+                } else {
+                  msg = fillerOverflowBuffers[dest_node].back();
+                  if(msg->next == BUFSIZE) {
+                    msg = new HTramMessage();
+                    fillerOverflowBuffers[dest_node].push_back(msg);
+                  }
                 }
                 msg->buffer[msg->next].payload = item;
                 msg->buffer[msg->next++].destPe = dest_proc;
@@ -567,7 +573,7 @@ void HTram::tflush(bool idleflush) {
 //    CkPrintf("\nFlush sent these items from fillers %d from buckets[%d-%d]", filler_item_count, tram_threshold+1, histo_bucket_count);
     tram_done(objPtr);
 #endif
-  }
+}
 }
 
 void HTram::flush_everything() {
