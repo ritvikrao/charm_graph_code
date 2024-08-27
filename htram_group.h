@@ -51,6 +51,14 @@ typedef item<datatype> itemT;
 
 class HTramMessage : public CMessage_HTramMessage {
   public:
+    HTramMessage() {next = 0;}
+    HTramMessage(HTramMessage *copy) {
+      next = copy->next;
+      track_count = copy->track_count;
+      srcPe = copy->srcPe;
+      ack_count = copy->ack_count;
+      std::copy(copy->buffer, copy->buffer+next, buffer);
+    }
     int next{0}; //next available slot in buffer
     int track_count{0};
     int srcPe{-1};
@@ -127,6 +135,8 @@ class HTram : public CBase_HTram {
     std::vector<itemT>* localBuffers;
     std::vector<std::vector<HTramMessage*>> overflowBuffers;
     std::vector<std::vector<HTramMessage*>> fillerOverflowBuffers;
+    std::vector<std::vector<int>> fillerOverflowBuffersBucketMin;
+    std::vector<std::vector<int>> fillerOverflowBuffersBucketMax;
   public:
     bool enable_flush;
     int bufSize;

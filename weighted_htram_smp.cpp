@@ -317,7 +317,7 @@ public:
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
-		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
+		CcdCallFnAfter(fast_exit, (void *) this, 20000.0); //end after 5 s
 		compute_begin = CkWallTimer();
 		#ifdef INFO_PRINTS
 		ckout << "Beginning at time: " << compute_begin << endl;
