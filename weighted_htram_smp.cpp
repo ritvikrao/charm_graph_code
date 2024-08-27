@@ -967,11 +967,13 @@ public:
 			#else
 			tram_hold[neighbor_bucket].push_back(new_update);
 			if(neighbor_bucket <= tram_threshold) updates_in_tram++;
+
 			if(updates_in_tram == 8192) 
 			{
       			tram->insertBuckets(tram_threshold);
       			updates_in_tram = 0;
     		}
+
 			#endif
 		}
 	}
@@ -1257,7 +1259,7 @@ public:
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
 		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
-    	tram->changeThreshold(tram_threshold);
+    tram->changeThreshold(tram_threshold);
 		#if 0
 		for(int i=0; i<=tram_threshold; i++)
 		{
@@ -1302,6 +1304,7 @@ public:
 			bfs_hold[i].clear();
 		}
 		*/
+    tram->sanityCheck();
 		tram->tflush();
     tram->flush_everything();
 		arr[thisIndex].process_heap();

@@ -108,7 +108,7 @@ class HTram : public CBase_HTram {
     CkCallback return_cb;
     int myPE, buf_type;
     int agg;
-    int local_recv_count, tot_recv_count, tot_send_count;
+    int local_recv_count, tot_recv_count, tot_send_count, local_updates;
     int histo_bucket_count, tram_threshold;
     int est_total_items_in_bucket_arr;
     bool ret_list;
