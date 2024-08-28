@@ -67,8 +67,8 @@ HTram::HTram(CkGroupID recv_ngid, CkGroupID src_ngid, int buffer_size, bool enab
     fillerOverflowBuffers.push_back(vec2);
     std::vector<int> int_min;
     std::vector<int> int_max;
-    //fillerOverflowBuffersBucketMin.push_back(int_min);
-    //fillerOverflowBuffersBucketMax.push_back(int_max);
+    fillerOverflowBuffersBucketMin.push_back(int_min);
+    fillerOverflowBuffersBucketMax.push_back(int_max);
   }
 
 
@@ -180,6 +180,7 @@ void HTram::shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket
 }
 
 void HTram::changeThreshold(int high) {
+//  CkPrintf("\nCalling insert buckets with threshold %d", high);
   if(high < 0) return;
   tram_threshold = high;
   est_total_items_in_bucket_arr = 0;
@@ -188,7 +189,7 @@ void HTram::changeThreshold(int high) {
   insertBuckets(high);
 }
 
-#define FACTOR 3
+#define FACTOR 2
 
 int sum_of_sent(vector<int> sent) {
   int sum = 0;
@@ -197,7 +198,7 @@ int sum_of_sent(vector<int> sent) {
 }
 
 void HTram::insertBuckets(int high) {
-  est_total_items_in_bucket_arr += 8192;
+  est_total_items_in_bucket_arr += 256;
   if(est_total_items_in_bucket_arr < CkNumNodes()*BUFSIZE*FACTOR)
     return;
 
@@ -207,14 +208,15 @@ void HTram::insertBuckets(int high) {
       int j=0;
       for(;j<overflowBuffers[dest_node].size();j++)
       {
+//        CkPrintf("\nSending overflow buffers");
         tot_send_count += overflowBuffers[dest_node][j]->next;
         HTramMessage* sendMsg = new HTramMessage(overflowBuffers[dest_node][j]);
         nodeGrpProxy[dest_node].receive(sendMsg);
-        nodeGrp->msgs_in_transit[dest_node]++;
+        //nodeGrp->msgs_in_transit[dest_node]++;
         sent[dest_node] = 1;
       }
       if(j)
-        overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin()+ j - 1);
+        overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
   }
 #endif
 
@@ -222,6 +224,8 @@ void HTram::insertBuckets(int high) {
   int overflowed = 0;
   for(int i=0;i<=high/*histo_bucket_count*/;i++) {
     for(int j=0;j<tram_hold[i].size();j++) {
+//      CkPrintf("\ni=%d,high=%d, j=%d, size = %d", i, high, j, tram_hold[i].size());
+//      CkPrintf("\nIn tram bucket iterator");
       datatype item = tram_hold[i][j];
       int dest_proc = get_dest_proc(objPtr, item);
       if(dest_proc == -1) { local_updates++; continue;}
@@ -231,12 +235,19 @@ void HTram::insertBuckets(int high) {
       destMsg->buffer[destMsg->next].destPe = dest_proc;
       destMsg->next++;
       if(destMsg->next == BUFSIZE) {
-        destMsg->srcPe = CkMyPe();
-        tot_send_count += destMsg->next;
-        nodeGrpProxy[dest_node].receive(destMsg);
-        sent[dest_node] = 1;
         est_total_items_in_bucket_arr -= destMsg->next;
-        msgBuffers[dest_node] = new HTramMessage();
+        if(sent[dest_node] == 1) {
+//          CkPrintf("\nAdding to overflow buffers");
+          overflowBuffers[dest_node].push_back(destMsg);
+          msgBuffers[dest_node] = new HTramMessage();
+        } else {
+//          CkPrintf("\nSending regular msg");
+          destMsg->srcPe = CkMyPe();
+          tot_send_count += destMsg->next;
+          nodeGrpProxy[dest_node].receive(destMsg);
+          sent[dest_node]++;
+          msgBuffers[dest_node] = new HTramMessage();
+        }
       }
     }
     tram_hold[i].clear();
@@ -471,7 +482,7 @@ void HTram::tflush(bool idleflush) {
         nodeGrpProxy[dest_node].receive(sendMsg);
       }
       if(j)
-        overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin()+j-1);
+        overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
     }
 #endif
 
@@ -557,16 +568,26 @@ void HTram::tflush(bool idleflush) {
                 //CkPrintf("\ndest_node = %d, number of fill_ov_bufs = %d", dest_node, fillerOverflowBuffers.size());
 //                int size = 1;//fillerOverflowBuffers[dest_node].size();
                 HTramMessage* msg;
+                int index;
                 if(fillerOverflowBuffers[dest_node].size()==0) {
                   msg = new HTramMessage();
                   fillerOverflowBuffers[dest_node].push_back(msg);
+                  index = fillerOverflowBuffers[dest_node].size()-1;
+                  fillerOverflowBuffersBucketMin[dest_node].push_back(0);
+                  fillerOverflowBuffersBucketMax[dest_node].push_back(100);
                 } else {
                   msg = fillerOverflowBuffers[dest_node].back();
+                  index = fillerOverflowBuffers[dest_node].size()-1;
                   if(msg->next == BUFSIZE) {
                     msg = new HTramMessage();
                     fillerOverflowBuffers[dest_node].push_back(msg);
+                    index = fillerOverflowBuffers[dest_node].size()-1;
+                    fillerOverflowBuffersBucketMin[dest_node].push_back(0);
+                    fillerOverflowBuffersBucketMax[dest_node].push_back(100);
                   }
                 }
+                if(fillerOverflowBuffersBucketMin[dest_node][index] > i) fillerOverflowBuffersBucketMin[dest_node][index] = i;
+                if(fillerOverflowBuffersBucketMax[dest_node][index] < i) fillerOverflowBuffersBucketMax[dest_node][index] = i;
                 msg->buffer[msg->next].payload = item;
                 msg->buffer[msg->next++].destPe = dest_proc;
 #endif
@@ -624,7 +645,7 @@ void HTram::flush_everything() {
         nodeGrpProxy[dest_node].receive(sendMsg);
       }
       if(j)
-        overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin() + j - 1);
+        overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
     }
 
     for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
@@ -636,7 +657,7 @@ void HTram::flush_everything() {
         tot_send_count += fillerOverflowBuffers[dest_node][j]->next;
       }
       if(j)
-        fillerOverflowBuffers[dest_node].erase(fillerOverflowBuffers[dest_node].begin() + j - 1);
+        fillerOverflowBuffers[dest_node].erase(fillerOverflowBuffers[dest_node].begin(), fillerOverflowBuffers[dest_node].begin() + j);
     }
 
   }
