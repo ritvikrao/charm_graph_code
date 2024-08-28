@@ -375,7 +375,7 @@ public:
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
-		CcdCallFnAfter(fast_exit, (void *) this, 10000.0); //end after 5 s
+		CcdCallFnAfter(fast_exit, (void *) this, 20000.0); //end after 5 s
 		compute_begin = CkWallTimer();
 		#ifdef INFO_PRINTS
 		ckout << "Beginning at time: " << compute_begin << endl;
@@ -1031,11 +1031,13 @@ public:
 			#else
 			tram_hold[neighbor_bucket].push_back(new_update);
 			if(neighbor_bucket <= tram_threshold) updates_in_tram++;
+
 			if(updates_in_tram == 8192) 
 			{
       			tram->insertBuckets(tram_threshold);
       			updates_in_tram = 0;
     		}
+
 			#endif
 		}
 	}
@@ -1320,9 +1322,9 @@ public:
 		current_phase = phase;
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
-		//tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
-    	//tram->changeThreshold(tram_threshold);
-		#if 1
+		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
+    tram->changeThreshold(tram_threshold);
+		#if 0
 		for(int i=0; i<=tram_threshold; i++)
 		{
 			for(int j=0; j<tram_hold[i].size(); j++)
@@ -1366,7 +1368,9 @@ public:
 			bfs_hold[i].clear();
 		}
 		*/
+    tram->sanityCheck();
 		tram->tflush();
+    tram->flush_everything();
 		arr[thisIndex].process_heap();
 		contribute_histogram(behind_first_nonzero);
 	}

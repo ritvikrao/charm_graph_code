@@ -51,6 +51,14 @@ typedef item<datatype> itemT;
 
 class HTramMessage : public CMessage_HTramMessage {
   public:
+    HTramMessage() {next = 0;}
+    HTramMessage(HTramMessage *copy) {
+      next = copy->next;
+      track_count = copy->track_count;
+      srcPe = copy->srcPe;
+      ack_count = copy->ack_count;
+      std::copy(copy->buffer, copy->buffer+next, buffer);
+    }
     int next{0}; //next available slot in buffer
     int track_count{0};
     int srcPe{-1};
@@ -108,7 +116,7 @@ class HTram : public CBase_HTram {
     CkCallback return_cb;
     int myPE, buf_type;
     int agg;
-    int local_recv_count, tot_recv_count, tot_send_count;
+    int local_recv_count, tot_recv_count, tot_send_count, local_updates;
     int histo_bucket_count, tram_threshold;
     int est_total_items_in_bucket_arr;
     bool ret_list;
@@ -126,6 +134,9 @@ class HTram : public CBase_HTram {
     HTramMessage *localMsgBuffer;
     std::vector<itemT>* localBuffers;
     std::vector<std::vector<HTramMessage*>> overflowBuffers;
+    std::vector<std::vector<HTramMessage*>> fillerOverflowBuffers;
+    std::vector<std::vector<int>> fillerOverflowBuffersBucketMin;
+    std::vector<std::vector<int>> fillerOverflowBuffersBucketMax;
   public:
     bool enable_flush;
     int bufSize;
@@ -143,6 +154,7 @@ class HTram : public CBase_HTram {
     void reset_stats(int buf_type, int buf_size, int agtype);
     void enableIdleFlush();
     void tflush(bool idleflush=false);
+    void flush_everything();
     void shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket_count);
     void insertBuckets(int);
     void changeThreshold(int);
