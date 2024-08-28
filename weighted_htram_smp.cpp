@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <random>
 
-//#define INFO_PRINTS
+#define INFO_PRINTS
 //#define PRINT_HISTO //print histograms to file
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 //#define PQ_HOLD_ONLY
@@ -1368,9 +1368,9 @@ public:
 			bfs_hold[i].clear();
 		}
 		*/
-    tram->sanityCheck();
+    	tram->sanityCheck();
 		tram->tflush();
-    tram->flush_everything();
+    	tram->flush_everything();
 		arr[thisIndex].process_heap();
 		contribute_histogram(behind_first_nonzero);
 	}
