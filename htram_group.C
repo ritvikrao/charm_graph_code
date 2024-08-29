@@ -61,8 +61,10 @@ HTram::HTram(CkGroupID recv_ngid, CkGroupID src_ngid, int buffer_size, bool enab
     msgBuffers[i] = new HTramMessage();
 
   for(int i=0;i<CkNumNodes();i++) {
+#if 0
     std::vector<HTramMessage*> vec1;
     overflowBuffers.push_back(vec1);
+#endif
     std::vector<HTramMessage*> vec2;
     fillerOverflowBuffers.push_back(vec2);
     std::vector<int> int_min;
@@ -182,7 +184,8 @@ void HTram::shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket
 void HTram::changeThreshold(int high) {
 //  CkPrintf("\nCalling insert buckets with threshold %d", high);
   if(high < 0) return;
-  tram_threshold = high;
+  if(tram_threshold < high)
+    tram_threshold = high;
   est_total_items_in_bucket_arr = 0;
   for(int i=0;i<=high;i++)
     est_total_items_in_bucket_arr += tram_hold[i].size();
@@ -203,20 +206,22 @@ void HTram::insertBuckets(int high) {
     return;
 
   vector<int> sent(CkNumNodes(),0);
-#if 1
+#if 0
   for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
-      int j=0;
+      int j=0;//overflowBuffers[dest_node].size()-1
       for(;j<overflowBuffers[dest_node].size();j++)
       {
 //        CkPrintf("\nSending overflow buffers");
         tot_send_count += overflowBuffers[dest_node][j]->next;
-        HTramMessage* sendMsg = new HTramMessage(overflowBuffers[dest_node][j]);
+        HTramMessage* sendMsg = new HTramMessage(overflowBuffers[dest_node][j]);//see if you can avoid copy
         nodeGrpProxy[dest_node].receive(sendMsg);
         //nodeGrp->msgs_in_transit[dest_node]++;
         sent[dest_node] = 1;
       }
-      if(j)
+      {
+        //delete messages 
         overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
+      }
   }
 #endif
 
@@ -228,7 +233,7 @@ void HTram::insertBuckets(int high) {
 //      CkPrintf("\nIn tram bucket iterator");
       datatype item = tram_hold[i][j];
       int dest_proc = get_dest_proc(objPtr, item);
-      if(dest_proc == -1) { local_updates++; continue;}
+      if(dest_proc == -1) { /*process_update(objPtr,item);*/ local_updates++; continue;}
       int dest_node = dest_proc/CkNodeSize(0);
       HTramMessage* destMsg = msgBuffers[dest_node];
       destMsg->buffer[destMsg->next].payload = item;
@@ -236,23 +241,27 @@ void HTram::insertBuckets(int high) {
       destMsg->next++;
       if(destMsg->next == BUFSIZE) {
         est_total_items_in_bucket_arr -= destMsg->next;
+#if 0
         if(sent[dest_node] == 1) {
 //          CkPrintf("\nAdding to overflow buffers");
           overflowBuffers[dest_node].push_back(destMsg);
           msgBuffers[dest_node] = new HTramMessage();
-        } else {
+        } else
+#endif
+        {
 //          CkPrintf("\nSending regular msg");
           destMsg->srcPe = CkMyPe();
           tot_send_count += destMsg->next;
           nodeGrpProxy[dest_node].receive(destMsg);
-          sent[dest_node]++;
+          if(sent[dest_node]==0) {//count++; 
+            sent[dest_node] = 1;
+          }
           msgBuffers[dest_node] = new HTramMessage();
         }
       }
     }
     tram_hold[i].clear();
-    if(sum_of_sent(sent) == CkNumNodes()) break;
-    if(overflowed) break;
+//    if(count == X) break;
   }
   tram_done(objPtr);
 }
@@ -473,7 +482,7 @@ void HTram::tflush(bool idleflush) {
     }
   }
   if(agg == PNs) {
-#if 1
+#if 0
     for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
       int j=0;
       for(;j<overflowBuffers[dest_node].size();j++) {
@@ -533,6 +542,7 @@ void HTram::tflush(bool idleflush) {
               if(j+1 > fillerOverflowBuffers[node].size()-1) break;
               j++;
             }
+            //CkPrintf("\nUsing filler items from overflow buffers");
             datatype item = fillerOverflowBuffers[node][j]->buffer[k].payload;
             items_donated++;
             int dest_proc = get_dest_proc(objPtr, item);
@@ -542,7 +552,11 @@ void HTram::tflush(bool idleflush) {
           int del = j-1;
           fillerOverflowBuffers[node][j]->next -= items_donated;
           if(!fillerOverflowBuffers[node][j]->next) del++;
-          if(del >=0 ) fillerOverflowBuffers[node].erase(fillerOverflowBuffers[node].begin(), fillerOverflowBuffers[node].begin()+del);
+          if(del >=0 ) {
+            fillerOverflowBuffers[node].erase(fillerOverflowBuffers[node].begin(), fillerOverflowBuffers[node].begin()+del);
+            fillerOverflowBuffersBucketMin[node].erase(fillerOverflowBuffersBucketMin[node].begin(), fillerOverflowBuffersBucketMin[node].begin()+del);
+            fillerOverflowBuffersBucketMax[node].erase(fillerOverflowBuffersBucketMax[node].begin(), fillerOverflowBuffersBucketMax[node].begin()+del);
+          }
         }
         if(destMsg->next < BUFSIZE/2) //still
 #endif
@@ -558,6 +572,7 @@ void HTram::tflush(bool idleflush) {
               if(dest_proc == -1) {local_updates++; continue;}
               int dest_node = dest_proc/CkNodeSize(0);
               if(dest_node == node && filled_msg == 0) {
+               // CkPrintf("\nUsing filler items from tram_hold");
                 destMsg->buffer[destMsg->next].payload = item;
                 destMsg->buffer[destMsg->next++].destPe = dest_proc;
                 if(destMsg->next >= BUFSIZE/2) {
@@ -616,6 +631,7 @@ void HTram::tflush(bool idleflush) {
 
 void HTram::flush_everything() {
   if(agg == PNs) {
+#if 0
     for(int i=0;i<histo_bucket_count;i++) {
       for(int j=0;j<tram_hold[i].size();j++) {
         datatype item = tram_hold[i][j];
@@ -635,6 +651,8 @@ void HTram::flush_everything() {
       }
       tram_hold[i].clear();
     }
+#endif
+#if 0
     for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
       int j=0;
       for(;j<overflowBuffers[dest_node].size();j++) {
@@ -647,17 +665,24 @@ void HTram::flush_everything() {
       if(j)
         overflowBuffers[dest_node].erase(overflowBuffers[dest_node].begin(), overflowBuffers[dest_node].begin() + j);
     }
+#endif
 
     for(int dest_node=0;dest_node<CkNumNodes();dest_node++) {
       int j=0;
+      std::vector<int> to_del;
       for(;j<fillerOverflowBuffers[dest_node].size();j++) {
 //        {CkPrintf("\nfiller overflow buffer[dest%d, idx%d] = next%d",dest_node, j, fillerOverflowBuffers[dest_node][j]->next);} ;
+        if(fillerOverflowBuffersBucketMin[dest_node][j] > tram_threshold) continue;
+        to_del.push_back(j);
         HTramMessage* sendMsg = new HTramMessage(fillerOverflowBuffers[dest_node][j]);
         nodeGrpProxy[dest_node].receive(sendMsg);
         tot_send_count += fillerOverflowBuffers[dest_node][j]->next;
       }
-      if(j)
-        fillerOverflowBuffers[dest_node].erase(fillerOverflowBuffers[dest_node].begin(), fillerOverflowBuffers[dest_node].begin() + j);
+      for(int k=0;k<to_del.size();k++) {
+        fillerOverflowBuffers[dest_node].erase(fillerOverflowBuffers[dest_node].begin()+k);
+        fillerOverflowBuffersBucketMin[dest_node].erase(fillerOverflowBuffersBucketMin[dest_node].begin()+k);
+        fillerOverflowBuffersBucketMax[dest_node].erase(fillerOverflowBuffersBucketMax[dest_node].begin()+k);
+      }
     }
 
   }

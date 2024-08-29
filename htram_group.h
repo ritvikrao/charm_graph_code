@@ -117,7 +117,7 @@ class HTram : public CBase_HTram {
     int myPE, buf_type;
     int agg;
     int local_recv_count, tot_recv_count, tot_send_count, local_updates;
-    int histo_bucket_count, tram_threshold;
+    int histo_bucket_count, tram_threshold = 0;
     int est_total_items_in_bucket_arr;
     bool ret_list;
     bool request;
@@ -133,7 +133,9 @@ class HTram : public CBase_HTram {
     HTramLocalMessage **local_buf;
     HTramMessage *localMsgBuffer;
     std::vector<itemT>* localBuffers;
+#if 0
     std::vector<std::vector<HTramMessage*>> overflowBuffers;
+#endif
     std::vector<std::vector<HTramMessage*>> fillerOverflowBuffers;
     std::vector<std::vector<int>> fillerOverflowBuffersBucketMin;
     std::vector<std::vector<int>> fillerOverflowBuffersBucketMax;
