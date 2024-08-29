@@ -487,7 +487,7 @@ void HTram::tflush(bool idleflush) {
 //        CkPrintf("\n[PE-%d] Attempting to use fillers for msg buffer[to node %d] size = %d [%d > 0 or %d > 0]", thisIndex, node, destMsg->next, fillerOverflowBuffers[node].size(), tram_filler_items);
         for(int l=0;l<fillerOverflowBuffers[node].size();l++) {
           int size_of_buffer = fillerOverflowBuffers[node][l]->next;
-          for(int m=0;m<size_of_buffer;m++) {
+          for(int m=size_of_buffer-1;m>=0;m--) {
             datatype item = fillerOverflowBuffers[node][l]->buffer[m].payload;
             fillerOverflowBuffers[node][l]->next--;
 //            int dest_proc = get_dest_proc(objPtr, item);
@@ -591,9 +591,9 @@ void HTram::flush_everything() {
 //        {CkPrintf("\nfiller overflow buffer[dest%d, idx%d] = next%d",dest_node, j, fillerOverflowBuffers[dest_node][j]->next);} ;
         if(fillerOverflowBuffersBucketMin[dest_node][j] > tram_threshold) continue;
         HTramMessage* sendMsg = new HTramMessage(fillerOverflowBuffers[dest_node][j]);
-        fillerOverflowBuffers[dest_node][j]->next = 0;
         nodeGrpProxy[dest_node].receive(sendMsg);
         tot_send_count += fillerOverflowBuffers[dest_node][j]->next;
+        fillerOverflowBuffers[dest_node][j]->next = 0;
       }
       auto it = fillerOverflowBuffers[dest_node].begin();
         while (it != fillerOverflowBuffers[dest_node].end()) {
