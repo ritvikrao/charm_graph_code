@@ -202,8 +202,8 @@ int sum_of_sent(vector<int> sent) {
 
 void HTram::insertBuckets(int high) {
   est_total_items_in_bucket_arr += 256;
-  if(est_total_items_in_bucket_arr < CkNumNodes()*BUFSIZE*FACTOR)
-    return;
+ // if(est_total_items_in_bucket_arr < CkNumNodes()*BUFSIZE*FACTOR)
+ //   return;
 
   //copy from vectors in order of index into messages
   int overflowed = 0;
