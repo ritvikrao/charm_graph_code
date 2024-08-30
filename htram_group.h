@@ -18,7 +18,7 @@
 //#include "packet.h"
 using namespace std;
 #define SIZE_LIST (int[]){1024, 512, 2048}
-#define BUFSIZE 64//256//64//512//4096//2048//512//1024//256//1024//2048//1024//4096//2048//4096//2048//1024
+#define BUFSIZE 512//64//256//64//512//4096//2048//512//1024//256//1024//2048//1024//4096//2048//4096//2048//1024
 //2048//1024//512//1024//1600//512//1600//1024//4096//2048//1024
 #define LOCAL_BUFSIZE 32//8
 #define PPN_COUNT 8
@@ -117,7 +117,7 @@ class HTram : public CBase_HTram {
     int myPE, buf_type;
     int agg;
     int local_recv_count, tot_recv_count, tot_send_count, local_updates;
-    int histo_bucket_count, tram_threshold;
+    int histo_bucket_count, tram_threshold = 0;
     int est_total_items_in_bucket_arr;
     bool ret_list;
     bool request;
@@ -133,7 +133,9 @@ class HTram : public CBase_HTram {
     HTramLocalMessage **local_buf;
     HTramMessage *localMsgBuffer;
     std::vector<itemT>* localBuffers;
+#if 0
     std::vector<std::vector<HTramMessage*>> overflowBuffers;
+#endif
     std::vector<std::vector<HTramMessage*>> fillerOverflowBuffers;
     std::vector<std::vector<int>> fillerOverflowBuffersBucketMin;
     std::vector<std::vector<int>> fillerOverflowBuffersBucketMax;

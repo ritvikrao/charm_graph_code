@@ -1032,7 +1032,7 @@ public:
 			tram_hold[neighbor_bucket].push_back(new_update);
 			if(neighbor_bucket <= tram_threshold) updates_in_tram++;
 
-			if(updates_in_tram == 256)//8192) 
+			if(updates_in_tram == 8192)
 			{
       			tram->insertBuckets(tram_threshold);
       			updates_in_tram = 0;
