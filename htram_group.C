@@ -184,12 +184,12 @@ void HTram::shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket
 void HTram::changeThreshold(int high) {
 //  CkPrintf("\nCalling insert buckets with threshold %d", high);
   if(high < 0) return;
-  if(tram_threshold < high)
+//  if(tram_threshold < high)
     tram_threshold = high;
   est_total_items_in_bucket_arr = 0;
   for(int i=0;i<=high;i++)
     est_total_items_in_bucket_arr += tram_hold[i].size();
-  insertBuckets(high);
+  insertBuckets(tram_threshold);
 }
 
 #define FACTOR 2
