@@ -475,10 +475,6 @@ void HTram::tflush(bool idleflush) {
     for(int node=0;node<CkNumNodes();node++) {
       HTramMessage* destMsg = msgBuffers[node];
       if(!destMsg->next) continue;
-      int tram_filler_items = 0;
-
-      for(int i=tram_threshold+1;i<histo_bucket_count;i++)
-        tram_filler_items += tram_hold[i].size();
 
       if(destMsg->next < BUFSIZE/2)
       { //If buffer is less than half full, fill it with filler items before send
@@ -541,8 +537,8 @@ void HTram::tflush(bool idleflush) {
                 if(fillerOverflowBuffers[dest_node].size()==0) {
                   msg = new HTramMessage();
                   fillerOverflowBuffers[dest_node].push_back(msg);
-                  index = fillerOverflowBuffers[dest_node].size()-1;
-                  fillerOverflowBuffersBucketMin[dest_node].push_back(0);
+                  index = 0;
+                  fillerOverflowBuffersBucketMin[dest_node].push_back(512);
                   fillerOverflowBuffersBucketMax[dest_node].push_back(100);
                 } else {
                   //CkPrintf("\nAdding to filler buffers"); fflush(stdout);
@@ -551,8 +547,8 @@ void HTram::tflush(bool idleflush) {
                   if(msg->next == BUFSIZE) {
                     msg = new HTramMessage();
                     fillerOverflowBuffers[dest_node].push_back(msg);
-                    index = fillerOverflowBuffers[dest_node].size()-1;
-                    fillerOverflowBuffersBucketMin[dest_node].push_back(0);
+                    index++;
+                    fillerOverflowBuffersBucketMin[dest_node].push_back(512);
                     fillerOverflowBuffersBucketMax[dest_node].push_back(100);
                   }
                 }
@@ -568,9 +564,6 @@ void HTram::tflush(bool idleflush) {
           }
 #endif
         }
-        tram_filler_items = 0;
-        for(int i=tram_threshold+1;i<histo_bucket_count;i++)
-          tram_filler_items += tram_hold[i].size();
       }
       tot_send_count += destMsg->next;
       nodeGrpProxy[node].receive(destMsg);
