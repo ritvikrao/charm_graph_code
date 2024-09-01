@@ -208,7 +208,7 @@ int sum_of_sent(vector<int> sent) {
   return sum;
 }
 
-#define X_TIMES 4
+#define X_TIMES 2
 
 void HTram::sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket) {
 
@@ -461,19 +461,23 @@ void HTram::tflush(bool idleflush) {
             localBuffers[destNode*CkNodeSize(0)+k].clear();
           }
           nodeGrpProxy[i].receive_no_sort(destMsg);
+          msgBuffers[i] = new HTramMessage();
         }
         else if(agg == PNs)
         {
+#if 0
           ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*(destMsg->next));
           destMsg->srcPe = CkMyPe();
           tot_send_count += destMsg->next;
           nodeGrpProxy[i].receive(destMsg);
+          msgBuffers[i] = new HTramMessage();
+#endif
         } else if(agg == PP) {
           ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*destMsg->next);
 //          CkPrintf("\nmsg size = %d", *destMsg->next);
           thisProxy[i].receiveOnPE(destMsg);
-        }
           msgBuffers[i] = new HTramMessage();
+        }
       }
     }
   }
@@ -496,6 +500,7 @@ void HTram::tflush(bool idleflush) {
           tot_send_count += destMsg->next;
           nodeGrpProxy[dest_node].receive(destMsg);
           msgBuffers[dest_node] = new HTramMessage();
+          updates_in_tram -= destMsg->next;
         }
       }
       tram_hold[i].clear();
@@ -506,7 +511,7 @@ void HTram::tflush(bool idleflush) {
     for(int node=0;node<CkNumNodes();node++) {
       HTramMessage* destMsg = msgBuffers[node];
       if(!destMsg->next) continue;
-
+      updates_in_tram -= destMsg->next;
       if(destMsg->next < BUFSIZE/2)
       { //If buffer is less than half full, fill it with filler items before send
         //Take filler items from filler overflow buffers
@@ -597,6 +602,7 @@ void HTram::tflush(bool idleflush) {
         }
       }
       tot_send_count += destMsg->next;
+      ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*(destMsg->next));
       nodeGrpProxy[node].receive(destMsg);
       msgBuffers[node] = new HTramMessage();
     }

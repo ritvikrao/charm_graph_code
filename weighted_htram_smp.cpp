@@ -1260,8 +1260,9 @@ public:
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
 		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
-    int direct_threshold = behind_first_nonzero + 4;
+    int direct_threshold = behind_first_nonzero + 4 ;
     if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
+//    if(behind_first_nonzero > 74) direct_threshold = tram_threshold;
     tram->changeThreshold(direct_threshold, tram_threshold);
 		#if 0
 		for(int i=0; i<=tram_threshold; i++)
