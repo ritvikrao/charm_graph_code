@@ -317,7 +317,7 @@ public:
 		threshold_change_counter = 0;
 		previous_threshold = initial_threshold;
 		CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
-		CcdCallFnAfter(fast_exit, (void *) this, 20000.0); //end after 5 s
+		CcdCallFnAfter(fast_exit, (void *) this, 30000.0); //end after 5 s
 		compute_begin = CkWallTimer();
 		#ifdef INFO_PRINTS
 		ckout << "Beginning at time: " << compute_begin << endl;
@@ -945,7 +945,7 @@ public:
 			#ifndef ALL_TO_TRAM_HOLD
 			if((neighbor_bucket > tram_threshold) && !bfs)
 			{
-				tram_hold[neighbor_bucket].push_back(new_update);
+				tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);//tram_hold[neighbor_bucket].push_back(new_update);
 			}
 			else
 			{
@@ -965,15 +965,16 @@ public:
 				#endif
 			}
 			#else
-			tram_hold[neighbor_bucket].push_back(new_update);
+      tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);
+//			tram_hold[neighbor_bucket].push_back(new_update);
 			if(neighbor_bucket <= tram_threshold) updates_in_tram++;
-
-			if(updates_in_tram == 256/*8192*/)
+#if 0
+			if(updates_in_tram == 8192)
 			{
       			tram->insertBuckets(tram_threshold);
       			updates_in_tram = 0;
     		}
-
+#endif
 			#endif
 		}
 	}
@@ -1259,7 +1260,9 @@ public:
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
 		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
-    tram->changeThreshold(tram_threshold);
+    int direct_threshold = behind_first_nonzero + 4;
+    if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
+    tram->changeThreshold(direct_threshold, tram_threshold);
 		#if 0
 		for(int i=0; i<=tram_threshold; i++)
 		{
@@ -1304,7 +1307,6 @@ public:
 			bfs_hold[i].clear();
 		}
 		*/
-    tram->sanityCheck();
 		tram->tflush();
     tram->flush_everything();
 		arr[thisIndex].process_heap();
