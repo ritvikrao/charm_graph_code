@@ -10,6 +10,7 @@
 #endif
 #define _K 40
 #define ALL_BUF_TYPES
+#include <queue>
 #include "htram_group.decl.h"
 #include "weighted_node_struct.h"
 ///* readonly */ extern CProxy_HTram tram_proxy;
@@ -117,14 +118,15 @@ class HTram : public CBase_HTram {
     int myPE, buf_type;
     int agg;
     int local_recv_count, tot_recv_count, tot_send_count, local_updates;
-    int histo_bucket_count, tram_threshold = 0;
+    int histo_bucket_count, direct_threshold=0, tram_threshold = 0, updates_in_tram=0;
+    float selectivity = 1.0;
     int est_total_items_in_bucket_arr;
     bool ret_list;
     bool request;
     double flush_time;
     double msg_stats[STATS_COUNT] {0.0};
     int local_idx[NODE_COUNT];
-    std::vector<datatype> *tram_hold;
+    std::queue<datatype> *tram_hold;
     void* objPtr;
     HTramNodeGrp* srcNodeGrp;
     HTramRecv* nodeGrp;
@@ -153,13 +155,14 @@ class HTram : public CBase_HTram {
     int getAggregatingPE(int dest_pe);
     void copyToNodeBuf(int destnode, int increment);
     void insertValue(datatype send_value, int dest_pe);
+    void sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket);
     void reset_stats(int buf_type, int buf_size, int agtype);
     void enableIdleFlush();
     void tflush(bool idleflush=false);
     void flush_everything();
     void shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket_count);
     void insertBuckets(int);
-    void changeThreshold(int);
+    void changeThreshold(int, int, float);
     void sanityCheck();
     void getTotSendCount(int);
     void getTotRecvCount(int);
