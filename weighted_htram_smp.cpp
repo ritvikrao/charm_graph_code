@@ -1263,7 +1263,7 @@ public:
     int direct_threshold = behind_first_nonzero + 4 ;
     if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
 //    if(behind_first_nonzero > 74) direct_threshold = tram_threshold;
-    tram->changeThreshold(direct_threshold, tram_threshold);
+    tram->changeThreshold(direct_threshold, tram_threshold, 2.0);
 		#if 0
 		for(int i=0; i<=tram_threshold; i++)
 		{

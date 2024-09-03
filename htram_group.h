@@ -119,6 +119,7 @@ class HTram : public CBase_HTram {
     int agg;
     int local_recv_count, tot_recv_count, tot_send_count, local_updates;
     int histo_bucket_count, direct_threshold=0, tram_threshold = 0, updates_in_tram=0;
+    float selectivity = 1.0;
     int est_total_items_in_bucket_arr;
     bool ret_list;
     bool request;
@@ -161,7 +162,7 @@ class HTram : public CBase_HTram {
     void flush_everything();
     void shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket_count);
     void insertBuckets(int);
-    void changeThreshold(int, int);
+    void changeThreshold(int, int, float);
     void sanityCheck();
     void getTotSendCount(int);
     void getTotRecvCount(int);
