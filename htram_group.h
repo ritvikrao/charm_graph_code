@@ -10,6 +10,7 @@
 #endif
 #define _K 40
 #define ALL_BUF_TYPES
+#include <queue>
 #include "htram_group.decl.h"
 #include "weighted_node_struct.h"
 ///* readonly */ extern CProxy_HTram tram_proxy;
@@ -124,7 +125,7 @@ class HTram : public CBase_HTram {
     double flush_time;
     double msg_stats[STATS_COUNT] {0.0};
     int local_idx[NODE_COUNT];
-    std::vector<datatype> *tram_hold;
+    std::queue<datatype> *tram_hold;
     void* objPtr;
     HTramNodeGrp* srcNodeGrp;
     HTramRecv* nodeGrp;
