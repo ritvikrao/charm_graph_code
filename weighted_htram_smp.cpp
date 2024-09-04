@@ -573,9 +573,9 @@ public:
 		ckout << "Compute time: " << compute_time << endl;
 		ckout << "Total time: " << total_time << endl;
 		ckout << "Wasted updates: " << msg_stats[0] - V << endl;
-		ckout << "Wasted updates normalized to V: " << (double) (msg_stats[0] - V) / V << endl;
+		ckout << "Wasted updates normalized to |E|: " << (double) (msg_stats[0] - V) / msg_stats[4+histo_bucket_count] << endl;
 		ckout << "Rejected updates: " << msg_stats[1] << endl;
-		ckout << "Rejected updates normalized to V: " << (double) msg_stats[1] / V << endl;
+		ckout << "Rejected updates normalized to |E|: " << (double) msg_stats[1] / msg_stats[4+histo_bucket_count] << endl;
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		ckout << "Number of reductions: " << reduction_counts << endl;
 		ckout << "Updates noted: " << msg_stats[3+histo_bucket_count] << endl;
@@ -1327,7 +1327,7 @@ public:
     int direct_threshold = behind_first_nonzero + 4 ;
     if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
 //    if(behind_first_nonzero > 74) direct_threshold = tram_threshold;
-    tram->changeThreshold(direct_threshold, tram_threshold, 1.0);
+    tram->changeThreshold(direct_threshold, tram_threshold, 4.0);
 		#if 0
 		for(int i=0; i<=tram_threshold; i++)
 		{
