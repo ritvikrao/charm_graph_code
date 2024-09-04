@@ -219,8 +219,11 @@ void HTram::sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket) {
     updates_in_tram++; //eligible to be sent, but not yet sent
     if(neighbor_bucket > direct_threshold)
       tram_hold[neighbor_bucket].push(new_update); 
-    else
-      insertValue(new_update, get_dest_proc(objPtr, new_update));
+    else {
+      int dest_proc = get_dest_proc(objPtr, new_update);
+      if(dest_proc == -1) return;
+      insertValue(new_update, dest_proc);
+    }
   }
   if(updates_in_tram > selectivity*BUFSIZE*CkNumNodes())
 //    if(updates_in_tram%256==0)
