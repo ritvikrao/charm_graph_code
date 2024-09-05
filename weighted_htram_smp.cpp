@@ -1326,10 +1326,10 @@ public:
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
 		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
-    int direct_threshold = behind_first_nonzero + 4 ;
+    int direct_threshold = behind_first_nonzero + 8 ;
     if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
-    float selectivity = 2.0;
-//    if(behind_first_nonzero > 74) selectivity = 1.0;
+    float selectivity = 8.0;
+    if(behind_first_nonzero > 68) selectivity = 1.0;
     tram->changeThreshold(direct_threshold, tram_threshold, selectivity);
 		#if 0
 		for(int i=0; i<=tram_threshold; i++)
@@ -1349,6 +1349,7 @@ public:
 		#endif
 		#ifndef PQ_HOLD_ONLY
 		arr[thisIndex].clear_pq_hold();
+		//add user event
 		#endif
 		process_local_updates();
 		/*
@@ -1375,7 +1376,7 @@ public:
 			bfs_hold[i].clear();
 		}
 		*/
-		tram->tflush();
+		if(rand()%5==0) tram->tflush();
 //    tram->sanityCheck();
 //    tram->flush_everything();
 		arr[thisIndex].process_heap();

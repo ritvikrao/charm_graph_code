@@ -195,7 +195,7 @@ void HTram::shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket
 
 #ifdef BUCKETS_BY_DEST
 void HTram::changeThreshold(int _directThreshold, int _newtramThreshold, float _selectivity) {
- 
+  if((_newtramThreshold==tram_threshold)&&(_directThreshold==direct_threshold)&&(_selectivity==selectivity)) return;
   if(_newtramThreshold > tram_threshold) {
     for(int k=0;k<CkNumNodes();k++)
       for(int i=tram_threshold+1;i<=_newtramThreshold;i++)
@@ -205,6 +205,7 @@ void HTram::changeThreshold(int _directThreshold, int _newtramThreshold, float _
       for(int i=tram_threshold;i>_newtramThreshold;i--)
         updates_in_tram[k] -= tram_hold[k][i].size();
   }
+  //add user event for projections
 #ifdef DEBUG
   for(int k=0;k<CkNumNodes();k++)
     CkPrintf("\nupdates_in_tram[PE-%d] for node#%d = %d", thisIndex, k, updates_in_tram[k]);
@@ -288,7 +289,7 @@ void HTram::insertBucketsByDest(int high, int dest_node) {
       tram_hold[dest_node][i].pop();
       destMsg->buffer[destMsg->next].payload = item;
       int dest_proc = get_dest_proc(objPtr, item);
-      if(dest_proc/CkNodeSize(0) != dest_node || dest_proc == -1) {CkPrintf("\nError"); continue;}
+      //if(dest_proc/CkNodeSize(0) != dest_node || dest_proc == -1) {CkPrintf("\nError"); continue;}
       destMsg->buffer[destMsg->next].destPe = dest_proc;
       destMsg->next++;
       if(destMsg->next == BUFSIZE) {
@@ -606,6 +607,7 @@ void HTram::tflush(bool idleflush) {
       if(!destMsg->next) continue;
 #ifdef BUCKETS_BY_DEST
       updates_in_tram[node] -= destMsg->next;
+      #ifdef ADD_FILLERS
       if(destMsg->next < BUFSIZE/2)
       { //If buffer is less than half full, fill it with filler items before send
         //Take filler items from filler overflow buffers
@@ -625,8 +627,10 @@ void HTram::tflush(bool idleflush) {
             if(destMsg->next >= BUFSIZE/2) break;
           }
       }
+      #endif
 #else
       updates_in_tram_count -= destMsg->next;
+      
 #endif
       tot_send_count += destMsg->next;
       ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*(destMsg->next));

@@ -1,6 +1,6 @@
 # Change Charm build locations based on where the charm build is
 CHARMC =/ccs/home/rrao/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-gcc/bin/charmc $(OPTS)
-CHARMC_SMP =/Users/ritvik/charm/netlrts-darwin-x86_64-smp/bin/charmc $(OPTS)
+CHARMC_SMP =/ccs/home/rrao/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp-gcc/bin/charmc $(OPTS)
 # delta: /scratch/mzu/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp-gcc/bin/charmc
 # frontier: /ccs/home/rrao/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp-gcc/bin/charmc
 # local: /Users/ritvik/charm/netlrts-darwin-x86_64-smp/bin/charmc
@@ -60,7 +60,7 @@ libhtram_group.a: htram_group.o
 	$(CHARMC_SMP) $< -o $@ -language charm++ -tracemode projections
 
 htram_group.o: htram_group.C htram_group.def.h htram_group.decl.h
-	$(CHARMC_SMP) -c htram_group.C
+	$(CHARMC_SMP) -O3 -c htram_group.C
 
 htram_group.def.h htram_group.decl.h: htram_group.ci
 	$(CHARMC_SMP) htram_group.ci
@@ -69,6 +69,9 @@ clean:
 	$(MAKE) clean-libs
 	rm -f *.o *.decl.h *.def.h $(BINARY) charmrun* *.stamp
 	rm -rf weighted_htram_Smp_projections
+
+remove-out:
+	rm -f *.out
 
 clean-libs:
 	rm -f *.def.h *.decl.h
