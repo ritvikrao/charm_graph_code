@@ -66,7 +66,7 @@ htram_group.def.h htram_group.decl.h: htram_group.ci
 
 clean:
 	$(MAKE) clean-libs
-	rm -f *.o *.decl.h *.def.h $(BINARY) charmrun* *.stamp *.out
+	rm -f *.o *.decl.h *.def.h $(BINARY) charmrun* *.stamp
 	rm -rf weighted_htram_Smp_projections
 
 clean-libs:
