@@ -5,9 +5,9 @@ module htram_group{
   initnode void registerMsgStatsCollection(void);
   message HTramMessage {
     int next;
-    int track_count;
-    int srcPe;
-    int ack_count;
+//    int track_count;
+//    int srcPe;
+//    int ack_count;
     itemT *buffer;
   };
 

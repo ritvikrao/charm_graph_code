@@ -19,11 +19,14 @@
 //#include "packet.h"
 using namespace std;
 #define SIZE_LIST (int[]){1024, 512, 2048}
-#define BUFSIZE 512//64//256//64//512//4096//2048//512//1024//256//1024//2048//1024//4096//2048//4096//2048//1024
+#define BUFSIZE 512//256////64//512//64//256//64//512//4096//2048//512//1024//256//1024//2048//1024//4096//2048//4096//2048//1024
 //2048//1024//512//1024//1600//512//1600//1024//4096//2048//1024
 #define LOCAL_BUFSIZE 32//8
 #define PPN_COUNT 8
 #define NODE_COUNT 512
+
+#define BUCKETS_BY_DEST
+//#define DEBUG
 
 #define TOTAL_LATENCY 0
 #define MAX_LATENCY 1
@@ -44,6 +47,7 @@ struct item {
 };
 
 typedef Update datatype;
+typedef std::queue<datatype>** array2d_of_queues;
 //typedef int datatype;
 
 //typedef packet1 datatype;
@@ -55,15 +59,12 @@ class HTramMessage : public CMessage_HTramMessage {
     HTramMessage() {next = 0;}
     HTramMessage(HTramMessage *copy) {
       next = copy->next;
-      track_count = copy->track_count;
-      srcPe = copy->srcPe;
-      ack_count = copy->ack_count;
       std::copy(copy->buffer, copy->buffer+next, buffer);
     }
     int next{0}; //next available slot in buffer
-    int track_count{0};
-    int srcPe{-1};
-    int ack_count{0};
+//    int track_count{0};
+//    int srcPe{-1};
+//    int ack_count{0};
     itemT buffer[BUFSIZE];
 };
 
@@ -118,7 +119,8 @@ class HTram : public CBase_HTram {
     int myPE, buf_type;
     int agg;
     int local_recv_count, tot_recv_count, tot_send_count, local_updates;
-    int histo_bucket_count, direct_threshold=0, tram_threshold = 0, updates_in_tram=0;
+    int histo_bucket_count, direct_threshold=0, tram_threshold = 0;//, updates_in_tram=0,largest_seen_tram_threshold=0;
+    int num_nodes;
     float selectivity = 1.0;
     int est_total_items_in_bucket_arr;
     bool ret_list;
@@ -126,7 +128,16 @@ class HTram : public CBase_HTram {
     double flush_time;
     double msg_stats[STATS_COUNT] {0.0};
     int local_idx[NODE_COUNT];
+#ifdef BUCKETS_BY_DEST
+    int* updates_in_tram;
+#else
+    int updates_in_tram_count=0;
+#endif
+#ifdef BUCKETS_BY_DEST
+    array2d_of_queues tram_hold;
+#else
     std::queue<datatype> *tram_hold;
+#endif
     void* objPtr;
     HTramNodeGrp* srcNodeGrp;
     HTramRecv* nodeGrp;
@@ -161,7 +172,11 @@ class HTram : public CBase_HTram {
     void tflush(bool idleflush=false);
     void flush_everything();
     void shareArrayOfBuckets(std::vector<datatype> *new_tram_hold, int bucket_count);
+#ifdef BUCKETS_BY_DEST 
+    void insertBucketsByDest(int, int);
+#else
     void insertBuckets(int);
+#endif
     void changeThreshold(int, int, float);
     void sanityCheck();
     void getTotSendCount(int);
