@@ -678,10 +678,12 @@ public:
 
 	int get_dest_proc_local(Update upd) {
 		int dest_proc = get_dest_proc_fast(upd.dest_vertex);
+/*
 		if(dest_proc==CkMyPe()) {
-		local_updates.push_back(upd);
+//		local_updates.push_back(upd);
 		return -1;
 		}
+*/
 		return dest_proc;
 	}
 
@@ -958,10 +960,10 @@ public:
 				}
 				else
 				{
-					tram->insertValue(new_update, dest_proc);
+					tram->sendItemPrioDeferredDest(new_update, 0);//tram->insertValue(new_update, dest_proc);
 				} 
 				#else
-				tram->insertValue(new_update, dest_proc);
+				tram->sendItemPrioDeferredDest(new_update, 0);//tram->insertValue(new_update, dest_proc);//this gets called
 				#endif
 			}
 			#else
@@ -1262,8 +1264,9 @@ public:
 		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
     int direct_threshold = behind_first_nonzero + 4 ;
     if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
-//    if(behind_first_nonzero > 74) direct_threshold = tram_threshold;
-    tram->changeThreshold(direct_threshold, tram_threshold, 2.0);
+    float selectivity = 2.0;
+//    if(behind_first_nonzero > 74) selectivity = 1.0;
+    tram->changeThreshold(direct_threshold, tram_threshold, selectivity);
 		#if 0
 		for(int i=0; i<=tram_threshold; i++)
 		{
@@ -1309,7 +1312,8 @@ public:
 		}
 		*/
 		tram->tflush();
-    tram->flush_everything();
+//    tram->sanityCheck();
+//    tram->flush_everything();
 		arr[thisIndex].process_heap();
 		contribute_histogram(behind_first_nonzero);
 	}
