@@ -43,6 +43,10 @@ weighted_htram_smp: weighted_htram_smp.cpp weighted_htram_smp.ci weighted_node_s
 	$(CHARMC_SMP) weighted_htram_smp.ci -DTRAM_SMP -DGROUPBY
 	$(CHARMC_SMP) $(CHARMCFLAGS) libhtram_group.a -language charm++ -o $@ $< -std=c++1z -DTRAM_SMP -DGROUPBY
 
+weighted_htram_smp_papi: weighted_htram_smp.cpp weighted_htram_smp.ci weighted_node_struct.h libhtram_group.a
+	$(CHARMC_SMP) weighted_htram_smp.ci -DTRAM_SMP -DGROUPBY
+	$(CHARMC_SMP) $(CHARMCFLAGS) libhtram_group.a -language charm++ -o $@ $< -std=c++1z -DTRAM_SMP -DGROUPBY -I/opt/cray/pe/papi/7.0.1.2/include -L/opt/cray/pe/papi/7.0.1.2/lib -lpapi
+
 weighted_htram_smp_projections: weighted_htram_smp.cpp weighted_htram_smp.ci weighted_node_struct.h libhtram_group.a
 	$(CHARMC_SMP) weighted_htram_smp.ci -DTRAM_SMP -DGROUPBY
 	$(CHARMC_SMP) $(CHARMCFLAGS) libhtram_group.a -language charm++ -o $@ $< -std=c++1z -DTRAM_SMP -DGROUPBY -tracemode projections

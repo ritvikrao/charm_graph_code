@@ -2,6 +2,10 @@
 #include "TopoManager.h"
 #include "htram_group.h"
 #include "weighted_htram_smp.decl.h"
+#define PAPI
+#ifdef PAPI
+#include <papi.h>
+#endif
 #include <iostream>
 #include <cmath>
 #include <stdio.h>
@@ -14,7 +18,7 @@
 #include <algorithm>
 #include <random>
 
-#define INFO_PRINTS
+//#define INFO_PRINTS
 //#define PRINT_HISTO //print histograms to file
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 //#define PQ_HOLD_ONLY
@@ -380,6 +384,7 @@ public:
 		#ifdef INFO_PRINTS
 		ckout << "Beginning at time: " << compute_begin << endl;
 		#endif
+		arr.start_papi();
 		arr[dest_proc].start_algo(new_edge);
 	}
 
@@ -624,6 +629,17 @@ class SharedInfo : public CBase_SharedInfo
 	SharedInfo()
 	{
 		event_id = traceRegisterUserEvent("Contrib reduction");
+		#ifdef PAPI
+		if(CkNodeFirst(CkMyNode())==CkMyPe())
+		{
+			int retval = PAPI_library_init(PAPI_VER_CURRENT);
+			if(retval != PAPI_VER_CURRENT)
+			{
+				fprintf(stderr,"PAPI library init error!\n");
+				CkExit(1);
+			}
+		}
+		#endif
 	}
 
 	void max_path_value(cost max_path_val)
@@ -671,6 +687,9 @@ private:
 	long *info_array;
     long distance_changes=0;
 	long updates_in_tram = 0;
+	#ifdef PAPI
+	int eventset;
+	#endif
 
 public:
 
@@ -761,6 +780,19 @@ public:
 		tram = tram_proxy.ckLocalBranch();
 		tram->set_func_ptr_retarr(SsspChares::process_update_caller, get_dest_proc_local_caller, done_caller, this);
 		shared_local = shared.ckLocalBranch();
+		#ifdef PAPI
+		eventset = PAPI_NULL;
+		int result = PAPI_create_eventset(&eventset);
+		if (result!=PAPI_OK)
+		{
+			printf("Error PAPI create eventset: %s\n",PAPI_strerror(result));
+		}
+		result=PAPI_add_event(eventset,PAPI_TOT_INS);
+    	if (result!=PAPI_OK) {
+      		printf("Error PAPI add_event %s\n",
+       		PAPI_strerror(result));
+    	}
+		#endif
 	}
 
 	bool idle_triggered()
@@ -952,6 +984,17 @@ public:
 		}
 		CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
 		contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
+	}
+
+	void start_papi()
+	{
+		#ifdef PAPI
+		int result = PAPI_start(eventset);
+		if (result != PAPI_OK)
+		{
+			printf("Error PAPI start: %s\n",PAPI_strerror(result));
+		}
+		#endif
 	}
 
 	/**
@@ -1328,8 +1371,8 @@ public:
 		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
     int direct_threshold = behind_first_nonzero + 8 ;
     if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
-    float selectivity = 8.0;
-    if(behind_first_nonzero > 68) selectivity = 1.0;
+    float selectivity = 1.0;
+    //if(behind_first_nonzero > 68) selectivity = 1.0;
     tram->changeThreshold(direct_threshold, tram_threshold, selectivity);
 		#if 0
 		for(int i=0; i<=tram_threshold; i++)
@@ -1395,6 +1438,15 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i] << " distance " << local_graph[i].distance << endl;
 		}
 		*/
+		#ifdef PAPI
+		long long values[1] = {(long long) 0};
+		int result = PAPI_stop(eventset,values);
+		if(result != PAPI_OK)
+		{
+			printf("Error PAPI stop %s\n", PAPI_strerror(result));
+		}
+		ckout << "PE " << CkMyPe() << " total instructions: " << values[0] << endl;
+		#endif
 		long msg_stats[6+histo_bucket_count];
 		msg_stats[0] = wasted_updates;
 		msg_stats[1] = rejected_updates;

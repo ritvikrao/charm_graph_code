@@ -35,6 +35,7 @@ mainmodule weighted_htram_smp
     entry [whenidle] bool idle_triggered();
     entry void generate_local_graph(long _num_vertices, long _num_edges, long partition[dividers], int dividers);
     entry void get_graph(LongEdge edges[E], long E, long partition[dividers], int dividers); //gets graph partition
+    entry void start_papi();
     entry void start_algo(Update new_vertex_and_distance);
     entry void process_heap();
     entry void process_update(Update new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares
