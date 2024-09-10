@@ -21,7 +21,7 @@
 //#define INFO_PRINTS
 //#define PRINT_HISTO //print histograms to file
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
-//#define PQ_HOLD_ONLY
+#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
 //#define VCOUNT
 //#define ALL_TO_TRAM_HOLD //place all updates in the tram hold at first
@@ -595,6 +595,9 @@ public:
 		}
 		ckout << endl;
 		ckout << "Vcount sum: " << vcount_sum << endl;
+		#endif
+		#ifdef PAPI
+		ckout << "Total insts: " << msg_stats[6+histo_bucket_count] << endl;
 		#endif
 		arr.get_max_cost();
 	}
@@ -1445,9 +1448,11 @@ public:
 		{
 			printf("Error PAPI stop %s\n", PAPI_strerror(result));
 		}
-		ckout << "PE " << CkMyPe() << " total instructions: " << values[0] << endl;
-		#endif
+		//ckout << "PE " << CkMyPe() << " total instructions: " << values[0] << endl;
+		long msg_stats[7+histo_bucket_count];
+		#else
 		long msg_stats[6+histo_bucket_count];
+		#endif
 		msg_stats[0] = wasted_updates;
 		msg_stats[1] = rejected_updates;
 		for(int i=0; i<histo_bucket_count + 1; i++)
@@ -1457,8 +1462,17 @@ public:
 		msg_stats[3+histo_bucket_count] = updates_noted;
 		msg_stats[4+histo_bucket_count] = actual_edges;
 		msg_stats[5+histo_bucket_count] = distance_changes;
+		#ifdef PAPI
+		msg_stats[6+histo_bucket_count] = values[0];
+		#endif
+
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
+
+		#ifdef PAPI
+		contribute((7+histo_bucket_count) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
+		#else
 		contribute((6+histo_bucket_count) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
+		#endif
 		// mainProxy.done();
 	}
 
