@@ -153,6 +153,9 @@ class HTram : public CBase_HTram {
     std::vector<std::vector<HTramMessage*>> fillerOverflowBuffers;
     std::vector<std::vector<int>> fillerOverflowBuffersBucketMin;
     std::vector<std::vector<int>> fillerOverflowBuffersBucketMax;
+    int nodesize=0;
+    int *nodeOf;
+
   public:
     bool enable_flush;
     int bufSize;
@@ -167,6 +170,7 @@ class HTram : public CBase_HTram {
     int getAggregatingPE(int dest_pe);
     void copyToNodeBuf(int destnode, int increment);
     void insertValue(datatype send_value, int dest_pe);
+    void insertValuePNs(datatype send_value, int dest_pe);
     void sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket);
     void reset_stats(int buf_type, int buf_size, int agtype);
     void enableIdleFlush();

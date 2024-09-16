@@ -31,6 +31,12 @@ void periodic_tflush(void *htram_obj, double time);
 
 HTram::HTram(CkGroupID recv_ngid, CkGroupID src_ngid, int buffer_size, bool enable_buffer_flushing, double time_in_ms, bool ret_item, bool req, CkCallback start_cb) {
   request = req;
+  nodesize = CkNodeSize(0);
+  nodeOf = new int[CkNumPes()];
+  for(int i=0; i<CkNumPes(); i++)
+  {
+    nodeOf[i] = i/nodesize;
+  }
   // TODO: Implement variable buffer sizes and timed buffer flushing
   flush_time = time_in_ms;
 //  client_gid = cgid;
@@ -240,7 +246,7 @@ void HTram::changeThreshold(int _directThreshold, int _newtramThreshold, float _
 #ifdef BUCKETS_BY_DEST
 void HTram::sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket) {
   int dest_proc = get_dest_proc(objPtr, new_update); //Application sends the dest
-  int dest_node = dest_proc/CkNodeSize(0);
+  int dest_node = dest_proc/nodesize;
   if(dest_node < 0 || dest_node >= CkNumNodes()) {CkPrintf("\nError"); CkAbort("err");}
   if(neighbor_bucket > tram_threshold) {
     tram_hold[dest_node][neighbor_bucket].push(new_update);
@@ -250,7 +256,7 @@ void HTram::sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket) {
       tram_hold[dest_node][neighbor_bucket].push(new_update);
    } else {
 //      if(dest_proc == -1) {local_updates++; return;}
-      insertValue(new_update, dest_proc);
+      insertValuePNs(new_update, dest_proc);
     }
   }
   if(updates_in_tram[dest_node] > selectivity*BUFSIZE)
@@ -270,7 +276,7 @@ void HTram::sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket) {
     if(neighbor_bucket > direct_threshold) {
       tram_hold[neighbor_bucket].push(new_update);
    } else
-      insertValue(new_update, dest_proc);
+      insertValuePNs(new_update, dest_proc);
   }
    if(updates_in_tram_count > selectivity*BUFSIZE*num_nodes)
     insertBuckets(tram_threshold);
@@ -330,6 +336,26 @@ void HTram::insertBuckets(int high) {
   tram_done(objPtr);
 }
 #endif
+
+void HTram::insertValuePNs(datatype value, int dest_pe)
+{
+  int destNode = dest_pe/nodesize;
+  HTramMessage *destMsg = msgBuffers[destNode];
+  destMsg->buffer[destMsg->next].payload = value;
+  destMsg->buffer[destMsg->next].destPe = dest_pe;
+  destMsg->next++;
+  if(destMsg->next == BUFSIZE) {
+      agg_msg_count++;
+      tot_send_count += destMsg->next;
+#ifdef BUCKETS_BY_DEST
+      updates_in_tram[destNode] -= destMsg->next;
+#else
+      updates_in_tram_count -= destMsg->next;
+#endif
+      nodeGrpProxy[destNode].receive(destMsg);
+      msgBuffers[destNode] = new HTramMessage();
+  }
+}
 
 //one per node, message, fixed 
 //Client inserts

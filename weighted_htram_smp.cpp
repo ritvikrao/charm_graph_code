@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <random>
 
-//#define INFO_PRINTS
+#define INFO_PRINTS
 //#define PRINT_HISTO //print histograms to file
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
 #define PQ_HOLD_ONLY
@@ -598,6 +598,7 @@ public:
 		#endif
 		#ifdef PAPI
 		ckout << "Total insts: " << msg_stats[6+histo_bucket_count] << endl;
+		ckout << "Insts per edge: " << msg_stats[6+histo_bucket_count] * 1.0 / msg_stats[4+histo_bucket_count] << endl;
 		#endif
 		arr.get_max_cost();
 	}
@@ -1373,6 +1374,7 @@ public:
 		//replace this loop with call to tram->changethreshold(tram_threshold)
 		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
     int direct_threshold = behind_first_nonzero + 8 ;
+	//int direct_threshold = tram_threshold;
     if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
     float selectivity = 1.0;
     //if(behind_first_nonzero > 68) selectivity = 1.0;
