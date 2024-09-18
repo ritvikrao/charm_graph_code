@@ -2,7 +2,7 @@
 #include "TopoManager.h"
 #include "htram_group.h"
 #include "weighted_htram_smp.decl.h"
-#define PAPI
+//#define PAPI
 #ifdef PAPI
 #include <papi.h>
 #endif
@@ -25,6 +25,7 @@
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
 //#define VCOUNT
 //#define ALL_TO_TRAM_HOLD //place all updates in the tram hold at first
+//#define NODE_LOAD_BALANCE
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -37,6 +38,7 @@ CProxy_HTramNodeGrp srcNodeGrpProxy;
 CProxy_Main mainProxy;
 CProxy_SsspChares arr;
 CProxy_SharedInfo shared;
+CProxy_processHeapShared process_heap_shared;
 int N;	  // number of processors
 long V;	  // number of vertices
 int M = 1024; // divisor for dest_table (must be power of 2)
@@ -53,6 +55,8 @@ int initial_threshold = 3; //initial histo threshold
 int buffer_size = 1024; // meaningless for smp; size changed in htram_group.h
 double flush_timer = 0.01; // milliseconds
 bool enable_buffer_flushing = false; //true = buffer flushes at interval specified by flush_timer
+tram_proxy_t tram_proxy;
+
 
 void fast_exit(void *obj, double time);
 
@@ -209,7 +213,8 @@ public:
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
 		srcNodeGrpProxy = CProxy_HTramNodeGrp::ckNew();
 		CkCallback ignore_cb(CkCallback::ignore);
-		tram_proxy_t tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), 
+		process_heap_shared = CProxy_processHeapShared::ckNew();
+		tram_proxy = tram_proxy_t::ckNew(nodeGrpProxy.ckGetGroupID(), 
 		srcNodeGrpProxy.ckGetGroupID(), buffer_size, enable_buffer_flushing, flush_timer, false, true, ignore_cb);
 		shared = CProxy_SharedInfo::ckNew();
 		arr = CProxy_SsspChares::ckNew(tram_proxy, N);
@@ -694,6 +699,7 @@ private:
 	#ifdef PAPI
 	int eventset;
 	#endif
+	int chunk_size = 10000;
 
 public:
 
@@ -1092,6 +1098,73 @@ public:
 		}
 	}
 
+	void generateUpdatesOtherPe(long local_index, Node *local_graph_other)
+	{
+		for (int i = 0; i < local_graph_other[local_index].adjacent.size(); i++)
+		{ 
+			// calculate distance pair for neighbor
+			Update new_update;
+			new_update.dest_vertex = local_graph_other[local_index].adjacent[i].end;
+			new_update.distance = local_graph_other[local_index].distance + local_graph_other[local_index].adjacent[i].distance;
+			//we are going to send this, so add to the histogram and the send update count
+			int neighbor_bucket = get_histo_bucket(new_update.distance);
+			histogram[neighbor_bucket]++;
+			updates_created_locally++;
+			//if exceeds limit, put in hold
+			#ifndef ALL_TO_TRAM_HOLD
+			if(neighbor_bucket > tram_threshold)
+			{
+				tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);//tram_hold[neighbor_bucket].push_back(new_update);
+			}
+			else
+			{
+				//calculated dest proc
+				int dest_proc = get_dest_proc_fast(new_update.dest_vertex);
+				#ifndef LOCAL_TO_TRAM
+				if(dest_proc==CkMyPe())
+				{
+					process_update(new_update);
+				}
+				else
+				{
+					tram->sendItemPrioDeferredDest(new_update, 0);//tram->insertValue(new_update, dest_proc);
+				} 
+				#else
+				tram->sendItemPrioDeferredDest(new_update, 0);//tram->insertValue(new_update, dest_proc);//this gets called
+				#endif
+			}
+			#else
+      		tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);
+			if(neighbor_bucket <= tram_threshold) updates_in_tram++;
+			#endif
+		}
+
+	}
+
+	void processHeapChunk(int first, int last, Update *data, long data_count, Node *local_graph_other, long vertex_count, long start_vertex)
+	{
+		for(int i=0; i<data_count; i++)
+		{
+			Update new_vertex_and_distance = data[i];
+			long dest_vertex = new_vertex_and_distance.dest_vertex;
+			cost new_distance = new_vertex_and_distance.distance;
+			int this_histo_bucket = get_histo_bucket(new_distance);
+			long local_index = dest_vertex - start_vertex;
+			if (new_distance == local_graph_other[local_index].distance)
+			{
+					// for all neighbors
+					generateUpdatesOtherPe(local_index, local_graph_other);
+			}
+			else
+			{
+				rejected_updates++;
+			}
+			wasted_updates++;
+			histogram[this_histo_bucket]--;
+			updates_processed_locally++;
+		}
+	}
+
 	/**
 	 * Takes a distance update and immediately adds it to the local heap/pq
 	 */
@@ -1203,6 +1276,58 @@ public:
 		for(int i=0; i<=heap_threshold; i++)//iterate to heap threshold
 		{
 			bool items_processed = false;
+			#ifdef NODE_LOAD_BALANCE
+			if(pq_hold[i].size()>chunk_size*10)
+			{
+				//make separate vectors
+				for(int j=0; j<pq_hold[i].size(); j+=chunk_size)
+				{
+					//fill array
+					int low = j;
+					int high = j + chunk_size;
+					if(high>pq_hold[i].size()) high = pq_hold[i].size();
+					std::vector<Update> update_chunk;
+					for(int k = low; k < high; k++)
+					{
+						update_chunk.push_back(pq_hold[i][k]);
+					}
+					process_heap_shared[CkMyNode()].processHeapOtherCaller(low, high, update_chunk.data(), update_chunk.size(), local_graph, num_vertices, start_vertex);
+				}
+				pq_hold[i].clear();
+				//arr[thisIndex].process_heap();
+				//break;
+			}
+			else
+			{
+				for(int j=0; j<pq_hold[i].size(); j++)//iterate pq bucket in reverse
+				{
+					items_processed = true;
+					Update new_vertex_and_distance = pq_hold[i][j];
+					long dest_vertex = new_vertex_and_distance.dest_vertex;
+					cost new_distance = new_vertex_and_distance.distance;
+					int this_histo_bucket = get_histo_bucket(new_distance);
+					long local_index = dest_vertex - start_vertex;
+					if (new_distance == local_graph[local_index].distance)
+					{
+							// for all neighbors
+							generate_updates(local_index, false);
+					}
+					else
+					{
+						rejected_updates++;
+					}
+					wasted_updates++;
+					histogram[this_histo_bucket]--;
+					updates_processed_locally++;
+				}
+				if(items_processed)
+				{
+					pq_hold[i].clear();
+					arr[thisIndex].process_heap();
+					break;
+				}
+			}
+			#else
 			for(int j=0; j<pq_hold[i].size(); j++)//iterate pq bucket in reverse
 			{
 				items_processed = true;
@@ -1230,6 +1355,7 @@ public:
 				arr[thisIndex].process_heap();
 				break;
 			}
+			#endif
 		}
 		#else
 		int heap_count = 0;
@@ -1502,5 +1628,16 @@ public:
 	}
 };
 
+class processHeapShared : public CBase_processHeapShared
+{
+	public:
+	processHeapShared(){}
+
+	void processHeapOtherCaller(int low, int high, Update* data, long data_count, Node *graph, long vertex_count, long startVertex)
+	{
+		SsspChares *c = arr[CkMyPe()].ckLocal();
+		c -> processHeapChunk(low, high, data, data_count, graph, vertex_count, startVertex);
+	}
+};
 
 #include "weighted_htram_smp.def.h"

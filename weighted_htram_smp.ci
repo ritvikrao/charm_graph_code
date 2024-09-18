@@ -18,6 +18,8 @@ mainmodule weighted_htram_smp
   readonly double reduction_delay;
   readonly double flush_timer;
   readonly bool enable_buffer_flushing;
+  readonly CProxy_HTram tram_proxy;
+  readonly CProxy_processHeapShared process_heap_shared;
   mainchare Main
   {
     entry Main(CkArgMsg* m);
@@ -52,6 +54,11 @@ mainmodule weighted_htram_smp
   {
     entry SharedInfo();
     entry void max_path_value(cost max_path_val);
+  };
+  nodegroup processHeapShared
+  {
+    entry processHeapShared();
+    entry void processHeapOtherCaller(int low, int high, Update data[data_count], long data_count, Node graph[vertex_count], long vertex_count, long startVertex);
   };
 
 };
