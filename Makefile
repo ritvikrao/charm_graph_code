@@ -7,7 +7,7 @@ CHARMC_SMP =/ccs/home/rrao/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp-gcc/bin/
 
 CHARMCFLAGS = $(OPTS) -g -O3
 
-BINARY= graph_ckio weighted_nonsmp weighted_smp weighted_htram_nonsmp weighted_htram_smp weighted_htram_nonsmp_projections weighted_htram_smp_projections
+BINARY= graph_ckio graph_parallel weighted_nonsmp weighted_smp weighted_htram_nonsmp weighted_htram_smp weighted_htram_nonsmp_projections weighted_htram_smp_projections weighted_htram_smp_papi
 all: $(BINARY)
 
 .PHONY = clean
@@ -22,6 +22,10 @@ graph_serial: graph_serial.cpp
 graph_ckio: graph_ckio.cpp
 	$(CHARMC) graph_ckio.ci
 	$(CHARMC) graph_ckio.cpp -o $@ -module CkIO
+
+graph_parallel: graph_parallel.cpp
+	$(CHARMC) graph_parallel.ci
+	$(CHARMC) graph_parallel.cpp -o $@
 
 weighted_nonsmp: weighted.cpp weighted.ci weighted_node_struct.h
 	$(CHARMC) weighted.ci

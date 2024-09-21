@@ -635,9 +635,13 @@ class SharedInfo : public CBase_SharedInfo
 	public:
 	cost max_path;
 	int event_id;
+	int bracketed_id;
+	int othercaller_id;
 	SharedInfo()
 	{
 		event_id = traceRegisterUserEvent("Contrib reduction");
+		bracketed_id = traceRegisterUserEvent("Vector inserts");
+		othercaller_id = traceRegisterUserEvent("Other caller");
 		#ifdef PAPI
 		if(CkNodeFirst(CkMyNode())==CkMyPe())
 		{
@@ -1287,11 +1291,15 @@ public:
 					int high = j + chunk_size;
 					if(high>pq_hold[i].size()) high = pq_hold[i].size();
 					std::vector<Update> update_chunk;
+					traceBeginUserBracketEvent(shared_local -> bracketed_id);
 					for(int k = low; k < high; k++)
 					{
 						update_chunk.push_back(pq_hold[i][k]);
 					}
+					traceEndUserBracketEvent(shared_local -> bracketed_id);
+					traceBeginUserBracketEvent(shared_local -> othercaller_id);
 					process_heap_shared[CkMyNode()].processHeapOtherCaller(low, high, update_chunk.data(), update_chunk.size(), local_graph, num_vertices, start_vertex);
+					traceEndUserBracketEvent(shared_local -> othercaller_id);
 				}
 				pq_hold[i].clear();
 				//arr[thisIndex].process_heap();

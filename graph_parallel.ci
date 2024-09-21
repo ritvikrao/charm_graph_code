@@ -1,0 +1,26 @@
+mainmodule graph_parallel
+{
+  include "weighted_node_struct.h";
+  readonly CProxy_Main mainProxy;
+  readonly CProxy_Readers readerProxy;
+  readonly std::string file_name;
+  readonly int N;
+  readonly int V;
+  readonly int S;
+  readonly int imax;
+  mainchare Main
+  {
+    entry Main(CkArgMsg* m);
+    entry [reductiontarget] void done();
+    
+  };
+
+  array [1D] Readers
+  {
+    entry Readers();
+    entry void read_file(long start, long end);
+    entry void get_overlap(char send_back_buffer[size], long size);
+  };
+
+
+};
