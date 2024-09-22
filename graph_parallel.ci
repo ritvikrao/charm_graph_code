@@ -19,7 +19,7 @@ mainmodule graph_parallel
   {
     entry Readers();
     entry void read_file(long start, long end);
-    entry void get_overlap(char send_back_buffer[size], long size);
+    entry void get_overlap(char send_back_buffer[send_back_size], long send_back_size);
   };
 
 

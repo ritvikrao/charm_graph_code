@@ -54,8 +54,8 @@ class Main : public CBase_Main
         }
         file_name = m->argv[2]; // read file name
         file_size = sb.st_size;
-		S = atoi(m->argv[4]); // randomize seed
-		if (!m->argv[4])
+		S = atoi(m->argv[3]); // randomize seed
+		if (!m->argv[3])
 		{
 			ckout << "Missing random seed" << endl;
 			CkExit(0);
@@ -89,6 +89,7 @@ class Main : public CBase_Main
     void done()
     {
         read_time = CkWallTimer() - start_time;
+        ckout << "Read time: " << read_time << endl;
         CkExit(0);
     }
 };
@@ -97,18 +98,19 @@ class Readers : public CBase_Readers
 {
     public:
     char *read_buffer;
+    long size;
     Readers(){}
 
     void read_file(long start, long end)
     {
         ckout << "Start, end on PE " << thisIndex << ": " << start << ", " << end << endl;
         std::ifstream file_obj(file_name, std::ios::binary);
-        long size = end - start;
+        size = end - start;
         read_buffer = new char[size];
         file_obj.seekg(start, std::ios::beg);
         file_obj.read(read_buffer, size);
         file_obj.close();
-        ckout << "PE " << thisIndex << " read in: \"" << read_buffer << "\"" << endl;
+        //ckout << "PE " << thisIndex << " read in: \"" << read_buffer << "\"" << endl;
         if(thisIndex!=0)
         {
             int first_endline = 0;
@@ -134,9 +136,14 @@ class Readers : public CBase_Readers
         }
     }
 
-    void get_overlap(char *send_back_buffer, long size)
+    void get_overlap(char *send_back_buffer, long send_back_size)
     {
-        ckout << "PE " << thisIndex << " got back: \"" << send_back_buffer << "\"" << endl;
+        //ckout << "PE " << thisIndex << " got back: \"" << send_back_buffer << "\"" << endl;
+        //char *tmp = new char[size + send_back_size];
+        std::string beginning(read_buffer);
+        std::string end(send_back_buffer);
+        std::string combination = beginning + end;
+        //ckout << "PE " << thisIndex << " combination: \"" << combination.c_str() << "\"" << endl;
         CkCallback cb(CkReductionTarget(Main, done), mainProxy);
         contribute(0, NULL, CkReduction::nop, cb);
     }
