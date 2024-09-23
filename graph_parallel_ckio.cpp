@@ -1,4 +1,4 @@
-#include "graph_parallel.decl.h"
+#include "graph_parallel_ckio.decl.h"
 #include <iostream>
 #include <sys/stat.h>
 #include <cmath>
@@ -30,6 +30,8 @@ class Main : public CBase_Main
 	long max_index;
     long file_size;
     struct stat sb;
+    Ck::IO::Session session;
+    Ck::IO::File f;
 
     public:
 
@@ -67,23 +69,7 @@ class Main : public CBase_Main
         readerProxy = CProxy_Readers::ckNew(N);
         ckout << "File size: " << file_size << " bytes" << endl;
         delete m;
-        start_time = CkWallTimer();
-        long chunk_size = file_size / N;
-        for(int i=0; i<N; i++)
-        {
-            long start = i * chunk_size; //inclusive
-            long end = (i+1) * chunk_size; //exclusive
-            if(i==N-1) end = file_size;
-            readerProxy[i].read_file(start, end);
-        }
-        //CkExit(0);
-    }
-
-    void done()
-    {
-        read_time = CkWallTimer() - start_time;
-        ckout << "Read time: " << read_time << endl;
-        CkExit(0);
+        thisProxy.run();
     }
 };
 
@@ -94,16 +80,19 @@ class Readers : public CBase_Readers
     long size;
     Readers(){}
 
-    void read_file(long start, long end)
+    void read_file(Ck::IO::Session token, long start, long end)
     {
         ckout << "Start, end on PE " << thisIndex << ": " << start << ", " << end << endl;
-        std::ifstream file_obj(file_name, std::ios::binary);
+        //std::ifstream file_obj(file_name, std::ios::binary);
         size = end - start;
         read_buffer = new char[size];
-        file_obj.seekg(start, std::ios::beg);
-        file_obj.read(read_buffer, size);
-        file_obj.close();
+        CkCallback sessionEnd(CkIndex_Readers::readDone(0), thisProxy[thisIndex]);
+        Ck::IO::read(token, size, start, read_buffer, sessionEnd);
         //ckout << "PE " << thisIndex << " read in: \"" << read_buffer << "\"" << endl;
+    }
+
+    void readDone(Ck::IO::ReadCompleteMsg* m)
+    {
         if(thisIndex!=0)
         {
             int first_endline = 0;
@@ -124,8 +113,8 @@ class Readers : public CBase_Readers
         }
         if(thisIndex==N-1)
         {
-            CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-            contribute(0, NULL, CkReduction::nop, cb);
+            CkCallback done(CkIndex_Main::done_read(0), mainProxy);
+            contribute(done);
         }
     }
 
@@ -137,9 +126,9 @@ class Readers : public CBase_Readers
         std::string end(send_back_buffer);
         std::string combination = beginning + end;
         //ckout << "PE " << thisIndex << " combination: \"" << combination.c_str() << "\"" << endl;
-        CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-        contribute(0, NULL, CkReduction::nop, cb);
+        CkCallback done(CkIndex_Main::done_read(0), mainProxy);
+        contribute(done);
     }
 };
 
-#include "graph_parallel.def.h"
+#include "graph_parallel_ckio.def.h"
