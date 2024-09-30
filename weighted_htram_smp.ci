@@ -58,7 +58,7 @@ mainmodule weighted_htram_smp
   nodegroup processHeapShared
   {
     entry processHeapShared();
-    entry void processHeapOtherCaller(int low, int high, Update data[data_count], long data_count, Node graph[vertex_count], long vertex_count, long startVertex);
+    entry void processHeapOtherCaller(int low, int high, int send_chare, int bucket, intptr_t whole_bucket_pointer, long data_count, intptr_t local_graph_pointer, long vertex_count, long startVertex);
   };
 
 };

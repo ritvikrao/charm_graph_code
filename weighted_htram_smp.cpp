@@ -48,6 +48,7 @@ int generate_mode; //0 = read from file, 1 = generate automatically
 int S; //seed for randomization
 cost lmax; // long maximum
 int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
+#define HISTO_BUCKET_COUNT 512 //needed macro for array init
 int histo_reduction_width = histo_bucket_count/2;
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
 int initial_threshold = 3; //initial histo threshold
@@ -637,6 +638,8 @@ class SharedInfo : public CBase_SharedInfo
 	int event_id;
 	int bracketed_id;
 	int othercaller_id;
+	std::vector<int *> chunks_remaining;
+
 	SharedInfo()
 	{
 		event_id = traceRegisterUserEvent("Contrib reduction");
@@ -653,6 +656,14 @@ class SharedInfo : public CBase_SharedInfo
 			}
 		}
 		#endif
+		for(int i=0; i<N; i++)
+		{
+			chunks_remaining.push_back(new int[HISTO_BUCKET_COUNT]);
+			for (int j=0; j<histo_bucket_count; j++)
+			{
+				chunks_remaining[i][j] = 0;
+			}
+		}
 	}
 
 	void max_path_value(cost max_path_val)
@@ -704,6 +715,7 @@ private:
 	int eventset;
 	#endif
 	int chunk_size = 10000;
+	std::vector<Update> *hold_to_process;
 
 public:
 
@@ -847,10 +859,12 @@ public:
 		bfs_threshold = heap_threshold;
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
+		hold_to_process = new std::vector<Update>[histo_bucket_count];
 		for(int i=0; i<histo_bucket_count; i++)
 		{
 			tram_hold[i].reserve(4096);
 			pq_hold[i].reserve(4096);
+			hold_to_process[i].reserve(4096);
 		}
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+7];
@@ -949,10 +963,12 @@ public:
 		bfs_threshold = heap_threshold;
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
+		hold_to_process = new std::vector<Update>[histo_bucket_count];
 		for(int i=0; i<histo_bucket_count; i++)
 		{
 			tram_hold[i].reserve(4096);
 			pq_hold[i].reserve(4096);
+			hold_to_process[i].reserve(4096);
 		}
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+7];
@@ -1088,7 +1104,7 @@ public:
 				#endif
 			}
 			#else
-      tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);
+      		tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);
 //			tram_hold[neighbor_bucket].push_back(new_update);
 			if(neighbor_bucket <= tram_threshold) updates_in_tram++;
 #if 0
@@ -1145,9 +1161,10 @@ public:
 
 	}
 
-	void processHeapChunk(int first, int last, Update *data, long data_count, Node *local_graph_other, long vertex_count, long start_vertex)
+	void processHeapChunk(int first, int last, int send_chare, int bucket, std::vector<Update> *whole_bucket, long data_count, Node *local_graph_other, long vertex_count, long start_vertex)
 	{
-		for(int i=0; i<data_count; i++)
+		Update *data = whole_bucket -> data();
+		for(int i=first; i<last; i++)
 		{
 			Update new_vertex_and_distance = data[i];
 			long dest_vertex = new_vertex_and_distance.dest_vertex;
@@ -1166,6 +1183,11 @@ public:
 			wasted_updates++;
 			histogram[this_histo_bucket]--;
 			updates_processed_locally++;
+		}
+		shared_local -> chunks_remaining[send_chare][bucket]--;
+		if(shared_local -> chunks_remaining[send_chare][bucket]==0)
+		{
+			whole_bucket -> clear();
 		}
 	}
 
@@ -1283,22 +1305,25 @@ public:
 			#ifdef NODE_LOAD_BALANCE
 			if(pq_hold[i].size()>chunk_size*10)
 			{
+				//load all updates into hold_to_process
+				traceBeginUserBracketEvent(shared_local -> bracketed_id);
+				for(int j=0; j<pq_hold[i].size(); j++)
+				{
+					hold_to_process[i].push_back(pq_hold[i][j]);
+				}
+				traceEndUserBracketEvent(shared_local -> bracketed_id);
 				//make separate vectors
+				int chunk_count = (pq_hold[i].size() / chunk_size) + 1;
+				if(shared_local -> chunks_remaining[thisIndex][i] != 0) continue;
+				else shared_local -> chunks_remaining[thisIndex][i] = chunk_count;
 				for(int j=0; j<pq_hold[i].size(); j+=chunk_size)
 				{
 					//fill array
 					int low = j;
 					int high = j + chunk_size;
 					if(high>pq_hold[i].size()) high = pq_hold[i].size();
-					std::vector<Update> update_chunk;
-					traceBeginUserBracketEvent(shared_local -> bracketed_id);
-					for(int k = low; k < high; k++)
-					{
-						update_chunk.push_back(pq_hold[i][k]);
-					}
-					traceEndUserBracketEvent(shared_local -> bracketed_id);
 					traceBeginUserBracketEvent(shared_local -> othercaller_id);
-					process_heap_shared[CkMyNode()].processHeapOtherCaller(low, high, update_chunk.data(), update_chunk.size(), local_graph, num_vertices, start_vertex);
+					process_heap_shared[CkMyNode()].processHeapOtherCaller(low, high, thisIndex, i, (intptr_t) &hold_to_process[i], high-low, (intptr_t) local_graph, num_vertices, start_vertex);
 					traceEndUserBracketEvent(shared_local -> othercaller_id);
 				}
 				pq_hold[i].clear();
@@ -1641,10 +1666,12 @@ class processHeapShared : public CBase_processHeapShared
 	public:
 	processHeapShared(){}
 
-	void processHeapOtherCaller(int low, int high, Update* data, long data_count, Node *graph, long vertex_count, long startVertex)
+	void processHeapOtherCaller(int low, int high, int send_chare, int bucket, intptr_t whole_bucket_pointer, long data_count, intptr_t local_graph_pointer, long vertex_count, long startVertex)
 	{
 		SsspChares *c = arr[CkMyPe()].ckLocal();
-		c -> processHeapChunk(low, high, data, data_count, graph, vertex_count, startVertex);
+		Node *graph = (Node *) local_graph_pointer;
+		std::vector<Update> *whole_bucket = (std::vector<Update> *) whole_bucket_pointer;
+		c -> processHeapChunk(low, high, send_chare, bucket, whole_bucket, data_count, graph, vertex_count, startVertex);
 	}
 };
 
