@@ -25,7 +25,7 @@
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
 //#define VCOUNT
 //#define ALL_TO_TRAM_HOLD //place all updates in the tram hold at first
-//#define NODE_LOAD_BALANCE
+#define NODE_LOAD_BALANCE
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -638,7 +638,7 @@ class SharedInfo : public CBase_SharedInfo
 	int event_id;
 	int bracketed_id;
 	int othercaller_id;
-	std::vector<int *> chunks_remaining;
+	std::vector<std::atomic_int *> chunks_remaining;
 
 	SharedInfo()
 	{
@@ -658,7 +658,7 @@ class SharedInfo : public CBase_SharedInfo
 		#endif
 		for(int i=0; i<N; i++)
 		{
-			chunks_remaining.push_back(new int[HISTO_BUCKET_COUNT]);
+			chunks_remaining.push_back(new std::atomic_int[HISTO_BUCKET_COUNT]);
 			for (int j=0; j<histo_bucket_count; j++)
 			{
 				chunks_remaining[i][j] = 0;
@@ -714,7 +714,7 @@ private:
 	#ifdef PAPI
 	int eventset;
 	#endif
-	int chunk_size = 10000;
+	int chunk_size = 5000;
 	std::vector<Update> *hold_to_process;
 
 public:
@@ -1301,9 +1301,9 @@ public:
 		#ifdef PQ_HOLD_ONLY
 		for(int i=0; i<=heap_threshold; i++)//iterate to heap threshold
 		{
-			bool items_processed = false;
+			long items_processed = 0;
 			#ifdef NODE_LOAD_BALANCE
-			if(pq_hold[i].size()>chunk_size*10)
+			if(pq_hold[i].size()>chunk_size)
 			{
 				//load all updates into hold_to_process
 				traceBeginUserBracketEvent(shared_local -> bracketed_id);
@@ -1332,9 +1332,9 @@ public:
 			}
 			else
 			{
+				items_processed = pq_hold[i].size();
 				for(int j=0; j<pq_hold[i].size(); j++)//iterate pq bucket in reverse
 				{
-					items_processed = true;
 					Update new_vertex_and_distance = pq_hold[i][j];
 					long dest_vertex = new_vertex_and_distance.dest_vertex;
 					cost new_distance = new_vertex_and_distance.distance;
@@ -1353,7 +1353,7 @@ public:
 					histogram[this_histo_bucket]--;
 					updates_processed_locally++;
 				}
-				if(items_processed)
+				if(items_processed>0)
 				{
 					pq_hold[i].clear();
 					arr[thisIndex].process_heap();
@@ -1361,9 +1361,9 @@ public:
 				}
 			}
 			#else
+			items_processed = pq_hold[i].size();
 			for(int j=0; j<pq_hold[i].size(); j++)//iterate pq bucket in reverse
 			{
-				items_processed = true;
 				Update new_vertex_and_distance = pq_hold[i][j];
 				long dest_vertex = new_vertex_and_distance.dest_vertex;
 				cost new_distance = new_vertex_and_distance.distance;
@@ -1382,7 +1382,7 @@ public:
 				histogram[this_histo_bucket]--;
 				updates_processed_locally++;
 			}
-			if(items_processed)
+			if(items_processed>0)
 			{
 				pq_hold[i].clear();
 				arr[thisIndex].process_heap();
