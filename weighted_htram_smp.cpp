@@ -714,7 +714,7 @@ private:
 	#ifdef PAPI
 	int eventset;
 	#endif
-	int chunk_size = 5000;
+	int chunk_size = 100000;
 	std::vector<Update> *hold_to_process;
 
 public:
@@ -827,12 +827,8 @@ public:
 		return true;
 	}
 
-	void generate_local_graph(long _num_vertices, long _num_edges, long *partition, int dividers)
+	void initialize_data(long *partition, int dividers)
 	{
-		#ifdef INFO_PRINTS
-		ckout << "Generating local graph on PE " << CkMyPe() << " with " << _num_vertices << " vertices and " << _num_edges << " edges" << endl;
-		#endif
-		//num_vertices = _num_vertices;
 		histogram = new long[histo_bucket_count];
 		vcount = new long[histo_bucket_count+1]; //histo buckets plus infty
 		for(int i=0; i<histo_bucket_count; i++)
@@ -870,6 +866,14 @@ public:
 		info_array = new long[histo_reduction_width+7];
 		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
+	}
+
+	void generate_local_graph(long _num_vertices, long _num_edges, long *partition, int dividers)
+	{
+		#ifdef INFO_PRINTS
+		ckout << "Generating local graph on PE " << CkMyPe() << " with " << _num_vertices << " vertices and " << _num_edges << " edges" << endl;
+		#endif
+		initialize_data(partition, dividers);
 		cost *largest_outedges = new cost[num_vertices];
 		for(int i=0; i<num_vertices; i++)
 		{
@@ -937,42 +941,7 @@ public:
 	void get_graph(LongEdge *edges, long E, long *partition, int dividers)
 	{
 		actual_edges = E;
-		histogram = new long[histo_bucket_count];
-		vcount = new long[histo_bucket_count+1]; //histo buckets plus infty
-		for(long i=0; i<histo_bucket_count; i++)
-		{
-			histogram[i] = 0;
-			vcount[i] = 0;
-		}
-		vcount[histo_bucket_count] = 0;
-		partition_index = new long[dividers];
-		for (int i = 0; i < dividers; i++)
-		{
-			partition_index[i] = partition[i];
-		}
-		start_vertex = partition_index[thisIndex];
-		num_vertices = partition_index[thisIndex + 1] - partition_index[thisIndex];
-		dest_table = new int[V / M];
-		for(int i=0, j=0; i < V; j++, i=j*M)
-		{
-			dest_table[j] = get_dest_proc(i);
-		}
-		local_graph = new Node[num_vertices];
-		heap_threshold = initial_threshold;
-		tram_threshold = initial_threshold + 2;
-		bfs_threshold = heap_threshold;
-		tram_hold = new std::vector<Update>[histo_bucket_count];
-		pq_hold = new std::vector<Update>[histo_bucket_count];
-		hold_to_process = new std::vector<Update>[histo_bucket_count];
-		for(int i=0; i<histo_bucket_count; i++)
-		{
-			tram_hold[i].reserve(4096);
-			pq_hold[i].reserve(4096);
-			hold_to_process[i].reserve(4096);
-		}
-		bfs_hold = new std::vector<Update>[histo_bucket_count];
-		info_array = new long[histo_reduction_width+7];
-		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
+		initialize_data(partition, dividers);
 		cost *largest_outedges = new cost[num_vertices];
 		if (num_vertices != 0)
 		{
@@ -1001,8 +970,6 @@ public:
 				std::sort(local_graph[i].adjacent.begin(), local_graph[i].adjacent.end(), [](Edge a, Edge b){return a.distance < b.distance;});
 			}
 		}
-		//register idle call to process_heap
-		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 		//reduce largest edge
 		cost max_edges_sum = 0;
 		if (num_vertices != 0)
