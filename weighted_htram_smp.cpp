@@ -25,7 +25,7 @@
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
 //#define VCOUNT
 //#define ALL_TO_TRAM_HOLD //place all updates in the tram hold at first
-#define NODE_LOAD_BALANCE
+//#define NODE_LOAD_BALANCE
 
 // set data type for messages
 using tram_proxy_t = CProxy_HTram;
@@ -224,11 +224,26 @@ public:
 		partition_index = new long[N + 1]; // last index=maximum index
 		lmax = std::numeric_limits<cost>::max();
 		start_time = CkWallTimer();
-		if(generate_mode==1)
+		if(generate_mode==2)
+		{
+			long side_length = (int) std::sqrt((double) V);
+			num_global_edges = 4 * (side_length-1) * (side_length-1) - (4 * (side_length - 2)); //will ignore command line input
+			#ifdef INFO_PRINTS
+			ckout << "2-D Graph will be automatically generated with " << V << " vertices and " << num_global_edges << " edges" << endl;
+			#endif
+			for(int i=0; i<N+1; i++)
+			{
+				partition_index[i] = i * (V / N);
+				if(i==N) partition_index[i] = V;
+				ckout << "partition_index[" << i << "] = " << partition_index[i] << endl;
+			}
+			arr.generate_2d_graph(partition_index, N+1);
+		}
+		else if(generate_mode==1)
 		{
 			num_global_edges = std::stol(file_name);
 			#ifdef INFO_PRINTS
-			ckout << "Graph will be automatically generated with " << V << " vertices and " << num_global_edges << " edges" << endl;
+			ckout << "Graph will be automatically generated with " << V << " vertices" << endl;
 			#endif
 			average_degree = num_global_edges / V;
 			//for each pe, generate a random vertex and edge count, and send to pes
@@ -844,28 +859,92 @@ public:
 		}
 		start_vertex = partition_index[thisIndex];
 		num_vertices = partition_index[CkMyPe()+1] - partition_index[CkMyPe()];
+		#ifdef INFO_PRINTS
+		ckout << "Generating local graph on PE " << CkMyPe() << " with " << num_vertices << " vertices" << endl;
+		#endif
 		dest_table = new int[V / M];
 		for(int i=0, j=0; i < V; j++, i=j*M)
 		{
 			dest_table[j] = get_dest_proc(i);
 		}
+		#ifdef INFO_PRINTS
+		ckout << "Dest table done on PE " << CkMyPe() << endl;
+		#endif
 		local_graph = new Node[num_vertices];
+		#ifdef INFO_PRINTS
+		ckout << "Local graph done on PE " << CkMyPe() << endl;
+		#endif
 		heap_threshold = initial_threshold;
 		tram_threshold = initial_threshold + 2;
 		bfs_threshold = heap_threshold;
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		hold_to_process = new std::vector<Update>[histo_bucket_count];
+		#ifdef INFO_PRINTS
+		ckout << "Reserving space on PE " << CkMyPe() << endl;
+		#endif
 		for(int i=0; i<histo_bucket_count; i++)
 		{
 			tram_hold[i].reserve(4096);
 			pq_hold[i].reserve(4096);
 			hold_to_process[i].reserve(4096);
 		}
+		#ifdef INFO_PRINTS
+		ckout << "Reserved space on PE " << CkMyPe() << endl;
+		#endif
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+7];
 		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
+	}
+
+	void generate_2d_graph(long *partition, int dividers)
+	{
+		initialize_data(partition, dividers);
+		cost *largest_outedges = new cost[num_vertices];
+		long side_length = (int) std::sqrt((double) V);
+		for(int i=0; i<num_vertices; i++)
+		{
+			Node new_node;
+			new_node.home_process = thisIndex;
+			new_node.distance = lmax;
+			std::vector<Edge> adj;
+			new_node.adjacent = adj;
+			vcount[histo_bucket_count]++;
+			long largest_outedge = 0;
+			long this_vertex = (long) i + start_vertex;
+			std::mt19937 generator(this_vertex);
+			std::uniform_int_distribution<cost> edge_weight_distribution(1,1000);
+			long x_index = this_vertex / side_length;
+			long y_index = this_vertex % side_length;
+			for(int j=-1; j<=1; j+=2)
+			{
+				for(int k=-1; k<=1; k+=2)
+				{
+					long neighbor_x = x_index + j;
+					long neighbor_y = y_index + k;
+					if((neighbor_x >= 0) && (neighbor_y >= 0) && (neighbor_x < side_length) && (neighbor_y < side_length))
+					{
+						actual_edges++;
+						Edge new_edge;
+						new_edge.end = neighbor_x * side_length + neighbor_y;
+						new_edge.distance = edge_weight_distribution(generator);
+						if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
+						new_node.adjacent.push_back(new_edge);
+					}
+				}
+			}
+			std::sort(new_node.adjacent.begin(), new_node.adjacent.end(), [](Edge a, Edge b){return a.distance < b.distance;});
+			local_graph[i] = new_node;
+			largest_outedges[i] = largest_outedge;
+		}
+		cost max_edges_sum = 0;
+		for(int i=0; i<num_vertices; i++)
+		{
+			max_edges_sum += largest_outedges[i];
+		}
+		CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
+		contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
 	}
 
 	void generate_local_graph(long _num_vertices, long _num_edges, long *partition, int dividers)
@@ -992,6 +1071,7 @@ public:
 			printf("Error PAPI start: %s\n",PAPI_strerror(result));
 		}
 		#endif
+		traceBegin();
 	}
 
 	/**
@@ -1569,6 +1649,7 @@ public:
 			ckout << "Partition " << thisIndex << " vertex num " << local_graph[i] << " distance " << local_graph[i].distance << endl;
 		}
 		*/
+		traceEnd();
 		#ifdef PAPI
 		long long values[1] = {(long long) 0};
 		int result = PAPI_stop(eventset,values);
