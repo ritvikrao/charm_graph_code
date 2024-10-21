@@ -227,7 +227,10 @@ public:
 		if(generate_mode==2)
 		{
 			long side_length = (int) std::sqrt((double) V);
-			num_global_edges = 4 * (side_length-1) * (side_length-1) - (4 * (side_length - 2)); //will ignore command line input
+			#ifdef INFO_PRINTS
+			ckout << "Side length: " << side_length << endl;
+			#endif
+			num_global_edges = 4 * side_length * (side_length - 1); //will ignore command line input
 			#ifdef INFO_PRINTS
 			ckout << "2-D Graph will be automatically generated with " << V << " vertices and " << num_global_edges << " edges" << endl;
 			#endif
@@ -235,7 +238,6 @@ public:
 			{
 				partition_index[i] = i * (V / N);
 				if(i==N) partition_index[i] = V;
-				ckout << "partition_index[" << i << "] = " << partition_index[i] << endl;
 			}
 			arr.generate_2d_graph(partition_index, N+1);
 		}
@@ -375,7 +377,7 @@ public:
 	{
 		// ready to begin algorithm
 		shared.max_path_value(max_sum);
-		if(generate_mode==1) read_time = CkWallTimer() - start_time;
+		if(generate_mode==1||generate_mode==2) read_time = CkWallTimer() - start_time;
 		#ifdef INFO_PRINTS
 		ckout << "The sum of the maximum out-edges is " << max_sum << endl;
 		#endif
@@ -859,39 +861,24 @@ public:
 		}
 		start_vertex = partition_index[thisIndex];
 		num_vertices = partition_index[CkMyPe()+1] - partition_index[CkMyPe()];
-		#ifdef INFO_PRINTS
-		ckout << "Generating local graph on PE " << CkMyPe() << " with " << num_vertices << " vertices" << endl;
-		#endif
 		dest_table = new int[V / M];
 		for(int i=0, j=0; i < V; j++, i=j*M)
 		{
 			dest_table[j] = get_dest_proc(i);
 		}
-		#ifdef INFO_PRINTS
-		ckout << "Dest table done on PE " << CkMyPe() << endl;
-		#endif
 		local_graph = new Node[num_vertices];
-		#ifdef INFO_PRINTS
-		ckout << "Local graph done on PE " << CkMyPe() << endl;
-		#endif
 		heap_threshold = initial_threshold;
 		tram_threshold = initial_threshold + 2;
 		bfs_threshold = heap_threshold;
 		tram_hold = new std::vector<Update>[histo_bucket_count];
 		pq_hold = new std::vector<Update>[histo_bucket_count];
 		hold_to_process = new std::vector<Update>[histo_bucket_count];
-		#ifdef INFO_PRINTS
-		ckout << "Reserving space on PE " << CkMyPe() << endl;
-		#endif
 		for(int i=0; i<histo_bucket_count; i++)
 		{
 			tram_hold[i].reserve(4096);
 			pq_hold[i].reserve(4096);
 			hold_to_process[i].reserve(4096);
 		}
-		#ifdef INFO_PRINTS
-		ckout << "Reserved space on PE " << CkMyPe() << endl;
-		#endif
 		bfs_hold = new std::vector<Update>[histo_bucket_count];
 		info_array = new long[histo_reduction_width+7];
 		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
@@ -901,6 +888,9 @@ public:
 	void generate_2d_graph(long *partition, int dividers)
 	{
 		initialize_data(partition, dividers);
+		#ifdef INFO_PRINTS
+		ckout << "Generating local graph on PE " << CkMyPe() << " with " << num_vertices << " vertices" << endl;
+		#endif
 		cost *largest_outedges = new cost[num_vertices];
 		long side_length = (int) std::sqrt((double) V);
 		for(int i=0; i<num_vertices; i++)
@@ -919,20 +909,43 @@ public:
 			long y_index = this_vertex % side_length;
 			for(int j=-1; j<=1; j+=2)
 			{
-				for(int k=-1; k<=1; k+=2)
+				long neighbor_x = x_index + j;
+				long neighbor_y = y_index;
+				if((neighbor_x >= 0) && (neighbor_y >= 0) && (neighbor_x < side_length) && (neighbor_y < side_length))
 				{
-					long neighbor_x = x_index + j;
-					long neighbor_y = y_index + k;
-					if((neighbor_x >= 0) && (neighbor_y >= 0) && (neighbor_x < side_length) && (neighbor_y < side_length))
-					{
-						actual_edges++;
-						Edge new_edge;
-						new_edge.end = neighbor_x * side_length + neighbor_y;
-						new_edge.distance = edge_weight_distribution(generator);
-						if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
-						new_node.adjacent.push_back(new_edge);
-					}
+					actual_edges++;
+					Edge new_edge;
+					new_edge.end = neighbor_x * side_length + neighbor_y;
+					new_edge.distance = edge_weight_distribution(generator);
+					if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
+					new_node.adjacent.push_back(new_edge);
 				}
+			}
+			for(int j=-1; j<=1; j+=2)
+			{
+				long neighbor_x = x_index;
+				long neighbor_y = y_index + j;
+				if((neighbor_x >= 0) && (neighbor_y >= 0) && (neighbor_x < side_length) && (neighbor_y < side_length))
+				{
+					actual_edges++;
+					Edge new_edge;
+					new_edge.end = neighbor_x * side_length + neighbor_y;
+					new_edge.distance = edge_weight_distribution(generator);
+					if(new_edge.distance > largest_outedge) largest_outedge = new_edge.distance;
+					new_node.adjacent.push_back(new_edge);
+				}
+			}
+			if((x_index==0 && y_index == 0) || (x_index==side_length-1 && y_index == 0) || (x_index==0 && y_index == side_length-1) || (x_index==side_length-1 && y_index == side_length - 1))
+			{
+				if(new_node.adjacent.size() != 2) ckout << "Edge count wrong for vertex " << this_vertex << " should be 2 not " << new_node.adjacent.size() << endl;
+			}
+			else if(x_index==0 || y_index == 0 || x_index == side_length - 1 || y_index == side_length - 1)
+			{
+				if(new_node.adjacent.size() != 3) ckout << "Edge count wrong for vertex " << this_vertex << " should be 3 not " << new_node.adjacent.size() << endl;
+			}
+			else
+			{
+				if(new_node.adjacent.size() != 4) ckout << "Edge count wrong for vertex " << this_vertex << " should be 4 not " << new_node.adjacent.size() << endl;
 			}
 			std::sort(new_node.adjacent.begin(), new_node.adjacent.end(), [](Edge a, Edge b){return a.distance < b.distance;});
 			local_graph[i] = new_node;
@@ -943,6 +956,9 @@ public:
 		{
 			max_edges_sum += largest_outedges[i];
 		}
+		#ifdef INFO_PRINTS
+		ckout << "PE " << CkMyPe() << " generated " << actual_edges << " edges" << endl;
+		#endif
 		CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
 		contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
 	}
