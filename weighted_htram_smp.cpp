@@ -21,7 +21,7 @@
 #define INFO_PRINTS
 //#define PRINT_HISTO //print histograms to file
 #define LOCAL_TO_TRAM //add all outgoing updates (even local) to tram
-#define PQ_HOLD_ONLY
+//#define PQ_HOLD_ONLY
 //#define PQ_EDGE_DIST //add cost of smallest edge when finding bucket
 //#define VCOUNT
 //#define ALL_TO_TRAM_HOLD //place all updates in the tram hold at first
@@ -888,6 +888,7 @@ public:
 	void generate_2d_graph(long *partition, int dividers)
 	{
 		initialize_data(partition, dividers);
+		bucket_multiplier = histo_bucket_count / (histo_bucket_count * sqrt(V));
 		#ifdef INFO_PRINTS
 		ckout << "Generating local graph on PE " << CkMyPe() << " with " << num_vertices << " vertices" << endl;
 		#endif
