@@ -47,9 +47,9 @@ long average_degree; //average degree of graph
 int generate_mode; //0 = read from file, 1 = generate automatically
 int S; //seed for randomization
 cost lmax; // long maximum
-int histo_bucket_count = 512; // number of buckets for the histogram needed for message prioritization
-#define HISTO_BUCKET_COUNT 512 //needed macro for array init
-int histo_reduction_width = histo_bucket_count/2;
+int histo_bucket_count = 2048; // number of buckets for the histogram needed for message prioritization
+#define HISTO_BUCKET_COUNT 2048 //needed macro for array init
+int histo_reduction_width = histo_bucket_count/8;
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
 int initial_threshold = 3; //initial histo threshold
 // tram constants
@@ -893,6 +893,7 @@ public:
 		#endif
 		cost *largest_outedges = new cost[num_vertices];
 		long side_length = (int) std::sqrt((double) V);
+		bucket_multiplier = histo_bucket_count / (histo_bucket_count * sqrt(V));
 		for(int i=0; i<num_vertices; i++)
 		{
 			Node new_node;
@@ -903,7 +904,7 @@ public:
 			vcount[histo_bucket_count]++;
 			long largest_outedge = 0;
 			long this_vertex = (long) i + start_vertex;
-			std::mt19937 generator(this_vertex);
+			std::mt19937 generator(this_vertex + S);
 			std::uniform_int_distribution<cost> edge_weight_distribution(1,1000);
 			long x_index = this_vertex / side_length;
 			long y_index = this_vertex % side_length;

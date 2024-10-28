@@ -78,7 +78,7 @@ HTram::HTram(CkGroupID recv_ngid, CkGroupID src_ngid, int buffer_size, bool enab
     fillerOverflowBuffersBucketMin.push_back(int_min);
     fillerOverflowBuffersBucketMax.push_back(int_max);
   }
-  histo_bucket_count = 512;
+  histo_bucket_count = 2048;
 #ifdef BUCKETS_BY_DEST
   tram_hold = new std::queue<datatype>*[CkNumNodes()];
   updates_in_tram = new int[CkNumNodes()];
