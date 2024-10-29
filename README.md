@@ -29,13 +29,19 @@ make clean
 
 Run weighted_htram_nonsmp:
 ```
-./charmrun +pN ./<executable> <num_chares> <num_vertices> <graph_file_name> <random_seed> <source_vertex>
+./charmrun +p<N> ./<executable> <num_chares> <num_vertices> <graph_file_name> <random_seed> <source_vertex>
 ```
 
-Run weighted_htram_smp:
+Run weighted_htram_smp (read files in, option 0):
 ```
-./charmrun +pN ./<executable> <num_vertices> <graph_file_name> <random_seed> <source_vertex> <create_option> <p_tram> <p_pq>
+./charmrun +p<N> +ppn <threads> ./<executable> <num_vertices> <graph_file_name> <random_seed> <source_vertex> <create_option> <p_tram> <p_pq>
 ```
+
+Run weighted_htram_smp (automatically generate graph, option 1 or 2):
+```
+./charmrun +p<N> +ppn <threads> ./<executable> <num_vertices> <num_edges> <random_seed> <source_vertex> <create_option> <p_tram> <p_pq>
+```
+
 
 Run graph_ckio:
 ```
