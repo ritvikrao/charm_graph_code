@@ -22,10 +22,11 @@ using namespace std;
 #define BUFSIZE 512//256////64//512//64//256//64//512//4096//2048//512//1024//256//1024//2048//1024//4096//2048//4096//2048//1024
 //2048//1024//512//1024//1600//512//1600//1024//4096//2048//1024
 #define LOCAL_BUFSIZE 32//8
-#define PPN_COUNT 8
+#define PPN_COUNT 24
 #define NODE_COUNT 512
 
 #define BUCKETS_BY_DEST
+#define ADD_FILLERS
 //#define DEBUG
 
 #define TOTAL_LATENCY 0
@@ -34,10 +35,10 @@ using namespace std;
 #define TOTAL_MSGS 3
 #define STATS_COUNT 4
 
-#define PNs 0
-#define PsN 1
-#define NNs 2
-#define PP 3
+#define WPs 0
+#define WsP 1
+#define PP 2
+#define WW 3
 template <typename T>
 struct item {
 //#if !defined(SRC_GROUPING) && !defined(PER_DESTPE_BUFFER)
@@ -152,6 +153,9 @@ class HTram : public CBase_HTram {
     std::vector<std::vector<HTramMessage*>> fillerOverflowBuffers;
     std::vector<std::vector<int>> fillerOverflowBuffersBucketMin;
     std::vector<std::vector<int>> fillerOverflowBuffersBucketMax;
+    int nodesize=0;
+    int *nodeOf;
+
   public:
     bool enable_flush;
     int bufSize;
@@ -166,6 +170,7 @@ class HTram : public CBase_HTram {
     int getAggregatingPE(int dest_pe);
     void copyToNodeBuf(int destnode, int increment);
     void insertValue(datatype send_value, int dest_pe);
+    void insertValueWPs(datatype send_value, int dest_pe);
     void sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket);
     void reset_stats(int buf_type, int buf_size, int agtype);
     void enableIdleFlush();
