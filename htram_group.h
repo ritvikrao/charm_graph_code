@@ -35,10 +35,10 @@ using namespace std;
 #define TOTAL_MSGS 3
 #define STATS_COUNT 4
 
-#define PNs 0
-#define PsN 1
-#define NNs 2
-#define PP 3
+#define WPs 0
+#define WsP 1
+#define PP 2
+#define WW 3
 template <typename T>
 struct item {
 //#if !defined(SRC_GROUPING) && !defined(PER_DESTPE_BUFFER)
@@ -170,7 +170,7 @@ class HTram : public CBase_HTram {
     int getAggregatingPE(int dest_pe);
     void copyToNodeBuf(int destnode, int increment);
     void insertValue(datatype send_value, int dest_pe);
-    void insertValuePNs(datatype send_value, int dest_pe);
+    void insertValueWPs(datatype send_value, int dest_pe);
     void sendItemPrioDeferredDest(datatype new_update, int neighbor_bucket);
     void reset_stats(int buf_type, int buf_size, int agtype);
     void enableIdleFlush();
