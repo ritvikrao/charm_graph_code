@@ -1,4 +1,4 @@
-#include "weighted_htram_nonsmp.decl.h"
+#include "sssp_nonsmp.decl.h"
 #include <iostream>
 #include <cmath>
 #include <stdio.h>
@@ -504,4 +504,4 @@ public:
 	}
 };
 
-#include "weighted_htram_nonsmp.def.h"
+#include "sssp_nonsmp.def.h"

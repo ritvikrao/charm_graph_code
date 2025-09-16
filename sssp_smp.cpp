@@ -1,7 +1,7 @@
 #include "NDMeshStreamer.h"
 #include "TopoManager.h"
 #include "htram_group.h"
-#include "weighted_htram_smp.decl.h"
+#include "sssp_smp.decl.h"
 //#define PAPI
 #ifdef PAPI
 #include <papi.h>
@@ -1741,4 +1741,4 @@ class processHeapShared : public CBase_processHeapShared
 	}
 };
 
-#include "weighted_htram_smp.def.h"
+#include "sssp_smp.def.h"

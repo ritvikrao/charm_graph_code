@@ -16,8 +16,8 @@ Build:
 ```
 make weighted_nonsmp
 make weighted_smp
-make weighted_htram_nonsmp
-make weighted_htram_smp
+make sssp_nonsmp
+make sssp_smp
 make graph_ckio
 make graph_serial
 ```
@@ -27,17 +27,17 @@ Clean:
 make clean
 ```
 
-Run weighted_htram_nonsmp:
+Run sssp_nonsmp:
 ```
 ./charmrun +p<N> ./<executable> <num_chares> <num_vertices> <graph_file_name> <random_seed> <source_vertex>
 ```
 
-Run weighted_htram_smp (read files in, option 0):
+Run sssp_smp (read files in, option 0):
 ```
 ./charmrun +p<N> +ppn <threads> ./<executable> <num_vertices> <graph_file_name> <random_seed> <source_vertex> <create_option> <p_tram> <p_pq>
 ```
 
-Run weighted_htram_smp (automatically generate graph, option 1 or 2):
+Run sssp_smp (automatically generate graph, option 1 or 2):
 ```
 ./charmrun +p<N> +ppn <threads> ./<executable> <num_vertices> <num_edges> <random_seed> <source_vertex> <create_option> <p_tram> <p_pq>
 ```
