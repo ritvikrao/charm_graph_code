@@ -1,6 +1,6 @@
 # Change Charm build locations based on where the charm build is
 CHARMC =/ccs/home/rrao/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-gcc/bin/charmc $(OPTS)
-CHARMC_SMP =/Users/ritvik/clean_charm/charm/bin/charmc $(OPTS)
+CHARMC_SMP =/Users/ritvik/charm/bin/charmc $(OPTS)
 # delta: /work/hdd/rao1/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp-gcc/bin/charmc
 # frontier: /ccs/home/rrao/charm/ofi-linux-x86_64-cxi-slurmpmi2cray-smp-gcc/bin/charmc
 # local: /Users/ritvik/charm/netlrts-darwin-x86_64-smp/bin/charmc
@@ -13,7 +13,7 @@ all: $(BINARY)
 .PHONY = clean
 
 run_sssp_smp: sssp_smp
-	./sssp_smp 10000 160000 100 1 1 +p8 +ppn 1 +setcpuaffinity ++local
+	./sssp_smp 10000 160000 100 1 1 0.999 0.005 +p8 +ppn 8 ++local
 
 graph_serial: graph_serial.cpp
 	$(CHARMC) graph_serial.ci
