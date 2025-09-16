@@ -48,7 +48,7 @@ sssp_nonsmp_projections: sssp_nonsmp.cpp sssp_nonsmp.ci weighted_node_struct.h l
 	$(CHARMC) $(CHARMCFLAGS) libtramnonsmp.a -language charm++ -o $@ $< -std=c++1z -DTRAM_NON_SMP -tracemode projections
 
 sssp_smp: sssp_smp.cpp sssp_smp.ci weighted_node_struct.h libhtram_group.a
-	$(CHARMC_SMP) sssp_smp.ci -DTRAM_SMP -DGROUPBY
+	$(CHARMC_SMP) $(CHARMCFLAGS) sssp_smp.ci -DTRAM_SMP -DGROUPBY
 	$(CHARMC_SMP) $(CHARMCFLAGS) libhtram_group.a -language charm++ -o $@ $< -std=c++1z -DTRAM_SMP -DGROUPBY
 
 sssp_smp_papi: sssp_smp.cpp sssp_smp.ci weighted_node_struct.h libhtram_group.a
@@ -69,13 +69,13 @@ tramNonSmp.def.h tramNonSmp.decl.h : tramNonSmp.ci
 	$(CHARMC) tramNonSmp.ci
 
 libhtram_group.a: htram_group.o
-	$(CHARMC_SMP) $< -o $@ -language charm++ -tracemode projections
+	$(CHARMC_SMP) $(CHARMCFLAGS) $< -o $@ -language charm++ -tracemode projections
 
 htram_group.o: htram_group.C htram_group.def.h htram_group.decl.h
-	$(CHARMC_SMP) -O3 -c htram_group.C
+	$(CHARMC_SMP) $(CHARMCFLAGS) -c htram_group.C
 
 htram_group.def.h htram_group.decl.h: htram_group.ci
-	$(CHARMC_SMP) htram_group.ci
+	$(CHARMC_SMP) $(CHARMCFLAGS) htram_group.ci
 
 clean:
 	$(MAKE) clean-libs

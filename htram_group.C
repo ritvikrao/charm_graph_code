@@ -680,7 +680,7 @@ void HTram::tflush(bool idleflush) {
       
 #endif
       tot_send_count += destMsg->next;
-      ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*(destMsg->next));
+      ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(itemT)*(destMsg->next));
       if(agg == WW)
         thisProxy[node].receiveOnPE(destMsg);
       else
