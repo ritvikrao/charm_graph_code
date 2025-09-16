@@ -47,9 +47,8 @@ long average_degree; //average degree of graph
 int generate_mode; //0 = read from file, 1 = generate automatically
 int S; //seed for randomization
 cost lmax; // long maximum
-int histo_bucket_count = 2048; // number of buckets for the histogram needed for message prioritization
 #define HISTO_BUCKET_COUNT 2048 //needed macro for array init
-int histo_reduction_width = histo_bucket_count/8;
+int histo_reduction_width = HISTO_BUCKET_COUNT/8;
 double reduction_delay = 0.1; // each histogram reduction happens at this interval
 int initial_threshold = 3; //initial histo threshold
 // tram constants
@@ -208,7 +207,7 @@ public:
 		}
 		heap_percentile = std::stod(m->argv[7]);
 		#ifdef PRINT_HISTO
-		histoSeq = new histogramSequence(histo_bucket_count);
+		histoSeq = new histogramSequence(HISTO_BUCKET_COUNT);
 		#endif
 		// create TRAM proxy
 		nodeGrpProxy = CProxy_HTramRecv::ckNew();
@@ -336,7 +335,7 @@ public:
 			file.close();
 			read_time = CkWallTimer() - start_time;
 			// assign nodes to location
-			std::vector<LongEdge> edge_lists[N];
+			std::vector<LongEdge> *edge_lists = new std::vector<LongEdge>[N];
 			long average = edges.size() / N;
 			for (int i = 0; i < edges.size(); i++)
 			{
@@ -540,13 +539,13 @@ public:
 			}
 		}
 		//in case of floating point weirdness
-		if(heap_threshold >= histo_bucket_count) heap_threshold = histo_bucket_count - 1;
-		if(tram_threshold >= histo_bucket_count) tram_threshold = histo_bucket_count - 1;
+		if(heap_threshold >= HISTO_BUCKET_COUNT) heap_threshold = HISTO_BUCKET_COUNT - 1;
+		if(tram_threshold >= HISTO_BUCKET_COUNT) tram_threshold = HISTO_BUCKET_COUNT - 1;
 		if(histogram_sum==0)
 		{
-			heap_threshold = histo_bucket_count - 1;
-			tram_threshold = histo_bucket_count - 1;
-			bfs_threshold = histo_bucket_count - 1;
+			heap_threshold = HISTO_BUCKET_COUNT - 1;
+			tram_threshold = HISTO_BUCKET_COUNT - 1;
+			bfs_threshold = HISTO_BUCKET_COUNT - 1;
 		}
 		if(heap_threshold != previous_threshold)
 		{
@@ -596,22 +595,22 @@ public:
 		// ckout << "Completed" << endl;
 		// CkPrintf("Memory usage at end: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
 		total_time = CkWallTimer() - start_time;
-		ckout << "Actual edges: " << msg_stats[4+histo_bucket_count] << endl;
+		ckout << "Actual edges: " << msg_stats[4+HISTO_BUCKET_COUNT] << endl;
 		ckout << "Read time: " << read_time << endl;
 		ckout << "Compute time: " << compute_time << endl;
 		ckout << "Total time: " << total_time << endl;
 		ckout << "Wasted updates: " << msg_stats[0] - V << endl;
-		ckout << "Wasted updates normalized to |E|: " << (double) (msg_stats[0] - V) / msg_stats[4+histo_bucket_count] << endl;
+		ckout << "Wasted updates normalized to |E|: " << (double) (msg_stats[0] - V) / msg_stats[4+HISTO_BUCKET_COUNT] << endl;
 		ckout << "Rejected updates: " << msg_stats[1] << endl;
-		ckout << "Rejected updates normalized to |E|: " << (double) msg_stats[1] / msg_stats[4+histo_bucket_count] << endl;
+		ckout << "Rejected updates normalized to |E|: " << (double) msg_stats[1] / msg_stats[4+HISTO_BUCKET_COUNT] << endl;
 		ckout << "Number of threshold changes: " << threshold_change_counter << endl;
 		ckout << "Number of reductions: " << reduction_counts << endl;
-		ckout << "Updates noted: " << msg_stats[3+histo_bucket_count] << endl;
-		ckout << "Distance changes: " << msg_stats[5+histo_bucket_count] << ", per vertex: " << msg_stats[5+histo_bucket_count] * 1.0 / V << endl;
+		ckout << "Updates noted: " << msg_stats[3+HISTO_BUCKET_COUNT] << endl;
+		ckout << "Distance changes: " << msg_stats[5+HISTO_BUCKET_COUNT] << ", per vertex: " << msg_stats[5+HISTO_BUCKET_COUNT] * 1.0 / V << endl;
 		#ifdef VCOUNT
 		long vcount_sum = 0;
 		ckout << "Vcount: [ ";
-		for(int i=0; i<histo_bucket_count+1; i++)
+		for(int i=0; i<HISTO_BUCKET_COUNT+1; i++)
 		{
 			ckout << msg_stats[i+2] << ", ";
 			vcount_sum += msg_stats[i+2];
@@ -620,8 +619,8 @@ public:
 		ckout << "Vcount sum: " << vcount_sum << endl;
 		#endif
 		#ifdef PAPI
-		ckout << "Total insts: " << msg_stats[6+histo_bucket_count] << endl;
-		ckout << "Insts per edge: " << msg_stats[6+histo_bucket_count] * 1.0 / msg_stats[4+histo_bucket_count] << endl;
+		ckout << "Total insts: " << msg_stats[6+HISTO_BUCKET_COUNT] << endl;
+		ckout << "Insts per edge: " << msg_stats[6+HISTO_BUCKET_COUNT] * 1.0 / msg_stats[4+HISTO_BUCKET_COUNT] << endl;
 		#endif
 		arr.get_max_cost();
 	}
@@ -676,7 +675,7 @@ class SharedInfo : public CBase_SharedInfo
 		for(int i=0; i<N; i++)
 		{
 			chunks_remaining.push_back(new std::atomic_int[HISTO_BUCKET_COUNT]);
-			for (int j=0; j<histo_bucket_count; j++)
+			for (int j=0; j<HISTO_BUCKET_COUNT; j++)
 			{
 				chunks_remaining[i][j] = 0;
 			}
@@ -708,7 +707,7 @@ private:
 	tram_t *tram; //tram library
 	SharedInfo *shared_local;
 	std::priority_queue<Update, std::vector<Update>, ComparePairs> pq; //heap of messages
-	long *histogram; //local histogram of data, from 0 to max_size, divided into histo_bucket_count buckets
+	long *histogram; //local histogram of data, from 0 to max_size, divided into HISTO_BUCKET_COUNT buckets
 	long *vcount; //array of vertex distances, calculated with same formula as histogram
 	int heap_threshold; //highest bucket where messages can be pushed to heap
 	int tram_threshold; //highest bucket where messages can be pushed to tram
@@ -846,14 +845,14 @@ public:
 
 	void initialize_data(long *partition, int dividers)
 	{
-		histogram = new long[histo_bucket_count];
-		vcount = new long[histo_bucket_count+1]; //histo buckets plus infty
-		for(int i=0; i<histo_bucket_count; i++)
+		histogram = new long[HISTO_BUCKET_COUNT];
+		vcount = new long[HISTO_BUCKET_COUNT+1]; //histo buckets plus infty
+		for(int i=0; i<HISTO_BUCKET_COUNT; i++)
 		{
 			histogram[i] = 0;
 			vcount[i] = 0;
 		}
-		vcount[histo_bucket_count] = 0;
+		vcount[HISTO_BUCKET_COUNT] = 0;
 		partition_index = new long[dividers];
 		for (int i = 0; i < dividers; i++)
 		{
@@ -870,31 +869,31 @@ public:
 		heap_threshold = initial_threshold;
 		tram_threshold = initial_threshold + 2;
 		bfs_threshold = heap_threshold;
-		tram_hold = new std::vector<Update>[histo_bucket_count];
-		pq_hold = new std::vector<Update>[histo_bucket_count];
-		hold_to_process = new std::vector<Update>[histo_bucket_count];
-		for(int i=0; i<histo_bucket_count; i++)
+		tram_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
+		pq_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
+		hold_to_process = new std::vector<Update>[HISTO_BUCKET_COUNT];
+		for(int i=0; i<HISTO_BUCKET_COUNT; i++)
 		{
 			tram_hold[i].reserve(4096);
 			pq_hold[i].reserve(4096);
 			hold_to_process[i].reserve(4096);
 		}
-		bfs_hold = new std::vector<Update>[histo_bucket_count];
+		bfs_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
 		info_array = new long[histo_reduction_width+7];
-		bucket_multiplier = histo_bucket_count / (histo_bucket_count * log(V));
+		bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * log(V));
 		CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
 	}
 
 	void generate_2d_graph(long *partition, int dividers)
 	{
 		initialize_data(partition, dividers);
-		bucket_multiplier = histo_bucket_count / (histo_bucket_count * sqrt(V));
+		bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * sqrt(V));
 		#ifdef INFO_PRINTS
 		ckout << "Generating local graph on PE " << CkMyPe() << " with " << num_vertices << " vertices" << endl;
 		#endif
 		cost *largest_outedges = new cost[num_vertices];
 		long side_length = (int) std::sqrt((double) V);
-		bucket_multiplier = histo_bucket_count / (histo_bucket_count * sqrt(V));
+		bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * sqrt(V));
 		for(int i=0; i<num_vertices; i++)
 		{
 			Node new_node;
@@ -902,7 +901,7 @@ public:
 			new_node.distance = lmax;
 			std::vector<Edge> adj;
 			new_node.adjacent = adj;
-			vcount[histo_bucket_count]++;
+			vcount[HISTO_BUCKET_COUNT]++;
 			long largest_outedge = 0;
 			long this_vertex = (long) i + start_vertex;
 			std::mt19937 generator(this_vertex + S);
@@ -979,7 +978,7 @@ public:
 			new_node.distance = lmax;
 			std::vector<Edge> adj;
 			new_node.adjacent = adj;
-			vcount[histo_bucket_count]++;
+			vcount[HISTO_BUCKET_COUNT]++;
 			long largest_outedge = 0;
 			std::mt19937 generator( (long) i + start_vertex);
 			std::uniform_int_distribution<long> edge_count_distribution(0,2*average_degree);
@@ -1050,7 +1049,7 @@ public:
 				std::vector<Edge> adj;
 				new_node.adjacent = adj;
 				local_graph[i] = new_node;
-				vcount[histo_bucket_count]++;
+				vcount[HISTO_BUCKET_COUNT]++;
 				largest_outedges[i] = 0;
 			}
 			for (int i = 0; i < E; i++)
@@ -1129,7 +1128,7 @@ public:
 	{
 		double bucket = distance * bucket_multiplier;
 		int result = (int) bucket;
-		if(result >= histo_bucket_count) return histo_bucket_count - 1;
+		if(result >= HISTO_BUCKET_COUNT) return HISTO_BUCKET_COUNT - 1;
 		else return result;
 	}
 
@@ -1274,7 +1273,7 @@ public:
 			{ 
 				bfs_noted++;
 				local_graph[local_index].distance = this_cost;
-				vcount[histo_bucket_count]--;
+				vcount[HISTO_BUCKET_COUNT]--;
 				if (this_bucket > bfs_threshold)
 				{
 					local_graph[local_index].send_updates = true;
@@ -1305,7 +1304,7 @@ public:
 			vcount[this_bucket]++;
 			if(local_graph[local_index].distance == lmax)
 			{
-				vcount[histo_bucket_count]--;
+				vcount[HISTO_BUCKET_COUNT]--;
 			}
 			else vcount[get_histo_bucket(local_graph[local_index].distance)]--;
 			#endif
@@ -1516,7 +1515,7 @@ public:
 		int first_nonzero = behind_first_nonzero + 1;
 		for(int i = first_nonzero; i < (first_nonzero + histo_reduction_width); i++)
 		{
-			if(i >= histo_bucket_count) info_array[i-first_nonzero] = 0;
+			if(i >= HISTO_BUCKET_COUNT) info_array[i-first_nonzero] = 0;
 			else info_array[i-first_nonzero] = histogram[i];
 		}
 		info_array[histo_reduction_width] = updates_created_locally;
@@ -1537,7 +1536,7 @@ public:
 	{
 		/*
 		// everything in the tram hold gets added to tram
-		for(int i=0; i<histo_bucket_count; i++)
+		for(int i=0; i<HISTO_BUCKET_COUNT; i++)
 		{
 			for(int j=0; j<tram_hold[i].size(); j++)
 			{
@@ -1550,7 +1549,7 @@ public:
 			}
 			tram_hold[i].clear();
 		}
-		for(int i=0; i<histo_bucket_count; i++)
+		for(int i=0; i<HISTO_BUCKET_COUNT; i++)
 		{
 			for(int j=0; j<pq_hold[i].size(); j++)
 			{
@@ -1596,7 +1595,7 @@ public:
 		current_phase = phase;
 		//after every reduction, push out messages in hold that are in limit
 		//replace this loop with call to tram->changethreshold(tram_threshold)
-		tram->shareArrayOfBuckets(tram_hold, histo_bucket_count);
+		tram->shareArrayOfBuckets(tram_hold, HISTO_BUCKET_COUNT);
     int direct_threshold = behind_first_nonzero + 8 ;
 	//int direct_threshold = tram_threshold;
     if(direct_threshold > tram_threshold-1) direct_threshold = tram_threshold-1;
@@ -1676,29 +1675,29 @@ public:
 			printf("Error PAPI stop %s\n", PAPI_strerror(result));
 		}
 		//ckout << "PE " << CkMyPe() << " total instructions: " << values[0] << endl;
-		long msg_stats[7+histo_bucket_count];
+		long msg_stats[7+HISTO_BUCKET_COUNT];
 		#else
-		long msg_stats[6+histo_bucket_count];
+		long msg_stats[6+HISTO_BUCKET_COUNT];
 		#endif
 		msg_stats[0] = wasted_updates;
 		msg_stats[1] = rejected_updates;
-		for(int i=0; i<histo_bucket_count + 1; i++)
+		for(int i=0; i<HISTO_BUCKET_COUNT + 1; i++)
 		{
 			msg_stats[i+2] = vcount[i];
 		}
-		msg_stats[3+histo_bucket_count] = updates_noted;
-		msg_stats[4+histo_bucket_count] = actual_edges;
-		msg_stats[5+histo_bucket_count] = distance_changes;
+		msg_stats[3+HISTO_BUCKET_COUNT] = updates_noted;
+		msg_stats[4+HISTO_BUCKET_COUNT] = actual_edges;
+		msg_stats[5+HISTO_BUCKET_COUNT] = distance_changes;
 		#ifdef PAPI
-		msg_stats[6+histo_bucket_count] = values[0];
+		msg_stats[6+HISTO_BUCKET_COUNT] = values[0];
 		#endif
 
 		CkCallback cb(CkReductionTarget(Main, done), mainProxy);
 
 		#ifdef PAPI
-		contribute((7+histo_bucket_count) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
+		contribute((7+HISTO_BUCKET_COUNT) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
 		#else
-		contribute((6+histo_bucket_count) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
+		contribute((6+HISTO_BUCKET_COUNT) * sizeof(long), msg_stats, CkReduction::sum_long, cb);
 		#endif
 		// mainProxy.done();
 	}

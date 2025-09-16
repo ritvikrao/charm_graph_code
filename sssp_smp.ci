@@ -13,7 +13,6 @@ mainmodule sssp_smp
   readonly int generate_mode;
   readonly cost lmax;
   readonly int buffer_size;
-  readonly int histo_bucket_count;
   readonly int initial_threshold;
   readonly double reduction_delay;
   readonly double flush_timer;
