@@ -1266,40 +1266,6 @@ public:
 		int this_bucket = get_histo_bucket(this_cost);
 		if (this_cost < local_graph[local_index].distance)
 		{
-			/*
-			vcount[this_bucket]++;
-			updates_noted++;
-			if(local_graph[local_index].distance == lmax)
-			{ 
-				bfs_noted++;
-				local_graph[local_index].distance = this_cost;
-				vcount[HISTO_BUCKET_COUNT]--;
-				if (this_bucket > bfs_threshold)
-				{
-					local_graph[local_index].send_updates = true;
-			      	bfs_hold[this_bucket].push_back(new_vertex_and_distance);
-				}
-				else
-				{
-					bfs_processed++;
-					generate_updates(local_index, true);
-					wasted_updates++;
-					histogram[this_bucket]--;
-					updates_processed_locally++;
-				}
-			}
-			else
-			{ 
-				vcount[get_histo_bucket(local_graph[local_index].distance)]--;
-				local_graph[local_index].distance = this_cost;
-				local_graph[local_index].send_updates = true;
-				if(this_bucket > heap_threshold)
-				{
-					pq_hold[this_bucket].push_back(new_vertex_and_distance);
-				}
-				else pq.push(new_vertex_and_distance);
-			}
-			*/
 			#ifdef VCOUNT
 			vcount[this_bucket]++;
 			if(local_graph[local_index].distance == lmax)
@@ -1623,30 +1589,6 @@ public:
 		//add user event
 		#endif
 		process_local_updates();
-		/*
-		for(int i=0; i<=bfs_threshold; i++)
-		{
-			for(int j=0; j<bfs_hold[i].size(); j++)
-			{ 
-				long local_index = bfs_hold[i][j].dest_vertex - start_vertex;
-				cost this_cost = bfs_hold[i][j].distance;
-				int this_bucket = get_histo_bucket(this_cost);
-				if (this_cost == local_graph[local_index].distance)
-				{
-					generate_updates(local_index, true);
-				}
-				else if (this_cost > local_graph[local_index].distance)
-				{
-					rejected_updates++;
-				}
-				bfs_processed++;
-				wasted_updates++;
-				histogram[this_bucket]--;
-				updates_processed_locally++;
-			}
-			bfs_hold[i].clear();
-		}
-		*/
 		if(rand()%5==0) tram->tflush();
 //    tram->sanityCheck();
 //    tram->flush_everything();
