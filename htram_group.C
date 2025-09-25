@@ -526,7 +526,7 @@ void HTram::tflush(bool idleflush) {
 #endif
   //          CkPrintf("\nCalling TFLUSH---\n");
           srcNodeGrp->msgBuffers[i]->next = srcNodeGrp->done_count[i];
-          ((envelope *)UsrToEnv(srcNodeGrp->msgBuffers[i]))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*srcNodeGrp->msgBuffers[i]->next);
+          ((envelope *)UsrToEnv(srcNodeGrp->msgBuffers[i]))->setUsersize(sizeof(int)+sizeof(itemT)*srcNodeGrp->msgBuffers[i]->next);
  /* 
           CkPrintf("\n[PE-%d]TF-Sending out data with size = %d", thisIndex, srcNodeGrp->msgBuffers[i]->next);
           for(int j=0;j<srcNodeGrp->msgBuffers[i]->next;j++)
@@ -579,7 +579,7 @@ void HTram::tflush(bool idleflush) {
         else if(agg == WPs)
         {
 #if 0
-          ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(envelope)+sizeof(itemT)*(destMsg->next));
+          ((envelope *)UsrToEnv(destMsg))->setUsersize(sizeof(int)+sizeof(itemT)*(destMsg->next));
           tot_send_count += destMsg->next;
           nodeGrpProxy[i].receive(destMsg);
           msgBuffers[i] = new HTramMessage();
