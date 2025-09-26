@@ -249,7 +249,7 @@ public:
         partition_index[i] = current_start_index;
         long vertex_count = vertex_count_distribution(generator);
         long edge_count = edge_count_distribution(generator);
-        if ((i == N - 1) && (vertex_count > remaining_vertices))
+        if ((i == N - 1) || (vertex_count > remaining_vertices))
           vertex_count = remaining_vertices; // make sure num_vertices = V
         remaining_vertices -= vertex_count;
         vertex_counts[i] = vertex_count;
