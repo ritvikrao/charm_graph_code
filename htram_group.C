@@ -784,7 +784,7 @@ void HTramRecv::receive(HTramMessage *agg_message) {
   int rank0PE = CkNodeFirst(thisIndex);
   HTramNodeMessage *sorted_agg_message = new HTramNodeMessage();
 
-  int sizes[PPN_COUNT] = {0};
+  std::vector<int> sizes(CkNodeSize(CkMyNode()), 0);
 
   for (int i = 0; i < agg_message->next; i++) {
     int rank = agg_message->buffer[i].destPe - rank0PE;
@@ -824,7 +824,7 @@ void HTramRecv::receive_small(HTramLocalMessage *agg_message) {
   int rank0PE = CkNodeFirst(thisIndex);
   HTramNodeMessage *sorted_agg_message = new HTramNodeMessage();
 
-  int sizes[PPN_COUNT] = {0};
+  std::vector<int> sizes(CkNodeSize(CkMyNode()), 0);
 
   for (int i = 0; i < agg_message->next; i++) {
     int rank = agg_message->buffer[i].destPe - rank0PE;
