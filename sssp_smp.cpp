@@ -62,7 +62,11 @@ int flush_round_interval = 5;
 // the same banner and the same exit status as a converged run.
 double timeout_seconds = 0.0;
 // tram constants
-int buffer_size = 1024;    // meaningless for smp; size changed in htram_group.h
+// Aggregation buffer size in items, settable with --bufsize. htram used to
+// accept this and then ignore it, so changing the buffer size meant editing
+// BUFSIZE in htram_group.h and rebuilding both libraries; the default here is
+// BUFSIZE so the out-of-the-box configuration is unchanged.
+int buffer_size = BUFSIZE;
 double flush_timer = 0.01; // milliseconds
 bool enable_buffer_flushing =
     false; // true = buffer flushes at interval specified by flush_timer
@@ -183,6 +187,15 @@ public:
           return;
         }
         timeout_seconds = std::stod(m->argv[++i]);
+      } else if (arg.rfind("--bufsize=", 0) == 0) {
+        buffer_size = std::stoi(arg.substr(10));
+      } else if (arg == "--bufsize") {
+        if (i + 1 >= m->argc) {
+          ckout << "--bufsize needs a value in items" << endl;
+          CkExit(1);
+          return;
+        }
+        buffer_size = std::stoi(m->argv[++i]);
       } else if (arg.rfind("--", 0) == 0) {
         ckout << "Unknown option " << arg.c_str() << endl;
         CkExit(1);
@@ -194,7 +207,12 @@ public:
       ckout << "Usage: sssp_smp <vertices> <file|edge count> <seed> "
             << "<start vertex> <mode 0=file,1=random,2=mesh> "
             << "<tram percentile> <heap percentile> "
-            << "[--verify] [--timeout <seconds>]" << endl;
+            << "[--verify] [--timeout <seconds>] [--bufsize <items>]" << endl;
+      CkExit(1);
+      return;
+    }
+    if (buffer_size <= 0 || buffer_size > BUFSIZE) {
+      ckout << "--bufsize must be in 1.." << BUFSIZE << endl;
       CkExit(1);
       return;
     }
@@ -651,6 +669,19 @@ public:
 #ifdef PRINT_HISTO
     histoSeq->putout();
 #endif
+    tram_proxy.tramStats(
+        CkCallback(CkReductionTarget(Main, done_tram_stats), mainProxy));
+  }
+
+  /**
+   * Aggregation-layer volume, reported alongside every wall-clock number:
+   * bytes actually handed to the send path, and bytes allocated to carry them.
+   */
+  void done_tram_stats(unsigned long long *values, int n) {
+    ckout << "TRAM messages: " << values[0] << ", bytes sent: " << values[1]
+          << ", bytes allocated: " << values[2] << endl;
+    ckout << "TRAM node messages: " << values[3]
+          << ", bytes allocated: " << values[4] << endl;
     if (verify_mode)
       arr.verify_hash();
     else

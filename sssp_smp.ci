@@ -31,6 +31,7 @@ mainmodule sssp_smp
     entry [reductiontarget] void check_buffer_done(long msg_stats[N], int N);
     entry [reductiontarget] void done_max_cost(cost max_cost);
     entry [reductiontarget] void done_verify(unsigned long long values[n], int n);
+    entry [reductiontarget] void done_tram_stats(unsigned long long values[n], int n);
   };
   array [1D] SsspChares
   {
