@@ -225,3 +225,84 @@ that the sweep was measuring the defect rather than the mechanism, so the 2024
 parameter study cannot be cited as it stands, and the tram-threshold mechanism
 still has not been evaluated on its merits. Re-running the sweep on a cluster,
 on RMAT as well as uniform, is now a P0 experiment.
+
+---
+
+## 6. Per-destination structures sized by PE count (htram)
+
+*Fixed in `htram` commit dad97f7.*
+
+`tram_hold` and `msgBuffers` are indexed by **destination** — a node under
+WPs/WsP/PP, a PE only under WW — but both were allocated with `CkNumPes()` rows
+on every PE. Under WPs that is `CkNodeSize()` times too many, and because the
+waste is per PE it multiplies again across the node.
+
+Peak RSS turned out to be useless for measuring this: repeated runs of the same
+configuration varied by more than 20 MB, and at one point reported an identical
+figure before and after. Probing the allocation directly instead:
+
+| | before | after |
+|---|---|---|
+| ppn 4 | `tram_hold` 4 rows / 393,216 B, 4 msgBuffers | 1 row / 98,304 B, 1 buffer |
+| ppn 8 | 8 rows / 786,432 B, 8 msgBuffers | 1 row / 98,304 B, 1 buffer |
+
+Each row is `histo_bucket_count` queues (98 KB) and each `HTramMessage` is
+~48 KB, so the unused allocation is `(ppn - 1) x 146 KB` per PE:
+
+| ppn | wasted per PE | wasted per node |
+|---|---|---|
+| 16 | 2.1 MB | 33.8 MB |
+| 32 | 4.4 MB | 139.5 MB |
+| 64 | 8.9 MB | 567.0 MB |
+| 128 | 17.9 MB | 2.3 GB |
+
+The outer pointer arrays stay `CkNumPes()` wide so `reset_stats()` can still
+widen `agg` to WW without reallocating; it now back-fills rows the constructor
+did not create.
+
+This is part of, but not all of, the "~160 MB/PE" the 2024 paper attributed to
+the design. The app-side `tram_hold` in `sssp_smp.cpp` (2048 vectors each
+reserving 4096 updates) is the other half, and belongs to step 5.
+
+## 7. `NODE_COUNT 512` (htram)
+
+*Fixed in `htram` commit 4028bcf.*
+
+`HTramNodeGrp::get_idx` and `::done_count` were `std::atomic_int[512]`, and
+`HTram::local_idx` was `int[512]`, while the loops that fill them run to
+`CkNumNodes()`. Above 512 nodes all three wrote past the end into whatever the
+compiler laid out next, with no bounds check anywhere on the path.
+
+512 nodes is not a hypothetical ceiling here — it is precisely the scale the
+plan targets on Frontier. The first genuinely large run would have been the one
+to hit it, and the symptom would have been corrupted neighbouring members rather
+than a crash.
+
+All three are now `unique_ptr` arrays sized from `CkNumNodes()`, following the
+`mailbox_receiver` idiom already used a few lines away. `NODE_COUNT` is gone.
+
+Not verifiable locally: `CkNumNodes()` is 1 under Reconverse SMP on one machine
+at every ppn. Verified by inspection, plus no regression in the configurations
+that build (HISTO, IG, PHOLD, GRAPH/BUCKETS_BY_DEST). UNION_FIND does not build,
+and did not before this series either.
+
+---
+
+## Not fixed: redundant `get_dest_proc` calls
+
+The defect table estimated `get_dest_proc` was called "2-3x per item" — an item
+is routed once in `sendItemPrioDeferredDest` and re-routed when it is popped
+from `tram_hold`. Counted dynamically on a 200k-vertex, 3.2M-edge graph:
+
+| p_tram | routing calls | replay calls | calls per item |
+|---|---|---|---|
+| 0.999 | 3,205,071 | 1,496 | **1.00** |
+| 0.5 | 3,204,475 | 1,014,357 | **1.32** |
+
+The static reading overestimated it. At the percentile the 2024 paper used the
+redundancy is essentially zero, and even at 0.5 it is 1.32x, not 2-3x.
+
+Carrying the destination alongside the held item would cost 50% more memory per
+held item (`itemT` is 24 bytes against `datatype`'s 16) to save 0.32 lookups per
+item. That is a bad trade on its own, and step 9's `dest_slot` item field is the
+right fix for it anyway. Deliberately left alone.
