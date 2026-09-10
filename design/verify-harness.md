@@ -112,6 +112,35 @@ PE's share skipped both `local_graph[i] = new_node` and
 unreachable in the current partitioning, but it sits directly on the path the
 digest reads.
 
+## What `--verify` cannot see, and the gate that can
+
+`scripts/verify.sh` runs everything in one process, and one whole class of defect
+is invisible there. When htram sends a message to a PE in the same process, the
+receiver is handed the same pointer and reads the entire allocation — the message
+envelope's declared size is never consulted. Only a message that crosses an
+address-space boundary is truncated to that size. So a send path that under-states
+how many bytes its payload occupies produces correct results at any PE count on one
+node, and an out-of-bounds read on two.
+
+That is not hypothetical: step 4's varsize change moved the payload offset from 8
+to 16, and the size formula that had been correct-by-accident at offset 8 would
+have under-sized every odd-count send by 8 bytes. See
+[varsize-messages.md](varsize-messages.md) §3 and §7.
+
+`--verify` would not have caught it even on two nodes. The truncated field here is
+the high half of a `cost`, and every distance in these runs fits in 32 bits, so the
+lost bytes are zeros and the digest still matches. Two things close the gap:
+
+- **htram asserts the invariant at the receiver.** Every landing point compares the
+  envelope that arrived against the bytes the items need, and aborts if it is
+  short. One comparison per message; compiled out with
+  `-DHTRAM_NO_ENVELOPE_CHECK`.
+- **`scripts/verify_2node.sh`** runs the `--verify` matrix across two nodes, one
+  process each, sweeping `--bufsize` (which decides how many sends are partial
+  flushes, and so how often a size formula is exercised at all) and
+  `LCI_ATTR_PACKET_SIZE` (which decides eager versus rendezvous). It needs a
+  Slurm allocation, so it is a pre-merge gate rather than a per-commit one.
+
 ## Limits
 
 - `--verify` requires a generated graph (mode 1 or 2). The file reader has no

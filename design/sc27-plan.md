@@ -98,6 +98,13 @@ Consequence: the 2024 buffer-size study (512/1024/2048, Fig. 6) varied *when* me
 sent but not *how many bytes crossed the network*. Its conclusion is about flush latency, not
 bandwidth, and at `bufSize=512` roughly 4× of the wire bytes were padding. Must be re-run.
 
+> **Withdrawn (step 4).** The last two sentences are wrong. The `buffer_size` constructor
+> argument was accepted and never read, so the only way to change the buffer size was to edit
+> `BUFSIZE` and rebuild — which also resized the fixed array. Buffer size and message size
+> moved together, and the 2024 study did vary wire bytes. The padding described here would
+> have appeared only via `setBufferSize()`, which nothing called. See
+> `design/varsize-messages.md` §2.
+
 ### 3. Memory, and a set of smaller bugs
 
 `tram_hold` is indexed by `dest_node` everywhere (`:272, :276, :306, :621`) but allocated with
@@ -197,7 +204,7 @@ baseline never moves under you mid-refactor.
 | **1** | Reconverse port; `lcrun` job scripts; resolve the trace-flag argv leak; pin `+lci_ndevices` / `LCI_ATTR_PACKET_SIZE`. CMake replacing the two hardcoded `charmc` paths | 2024 configs run and reproduce on the new stack | 1 wk |
 | **2** | `--verify`: reduce a 64-bit hash of all `(v, dist)`; serial Dijkstra reference ≤1M edges; CI on every commit. Deterministic weights via `hash(u,v,seed)` replacing `rand()` | Reference matches on mesh + small RMAT | 2 days |
 | **3** | The defect list above: `updates_in_tram` leak, `tram_hold` rows → `num_dest`, `dest_table` overflow, `first_nonzero` OOB, `rand()` flush, `fast_exit` → flag, `NODE_COUNT` → runtime, delete `processHeapShared` | Verify passes. **Measure the §1 fix alone and re-run the `p_tram` sweep** | 3 days |
-| **4** | Genuine varsize messages (`char buffer[]`); `setUsersize` on all send paths. Re-run the buffer-size sweep, now co-varied with `LCI_ATTR_PACKET_SIZE` | Verify identical; wire bytes drop at `bufSize < 2048` | 3 days |
+| **4** | Genuine varsize messages (`char buffer[]`); `setUsersize` on all send paths. Re-run the buffer-size sweep, now co-varied with `LCI_ATTR_PACKET_SIZE` | ~~Verify identical; wire bytes drop at `bufSize < 2048`~~ **Done.** Verify identical; second clause withdrawn — `bufSize` never reached the wire because the constructor argument was dead, not because of padding. Closed on 2 nodes by `scripts/verify_2node.sh`; see `design/varsize-messages.md` | 3 days |
 | **5** | Retire all non-SMP and dead code (below). `graphlib` v1: in-memory Kronecker/RMAT/uniform/mesh generators + GAPBS `.sg`/`.wsg` binary reader; flat CSR replacing per-vertex `std::vector` | Verify identical; **real weighted graphs load for the first time** | 2 wk |
 | **6** | Scale-free diagnosis: H1–H4 below, each an A/B with everything else fixed | A written design note per hypothesis | 2 wk |
 | **7** | Build the winners: `CombiningHold` (byte-oriented from day one) + `on_absorb`; batch-local combining in `deliver`; adaptive bucketing; adaptive tail cadence + idle flush | Verify identical flag on **and** off | 4 wk |

@@ -31,6 +31,10 @@ sssp_smp_papi
 slurm-*.out
 histos.txt
 *.mp4
+logs-2node/
+# A Charm++ abort dumps core into the working directory, and a failed 2-node
+# launch does it once per process.
+core.*
 
 # macOS
 .DS_Store

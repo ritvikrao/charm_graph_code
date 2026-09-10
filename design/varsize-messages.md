@@ -8,6 +8,17 @@ The verify gate passes byte-identical, and the digest is additionally invariant 
 `--bufsize` 1, 7, 63, 256, 512, 1024, 2048. **The gate's second clause turned out to be
 based on a wrong premise, and the correction matters more than the fix.** See §2.
 
+Two of this note's conclusions have since been overturned by measurement, and both
+corrections are the interesting part:
+
+- §2, the gate's "wire bytes drop at `bufSize < 2048`" clause, which rested on a claim about
+  padding that turned out not to hold.
+- §3, which reported the old `setUsersize` formula as an active out-of-bounds read. It was
+  not: `setUsersize` rounds up to 16 bytes, which covered the shortfall exactly. The formula
+  *would* have become a real out-of-bounds read the moment this step moved the payload
+  offset, which is the reason both changes had to land together. Measured on two nodes
+  in §7.
+
 ## 1. What was actually wrong
 
 `htram_group.ci` declared
@@ -61,7 +72,7 @@ produced exactly the padding the plan described, had anyone called it. `histo.C`
 the out-of-the-box configuration is unchanged), and `-S` starts working in the other apps
 — a behaviour change for them, since their default is 1024, not 2048.
 
-## 3. A latent multi-node correctness bug in the four existing `setUsersize` calls
+## 3. The four existing `setUsersize` calls
 
 All four sites computed the envelope size as
 
@@ -69,27 +80,52 @@ All four sites computed the envelope size as
 setUsersize(sizeof(int) + sizeof(itemT) * next);
 ```
 
-The payload does not start at `sizeof(int)`. With `int next` at offset 0 and `itemT`
-requiring 8-byte alignment, `buffer` started at offset 8, so this **undercounts by the
-4 bytes of padding** and truncates the last item of every partially-flushed message.
-Measured layout, `-DGRAPH`:
+That is a formula about the struct's first field, not about where the payload is. The
+payload's offset is chosen by the generated allocator, nothing tied the two together, and
+the two are not equal: with `int next` at offset 0 and `itemT` requiring 8-byte alignment,
+`buffer` started at offset 8, so the expression undercounts by the 4 bytes of padding.
 
+An earlier draft of this note concluded from that arithmetic that every partially-flushed
+message was truncating its last item and the receiver was reading four bytes out of bounds.
+**That conclusion was wrong, and it was wrong because the arithmetic stopped one step too
+early.** `setUsersize` does not store the size it is given; it stores
+`CkMsgAlignLength(s)`, which is `ALIGN_DEFAULT(s)` — a round up to 16 bytes. For
+`sizeof(itemT) == 24` that rounding hands back exactly the 4 bytes the formula dropped:
+
+| `next` | needed (`8 + 24n`) | asked for (`4 + 24n`) | envelope actually carried | margin |
+|---|---|---|---|---|
+| 1 | 32 | 28 | 32 | 0 |
+| 2 | 56 | 52 | 64 | 8 |
+| 8 | 200 | 196 | 208 | 8 |
+| 9 | 224 | 220 | 224 | 0 |
+
+The margin is 8 bytes on even counts and **exactly zero** on odd ones, and never negative.
+This is measured, not derived — see §7. So the pre-existing code was not reading out of
+bounds; it was sitting on the boundary with no bytes to spare, held there by an alignment
+rule it did not know about.
+
+What makes that worth fixing anyway is what §1 does to it. Making the message genuinely
+varsize moves the payload from inside the object to after it: the generated allocator places
+it at `ALIGN_DEFAULT(sizeof(HTramMessage))`, which is 16, not 8. The same formula then
+undercounts by 12 rather than 4, and a 16-byte round-up cannot cover 12. **The old formula
+carried into the new layout under-sizes every odd-count send by 8 bytes** — the last item's
+`distance` field lands entirely outside the transmitted region. That is a real out-of-bounds
+read on the receiver, and it has been reproduced on two nodes (§7).
+
+So this was not a live bug that step 4 fixed. It was a latent one that step 4 would have
+activated, and the two changes had to land together.
+
+`usedBytes()` therefore does not restate the allocator's formula either. It reads the
+payload offset back off the pointer the allocator installed:
+
+```cpp
+size_t payloadOffset() const { return buffer - (const char *)this; }
+size_t usedBytes() const { return payloadOffset() + sizeof(itemT) * next; }
 ```
-sizeof(CMessage_HTramMessage)=1  offsetof(next)=0  offsetof(buffer)=8  sizeof(itemT)=24
-old setUsersize for next=1: 28    bytes actually needed: 32
-```
 
-The receiver would read `buffer[next-1].distance` four bytes past the transmitted region.
-For this payload the damage is bounded — `cost` values in these runs fit in 32 bits, so the
-truncated half is the (zero) high word — but the read is out of bounds regardless, and any
-payload whose last field uses its upper bytes would be corrupted outright.
-
-`usedBytes()` now uses `ALIGN_DEFAULT(sizeof(HTramMessage)) + sizeof(itemT)*next`, which is
-the generated allocator's own offset formula, so the two cannot drift apart again.
-
-**Not reproducible here.** Envelope sizes only matter when a message leaves the address
-space, and `CkNumNodes()` is 1 on this laptop under Reconverse at every ppn. This needs a
-2-node check on the cluster — it is the one item in this step that local runs cannot close.
+A restatement can drift, and had drifted. A read-back cannot: whatever charmc decides about
+alignment, and whatever fields are added to the class later, `buffer` points at the payload
+by construction.
 
 ## 4. `setUsersize` coverage
 
@@ -177,7 +213,106 @@ and it is the measurement step 7 should be judged against.
 - **Wire bytes.** There is no wire: one node. The `bytes sent` column is the exact count of
   bytes that *would* be serialised, which is the right proxy, but the packet-level
   interaction — the plan's `LCI_ATTR_PACKET_SIZE` co-variation — cannot be run on a laptop.
-- **The `setUsersize` truncation in §3**, for the same reason.
 
-Both are cluster items, and they are now cheap to run: the sweep is a command-line flag on
-one binary instead of eight rebuilds.
+## 7. The two-node check
+
+Run 2026-09-10 on two exclusive Delta CPU nodes (cn084, cn133), Reconverse over LCI/OFI,
+one process per node so that `CkNumNodes() == 2`. Scripts and logs:
+`/work/hdd/mzu/rao1/sssp-2node`. Fabric settings are the ones the Barnes-Hut work on these
+nodes established (`FI_CXI_RX_MATCH_MODE=hybrid`, `+lci_ndevices 4`, `srun --unbuffered
+--kill-on-bad-exit=1`); nodes must be requested `--exclusive`, or Slurm's cpuset does not
+contain the cores `+pemap` asks for and every PE aborts in `CmiSetCPUAffinity`.
+
+Two nodes is the whole point: inside one process a send hands over a pointer and the
+receiver reads the entire allocation whatever the envelope says, so an under-sized envelope
+is *unobservable* at `CkNumNodes() == 1` at any PE count. Only a message that leaves the
+address space is truncated to its declared size.
+
+### The instrument
+
+htram now carries a receive-side check, on unless `-DHTRAM_NO_ENVELOPE_CHECK`. At every
+landing point it compares the envelope that arrived against `usedBytes()` and aborts if the
+envelope is shorter. One comparison per message, not per item. It is the invariant asserted
+where it is observable, instead of left to whichever run happens to notice a corrupted
+value — which, for this payload, no run would: `cost` values here fit in 32 bits, so the
+truncated half is a zero high word and the result is unchanged.
+
+That last point is why `--verify` alone cannot close this item. It passed on the buggy
+build too.
+
+### Three builds
+
+| build | send-side formula | payload offset | result on 2 nodes |
+|---|---|---|---|
+| **fixed** (HEAD) | `payloadOffset() + 24n` | 16 | VERIFY PASS everywhere |
+| **legacy** | `4 + 24n`, current layout | 16 | check fires immediately, every configuration |
+| **historical** | `4 + 24n`, pre-varsize layout (htram `4028bcf`, app `ef32d43`, unmodified but instrumented) | 8 | VERIFY PASS, **min margin exactly 0** |
+
+Fixed build, all `VERIFY PASS` — digests match serial Dijkstra in-process:
+
+- `--bufsize` 1, 7, 63, 256, 1024, 2048 on the 10k/160k random graph
+- `LCI_ATTR_PACKET_SIZE` 4096 / 16384 / 65536 at `--bufsize 256`. An htram message is
+  `16 + 24·bufSize` bytes, so this spans messages that fit in one eager packet and messages
+  that do not.
+- the 40k 2-D mesh at bufsize 63 and 2048, and a 200k/3.2M random graph at ppn 15
+
+Legacy build, every configuration:
+
+```
+htram: HTramRecv::receive got a message declaring 9 items, which need 232 user bytes,
+in an envelope carrying only 224. The sender under-sized it; reading the last item
+would run past the received buffer.
+```
+
+`232 = 16 + 24·9`; the sender asked for `4 + 24·9 = 220`, which rounds to 224. Eight bytes
+short, exactly as §3 predicts, and it fires on the first odd-count partial flush at every
+buffer size including 2048.
+
+Historical build, instrumented to report the tightest margin it saw rather than to abort:
+
+```
+[htram-envcheck] HTramRecv::receive items=9   need=224  have=224   min_slack=0
+[htram-envcheck] HTramRecv::receive items=8   need=200  have=208   min_slack=8
+[htram-envcheck] HTramRecv::receive items=119 need=2864 have=2864  min_slack=0
+```
+
+Odd counts land exactly on the boundary, even counts have 8 bytes to spare, nothing is ever
+short — over random and mesh graphs at ppn 4, 8 and 15. That is the measurement that
+retracts the original claim.
+
+### What this closes
+
+The step-4 gate's remaining item — "needs a 2-node check on the cluster" — is closed: the
+varsize messages are correct across the address-space boundary at every buffer size and
+packet size tried, and the correctness of the size formula is now asserted by the code
+rather than by a comment.
+
+The step-4 gate's *second clause*, "wire bytes drop at `bufSize < 2048`", remains
+withdrawn for the reason given in §2, and §6's byte table stands: aggregation changes the
+number of messages, not the payload volume.
+
+### Reproducing
+
+The fixed-build half of this is now a committed gate:
+
+```
+sbatch scripts/verify_2node.sh          # SSSP_BIN / SSSP_LOGS / SSSP_NDEV override
+```
+
+Run against HEAD on cn048+cn084, all 13 configurations `PASS`:
+
+```
+random_bs1 … random_bs2048          PASS   (bufsize 1, 7, 63, 256, 1024, 2048)
+random_bs256_ps4096/16384/65536     PASS
+mesh_bs63, mesh_bs2048              PASS
+big_bs256, big_bs2048               PASS   (200k/3.2M, ppn 15)
+2-NODE GATE PASSED
+```
+
+The two counterfactual builds are not committed — they exist to answer a question that has
+now been answered, and both are one edit away from HEAD. They live in
+`/work/hdd/mzu/rao1/sssp-2node`: `htram-legacy/` is HEAD with `trimHTramMessage` reverted to
+the old formula (`usedBytes()` deliberately left correct, so the receive-side check is a real
+comparison and not a restatement of what the sender computed), and `hist-htram/` + `hist-app/`
+are `git worktree` checkouts of `4028bcf` and `ef32d43` with nothing changed but the
+instrument. `scripts/run2node.sh` there drives all three.
