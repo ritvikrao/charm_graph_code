@@ -15,6 +15,7 @@ mainmodule sssp_smp
   readonly int buffer_size;
   readonly int initial_threshold;
   readonly bool verify_mode;
+  readonly int flush_round_interval;
   readonly double reduction_delay;
   readonly double flush_timer;
   readonly bool enable_buffer_flushing;

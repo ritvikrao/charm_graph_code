@@ -54,6 +54,10 @@ double reduction_delay =
     0.1;                   // each histogram reduction happens at this interval
 int initial_threshold = 3; // initial histo threshold
 bool verify_mode = false;  // --verify: check the result against serial Dijkstra
+// Flush the aggregation buffers once every this many controller rounds.
+// Step 7 of the SC27 plan makes this cadence adaptive; until then it is at
+// least a named, reproducible knob rather than a coin flip.
+int flush_round_interval = 5;
 // tram constants
 int buffer_size = 1024;    // meaningless for smp; size changed in htram_group.h
 double flush_timer = 0.01; // milliseconds
@@ -728,6 +732,7 @@ private:
   Node *local_graph;     // structure to hold vertices assigned to this pe
   long start_vertex;     // global index of lowest vertex assigned to this pe
   long num_vertices = 0; // number of vertices assigned to this pe
+  VertexRng flush_rng = VertexRng(0, 0); // per-chare flush cadence draw
   long updates_created_locally = 0;   // number of update messages sent
   long updates_processed_locally = 0; // number of update messages received
   long *partition_index;   // defines boundaries of indices for each pe
@@ -884,6 +889,7 @@ public:
       dest_table[j] = get_dest_proc(i);
     }
     local_graph = new Node[num_vertices];
+    flush_rng = VertexRng(thisIndex, S);
     heap_threshold = initial_threshold;
     tram_threshold = initial_threshold + 2;
     bfs_threshold = heap_threshold;
@@ -1532,7 +1538,20 @@ public:
 // add user event
 #endif
     process_local_updates();
-    if (rand() % 5 == 0)
+    // This was `rand() % 5 == 0`. rand() keeps process-global state, shared by
+    // every worker thread in an SMP process: a contention point where it is
+    // thread-safe at all, and an uncontrolled random factor in every
+    // measurement. A per-chare stream fixes both without changing what the
+    // cadence actually does.
+    //
+    // Deliberately still a draw rather than an exact period. Two periodic
+    // variants were measured over 8 runs and both are worse: one shared phase
+    // (all chares flushing on the same round) costs 1.7% more wasted updates
+    // because communication turns bursty, and a phase staggered by chare index
+    // is worse still on both mean and variance. Independent per-chare draws are
+    // what the 2024 measurements were taken with, so keep that and make it
+    // reproducible.
+    if (flush_rng.bounded((uint64_t)flush_round_interval) == 0)
       tram->tflush();
     //    tram->sanityCheck();
     //    tram->flush_everything();
