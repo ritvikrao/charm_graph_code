@@ -46,6 +46,38 @@ parallel and serial paths share it — both would move together and still agree.
 `scripts/golden_digests.txt` pins the graphs themselves, so a generator change
 has to be re-recorded deliberately with `--update-golden`.
 
+## Graph generation is portable, and that took a second pass
+
+The first CI run failed, and failed usefully. Mesh digests matched between the
+macOS laptop and the Linux runner; random-graph digests did not.
+
+The cause was `std::uniform_int_distribution`. The standard fixes the *engines*
+but not the *distributions*, so libc++ and libstdc++ return different sequences
+from the same engine and the same seed. The mesh generator draws no
+distribution -- its weights come from `hash(u, v, seed)` -- which is exactly why
+it agreed and the random generator did not.
+
+This was never really a CI problem. It means the same command line produces a
+different graph on Frontier, on Vista, and on a laptop, so no cross-machine
+number is comparable and the artifact appendix cannot promise a reader our
+inputs. `--verify` cannot see it: the parallel and serial paths share the
+generator, so on any one machine both move together and still agree. Only the
+golden file caught it.
+
+Generation now uses no `<random>` at all. `VertexRng` is a counter-based stream
+built from SplitMix64, and bounded draws use Lemire's multiply-shift, so
+everything is fixed-width integer arithmetic the language pins down. The
+per-PE partition sizes in `Main` were converted too -- they do not affect the
+answer, since a vertex's adjacency depends only on its global id, but they do
+change load balance, and performance runs should be structurally identical
+across machines.
+
+`scripts/check_generator_portability.sh` compiles `tools/graph_digest.cpp` with
+every toolchain it can find and checks they agree. It needs no Charm++ build,
+so it runs anywhere and is a separate, fast CI job. Verified across libc++ and
+libstdc++ on macOS ARM64, and across three toolchains on Linux x86-64 in a
+container -- all six configurations identical on both architectures.
+
 ## Running the gate
 
     scripts/verify.sh                  # 10 configurations, mesh and random
@@ -88,4 +120,6 @@ digest reads.
 - Serial Dijkstra regenerates adjacency on demand and is single-threaded, so the
   gate is practical to about 10^6 edges — which is what the plan specifies.
   Larger runs stay unverified until a distributed reference exists.
-- The CI workflow has not yet run; it needs one push to shake out.
+- The whole CI pipeline was re-run locally in a Linux x86-64 container against
+  the golden file recorded on macOS ARM64, and passes: generator portability,
+  a stock multicore Charm++ build, and all ten gate configurations.

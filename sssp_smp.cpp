@@ -14,7 +14,6 @@
 #include <limits>
 #include <map>
 #include <queue>
-#include <random>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -240,18 +239,22 @@ public:
       // for each pe, generate a random vertex and edge count, and send to pes
       long remaining_vertices = V;
       long current_start_index = 0; // tracks start vertex for indices
-      std::mt19937 generator(S);
-      std::uniform_int_distribution<long> edge_count_distribution(
-          ((num_global_edges * 4) / (N * 5)),
-          (num_global_edges * 6 / (N * 5))); // average += 20%
-      std::uniform_int_distribution<long> vertex_count_distribution(
-          ((V * 4) / (N * 5)), ((V * 6) / (N * 5))); // average += 20%
+      // Partition sizes vary by +-20%. Drawn with the same portable generator
+      // as the graph itself, so a run has the same load balance on every
+      // machine -- <random> would not give that. See graph_gen.h.
+      VertexRng partition_rng(-1, S);
+      long vertex_low = (V * 4) / (N * 5);
+      long vertex_span = ((V * 6) / (N * 5)) - vertex_low + 1;
+      long edge_low = (num_global_edges * 4) / (N * 5);
+      long edge_span = ((num_global_edges * 6) / (N * 5)) - edge_low + 1;
       long *vertex_counts = new long[N];
       long *edge_counts = new long[N];
       for (int i = 0; i < N; i++) {
         partition_index[i] = current_start_index;
-        long vertex_count = vertex_count_distribution(generator);
-        long edge_count = edge_count_distribution(generator);
+        long vertex_count =
+            vertex_low + (long)partition_rng.bounded((uint64_t)vertex_span);
+        long edge_count =
+            edge_low + (long)partition_rng.bounded((uint64_t)edge_span);
         if ((i == N - 1) || (vertex_count > remaining_vertices))
           vertex_count = remaining_vertices; // make sure num_vertices = V
         remaining_vertices -= vertex_count;

@@ -1,9 +1,5 @@
-# Correctness gate: every push and pull request must still solve SSSP exactly.
-#
-# CI deliberately builds *classic* Charm++ (multicore) rather than Reconverse.
-# The gate checks algorithmic correctness, which is independent of the Converse
-# layer, and a stock Charm build is fast and cacheable. Reconverse-specific
-# behaviour is exercised by running scripts/verify.sh locally.
+# Correctness gate: every push must still solve SSSP exactly, and must generate
+# the same graphs everywhere.
 name: verify
 
 on:
@@ -13,23 +9,42 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Cheap, and it needs no Charm++ build: compile the generator with several
+  # toolchains and check they agree. This catches the class of bug where the
+  # graph itself differs between standard libraries, which would silently make
+  # every cross-machine comparison meaningless.
+  generator-portability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Compare generated graphs across toolchains
+        run: scripts/check_generator_portability.sh
+
+  # Full gate: solve in parallel, compare against serial Dijkstra, and diff the
+  # digests against the recorded golden file.
+  #
+  # This deliberately builds *classic* Charm++ (multicore) rather than
+  # Reconverse. Correctness is independent of the Converse layer, and a stock
+  # build is fast and cacheable; Reconverse-specific behaviour is covered by
+  # running scripts/verify.sh locally.
   verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout charm_graph_code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: charm_graph_code
 
       - name: Checkout htram
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: UIUC-PPL/htram
           path: htram
 
       - name: Cache Charm++ build
         id: charm-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: charm
           key: charm-multicore-${{ runner.os }}-v1
@@ -39,7 +54,7 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/charmplusplus/charm.git
           cd charm
-          ./build charm++ multicore-linux-x86_64 --with-production -j$(nproc)
+          ./build charm++ multicore-linux-x86_64 --with-production -j"$(nproc)"
 
       - name: Run the verify gate
         working-directory: charm_graph_code

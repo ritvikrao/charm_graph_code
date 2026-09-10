@@ -18,10 +18,20 @@
 #include <cmath>
 #include <cstdint>
 #include <queue>
-#include <random>
 #include <vector>
 
+#ifdef GRAPH_GEN_STANDALONE
+// Stand-ins for the two fields the generator touches, so it can be compiled
+// and compared across toolchains without a Charm++ build. See
+// tools/graph_digest.cpp and scripts/check_generator_portability.sh.
+typedef long cost;
+struct Edge {
+  long end;
+  cost distance;
+};
+#else
 #include "weighted_node_struct.h"
+#endif
 
 // SplitMix64. Used as both a seed mixer and a standalone hash.
 inline uint64_t splitmix64(uint64_t x) {
@@ -44,10 +54,49 @@ inline cost edge_weight(long u, long v, int seed) {
          1;
 }
 
-// Per-vertex topology stream. Seeded only by (vertex, seed), never by position.
-inline std::mt19937_64 vertex_rng(long vertex, int seed) {
-  return std::mt19937_64(splitmix64((uint64_t)vertex ^ splitmix64((uint64_t)seed)));
+// High 64 bits of a 64x64 -> 128 bit product.
+inline uint64_t mul_hi_64(uint64_t a, uint64_t b) {
+#if defined(__SIZEOF_INT128__)
+  return (uint64_t)(((__uint128_t)a * (__uint128_t)b) >> 64);
+#else
+  uint64_t a_lo = (uint32_t)a, a_hi = a >> 32;
+  uint64_t b_lo = (uint32_t)b, b_hi = b >> 32;
+  uint64_t lo_lo = a_lo * b_lo;
+  uint64_t hi_lo = a_hi * b_lo;
+  uint64_t lo_hi = a_lo * b_hi;
+  uint64_t hi_hi = a_hi * b_hi;
+  uint64_t cross = (lo_lo >> 32) + (uint32_t)hi_lo + lo_hi;
+  return hi_hi + (cross >> 32) + (hi_lo >> 32);
+#endif
 }
+
+/**
+ * Per-vertex topology stream, seeded only by (vertex, seed) and never by
+ * position.
+ *
+ * This deliberately avoids <random>. The standard engines and, especially,
+ * std::uniform_int_distribution are only reproducible within a single standard
+ * library implementation: libc++ and libstdc++ return different sequences from
+ * the same engine and the same seed. That makes "the same graph" mean different
+ * things on a Mac laptop, on Frontier, and on a CI runner. Generation therefore
+ * uses only fixed-width integer arithmetic whose result the language pins down.
+ */
+struct VertexRng {
+  uint64_t state;
+
+  VertexRng(long vertex, int seed)
+      : state(splitmix64((uint64_t)vertex ^
+                         splitmix64((uint64_t)(uint32_t)seed +
+                                    0x5DEECE66DULL))) {}
+
+  uint64_t next() {
+    state += 0x9E3779B97F4A7C15ULL;
+    return splitmix64(state);
+  }
+
+  // Uniform over [0, n). Lemire's multiply-shift; the bias is below n / 2^64.
+  uint64_t bounded(uint64_t n) { return mul_hi_64(next(), n); }
+};
 
 /**
  * Uniform random graph: out-degree ~ U[0, 2*average_degree], destinations
@@ -56,18 +105,15 @@ inline std::mt19937_64 vertex_rng(long vertex, int seed) {
 inline void gen_random_vertex(long vertex, long num_vertices,
                               long average_degree, int seed,
                               std::vector<Edge> &out) {
-  std::mt19937_64 generator = vertex_rng(vertex, seed);
-  std::uniform_int_distribution<long> edge_count_distribution(
-      0, 2 * average_degree);
-  std::uniform_int_distribution<long> edge_dest_distribution(0,
-                                                             num_vertices - 1);
-  long degree = edge_count_distribution(generator);
+  VertexRng rng(vertex, seed);
+  // Out-degree uniform over [0, 2*average_degree], inclusive at both ends.
+  long degree = (long)rng.bounded((uint64_t)(2 * average_degree + 1));
   if (degree > num_vertices)
     degree = num_vertices; // cannot draw more distinct destinations than exist
   out.clear();
   out.reserve(degree);
   for (long j = 0; j < degree; j++) {
-    long candidate_end = edge_dest_distribution(generator);
+    long candidate_end = (long)rng.bounded((uint64_t)num_vertices);
     bool repeated = true;
     while (repeated) {
       repeated = false;
@@ -78,7 +124,7 @@ inline void gen_random_vertex(long vertex, long num_vertices,
         }
       }
       if (repeated)
-        candidate_end = edge_dest_distribution(generator);
+        candidate_end = (long)rng.bounded((uint64_t)num_vertices);
     }
     Edge new_edge;
     new_edge.end = candidate_end;
