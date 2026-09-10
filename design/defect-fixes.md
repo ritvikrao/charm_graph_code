@@ -148,3 +148,80 @@ Removed: `processHeapShared` (class, nodegroup, readonly proxy),
 used only here, and the `NODE_LOAD_BALANCE` branch of `process_heap`. The
 surviving `#else` branch is the code that actually runs. Confirmed to still
 compile under `-DPQ_HOLD_ONLY`, which the default build does not exercise.
+
+---
+
+## 5. The `updates_in_tram` leak (htram) — worth 2.5-4.1x
+
+*Fixed in `htram` commit 0628083.*
+
+`HTram::tflush()`'s `WPs` and `WW` branches sent `msgBuffers[i]` and replaced it
+without decrementing `updates_in_tram[i]`. Every other send site decrements, and
+`changeThreshold` only applies threshold-movement deltas, so the counter drifted
+upward permanently.
+
+It gates the **per-outgoing-edge** release trigger:
+
+```cpp
+if (updates_in_tram[dest_node] > selectivity * bufSize)   // 1.0 * 2048
+    insertBucketsByDest(tram_threshold, dest_node);
+```
+
+and `insertBucketsByDest` scans buckets `0..tram_threshold` — its bounding
+`break` sits inside the inner `while`, so empty queues still cost a full pass.
+
+Instrumented on a 10k-vertex, 160k-edge graph at ppn 4:
+
+| | before | after |
+|---|---|---|
+| `insertBucketsByDest` calls | 154,378 | 0 |
+| bucket examinations | 42,491,025 | 0 |
+| of which empty | 42,491,025 (100%) | 0 |
+| peak `updates_in_tram` | 24,882 | 2,047 |
+
+154k calls against 160k edges is about one per edge, and **every one** of the
+42.5 million bucket examinations found an empty queue. After the fix the counter
+settles just below its 2,048 trigger and the trigger never fires at all.
+
+Correctness was never affected — the leaky build passes the verify gate too.
+This is purely control-path cost.
+
+### The p_tram sweep, re-run
+
+200k vertices, 3.2M edges, ppn 4, five runs each, median compute time:
+
+| p_tram | leaky | fixed | speedup |
+|---|---|---|---|
+| 0.1 | 0.0816 | 0.0320 | 2.55x |
+| 0.3 | 0.0964 | 0.0313 | 3.07x |
+| 0.5 | 0.1037 | 0.0306 | 3.39x |
+| 0.7 | 0.1077 | 0.0329 | 3.27x |
+| 0.9 | 0.1146 | 0.0287 | 4.00x |
+| 0.99 | 0.1150 | 0.0301 | 3.82x |
+| 0.999 | 0.1174 | 0.0285 | 4.12x |
+
+The distributions do not overlap: the leaky build's *best* configuration
+(0.0801 s) is still 2.8x slower than the fixed build's *worst* (0.0329 s).
+
+**The planning hypothesis was backwards, and the correction is more interesting
+than the guess.** The plan assumed `p_tram = 0.999` looked optimal in 2024
+*because* it bypasses `tram_hold` and so dodges the pathology. The leaky build
+does the opposite: it is monotonically *worse* as p_tram rises, best at 0.1
+(0.0816 s) and worst at 0.999 (0.1174 s), a 1.44x spread.
+
+The mechanism explains it. A higher `p_tram` raises `tram_threshold`, and the
+wasted scan runs `0..tram_threshold`, so the cost of the bug grows with the
+parameter. The leak did not favour one setting — it taxed every setting in
+proportion to how much work the tram-threshold mechanism was being asked to do,
+which is the most misleading shape a confound can have.
+
+After the fix the curve is nearly flat: 0.0285 to 0.0329, a 1.15x spread with
+no clear optimum. So most of the parameter's apparent influence was the bug.
+
+**What this does and does not establish.** It does not reproduce or refute the
+2024 result: that was a different machine, a different graph class, and a
+different scale, and this is four threads on a laptop. What it establishes is
+that the sweep was measuring the defect rather than the mechanism, so the 2024
+parameter study cannot be cited as it stands, and the tram-threshold mechanism
+still has not been evaluated on its merits. Re-running the sweep on a cluster,
+on RMAT as well as uniform, is now a P0 experiment.
