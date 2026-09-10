@@ -72,3 +72,30 @@ The cadence is now the named readonly `flush_round_interval` (still 5) instead
 of a literal buried in an expression. Step 7's adaptive tail cadence takes it
 from there; the periodicity question above is a cluster measurement, not a
 laptop one.
+
+---
+
+## 3. A 30-second timeout that reported partial results as converged
+
+`begin()` armed `CcdCallFnAfter(fast_exit, this, 30000.0)` unconditionally — the
+comment said "end after 5 s" — and `fast_exit` printed the distances and called
+`CkExit(0)`. Any run longer than 30 seconds therefore produced a full, ordinary
+statistics block and a success exit status, distinguished from a real result
+only by one extra line of output.
+
+That is precisely the failure mode a scaling campaign cannot afford: the runs
+most likely to exceed 30 seconds are the large ones the paper depends on, and a
+batch log would not show anything wrong.
+
+Demonstrated on a 200k-vertex graph with `--timeout 0.02`: the truncated run
+reports 191,831 reachable vertices against a true 200,000, with a distance sum
+of 168.7M against a true 154.7M. Unconverged distances are overestimates, so
+the numbers are not merely incomplete, they are wrong in a consistent direction.
+
+Now:
+
+- the timeout is `--timeout <seconds>` (or `--timeout=<seconds>`), **off by
+  default**, so no run is silently cut short;
+- when it fires the output carries a `TIMEOUT: ... PARTIAL result` banner;
+- the process exits nonzero, and `--verify` reports `VERIFY FAIL` for a
+  truncated run even if the digests happen to agree.

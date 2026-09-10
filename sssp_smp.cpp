@@ -58,6 +58,11 @@ bool verify_mode = false;  // --verify: check the result against serial Dijkstra
 // Step 7 of the SC27 plan makes this cadence adaptive; until then it is at
 // least a named, reproducible knob rather than a coin flip.
 int flush_round_interval = 5;
+// --timeout <seconds>: abandon a run that has not converged. 0 disables it.
+// There is deliberately no default: a truncated run is a failed run, and the
+// old behaviour was to give up after 30 s and print the partial distances with
+// the same banner and the same exit status as a converged run.
+double timeout_seconds = 0.0;
 // tram constants
 int buffer_size = 1024;    // meaningless for smp; size changed in htram_group.h
 double flush_timer = 0.01; // milliseconds
@@ -155,6 +160,7 @@ private:
 public:
   double compute_begin;
   double compute_time;
+  bool run_truncated = false; // set by fast_exit; forces a nonzero exit
 
   /**
    * Read in graph from csv (currently sequential)
@@ -170,7 +176,16 @@ public:
       std::string arg = m->argv[i];
       if (arg == "--verify")
         verify_mode = true;
-      else if (arg.rfind("--", 0) == 0) {
+      else if (arg.rfind("--timeout=", 0) == 0)
+        timeout_seconds = std::stod(arg.substr(10));
+      else if (arg == "--timeout") {
+        if (i + 1 >= m->argc) {
+          ckout << "--timeout needs a value in seconds" << endl;
+          CkExit(1);
+          return;
+        }
+        timeout_seconds = std::stod(m->argv[++i]);
+      } else if (arg.rfind("--", 0) == 0) {
         ckout << "Unknown option " << arg.c_str() << endl;
         CkExit(1);
         return;
@@ -180,7 +195,8 @@ public:
     if (args.size() < 7) {
       ckout << "Usage: sssp_smp <vertices> <file|edge count> <seed> "
             << "<start vertex> <mode 0=file,1=random,2=mesh> "
-            << "<tram percentile> <heap percentile> [--verify]" << endl;
+            << "<tram percentile> <heap percentile> "
+            << "[--verify] [--timeout <seconds>]" << endl;
       CkExit(1);
       return;
     }
@@ -396,7 +412,8 @@ public:
     threshold_change_counter = 0;
     previous_threshold = initial_threshold;
     CcdCallFnAfter(start_reductions, (void *)this, reduction_delay);
-    CcdCallFnAfter(fast_exit, (void *)this, 30000.0); // end after 5 s
+    if (timeout_seconds > 0.0)
+      CcdCallFnAfter(fast_exit, (void *)this, timeout_seconds * 1000.0);
     compute_begin = CkWallTimer();
 #ifdef INFO_PRINTS
     ckout << "Beginning at time: " << compute_begin << endl;
@@ -640,7 +657,7 @@ public:
     if (verify_mode)
       arr.verify_hash();
     else
-      CkExit(0);
+      CkExit(run_truncated ? 1 : 0);
   }
 
   /**
@@ -670,7 +687,13 @@ public:
           << " distance_sum=" << serial.distance_sum << " (computed in "
           << CkWallTimer() - reference_begin << " s)" << endl;
 
-    if (parallel == serial) {
+    if (run_truncated) {
+      // The digests may even agree if the timeout landed after the last real
+      // update, but the run still did not converge on its own terms.
+      ckout << "VERIFY FAIL: run was truncated by --timeout before converging"
+            << endl;
+      CkExit(1);
+    } else if (parallel == serial) {
       ckout << "VERIFY PASS" << endl;
       CkExit(0);
     } else {
@@ -681,11 +704,23 @@ public:
   }
 };
 
+/**
+ * Timeout handler. The run is abandoned, not finished: the distances that
+ * follow are a partial result. Everything downstream is told so, and the
+ * process exits nonzero, because the previous behaviour -- print the partial
+ * answer and exit 0 -- makes a non-converged run indistinguishable from a
+ * converged one in a batch log.
+ */
 void fast_exit(void *obj, double time) {
-  ckout << "Ending program now at time " << CkWallTimer() << endl;
-  ((Main *)obj)->compute_time = CkWallTimer() - ((Main *)obj)->compute_begin;
+  Main *main_chare = (Main *)obj;
+  ckout << endl
+        << "TIMEOUT: no convergence after " << timeout_seconds
+        << " s. The results below are a PARTIAL result and must not be "
+           "reported as a solution."
+        << endl;
+  main_chare->compute_time = CkWallTimer() - main_chare->compute_begin;
+  main_chare->run_truncated = true;
   arr.print_distances();
-  CkExit(0);
 }
 
 /**
