@@ -543,6 +543,14 @@ public:
           << ", first nonzero: " << first_nonzero << ", t= " << CkWallTimer()
           << endl;
 #endif
+    if (first_nonzero == -1) {
+      // Nothing in the reduced window: either the run has converged or all the
+      // remaining work sits past the window's right edge. Either way the window
+      // stays put. Letting -1 through here propagates to
+      // contribute_histogram(-2), which then reads histogram[-1] on every PE
+      // and sums that garbage into the next global histogram.
+      first_nonzero = last_first_nonzero;
+    }
     // arr.contribute_histogram(first_nonzero-1);
     last_first_nonzero = first_nonzero;
     arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
@@ -1415,7 +1423,7 @@ public:
     int first_nonzero = behind_first_nonzero + 1;
     for (int i = first_nonzero; i < (first_nonzero + histo_reduction_width);
          i++) {
-      if (i >= HISTO_BUCKET_COUNT)
+      if (i < 0 || i >= HISTO_BUCKET_COUNT)
         info_array[i - first_nonzero] = 0;
       else
         info_array[i - first_nonzero] = histogram[i];
