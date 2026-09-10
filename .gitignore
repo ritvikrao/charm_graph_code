@@ -1,0 +1,36 @@
+# Charm++ generated interface code
+*.decl.h
+*.def.h
+charmrun
+
+# Build artifacts
+*.o
+*.a
+
+# Program binaries (see BINARY in Makefile)
+graph_ckio
+graph_parallel
+graph_parallel_ckio
+graph_serial
+weighted_nonsmp
+weighted_smp
+sssp_nonsmp
+sssp_smp
+sssp_nonsmp_projections
+sssp_smp_projections
+sssp_smp_papi
+
+# Projections traces
+*.log
+*.sts
+*.sum
+*.projrc
+*.topo
+
+# Run output
+slurm-*.out
+histos.txt
+*.mp4
+
+# macOS
+.DS_Store
