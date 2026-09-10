@@ -2,6 +2,7 @@
 #include "TopoManager.h"
 #include "htram_group.h"
 #include "sssp_smp.decl.h"
+#include "graph_gen.h"
 // #define PAPI
 #ifdef PAPI
 #include <papi.h>
@@ -53,6 +54,7 @@ int histo_reduction_width = HISTO_BUCKET_COUNT / 8;
 double reduction_delay =
     0.1;                   // each histogram reduction happens at this interval
 int initial_threshold = 3; // initial histo threshold
+bool verify_mode = false;  // --verify: check the result against serial Dijkstra
 // tram constants
 int buffer_size = 1024;    // meaningless for smp; size changed in htram_group.h
 double flush_timer = 0.01; // milliseconds
@@ -156,41 +158,42 @@ public:
    */
   Main(CkArgMsg *m) {
     N = CkNumPes();
-    if (!m->argv[1]) {
-      ckout << "Missing vertex count" << endl;
-      CkExit(0);
+    // Separate option flags from the positional arguments so flags may appear
+    // anywhere on the command line.
+    std::vector<std::string> args;
+    for (int i = 1; i < m->argc; i++) {
+      if (m->argv[i] == NULL)
+        continue;
+      std::string arg = m->argv[i];
+      if (arg == "--verify")
+        verify_mode = true;
+      else if (arg.rfind("--", 0) == 0) {
+        ckout << "Unknown option " << arg.c_str() << endl;
+        CkExit(1);
+        return;
+      } else
+        args.push_back(arg);
     }
-    V = atol(m->argv[1]); // read in number of vertices
-    if (!m->argv[2]) {
-      ckout << "Missing file name/edge count" << endl;
-      CkExit(0);
+    if (args.size() < 7) {
+      ckout << "Usage: sssp_smp <vertices> <file|edge count> <seed> "
+            << "<start vertex> <mode 0=file,1=random,2=mesh> "
+            << "<tram percentile> <heap percentile> [--verify]" << endl;
+      CkExit(1);
+      return;
     }
-    std::string file_name = m->argv[2]; // read file name or edge count
-    if (!m->argv[3]) {
-      ckout << "Missing random seed" << endl;
-      CkExit(0);
+    V = atol(args[0].c_str());          // number of vertices
+    std::string file_name = args[1];    // file name or edge count
+    S = atoi(args[2].c_str());          // randomization seed
+    start_vertex = atol(args[3].c_str());
+    generate_mode = atoi(args[4].c_str()); // 0 read from csv, 1/2 generate
+    tram_percentile = std::stod(args[5]);
+    heap_percentile = std::stod(args[6]);
+    if (verify_mode && generate_mode == 0) {
+      ckout << "--verify requires a generated graph (mode 1 or 2); the file "
+            << "reader has no serial reference yet" << endl;
+      CkExit(1);
+      return;
     }
-    S = atoi(m->argv[3]); // randomize seed
-    if (!m->argv[4]) {
-      ckout << "Missing start vertex" << endl;
-      CkExit(0);
-    }
-    start_vertex = atol(m->argv[4]); // number of beginning vertex
-    if (!m->argv[5]) {
-      ckout << "Missing generate mode" << endl;
-      CkExit(0);
-    }
-    generate_mode = atoi(m->argv[5]); // 0 for read from csv, 1 for generation
-    if (!m->argv[6]) {
-      ckout << "Missing tram percentile" << endl;
-      CkExit(0);
-    }
-    tram_percentile = std::stod(m->argv[6]);
-    if (!m->argv[7]) {
-      ckout << "Missing heap percentile" << endl;
-      CkExit(0);
-    }
-    heap_percentile = std::stod(m->argv[7]);
 #ifdef PRINT_HISTO
     histoSeq = new histogramSequence(HISTO_BUCKET_COUNT);
 #endif
@@ -272,8 +275,6 @@ public:
 #ifdef INFO_PRINTS
       ckout << "Graph will be read from file" << endl;
 #endif
-      unsigned int seed = (unsigned int)S;
-      srand(seed);
       // read file
       std::ifstream file(file_name);
       std::string readbuf;
@@ -291,11 +292,12 @@ public:
         std::string token = readbuf.substr(0, readbuf.find(delim));
         std::string token2 =
             readbuf.substr(readbuf.find(delim) + 1, readbuf.length());
-        // make random distance
-        cost edge_distance = (cost)rand() % 1000 + 1;
         // string to int
         long node_num = std::stol(token);    // v
         long node_num_2 = std::stol(token2); // w
+        // Weight is a hash of the endpoint pair, so it does not depend on the
+        // order edges are read in. See graph_gen.h.
+        cost edge_distance = edge_weight(node_num, node_num_2, S);
         incoming_count[node_num_2]++;
         // find the maximum vertex index
         if (node_num > max_index)
@@ -620,7 +622,47 @@ public:
 #ifdef PRINT_HISTO
     histoSeq->putout();
 #endif
-    CkExit(0);
+    if (verify_mode)
+      arr.verify_hash();
+    else
+      CkExit(0);
+  }
+
+  /**
+   * Compare the parallel result against serial Dijkstra over the same
+   * generated graph. Exits nonzero on mismatch so a regression script can gate
+   * on it.
+   */
+  void done_verify(unsigned long long *values, int n) {
+    DistanceDigest parallel;
+    parallel.h1 = values[0];
+    parallel.h2 = values[1];
+    parallel.reachable = values[2];
+    parallel.distance_sum = values[3];
+    ckout << "VERIFY parallel digest h1=" << parallel.h1
+          << " h2=" << parallel.h2 << " reachable=" << parallel.reachable
+          << " distance_sum=" << parallel.distance_sum << endl;
+
+    double reference_begin = CkWallTimer();
+    std::vector<cost> reference;
+    serial_dijkstra(V, average_degree, S, generate_mode, start_vertex, lmax,
+                    reference);
+    DistanceDigest serial;
+    for (long i = 0; i < V; i++)
+      serial.add(i, reference[i], lmax);
+    ckout << "VERIFY serial   digest h1=" << serial.h1 << " h2=" << serial.h2
+          << " reachable=" << serial.reachable
+          << " distance_sum=" << serial.distance_sum << " (computed in "
+          << CkWallTimer() - reference_begin << " s)" << endl;
+
+    if (parallel == serial) {
+      ckout << "VERIFY PASS" << endl;
+      CkExit(0);
+    } else {
+      ckout << "VERIFY FAIL: parallel result does not match serial Dijkstra"
+            << endl;
+      CkExit(1);
+    }
   }
 };
 
@@ -822,7 +864,11 @@ public:
     }
     start_vertex = partition_index[thisIndex];
     num_vertices = partition_index[CkMyPe() + 1] - partition_index[CkMyPe()];
-    dest_table = new int[V / M];
+    // The loop below writes ceil(V/M) entries -- j runs while j*M < V -- so a
+    // floor division here overruns the allocation by one int whenever V is not
+    // a multiple of M. That corrupted the heap and showed up much later as an
+    // intermittent SIGBUS inside an unrelated operator new.
+    dest_table = new int[(V + M - 1) / M];
     for (int i = 0, j = 0; i < V; j++, i = j * M) {
       dest_table[j] = get_dest_proc(i);
     }
@@ -863,39 +909,18 @@ public:
       vcount[HISTO_BUCKET_COUNT]++;
       long largest_outedge = 0;
       long this_vertex = (long)i + start_vertex;
-      std::mt19937 generator(this_vertex + S);
-      std::uniform_int_distribution<cost> edge_weight_distribution(1, 1000);
       long x_index = this_vertex / side_length;
       long y_index = this_vertex % side_length;
-      for (int j = -1; j <= 1; j += 2) {
-        long neighbor_x = x_index + j;
-        long neighbor_y = y_index;
-        if ((neighbor_x >= 0) && (neighbor_y >= 0) &&
-            (neighbor_x < side_length) && (neighbor_y < side_length)) {
-          actual_edges++;
-          Edge new_edge;
-          new_edge.end = neighbor_x * side_length + neighbor_y;
-          new_edge.distance = edge_weight_distribution(generator);
-          if (new_edge.distance > largest_outedge)
-            largest_outedge = new_edge.distance;
-          new_node.adjacent.push_back(new_edge);
-        }
+      // See graph_gen.h: identical adjacency for any PE count.
+      gen_mesh_vertex(this_vertex, side_length, S, new_node.adjacent);
+      actual_edges += new_node.adjacent.size();
+      for (size_t j = 0; j < new_node.adjacent.size(); j++) {
+        if (new_node.adjacent[j].distance > largest_outedge)
+          largest_outedge = new_node.adjacent[j].distance;
       }
-      for (int j = -1; j <= 1; j += 2) {
-        long neighbor_x = x_index;
-        long neighbor_y = y_index + j;
-        if ((neighbor_x >= 0) && (neighbor_y >= 0) &&
-            (neighbor_x < side_length) && (neighbor_y < side_length)) {
-          actual_edges++;
-          Edge new_edge;
-          new_edge.end = neighbor_x * side_length + neighbor_y;
-          new_edge.distance = edge_weight_distribution(generator);
-          if (new_edge.distance > largest_outedge)
-            largest_outedge = new_edge.distance;
-          new_node.adjacent.push_back(new_edge);
-        }
-      }
-      if ((x_index == 0 && y_index == 0) ||
+      if (x_index >= side_length) {
+        // Vertex outside the square grid; V was not a perfect square.
+      } else if ((x_index == 0 && y_index == 0) ||
           (x_index == side_length - 1 && y_index == 0) ||
           (x_index == 0 && y_index == side_length - 1) ||
           (x_index == side_length - 1 && y_index == side_length - 1)) {
@@ -946,43 +971,21 @@ public:
       new_node.adjacent = adj;
       vcount[HISTO_BUCKET_COUNT]++;
       long largest_outedge = 0;
-      std::mt19937 generator((long)i + start_vertex);
-      std::uniform_int_distribution<long> edge_count_distribution(
-          0, 2 * average_degree);
-      std::uniform_int_distribution<long> edge_dest_distribution(0, V - 1);
-      std::uniform_int_distribution<cost> edge_weight_distribution(1, 1000);
-      long num_edges = edge_count_distribution(generator);
-      long *edge_destinations = new long[num_edges];
-      for (int j = 0; j < num_edges; j++) {
-        edge_destinations[j] = -1;
-      }
-      if ((CkMyPe() == N - 1) && (i >= _num_vertices))
+      if ((CkMyPe() == N - 1) && (i >= _num_vertices)) {
+        // Past the end of this PE's share: keep the vertex isolated, but still
+        // record it, or local_graph[i] and largest_outedges[i] stay garbage.
+        local_graph[i] = new_node;
+        largest_outedges[i] = 0;
         continue;
-      for (int j = 0; j < num_edges; j++) {
-        actual_edges++;
-        Edge new_edge;
-        bool repeated = true;
-        long candidate_end = edge_dest_distribution(generator);
-        // logic to keep destinations different
-        while (repeated) {
-          bool different = true;
-          for (int k = 0; k < j; k++) {
-            if (edge_destinations[k] == candidate_end) {
-              different = false;
-              break;
-            }
-          }
-          if (different) {
-            new_edge.end = candidate_end;
-            repeated = false;
-            edge_destinations[j] = candidate_end;
-          } else
-            candidate_end = edge_dest_distribution(generator);
-        }
-        new_edge.distance = edge_weight_distribution(generator);
-        if (new_edge.distance > largest_outedge)
-          largest_outedge = new_edge.distance;
-        new_node.adjacent.push_back(new_edge);
+      }
+      // Adjacency is a pure function of the global vertex id and the seed, so
+      // the graph does not change with PE count. See graph_gen.h.
+      gen_random_vertex((long)i + start_vertex, V, average_degree, S,
+                        new_node.adjacent);
+      actual_edges += new_node.adjacent.size();
+      for (size_t j = 0; j < new_node.adjacent.size(); j++) {
+        if (new_node.adjacent[j].distance > largest_outedge)
+          largest_outedge = new_node.adjacent[j].distance;
       }
       std::sort(new_node.adjacent.begin(), new_node.adjacent.end(),
                 [](Edge a, Edge b) { return a.distance < b.distance; });
@@ -1573,6 +1576,23 @@ public:
                CkReduction::sum_long, cb);
 #endif
     // mainProxy.done();
+  }
+
+  /**
+   * Fold this PE's slice of the distance vector into an order-independent
+   * digest. Summation makes the reduction invariant to PE count, so a run on
+   * any number of PEs must produce the same digest for the same graph.
+   */
+  void verify_hash() {
+    DistanceDigest digest;
+    for (int i = 0; i < num_vertices; i++) {
+      digest.add(start_vertex + i, local_graph[i].distance, lmax);
+    }
+    unsigned long long values[4] = {digest.h1, digest.h2, digest.reachable,
+                                    digest.distance_sum};
+    CkCallback cb(CkReductionTarget(Main, done_verify), mainProxy);
+    contribute(4 * sizeof(unsigned long long), values,
+               CkReduction::sum_ulong_long, cb);
   }
 
   void get_max_cost() {

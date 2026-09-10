@@ -1,3 +1,5 @@
+#pragma once
+
 #include "NDMeshStreamer.h"
 
 typedef long cost;

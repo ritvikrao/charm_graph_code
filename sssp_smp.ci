@@ -14,6 +14,7 @@ mainmodule sssp_smp
   readonly cost lmax;
   readonly int buffer_size;
   readonly int initial_threshold;
+  readonly bool verify_mode;
   readonly double reduction_delay;
   readonly double flush_timer;
   readonly bool enable_buffer_flushing;
@@ -28,6 +29,7 @@ mainmodule sssp_smp
     entry [reductiontarget] void done(long msg_stats[N], int N); //bcast to chares to print results and end program
     entry [reductiontarget] void check_buffer_done(long msg_stats[N], int N);
     entry [reductiontarget] void done_max_cost(cost max_cost);
+    entry [reductiontarget] void done_verify(unsigned long long values[n], int n);
   };
   array [1D] SsspChares
   {
@@ -49,6 +51,7 @@ mainmodule sssp_smp
     entry void print_distances(); // print out the distances on each chare
     entry void stop_periodic_flush();
     entry void get_max_cost(); // get max cost as correctness check
+    entry void verify_hash(); // fold local distances into a checksum
   };
   group SharedInfo
   {

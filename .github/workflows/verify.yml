@@ -1,0 +1,51 @@
+# Correctness gate: every push and pull request must still solve SSSP exactly.
+#
+# CI deliberately builds *classic* Charm++ (multicore) rather than Reconverse.
+# The gate checks algorithmic correctness, which is independent of the Converse
+# layer, and a stock Charm build is fast and cacheable. Reconverse-specific
+# behaviour is exercised by running scripts/verify.sh locally.
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout charm_graph_code
+        uses: actions/checkout@v4
+        with:
+          path: charm_graph_code
+
+      - name: Checkout htram
+        uses: actions/checkout@v4
+        with:
+          repository: UIUC-PPL/htram
+          path: htram
+
+      - name: Cache Charm++ build
+        id: charm-cache
+        uses: actions/cache@v4
+        with:
+          path: charm
+          key: charm-multicore-${{ runner.os }}-v1
+
+      - name: Build Charm++
+        if: steps.charm-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/charmplusplus/charm.git
+          cd charm
+          ./build charm++ multicore-linux-x86_64 --with-production -j$(nproc)
+
+      - name: Run the verify gate
+        working-directory: charm_graph_code
+        env:
+          # A multicore Charm build takes +p, not Reconverse's +ppn.
+          SSSP_PE_FLAG: "+p"
+        run: |
+          export SSSP_MAKE_ARGS="CHARMC_SMP=$GITHUB_WORKSPACE/charm/bin/charmc HTRAM_DIR=$GITHUB_WORKSPACE/htram"
+          scripts/verify.sh
