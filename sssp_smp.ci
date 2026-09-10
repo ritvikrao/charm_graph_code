@@ -21,7 +21,6 @@ mainmodule sssp_smp
   readonly double flush_timer;
   readonly bool enable_buffer_flushing;
   readonly CProxy_HTram tram_proxy;
-  readonly CProxy_processHeapShared process_heap_shared;
   mainchare Main
   {
     entry Main(CkArgMsg* m);
@@ -59,11 +58,6 @@ mainmodule sssp_smp
   {
     entry SharedInfo();
     entry void max_path_value(cost max_path_val);
-  };
-  nodegroup processHeapShared
-  {
-    entry processHeapShared();
-    entry void processHeapOtherCaller(int low, int high, int send_chare, int bucket, intptr_t whole_bucket_pointer, long data_count, intptr_t local_graph_pointer, long vertex_count, long startVertex);
   };
 
 };

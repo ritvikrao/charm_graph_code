@@ -99,3 +99,52 @@ Now:
 - when it fires the output carries a `TIMEOUT: ... PARTIAL result` banner;
 - the process exits nonzero, and `--verify` reports `VERIFY FAIL` for a
   truncated run even if the digests happen to agree.
+
+---
+
+## 4. `processHeapShared`: dead code, a wrong-PE atomic, and an O(N²) array
+
+`processHeapChunk` ended with:
+
+```cpp
+shared_local->chunks_remaining[send_chare][bucket]--;
+if (shared_local->chunks_remaining[send_chare][bucket] == 0)
+    whole_bucket->clear();
+```
+
+`shared_local` is the *executing* PE's branch of the `SharedInfo` group, but
+`processHeapOtherCaller` is a nodegroup entry method, so it runs on whichever PE
+in the node the message lands on — not `send_chare`'s PE. The decrement lands in
+a different PE's copy of the counter, and the `== 0` test is therefore
+meaningless: the buffer is cleared on a condition that has no relationship to
+whether the chunks are done.
+
+None of this ran. The path sits inside `#ifdef NODE_LOAD_BALANCE` inside
+`#ifdef PQ_HOLD_ONLY`, and both are commented out.
+
+**The reason to delete rather than leave it is the memory.**
+`SharedInfo::chunks_remaining` is `N` arrays of `HISTO_BUCKET_COUNT` atomics —
+allocated **per PE**, sized by the **total** PE count. Per-PE cost grows
+linearly in N, so aggregate cost is quadratic:
+
+| PEs | per PE | aggregate |
+|---|---|---|
+| 64 | 0.5 MB | 32 MB |
+| 1,024 | 8 MB | 8 GB |
+| 32,768 (512 nodes x 64) | 256 MB | 8 TB |
+
+At the scale this paper targets it is not a waste, it is a wall. Measured RSS
+confirms the shape even on four cores — the saving is 0.3 MB at ppn 1, 2.6 MB at
+ppn 4 and 15.2 MB at ppn 8, growing faster than the PE count.
+
+`hold_to_process` went with it: 2048 vectors each `reserve(4096)`, 128 MB of
+allocation per chare. It barely shows in RSS because the pages are never
+touched, but it is real address space, and on a system with overcommit disabled
+or a strict memory cgroup it is charged in full.
+
+Removed: `processHeapShared` (class, nodegroup, readonly proxy),
+`processHeapChunk`, `generateUpdatesOtherPe` (its only caller),
+`chunks_remaining`, `hold_to_process`, `chunk_size`, the two trace-event ids
+used only here, and the `NODE_LOAD_BALANCE` branch of `process_heap`. The
+surviving `#else` branch is the code that actually runs. Confirmed to still
+compile under `-DPQ_HOLD_ONLY`, which the default build does not exercise.
