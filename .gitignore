@@ -8,17 +8,13 @@ charmrun
 *.a
 
 # Program binaries (see BINARY in Makefile)
-graph_ckio
-graph_parallel
-graph_parallel_ckio
-graph_serial
-weighted_nonsmp
-weighted_smp
-sssp_nonsmp
 sssp_smp
-sssp_nonsmp_projections
 sssp_smp_projections
 sssp_smp_papi
+
+# Standalone tools (see `make tools`)
+graph_digest
+graph_convert
 
 # Projections traces
 *.log
@@ -38,3 +34,6 @@ core.*
 
 # macOS
 .DS_Store
+
+# Machine-specific charmc / htram locations
+config.mk

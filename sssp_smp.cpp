@@ -420,10 +420,6 @@ public:
       if (i == N - 1)
         dest_proc = N - 1;
     }
-    // quiescence detection
-    // CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
-    // CkStartQD(cb);
-    // temp callback to test flushing
     threshold_change_counter = 0;
     previous_threshold = initial_threshold;
     CcdCallFnAfter(start_reductions, (void *)this, reduction_delay);
@@ -435,35 +431,6 @@ public:
 #endif
     arr.start_papi();
     arr[dest_proc].start_algo(new_edge);
-  }
-
-  /**
-   * Before printing distances, check if all the buffers are empty
-   * If not, flush the buffer (allowing the execution to continue)
-   * also restart qd
-   * If empty, end execution by printing the distances
-   */
-  void quiescence_detected() {
-    /*
-    if (first_qd_done == false)
-    {
-            first_qd_done = true;
-            #ifdef INFO_PRINTS
-            ckout << "First Quiescence detected at time: " << CkWallTimer() <<
-    endl; #endif CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
-            CkStartQD(cb);
-            // Ask everyone to call flush
-            arr.get_bucket_limit(initial_threshold, initial_threshold+2, 0); //
-    dummy values.. hopefully no damage. Just get tflush called
-    }
-    else
-    {
-            second_qd_done = true;
-            #ifdef INFO_PRINTS
-            ckout << "Second Quiescence detected at time: " << CkWallTimer() <<
-    "  starting reductions. "<< endl; #endif arr.contribute_histogram(0);
-    }
-    */
   }
 
   /**
@@ -505,16 +472,6 @@ public:
           << ", Done vertices: " << done_vertex_count
           << ", BFS noted: " << bfs_noted;
 #endif
-    /*
-    if ((bfs_processed == done_vertex_count) && (bfs_processed > 1000)) // not
-    quite correct.. this should be affter we are sure bfs_processed has
-    converged.. maybe via qd
-    {
-        ckout << "all reachable vertices are done. " << bfs_processed << ":" <<
-    done_vertex_count << " at time: " << CkWallTimer() << endl; compute_time =
-    CkWallTimer() - compute_begin; arr.print_distances(); return;
-    }
-    */
     if ((updates_processed - updates_created == 1) &&
         (updates_created > 1000) &&
         (updates_created == previous_updates_created) &&
@@ -594,30 +551,6 @@ public:
 
     // start next reduction round
     // CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
-  }
-
-  /**
-   * returns when all buffers are checked
-   */
-  void check_buffer_done(long *msg_stats, int N) {
-    /*
-    int net_messages = msg_stats[1] - msg_stats[0]; // updates_processed -
-    updates_created if (net_messages == 1)
-    // difference of 1 because of initial send
-    {
-            //ckout << "Real quiescence, terminate" << endl;
-            compute_time = CkWallTimer() - compute_begin;
-            //arr.stop_periodic_flush();
-            arr.print_distances();
-    }
-    else
-    {
-            //ckout << "False quiescence, continue execution" << endl;
-            CkCallback cb(CkIndex_Main::quiescence_detected(), mainProxy);
-            CkStartQD(cb);
-            arr.keep_going();
-    }
-    */
   }
 
   void done(long *msg_stats, int N) {
@@ -804,20 +737,16 @@ private:
   int tram_threshold; // highest bucket where messages can be pushed to tram
   int bfs_threshold;
   double bucket_multiplier;       // constant to calculate bucket
-  std::vector<Update> *tram_hold; // hold buffer for messages not in tram limit
-  std::vector<Update> *pq_hold;   // hold for heap messages
+  std::vector<Update> *pq_hold; // hold for heap messages
   long bfs_created = 0;           // bfs created messages
   long bfs_processed = 0;         // bfs processed messages
   int updates_noted = 0; // updates that have either updated a vertex value, or
                          // are confirmed to not be an improvement
   int *dest_table; // destination table for faster pe calculation
-  std::vector<Update>
-      *bfs_hold; // bfs hold (control distance explosion due to bfs)
   int current_phase = 0;
   long actual_edges = 0; // when graph is generated, here's how many edges
                          // actually got generated
   long bfs_noted = 0;
-  std::vector<Update> local_updates;
   long *info_array;
   long distance_changes = 0;
   long updates_in_tram = 0;
@@ -881,22 +810,17 @@ public:
   }
 
   int get_dest_proc_local(Update upd) {
-    int dest_proc = get_dest_proc_fast(upd.dest_vertex);
-    /*
-                    if(dest_proc==CkMyPe()) {
-    //		local_updates.push_back(upd);
-                    return -1;
-                    }
-    */
-    return dest_proc;
+    return get_dest_proc_fast(upd.dest_vertex);
   }
 
   SsspChares(CProxy_HTram htram) { tram_proxy = htram; }
 
   void initiate_pointers() {
     tram = tram_proxy.ckLocalBranch();
+    // No batch-done callback: the local-delivery shortcut it used to drive was
+    // abandoned, and htram now tolerates a null one.
     tram->set_func_ptr_retarr(SsspChares::process_update_caller,
-                              get_dest_proc_local_caller, done_caller, this);
+                              get_dest_proc_local_caller, nullptr, this);
     shared_local = shared.ckLocalBranch();
 #ifdef PAPI
     eventset = PAPI_NULL;
@@ -943,13 +867,9 @@ public:
     heap_threshold = initial_threshold;
     tram_threshold = initial_threshold + 2;
     bfs_threshold = heap_threshold;
-    tram_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
     pq_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
-    for (int i = 0; i < HISTO_BUCKET_COUNT; i++) {
-      tram_hold[i].reserve(4096);
+    for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
       pq_hold[i].reserve(4096);
-    }
-    bfs_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
     info_array = new long[histo_reduction_width + 7];
     bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * log(V));
     CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
@@ -1138,10 +1058,6 @@ public:
     return ((SsspChares *)p)->get_dest_proc_local(new_upd);
   }
 
-  static void done_caller(void *p) {
-    ((SsspChares *)p)->process_local_updates();
-  }
-
   /**
    * Gets the histogram bucket for any given distance
    */
@@ -1166,40 +1082,29 @@ public:
       int neighbor_bucket = get_histo_bucket(new_update.distance);
       histogram[neighbor_bucket]++;
       updates_created_locally++;
-// if exceeds limit, put in hold
+      // Bucket 0 means "send now"; a bucket above the threshold hands the
+      // item to the library's own per-destination hold, to be released when
+      // changeThreshold() admits that bucket.
 #ifndef ALL_TO_TRAM_HOLD
       if ((neighbor_bucket > tram_threshold) && !bfs) {
-        tram->sendItemPrioDeferredDest(
-            new_update,
-            neighbor_bucket); // tram_hold[neighbor_bucket].push_back(new_update);
+        tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);
       } else {
-        // calculated dest proc
-        int dest_proc = get_dest_proc_fast(new_update.dest_vertex);
 #ifndef LOCAL_TO_TRAM
-        if (dest_proc == CkMyPe()) {
+        // get_dest_proc_fast is a table lookup, but it used to run on this
+        // path even when LOCAL_TO_TRAM made its result unreachable -- once per
+        // outgoing edge, for nothing.
+        if (get_dest_proc_fast(new_update.dest_vertex) == CkMyPe())
           process_update(new_update);
-        } else {
-          tram->sendItemPrioDeferredDest(
-              new_update, 0); // tram->insertValue(new_update, dest_proc);
-        }
+        else
+          tram->sendItemPrioDeferredDest(new_update, 0);
 #else
-        tram->sendItemPrioDeferredDest(
-            new_update,
-            0); // tram->insertValue(new_update, dest_proc);//this gets called
+        tram->sendItemPrioDeferredDest(new_update, 0);
 #endif
       }
 #else
       tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);
-      //			tram_hold[neighbor_bucket].push_back(new_update);
       if (neighbor_bucket <= tram_threshold)
         updates_in_tram++;
-#if 0
-			if(updates_in_tram == 8192)
-			{
-      			tram->insertBuckets(tram_threshold);
-      			updates_in_tram = 0;
-    		}
-#endif
 #endif
     }
   }
@@ -1329,20 +1234,6 @@ public:
   }
 
   /**
-   * Checks if anything is in the buffer (false quiescence)
-   */
-  void check_buffer() {
-    // ckout << "Checking message stats" << endl;
-    /*
-    int msg_stats[2];
-    msg_stats[0] = updates_created_locally;
-    msg_stats[1] = updates_processed_locally;
-    CkCallback cb(CkReductionTarget(Main, check_buffer_done), mainProxy);
-    contribute(2 * sizeof(int), msg_stats, CkReduction::sum_int, cb);
-    */
-  }
-
-  /**
    * Contribute to a reduction to get the overall histogram to pe 0/main chare
    */
   void contribute_histogram(int behind_first_nonzero) {
@@ -1370,39 +1261,6 @@ public:
                CkReduction::sum_long, cb);
   }
 
-  /**
-   * Called when some of the buffers aren't full, meaning we need to keep the
-   * algorithm going
-   */
-  void keep_going() {
-    /*
-    // everything in the tram hold gets added to tram
-    for(int i=0; i<HISTO_BUCKET_COUNT; i++)
-    {
-            for(int j=0; j<tram_hold[i].size(); j++)
-            {
-                    int dest_proc =
-    get_dest_proc_fast(tram_hold[i][j].dest_vertex); if(dest_proc==CkMyPe())
-                    {
-                            pq.push(tram_hold[i][j]);
-                    }
-                    else tram->insertValue(tram_hold[i][j], dest_proc);
-            }
-            tram_hold[i].clear();
-    }
-    for(int i=0; i<HISTO_BUCKET_COUNT; i++)
-    {
-            for(int j=0; j<pq_hold[i].size(); j++)
-            {
-                    pq.push(pq_hold[i][j]);
-            }
-            pq_hold[i].clear();
-    }
-    tram->tflush();
-    //arr[thisIndex].process_heap();
-    */
-  }
-
   void clear_pq_hold() {
     // we should maintain lower bound
     for (int i = 0; i <= heap_threshold; i++) {
@@ -1411,13 +1269,6 @@ public:
       }
       pq_hold[i].clear();
     }
-  }
-
-  void process_local_updates() {
-    for (int i = 0; i < local_updates.size(); i++) {
-      process_update(local_updates[i]);
-    }
-    local_updates.clear();
   }
 
   /**
@@ -1432,7 +1283,7 @@ public:
     current_phase = phase;
     // after every reduction, push out messages in hold that are in limit
     // replace this loop with call to tram->changethreshold(tram_threshold)
-    tram->shareArrayOfBuckets(tram_hold, HISTO_BUCKET_COUNT);
+    tram->setHistoBucketCount(HISTO_BUCKET_COUNT);
     int direct_threshold = behind_first_nonzero + 8;
     // int direct_threshold = tram_threshold;
     if (direct_threshold > tram_threshold - 1)
@@ -1440,27 +1291,10 @@ public:
     float selectivity = 1.0;
     // if(behind_first_nonzero > 68) selectivity = 1.0;
     tram->changeThreshold(direct_threshold, tram_threshold, selectivity);
-#if 0
-		for(int i=0; i<=tram_threshold; i++)
-		{
-			for(int j=0; j<tram_hold[i].size(); j++)
-			{
-				int dest_proc = get_dest_proc_fast(tram_hold[i][j].dest_vertex);
-				if(dest_proc==CkMyPe())
-				{
-					//process_update(tram_hold[i][j]); //todo: put it in a vector, then loop over it and call process_update
-					local_updates.push_back(tram_hold[i][j]);
-				}
-				else tram->insertValue(tram_hold[i][j], dest_proc); 
-			}
-			tram_hold[i].clear();
-		}
-#endif
 #ifndef PQ_HOLD_ONLY
     arr[thisIndex].clear_pq_hold();
 // add user event
 #endif
-    process_local_updates();
     // This was `rand() % 5 == 0`. rand() keeps process-global state, shared by
     // every worker thread in an SMP process: a contention point where it is
     // thread-safe at all, and an uncontrolled random factor in every
@@ -1486,14 +1320,6 @@ public:
    * Print out the final distances calculated by the algorithm
    */
   void print_distances() {
-    /*
-     //enable only for smaller graphs
-    for (int i = 0; i < num_vertices; i++)
-    {
-            ckout << "Partition " << thisIndex << " vertex num " <<
-    local_graph[i] << " distance " << local_graph[i].distance << endl;
-    }
-    */
     traceEnd();
 #ifdef PAPI
     long long values[1] = {(long long)0};
