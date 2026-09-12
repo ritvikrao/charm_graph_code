@@ -141,14 +141,34 @@ lost bytes are zeros and the digest still matches. Two things close the gap:
   `LCI_ATTR_PACKET_SIZE` (which decides eager versus rendezvous). It needs a
   Slurm allocation, so it is a pre-merge gate rather than a per-commit one.
 
+## A third check, added in step 5
+
+Checks 1 and 2 above share the graph generator: `--verify` compares the parallel
+result against a serial solve of the *same* generated graph, so if the generator
+changes, both move together and still agree — and the golden file only notices if
+nobody re-records it. That is a real blind spot, and it was hit within the hour:
+moving the RNG into `graphlib/rng.h` added a stream label mixed in as
+`^ splitmix64(stream)`, which at the default `stream = 0` looks like a no-op and is
+not, because `splitmix64(0)` is not zero. Every generated graph moved.
+
+The gate now also runs **`tools/graph_digest`**, which builds without Charm++ and
+shares no code with the solver beyond graphlib itself, and requires it to produce
+the same digest. Eighteen configurations, covering uniform, mesh, RMAT, and graphs
+round-tripped through a GAPBS `.wsg` file.
+
 ## Limits
 
-- `--verify` requires a generated graph (mode 1 or 2). The file reader has no
-  serial reference yet; it gets one in step 5, alongside the GAPBS `.sg`/`.wsg`
-  reader.
-- Serial Dijkstra regenerates adjacency on demand and is single-threaded, so the
-  gate is practical to about 10^6 edges — which is what the plan specifies.
+- `--verify` still refuses mode 0, the CSV reader. That reader builds the graph
+  inside `Main` rather than from a `GraphSpec`, so the reference solver has nothing
+  to rebuild independently. Convert those files with `tools/graph_convert csv` and
+  use mode 4, which *is* covered — a graph generated in memory, written to `.wsg`,
+  and read back solves to the same digest as the in-memory run.
+- Serial Dijkstra is single-threaded and builds the whole graph in one process, so
+  the gate is practical to about 10^6 edges — which is what the plan specifies.
   Larger runs stay unverified until a distributed reference exists.
+- A source vertex with no outgoing edges does not converge: the termination test
+  needs `updates_created > 1000`, which such a run never reaches. Easy to hit on
+  RMAT and on real graphs. `start_algo` warns; the predicate is step 7's.
 - The whole CI pipeline was re-run locally in a Linux x86-64 container against
   the golden file recorded on macOS ARM64, and passes: generator portability,
   a stock multicore Charm++ build, and all ten gate configurations.

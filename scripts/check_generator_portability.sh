@@ -15,7 +15,9 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-# <vertices> <average degree> <seed> <mode> <source>
+# <vertices> <edges|average degree> <seed> <mode> <source>
+# mode 1 uniform and 2 mesh take an average degree; mode 3 rmat takes an edge
+# count and needs a power-of-two vertex count.
 CONFIGS=(
   "10000 16 1 1 1"
   "10000 16 7 1 4242"
@@ -23,6 +25,9 @@ CONFIGS=(
   "200000 8 5 1 0"
   "10000 16 1 2 0"
   "40000 16 3 2 0"
+  "16384 262144 1 3 0"
+  "16384 262144 5 3 9"
+  "65536 1048576 1 3 42"
 )
 
 SDK=""
@@ -38,7 +43,9 @@ for candidate in c++ clang++ g++ g++-15 g++-14 g++-13; do
   command -v "$candidate" >/dev/null 2>&1 || continue
   # shellcheck disable=SC2086
   if "$candidate" -O2 -std=c++17 -DGRAPH_GEN_STANDALONE $SDK -I. \
-      tools/graph_digest.cpp -o "$BUILD_DIR/$candidate" 2>/dev/null; then
+      tools/graph_digest.cpp -o "$BUILD_DIR/$candidate" 2>/dev/null &&
+     "$candidate" -O2 -std=c++17 -DGRAPH_GEN_STANDALONE $SDK -I. \
+      tools/graph_convert.cpp -o "$BUILD_DIR/$candidate.convert" 2>/dev/null; then
     compilers+=("$candidate")
   fi
 done
@@ -75,6 +82,25 @@ for cfg in "${CONFIGS[@]}"; do
   done
   [ $failures -eq 0 ] && echo "  ok [$cfg] $reference"
 done
+
+# The serialized-graph writer has to be portable for the same reason the
+# generator does: the artifact appendix says a reader can regenerate our inputs,
+# and a .wsg that differs between toolchains would make that false.
+for compiler in "${compilers[@]}"; do
+  "$BUILD_DIR/$compiler.convert" gen 3 16384 262144 1 "$BUILD_DIR/$compiler.wsg" \
+      > /dev/null || { echo "convert failed under $compiler"; failures=$((failures + 1)); }
+done
+reference_file=""
+for compiler in "${compilers[@]}"; do
+  [ -f "$BUILD_DIR/$compiler.wsg" ] || continue
+  if [ -z "$reference_file" ]; then
+    reference_file="$BUILD_DIR/$compiler.wsg"
+  elif ! cmp -s "$reference_file" "$BUILD_DIR/$compiler.wsg"; then
+    echo "MISMATCH: .wsg written under $compiler differs byte for byte"
+    failures=$((failures + 1))
+  fi
+done
+[ -n "$reference_file" ] && echo "  ok [.wsg writer] $(wc -c < "$reference_file" | tr -d ' ') bytes, identical across toolchains"
 
 if [ $failures -ne 0 ]; then
   echo "GENERATOR IS NOT PORTABLE ($failures mismatches)"

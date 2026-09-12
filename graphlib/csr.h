@@ -35,28 +35,15 @@
 #include <cstddef>
 #include <vector>
 
-#ifndef GRAPH_GEN_STANDALONE
-#include "weighted_node_struct.h"
-#endif
-
-// Charm++ is not available to the standalone tools, which build this header
-// without a runtime.
-#ifdef GRAPH_GEN_STANDALONE
-#include <cstdio>
-#include <cstdlib>
-#define GRAPHLIB_ABORT(...)                                                    \
-  do {                                                                         \
-    std::fprintf(stderr, __VA_ARGS__);                                         \
-    std::fprintf(stderr, "\n");                                                \
-    std::abort();                                                              \
-  } while (0)
-#else
-#define GRAPHLIB_ABORT(...) CkAbort(__VA_ARGS__)
-#endif
+#include "types.h"
 
 class LocalCsr {
 public:
-  long num_vertices() const { return (long)offset_.size() - 1; }
+  // An empty CSR has no terminator entry either, so this must not underflow
+  // to -1 for a graph that has not been built yet.
+  long num_vertices() const {
+    return offset_.empty() ? 0 : (long)offset_.size() - 1;
+  }
   long num_edges() const { return (long)edge_.size(); }
 
   long degree(long v) const { return offset_[(size_t)v + 1] - offset_[(size_t)v]; }
@@ -103,6 +90,26 @@ public:
       GRAPHLIB_ABORT("graphlib: CSR build appended %ld vertices, expected %ld",
                      (long)offset_.size() - 1, expected_vertices_);
     shrink_if_slack();
+  }
+
+  /**
+   * Adopt rows that are already CSR-shaped: the GAPBS reader hands over the
+   * file's own offsets and neighbour array, so nothing needs to be counted or
+   * scattered. Edges are still sorted by weight within a row, which the file
+   * does not guarantee and the algorithm relies on.
+   */
+  void adopt_rows(long num_vertices, std::vector<long> &row_offset,
+                  std::vector<Edge> &edges) {
+    if ((long)row_offset.size() != num_vertices + 1)
+      GRAPHLIB_ABORT("graphlib: adopt_rows got %ld offsets for %ld vertices",
+                     (long)row_offset.size() - 1, num_vertices);
+    offset_.swap(row_offset);
+    edge_.swap(edges);
+    for (long v = 0; v < num_vertices; v++)
+      std::sort(edge_.begin() + offset_[(size_t)v],
+                edge_.begin() + offset_[(size_t)v + 1],
+                [](const Edge &a, const Edge &b) { return a.distance < b.distance; });
+    expected_vertices_ = num_vertices;
   }
 
   /**

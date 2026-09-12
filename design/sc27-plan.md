@@ -205,7 +205,7 @@ baseline never moves under you mid-refactor.
 | **2** | `--verify`: reduce a 64-bit hash of all `(v, dist)`; serial Dijkstra reference ≤1M edges; CI on every commit. Deterministic weights via `hash(u,v,seed)` replacing `rand()` | Reference matches on mesh + small RMAT | 2 days |
 | **3** | The defect list above: `updates_in_tram` leak, `tram_hold` rows → `num_dest`, `dest_table` overflow, `first_nonzero` OOB, `rand()` flush, `fast_exit` → flag, `NODE_COUNT` → runtime, delete `processHeapShared` | Verify passes. **Measure the §1 fix alone and re-run the `p_tram` sweep** | 3 days |
 | **4** | Genuine varsize messages (`char buffer[]`); `setUsersize` on all send paths. Re-run the buffer-size sweep, now co-varied with `LCI_ATTR_PACKET_SIZE` | ~~Verify identical; wire bytes drop at `bufSize < 2048`~~ **Done.** Verify identical; second clause withdrawn — `bufSize` never reached the wire because the constructor argument was dead, not because of padding. Closed on 2 nodes by `scripts/verify_2node.sh`; see `design/varsize-messages.md` | 3 days |
-| **5** | Retire all non-SMP and dead code (below). `graphlib` v1: in-memory Kronecker/RMAT/uniform/mesh generators + GAPBS `.sg`/`.wsg` binary reader; flat CSR replacing per-vertex `std::vector` | Verify identical; **real weighted graphs load for the first time** | 2 wk |
+| **5** | Retire all non-SMP and dead code (below). `graphlib` v1: in-memory Kronecker/RMAT/uniform/mesh generators + GAPBS `.sg`/`.wsg` binary reader; flat CSR replacing per-vertex `std::vector` | **Done.** Verify identical on all ten pre-existing configurations; the gate now runs 18, adding RMAT and files. A generated graph written to `.wsg` and read back solves to the same digest as the in-memory run. See `design/graphlib.md` | 2 wk |
 | **6** | Scale-free diagnosis: H1–H4 below, each an A/B with everything else fixed | A written design note per hypothesis | 2 wk |
 | **7** | Build the winners: `CombiningHold` (byte-oriented from day one) + `on_absorb`; batch-local combining in `deliver`; adaptive bucketing; adaptive tail cadence + idle flush | Verify identical flag on **and** off | 4 wk |
 | **8** | Type erasure: `HTramCore` + `HTram<T>` + `HTramOps` + `BuiltinOp`. Strictly mechanical | **Byte-identical verify vs. step 7** | 1 wk |
@@ -227,6 +227,17 @@ entirely comments but remain declared in the `.ci`.
 
 *Keep `tramNonSmp.ci` until step 4 lands* — it is the working reference for varsize-message
 syntax. Delete it with the rest afterward.
+
+> **Done (step 5).** All of the above is gone, in both repos, along with `graph_ckio*` —
+> the CkIO variant of the same read prototype — and the `NDMeshStreamer.h` include that the
+> non-SMP build had forced into every translation unit touching a graph type. Three more
+> things turned out to be live but inert and went with them: `local_updates` /
+> `process_local_updates` (htram called back once per released batch to iterate a
+> permanently empty vector), htram's unconditional `tram_done` call at three sites although
+> the two-argument registration leaves it null, and a per-edge `get_dest_proc_fast` on a
+> branch that cannot use its result. Mode 0, the CSV reader inside `Main`, deliberately
+> survives until `graphs/*.csv` are migrated with `tools/graph_convert csv`. See
+> `design/graphlib.md` §1.
 
 ### Combining — the paper's central mechanism
 
@@ -256,7 +267,9 @@ Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
 
 ### Why scale-free loses — four hypotheses (step 6)
 
-- **H1 — bucket width has no resolution on RMAT.** `bucket(d) = d/log(V)` (`:843`, which
+- **H1 — bucket width has no resolution on RMAT.** *(RMAT inputs now exist; step 5 left
+  `bucket_multiplier` on the `log(V)` rule precisely so this can be measured before it is
+  changed.)* `bucket(d) = d/log(V)` (`:843`, which
   reduces algebraically to `1/log(V)`) is fixed at startup and derived from nothing but `|V|`.
   RMAT's small diameter collapses the range into a handful of the 2048 buckets, so percentile
   thresholds have nothing to cut and the controller degenerates toward plain distributed

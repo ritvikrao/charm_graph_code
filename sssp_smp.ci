@@ -25,6 +25,7 @@ mainmodule sssp_smp
   {
     entry Main(CkArgMsg* m);
     entry [reductiontarget] void begin(cost max_sum); //wait for all chares to receive graph partition, register qd callback here (callback to done method), start algorithm
+    entry void rmat_edges_distributed(); // quiescence: every generated edge has reached its owner
     entry [reductiontarget, expedited] void reduce_histogram(long histo_values[N], int histo_length);
     entry [reductiontarget] void done(long msg_stats[N], int N); //bcast to chares to print results and end program
     entry [reductiontarget] void done_max_cost(cost max_cost);
@@ -39,6 +40,10 @@ mainmodule sssp_smp
     entry void generate_2d_graph(long partition[dividers], int dividers);
     entry void generate_local_graph(long _num_vertices, long _num_edges, long partition[dividers], int dividers);
     entry void get_graph(LongEdge edges[E], long E, long partition[dividers], int dividers); //gets graph partition
+    entry void generate_rmat_graph(long partition[dividers], int dividers); // generate this PE's slice of the edge index space and route it
+    entry void receive_edges(LongEdge edges[E], long E); // edges routed here by their generator
+    entry void build_rmat_csr(); // all edges have arrived; build the rows
+    entry void load_gapbs_graph(std::string path, long partition[dividers], int dividers); // read this PE's rows straight out of a .sg/.wsg file
     entry void start_papi();
     entry void start_algo(Update new_vertex_and_distance);
     entry void process_heap();

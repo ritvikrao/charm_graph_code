@@ -1,8 +1,7 @@
 #include "TopoManager.h"
 #include "htram_group.h"
 #include "sssp_smp.decl.h"
-#include "graph_gen.h"
-#include "graphlib/csr.h"
+#include "graphlib/graphlib.h"
 // #define PAPI
 #ifdef PAPI
 #include <papi.h>
@@ -52,6 +51,10 @@ double reduction_delay =
     0.1;                   // each histogram reduction happens at this interval
 int initial_threshold = 3; // initial histo threshold
 bool verify_mode = false;  // --verify: check the result against serial Dijkstra
+// Everything needed to rebuild the graph from scratch, used by the serial
+// reference. Filled in by Main; not a Charm readonly, because only PE 0 needs
+// it and the chares get their slice through their own entry methods.
+GraphSpec graph_spec;
 // Flush the aggregation buffers once every this many controller rounds.
 // Step 7 of the SC27 plan makes this cadence adaptive; until then it is at
 // least a named, reproducible knob rather than a coin flip.
@@ -204,10 +207,18 @@ public:
         args.push_back(arg);
     }
     if (args.size() < 7) {
-      ckout << "Usage: sssp_smp <vertices> <file|edge count> <seed> "
-            << "<start vertex> <mode 0=file,1=random,2=mesh> "
+      ckout << "Usage: sssp_smp <vertices> <path|edge count> <seed> "
+            << "<start vertex> "
+            << "<mode 0=csv,1=uniform,2=mesh,3=rmat,4=gapbs> "
             << "<tram percentile> <heap percentile> "
-            << "[--verify] [--timeout <seconds>] [--bufsize <items>]" << endl;
+            << "[--verify] [--timeout <seconds>] [--bufsize <items>]" << endl
+            << "  mode 3 takes the edge count in argument 2 and needs a "
+            << "power-of-two vertex count." << endl
+            << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
+            << "vertex count is read from the file." << endl
+            << "  mode 0 reads a comma-separated edge list serially on PE 0 "
+            << "and is kept only for the graphs/ directory; convert those to "
+            << ".wsg with tools/graph_convert." << endl;
       CkExit(1);
       return;
     }
@@ -223,12 +234,20 @@ public:
     generate_mode = atoi(args[4].c_str()); // 0 read from csv, 1/2 generate
     tram_percentile = std::stod(args[5]);
     heap_percentile = std::stod(args[6]);
-    if (verify_mode && generate_mode == 0) {
-      ckout << "--verify requires a generated graph (mode 1 or 2); the file "
-            << "reader has no serial reference yet" << endl;
+    if (verify_mode && generate_mode == MODE_CSV) {
+      ckout << "--verify does not cover mode 0. The csv reader builds the "
+            << "graph inside Main rather than from a GraphSpec, so there is "
+            << "nothing for the reference solver to rebuild independently. "
+            << "Convert the file to .wsg and use mode 4." << endl;
       CkExit(1);
       return;
     }
+    // Everything the reference solver needs to rebuild the graph on its own.
+    graph_spec.mode = generate_mode;
+    graph_spec.seed = S;
+    graph_spec.weights = WeightAssigner(S);
+    if (generate_mode == MODE_GAPBS)
+      graph_spec.path = file_name;
 #ifdef PRINT_HISTO
     histoSeq = new histogramSequence(HISTO_BUCKET_COUNT);
 #endif
@@ -247,8 +266,8 @@ public:
     partition_index = new long[N + 1]; // last index=maximum index
     lmax = std::numeric_limits<cost>::max();
     start_time = CkWallTimer();
-    if (generate_mode == 2) {
-      long side_length = (int)std::sqrt((double)V);
+    if (generate_mode == MODE_MESH) {
+      long side_length = mesh_side_length(V);
 #ifdef INFO_PRINTS
       ckout << "Side length: " << side_length << endl;
 #endif
@@ -263,8 +282,10 @@ public:
         if (i == N)
           partition_index[i] = V;
       }
+      graph_spec.num_vertices = V;
+      graph_spec.num_edges = num_global_edges;
       arr.generate_2d_graph(partition_index, N + 1);
-    } else if (generate_mode == 1) {
+    } else if (generate_mode == MODE_UNIFORM) {
       num_global_edges = std::stol(file_name);
 #ifdef INFO_PRINTS
       ckout << "Graph will be automatically generated with " << V << " vertices"
@@ -276,7 +297,7 @@ public:
       long current_start_index = 0; // tracks start vertex for indices
       // Partition sizes vary by +-20%. Drawn with the same portable generator
       // as the graph itself, so a run has the same load balance on every
-      // machine -- <random> would not give that. See graph_gen.h.
+      // machine -- <random> would not give that. See graphlib/rng.h.
       VertexRng partition_rng(-1, S);
       long vertex_low = (V * 4) / (N * 5);
       long vertex_span = ((V * 6) / (N * 5)) - vertex_low + 1;
@@ -305,10 +326,83 @@ public:
       }
       ckout << "]" << endl;
 #endif
+      graph_spec.num_vertices = V;
+      graph_spec.num_edges = num_global_edges;
+      graph_spec.average_degree = average_degree;
       for (int i = 0; i < N; i++) {
         arr[i].generate_local_graph(vertex_counts[i], edge_counts[i],
                                     partition_index, N + 1);
       }
+    } else if (generate_mode == MODE_RMAT) {
+      // RMAT is edge-indexed: edge i is a pure function of (i, seed), but its
+      // source vertex is an output of the draw, so a PE cannot generate its own
+      // rows. Each PE generates a contiguous slice of the edge index space and
+      // routes what it produces to the owners. See graphlib/edge_source.h.
+      if (!rmat_vertex_count_ok(V)) {
+        ckout << "rmat needs a power-of-two vertex count; " << V
+              << " is not one. The generator descends one bit of the vertex id "
+              << "per level, so the vertex space is 2^scale by construction."
+              << endl;
+        CkExit(1);
+        return;
+      }
+      num_global_edges = std::stol(file_name);
+      average_degree = num_global_edges / V;
+#ifdef INFO_PRINTS
+      ckout << "RMAT graph, scale " << rmat_scale(V) << ", " << V
+            << " vertices and " << num_global_edges << " edges" << endl;
+#endif
+      // Equal vertex ranges. RMAT degrees are wildly unequal, so this is not a
+      // balanced partition -- but the label permutation scatters the hubs, so
+      // it is not systematically skewed either. Balancing it properly is
+      // hypothesis H3 in step 6, and needs the partitioning to be measured
+      // before it is changed.
+      for (int i = 0; i < N + 1; i++)
+        partition_index[i] = (i == N) ? V : i * (V / N);
+      graph_spec.num_vertices = V;
+      graph_spec.num_edges = num_global_edges;
+      graph_spec.average_degree = average_degree;
+      arr.generate_rmat_graph(partition_index, N + 1);
+      // Nothing knows how many edges will arrive where, so completion is
+      // detected rather than counted: an all-to-all of per-destination counts
+      // would cost N^2 messages before the first edge moved.
+      CkStartQD(CkCallback(CkIndex_Main::rmat_edges_distributed(), mainProxy));
+    } else if (generate_mode == MODE_GAPBS) {
+      // The file is already CSR ordered by source vertex, so each PE seeks to
+      // its own rows and reads only those: no exchange and no parsing.
+      GapbsHeader header = gapbs_read_header(file_name);
+      V = header.num_nodes;
+      num_global_edges = header.num_edges;
+      average_degree = num_global_edges / (V > 0 ? V : 1);
+#ifdef INFO_PRINTS
+      ckout << "Reading " << file_name.c_str() << ": " << V << " vertices, "
+            << num_global_edges << (header.directed ? " directed" : " undirected")
+            << " edges, " << (header.weighted ? "weighted" : "unweighted")
+            << endl;
+#endif
+      // Partition on equal edge counts rather than equal vertex counts. The
+      // offsets array is the whole cost of knowing this, and it has to be read
+      // anyway. A real graph's degree distribution makes equal vertex ranges a
+      // bad split; this is the one place the information is free.
+      std::vector<int64_t> offsets;
+      gapbs_read_offsets(file_name, header, 0, V, offsets);
+      // At least one, so an edgeless graph still spreads its vertices instead
+      // of handing every one of them to the last PE.
+      long per_pe = (num_global_edges + N - 1) / (N > 0 ? N : 1);
+      if (per_pe < 1)
+        per_pe = 1;
+      long vertex = 0;
+      for (int i = 0; i < N; i++) {
+        partition_index[i] = vertex;
+        long target = (long)offsets[(size_t)vertex] + per_pe;
+        while (vertex < V && (long)offsets[(size_t)vertex] < target &&
+               V - vertex > N - i - 1)
+          vertex++;
+      }
+      partition_index[N] = V;
+      graph_spec.num_vertices = V;
+      graph_spec.num_edges = num_global_edges;
+      arr.load_gapbs_graph(file_name, partition_index, N + 1);
     } else {
 #ifdef INFO_PRINTS
       ckout << "Graph will be read from file" << endl;
@@ -334,7 +428,7 @@ public:
         long node_num = std::stol(token);    // v
         long node_num_2 = std::stol(token2); // w
         // Weight is a hash of the endpoint pair, so it does not depend on the
-        // order edges are read in. See graph_gen.h.
+        // order edges are read in. See graphlib/weights.h.
         cost edge_distance = edge_weight(node_num, node_num_2, S);
         incoming_count[node_num_2]++;
         // find the maximum vertex index
@@ -395,6 +489,12 @@ public:
       }
     }
   }
+
+  /**
+   * Quiescence after the RMAT exchange: every edge any PE generated has been
+   * delivered to the PE that owns its source vertex, so the rows can be built.
+   */
+  void rmat_edges_distributed() { arr.build_rmat_csr(); }
 
   /**
    * Start algorithm from source vertex
@@ -643,8 +743,7 @@ public:
 
     double reference_begin = CkWallTimer();
     std::vector<cost> reference;
-    serial_dijkstra(V, average_degree, S, generate_mode, start_vertex, lmax,
-                    reference);
+    serial_reference<LongEdge>(graph_spec, start_vertex, lmax, reference);
     DistanceDigest serial;
     for (long i = 0; i < V; i++)
       serial.add(i, reference[i], lmax);
@@ -720,6 +819,8 @@ public:
 class SsspChares : public CBase_SsspChares {
 private:
   LocalCsr local_graph;  // this PE's slice of the topology, flat CSR
+  std::vector<LongEdge> incoming_edges; // RMAT staging, emptied once built
+  WeightAssigner graph_weights;         // same weight rule as the generators
   cost *distances = nullptr; // tentative distance per local vertex
   long start_vertex;     // global index of lowest vertex assigned to this pe
   long num_vertices = 0; // number of vertices assigned to this pe
@@ -858,6 +959,7 @@ public:
     for (int i = 0; i < dividers; i++) {
       partition_index[i] = partition[i];
     }
+    graph_weights = WeightAssigner(S);
     start_vertex = partition_index[thisIndex];
     num_vertices = partition_index[CkMyPe() + 1] - partition_index[CkMyPe()];
     // The loop below writes ceil(V/M) entries -- j runs while j*M < V -- so a
@@ -908,7 +1010,7 @@ public:
     local_graph.begin(num_vertices, 4 * num_vertices);
     for (long i = 0; i < num_vertices; i++) {
       long this_vertex = i + start_vertex;
-      // See graph_gen.h: identical adjacency for any PE count.
+      // See graphlib/generators.h: identical adjacency for any PE count.
       gen_mesh_vertex(this_vertex, side_length, S, adjacency);
       actual_edges += adjacency.size();
       cost largest_outedge = 0;
@@ -945,7 +1047,7 @@ public:
       // still a vertex: it needs a CSR row, or every later row is off by one.
       if (!((CkMyPe() == N - 1) && (i >= _num_vertices))) {
         // Adjacency is a pure function of the global vertex id and the seed,
-        // so the graph does not change with PE count. See graph_gen.h.
+        // so the graph does not change with PE count. See graphlib/generators.h.
         gen_random_vertex(i + start_vertex, V, average_degree, S, adjacency);
         actual_edges += adjacency.size();
         cost largest_outedge = 0;
@@ -961,12 +1063,94 @@ public:
     contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
   }
 
-  void get_graph(LongEdge *edges, long E, long *partition, int dividers) {
-    actual_edges = E;
+  /**
+   * RMAT: generate this PE's contiguous slice of the edge index space and send
+   * each edge to the owner of its source vertex.
+   *
+   * The slice is by edge index, not by vertex, because that is the only thing
+   * an RMAT edge is a function of. Every PE therefore produces edges for every
+   * other PE, and the result is the same graph at any PE count -- edge i is
+   * edge i regardless of who drew it.
+   */
+  void generate_rmat_graph(long *partition, int dividers) {
     initialize_data(partition, dividers);
-    local_graph.build_from_edges(num_vertices, start_vertex, edges, E);
-    // reduce largest edge: edges are sorted by weight within a vertex, so the
-    // heaviest one is the last.
+    bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * log(V));
+
+    const long first_edge = (long)((double)num_global_edges * thisIndex / N);
+    const long last_edge = (long)((double)num_global_edges * (thisIndex + 1) / N);
+#ifdef INFO_PRINTS
+    ckout << "PE " << CkMyPe() << " generating RMAT edges [" << first_edge
+          << ", " << last_edge << ")" << endl;
+#endif
+    std::vector<LongEdge> generated;
+    generated.reserve((size_t)(last_edge - first_edge));
+    gen_rmat_range(first_edge, last_edge, V, S, graph_weights, generated);
+
+    // Bucket by owner, then send. Chunked so that one destination's share of a
+    // very large slice does not become a single enormous message.
+    std::vector<std::vector<LongEdge>> outgoing((size_t)N);
+    const size_t chunk = 1 << 20;
+    for (size_t i = 0; i < generated.size(); i++) {
+      int owner = get_dest_proc(generated[i].begin);
+      outgoing[(size_t)owner].push_back(generated[i]);
+      if (outgoing[(size_t)owner].size() >= chunk) {
+        arr[owner].receive_edges(outgoing[(size_t)owner].data(),
+                                 (long)outgoing[(size_t)owner].size());
+        outgoing[(size_t)owner].clear();
+      }
+    }
+    for (int p = 0; p < N; p++)
+      if (!outgoing[(size_t)p].empty())
+        arr[p].receive_edges(outgoing[(size_t)p].data(),
+                             (long)outgoing[(size_t)p].size());
+  }
+
+  void receive_edges(LongEdge *edges, long E) {
+    incoming_edges.insert(incoming_edges.end(), edges, edges + E);
+  }
+
+  /**
+   * Quiescence has established that every edge has arrived, so the rows can be
+   * built and the run can start.
+   */
+  void build_rmat_csr() {
+    actual_edges = (long)incoming_edges.size();
+    local_graph.build_from_edges(num_vertices, start_vertex,
+                                 incoming_edges.data(), actual_edges);
+    // Release the staging copy before the solve: it is as large as the CSR.
+    std::vector<LongEdge>().swap(incoming_edges);
+    contribute_largest_outedges();
+  }
+
+  /**
+   * GAPBS: read this PE's own rows out of the file. The format is CSR ordered
+   * by source vertex and the partition is a contiguous vertex range, so this is
+   * a seek and a read -- no exchange, and no other PE involved.
+   */
+  void load_gapbs_graph(std::string path, long *partition, int dividers) {
+    initialize_data(partition, dividers);
+    bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * log(V));
+    GapbsHeader header = gapbs_read_header(path);
+    std::vector<long> row_offset;
+    std::vector<Edge> edges;
+    gapbs_read_slice(path, header, start_vertex, start_vertex + num_vertices,
+                     graph_weights, row_offset, edges);
+    actual_edges = (long)edges.size();
+    local_graph.adopt_rows(num_vertices, row_offset, edges);
+#ifdef INFO_PRINTS
+    ckout << "PE " << CkMyPe() << " read vertices [" << start_vertex << ", "
+          << start_vertex + num_vertices << ") and " << actual_edges
+          << " edges" << endl;
+#endif
+    contribute_largest_outedges();
+  }
+
+  /**
+   * The reduction every graph-construction path ends in: the sum over local
+   * vertices of the heaviest out-edge, which Main turns into lmax. Edges are
+   * sorted by weight within a row, so the heaviest is the last.
+   */
+  void contribute_largest_outedges() {
     cost max_edges_sum = 0;
     for (long i = 0; i < num_vertices; i++) {
       long degree = local_graph.degree(i);
@@ -975,6 +1159,13 @@ public:
     }
     CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
     contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
+  }
+
+  void get_graph(LongEdge *edges, long E, long *partition, int dividers) {
+    actual_edges = E;
+    initialize_data(partition, dividers);
+    local_graph.build_from_edges(num_vertices, start_vertex, edges, E);
+    contribute_largest_outedges();
   }
 
   void start_papi() {
@@ -991,8 +1182,23 @@ public:
    * Method that accepts initial update to source vertex
    */
   void start_algo(Update new_vertex_and_distance) {
+    // A source with no out-edges produces no updates at all, and the
+    // termination test in reduce_histogram needs updates_created > 1000 before
+    // it will believe a run has converged -- so such a run sits until the
+    // timeout rather than finishing instantly with a one-vertex answer. That
+    // is easy to hit on RMAT and on real graphs, where a large fraction of
+    // vertices have out-degree zero, so at least say what happened. Making the
+    // predicate itself handle it is a change to the convergence logic and
+    // belongs with the tail work in step 7 of the plan.
+    long local_index = new_vertex_and_distance.dest_vertex - start_vertex;
+    if (local_index >= 0 && local_index < num_vertices &&
+        local_graph.degree(local_index) == 0)
+      ckout << "WARNING: source vertex " << new_vertex_and_distance.dest_vertex
+            << " has no outgoing edges. Nothing can be relaxed, and the "
+               "convergence test will not fire; this run will sit until "
+               "--timeout. Pick a source with out-edges."
+            << endl;
     process_update(new_vertex_and_distance);
-    // arr[thisIndex].process_heap();
   }
 
   static void process_update_caller(void *p, Update *new_vertex_and_distances,

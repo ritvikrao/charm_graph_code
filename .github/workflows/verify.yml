@@ -9,10 +9,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Cheap, and it needs no Charm++ build: compile the generator with several
-  # toolchains and check they agree. This catches the class of bug where the
-  # graph itself differs between standard libraries, which would silently make
-  # every cross-machine comparison meaningless.
+  # Cheap, and it needs no Charm++ build: compile the generators and the
+  # serialized-graph writer with several toolchains and check they agree, both
+  # on the solved digest and on the .wsg file byte for byte. This catches the
+  # class of bug where the graph itself differs between standard libraries,
+  # which would silently make every cross-machine comparison meaningless.
   generator-portability:
     runs-on: ubuntu-latest
     steps:
@@ -21,8 +22,11 @@ jobs:
       - name: Compare generated graphs across toolchains
         run: scripts/check_generator_portability.sh
 
-  # Full gate: solve in parallel, compare against serial Dijkstra, and diff the
-  # digests against the recorded golden file.
+  # Full gate: solve in parallel, compare against serial Dijkstra, diff the
+  # digests against the recorded golden file, and check the standalone
+  # tools/graph_digest -- which shares no code with the solver beyond graphlib
+  # -- agrees with both. Covers uniform, mesh, RMAT, and graphs round-tripped
+  # through a GAPBS .wsg file.
   #
   # This deliberately builds *classic* Charm++ (multicore) rather than
   # Reconverse. Correctness is independent of the Converse layer, and a stock
