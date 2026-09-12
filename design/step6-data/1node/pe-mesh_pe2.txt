@@ -1,0 +1,2 @@
+DIAG_PE 1 vertices=524288 edges=2095104 updates_created=2312575 updates_processed=2312548 distance_changes=751174 rejected=1733804 batch_items=2312548 batch_absorbable=491905 rounds=15867 idle_rounds=11727
+DIAG_PE 0 vertices=524288 edges=2095104 updates_created=2371765 updates_processed=2371793 distance_changes=763486 rejected=1778241 batch_items=2371792 batch_absorbable=576769 rounds=15867 idle_rounds=11434

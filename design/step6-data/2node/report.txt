@@ -1,0 +1,52 @@
+H4  tail behaviour
+
+    graph    rounds  total_s  tail starts at round  at t    tail rounds  tail_s    tail share  tail ms/round  mean ms/round
+    -------  ------  -------  --------------------  ------  -----------  --------  ----------  -------------  -------------
+    mesh     15921   1.802    15240                 1.734   681          0.068     3.8%        0.1            0.113        
+    rmat     227     0.1841   185                   0.1794  42           0.004781  2.6%        0.117          0.814        
+    uniform  322     0.1761   190                   0.1602  132          0.01592   9.0%        0.122          0.547        
+
+    aggregation-flush rate. Flushing every round is the most a
+    non-adaptive policy can do; if that does not shorten the
+    run, the tail is not waiting on buffered updates.
+    graph    flush every  compute_s  rounds  rej/|E|   tram msgs  vs the default 5
+    -------  -----------  ---------  ------  --------  ---------  ----------------
+    uniform  1            0.131558   307     0.946357  14439      0.97x           
+    uniform  2            0.131124   377     0.941783  11991      0.97x           
+    uniform  5            0.135010   429     0.937195  10258      1.00x           
+    uniform  10           0.134171   457     0.935470  9794       0.99x           
+    uniform  20           0.161811   769     0.935616  9536       1.20x           
+    mesh     1            0.482724   3122    1.522544  47266      0.29x           
+    mesh     2            0.774091   6218    1.643233  45884      0.46x           
+    mesh     5            1.667087   15998   1.758344  45432      1.00x           
+    mesh     10           2.961418   31759   1.845453  45500      1.78x           
+    mesh     20           5.627258   63548   1.860398  45401      3.38x           
+    rmat     1            0.144120   224     1.514641  19704      1.09x           
+    rmat     2            0.134420   215     1.417914  16564      1.01x           
+    rmat     5            0.132788   227     1.507958  15208      1.00x           
+    rmat     10           0.147744   314     1.388308  13585      1.11x           
+    rmat     20           0.145552   528     1.418483  13573      1.10x           
+
+    round-delay sweep. If the tail is cadence-bound, compute
+    time rises by about (tail rounds x added delay).
+    graph    delay ms  compute_s  rounds  rej/|E|   vs delay 0
+    -------  --------  ---------  ------  --------  ----------
+    uniform  0         0.122673   317     0.935638  1.00x     
+    uniform  0.25      0.152956   226     0.935071  1.25x     
+    uniform  0.5       0.185627   212     0.935146  1.51x     
+    uniform  1         0.255752   199     0.935087  2.08x     
+    uniform  2         0.442566   199     0.935099  3.61x     
+    uniform  4         0.753347   181     0.935082  6.14x     
+    mesh     0         1.690646   15879   1.750368  1.00x     
+    mesh     0.25      5.630136   16034   1.915061  3.33x     
+    mesh     0.5       9.648380   16106   1.926586  5.71x     
+    mesh     1         18.103449  16421   2.101272  10.71x    
+    mesh     2         34.318740  16571   2.023528  20.30x    
+    mesh     4         65.163573  16229   2.055219  38.54x    
+    rmat     0         0.137507   227     1.485774  1.00x     
+    rmat     0.25      0.168188   180     1.495471  1.22x     
+    rmat     0.5       0.204156   174     1.400163  1.48x     
+    rmat     1         0.297544   174     1.451203  2.16x     
+    rmat     2         0.448117   174     1.507023  3.26x     
+    rmat     4         0.788183   174     1.510225  5.73x     
+

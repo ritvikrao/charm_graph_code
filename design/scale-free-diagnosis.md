@@ -5,6 +5,40 @@ everything else held fixed. This file is the method and the instrument; the
 answers are in `design/h1-bucket-resolution.md`, `design/h2-hub-redundancy.md`,
 `design/h3-partitioning.md` and `design/h4-tail-cadence.md`.*
 
+## Result
+
+**Three of the four hypotheses are refuted for RMAT and confirmed for the mesh.**
+That is not four separate answers; it is one answer, and it is the most useful
+thing step 6 produced.
+
+| | verdict on RMAT | verdict on the mesh |
+|---|---|---|
+| **H1** bucket resolution | refuted. The controller has 18.5 buckets of range above the frontier per round, against the uniform graph's 9.7; the percentile knob moves runtime by 1.17× and redundant work not at all | confirmed. 2.2 buckets of range, 60% of rounds with none at all, and switching the controller off costs **5.5× more rejected updates** |
+| **H2** hub redundancy | **confirmed.** Reject rate climbs monotonically with destination degree, 19.6% → 100%; 2.07% of vertices take 65.4% of arrivals and 70.0% of rejects; the uniform control is flat at 84.9% in every degree class | not applicable — no hubs, though the mesh absorbs more per batch than RMAT does, for an unrelated reason |
+| **H3** partition imbalance | refuted. 1.19× at 32 PEs, in a region the calibration shows costs nothing; PEs idle 9% of rounds | confirmed, but not spatially. Edge balance is 1.00×, work imbalance 1.94×, and PEs sit out **85% of rounds — including on a single PE**, where there is no partition |
+| **H4** cadence-bound progress | refuted. Flushing every round is 4% *slower*; buffers fill on their own | confirmed overwhelmingly. Flushing every round instead of one in five is **3.2× faster**; adding 4 ms per round multiplies runtime 27.7× with the round count unchanged |
+
+Read down the right-hand column: H1, H3 and H4 are all real, large, fixable
+problems **of the graph classes ACIC already wins on.** Fixing them widens an
+existing lead. None of them closes the 2.8–3.3× deficit on RMAT, and a paper
+that presented them as the scale-free fix would be making a claim these tables
+refute.
+
+What is left for RMAT is H2, and one finding that no hypothesis anticipated:
+**on a power-law graph the redundant work is not order-dependent, so no ordering
+can prevent it.** Switching ACIC's work-admission off entirely changes RMAT's
+redundant work by nothing measurable (1.161 → 1.129 rejects per edge) and makes
+the run 1.14× faster, because the bookkeeping is not free. The same switch costs
+the mesh 5.5× its redundant work. ACIC's central mechanism is not mistuned on
+scale-free graphs; it has nothing to bite on, because hub contention puts the
+competing updates in the same bucket at the same time. That is a combining
+problem, which is H2, and it is the only place left to attack.
+
+The one caution against over-reading all of this: the high-diameter class here
+is a 2-D mesh, which is a stand-in for a road network and not a substitute for
+one. A real road network is the confirmation these conclusions need, and it is
+the obvious next input for `graphlib` now that the reader exists.
+
 ## The gap being explained
 
 The IA³@SC24 paper reports RIKEN's Δ-stepping at **2.8–3.3× faster than ACIC on
@@ -77,6 +111,26 @@ Reachability differs sharply between the classes at equal `|V|` and this must be
 carried alongside every number: an RMAT run is solving a smaller problem than a
 uniform run on the same vertex count, and a speed comparison that ignores that
 is measuring the generator.
+
+## What step 7 should take from this
+
+In priority order, which is not the plan's order:
+
+1. **Adaptive flush cadence.** 3.2× on one node and 3.4× on two, on the mesh,
+   from one existing constant. The policy is legible from the data — flush
+   aggressively when buffers are not filling, lazily when they are — and the
+   decision variable is buffer occupancy, which htram already knows. See
+   `design/h4-tail-cadence.md`.
+2. **`CombiningHold` before the batch-local fold.** The plan has these the other
+   way round. The hold's reach does not shrink with problem size; the
+   batch-local fold's does, from 41.6% to 9.9% over the sizes measured. See
+   `design/h2-hub-redundancy.md`.
+3. **Bucket width from the observed distribution** — worth 1.7× on the mesh, 9%
+   on RMAT. Do it, and do not sell it as the scale-free fix. It also requires
+   moving `HISTO_BUCKET_COUNT` and `histo_reduction_width`, which are currently
+   10× and 1.3× oversized relative to what the width rule produces.
+4. **Not measurement-based load balancing.** There is no spatial imbalance to
+   correct, and the class that starves its PEs does so on a single PE.
 
 ## Reproducing
 

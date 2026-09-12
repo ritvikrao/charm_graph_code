@@ -1,0 +1,16 @@
+DIAG_PE 11 vertices=65536 edges=1046758 updates_created=1047040 updates_processed=1050133 distance_changes=158337 rejected=981697 batch_items=1050133 batch_absorbable=956 rounds=364 idle_rounds=46
+DIAG_PE 14 vertices=65536 edges=1050177 updates_created=1050576 updates_processed=1047144 distance_changes=158238 rejected=978610 batch_items=1047144 batch_absorbable=1018 rounds=364 idle_rounds=43
+DIAG_PE 1 vertices=65536 edges=1048586 updates_created=1049013 updates_processed=1047983 distance_changes=158284 rejected=979699 batch_items=1047983 batch_absorbable=1028 rounds=364 idle_rounds=43
+DIAG_PE 9 vertices=65536 edges=1046666 updates_created=1047099 updates_processed=1045842 distance_changes=157467 rejected=977533 batch_items=1045842 batch_absorbable=1019 rounds=364 idle_rounds=42
+DIAG_PE 6 vertices=65536 edges=1044917 updates_created=1045358 updates_processed=1048500 distance_changes=158480 rejected=980060 batch_items=1048500 batch_absorbable=1031 rounds=364 idle_rounds=41
+DIAG_PE 7 vertices=65536 edges=1047485 updates_created=1047870 updates_processed=1049841 distance_changes=158395 rejected=981522 batch_items=1049841 batch_absorbable=992 rounds=364 idle_rounds=48
+DIAG_PE 12 vertices=65536 edges=1048121 updates_created=1048432 updates_processed=1048765 distance_changes=157778 rejected=980369 batch_items=1048765 batch_absorbable=1033 rounds=364 idle_rounds=44
+DIAG_PE 15 vertices=65536 edges=1050195 updates_created=1050433 updates_processed=1047041 distance_changes=159016 rejected=978768 batch_items=1047041 batch_absorbable=994 rounds=364 idle_rounds=49
+DIAG_PE 10 vertices=65536 edges=1043598 updates_created=1044019 updates_processed=1048538 distance_changes=158475 rejected=980188 batch_items=1048538 batch_absorbable=1022 rounds=364 idle_rounds=48
+DIAG_PE 0 vertices=65536 edges=1048931 updates_created=1049132 updates_processed=1046634 distance_changes=157424 rejected=978343 batch_items=1046633 batch_absorbable=990 rounds=364 idle_rounds=26
+DIAG_PE 2 vertices=65536 edges=1050119 updates_created=1050298 updates_processed=1049086 distance_changes=158260 rejected=980778 batch_items=1049086 batch_absorbable=1044 rounds=364 idle_rounds=47
+DIAG_PE 5 vertices=65536 edges=1053024 updates_created=1053366 updates_processed=1047087 distance_changes=157957 rejected=978829 batch_items=1047087 batch_absorbable=1057 rounds=364 idle_rounds=40
+DIAG_PE 13 vertices=65536 edges=1045722 updates_created=1046081 updates_processed=1049549 distance_changes=158026 rejected=981105 batch_items=1049549 batch_absorbable=988 rounds=364 idle_rounds=36
+DIAG_PE 8 vertices=65536 edges=1047338 updates_created=1047725 updates_processed=1046348 distance_changes=158138 rejected=977852 batch_items=1046348 batch_absorbable=1022 rounds=364 idle_rounds=42
+DIAG_PE 4 vertices=65536 edges=1045995 updates_created=1046019 updates_processed=1048720 distance_changes=157996 rejected=980385 batch_items=1048720 batch_absorbable=970 rounds=364 idle_rounds=40
+DIAG_PE 3 vertices=65536 edges=1046503 updates_created=1046824 updates_processed=1048075 distance_changes=158431 rejected=979694 batch_items=1048075 batch_absorbable=992 rounds=364 idle_rounds=39

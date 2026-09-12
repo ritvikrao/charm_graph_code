@@ -1,0 +1,8 @@
+DIAG_PE 1 vertices=131072 edges=2113038 updates_created=2572671 updates_processed=2429124 distance_changes=188479 rejected=2355076 batch_items=2429124 batch_absorbable=251037 rounds=367 idle_rounds=40
+DIAG_PE 4 vertices=131072 edges=2079218 updates_created=2414972 updates_processed=2385495 distance_changes=188144 rejected=2311593 batch_items=2385495 batch_absorbable=249211 rounds=367 idle_rounds=45
+DIAG_PE 2 vertices=131072 edges=2188528 updates_created=2654070 updates_processed=2514278 distance_changes=189168 rejected=2440719 batch_items=2514278 batch_absorbable=308204 rounds=367 idle_rounds=40
+DIAG_PE 0 vertices=131072 edges=1997682 updates_created=2216041 updates_processed=2295920 distance_changes=187644 rejected=2222326 batch_items=2295919 batch_absorbable=199911 rounds=367 idle_rounds=40
+DIAG_PE 3 vertices=131072 edges=2062896 updates_created=2416532 updates_processed=2372875 distance_changes=188524 rejected=2298966 batch_items=2372875 batch_absorbable=237567 rounds=367 idle_rounds=36
+DIAG_PE 6 vertices=131072 edges=2121584 updates_created=2356987 updates_processed=2437666 distance_changes=186626 rejected=2364459 batch_items=2437666 batch_absorbable=252314 rounds=367 idle_rounds=39
+DIAG_PE 7 vertices=131072 edges=2110633 updates_created=2327992 updates_processed=2427571 distance_changes=187264 rejected=2354232 batch_items=2427571 batch_absorbable=243073 rounds=367 idle_rounds=40
+DIAG_PE 5 vertices=131072 edges=2102466 updates_created=2318786 updates_processed=2415123 distance_changes=188329 rejected=2341525 batch_items=2415123 batch_absorbable=218179 rounds=367 idle_rounds=40

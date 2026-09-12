@@ -1,0 +1,4 @@
+DIAG_PE 3 vertices=262144 edges=1047040 updates_created=1235330 updates_processed=1235311 distance_changes=398388 rejected=925957 batch_items=1235311 batch_absorbable=335462 rounds=18954 idle_rounds=15461
+DIAG_PE 1 vertices=262144 edges=1048064 updates_created=1222163 updates_processed=1222152 distance_changes=394044 rejected=916469 batch_items=1222152 batch_absorbable=300264 rounds=18954 idle_rounds=14770
+DIAG_PE 2 vertices=262144 edges=1048064 updates_created=1215617 updates_processed=1215600 distance_changes=392733 rejected=911552 batch_items=1215600 batch_absorbable=309836 rounds=18954 idle_rounds=15101
+DIAG_PE 0 vertices=262144 edges=1047040 updates_created=1262131 updates_processed=1262179 distance_changes=405963 rejected=946056 batch_items=1262178 batch_absorbable=327252 rounds=18954 idle_rounds=15133

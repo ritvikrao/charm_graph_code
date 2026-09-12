@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # Step 6 of the SC27 plan: the four scale-free hypotheses, each as an A/B with
-# everything else held fixed. See design/scale-free-h1..h4.md for what each one
-# is testing and what the answers were.
+# everything else held fixed. See design/scale-free-diagnosis.md for the method
+# and design/h1-*.md ... design/h4-*.md for what each one found.
 #
 # Two binaries, deliberately:
 #

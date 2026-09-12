@@ -27,7 +27,10 @@ builds `graph_digest` and `graph_convert`, which need no Charm++ at all.
 
 ```
 ./sssp_smp <vertices> <path|edge count> <seed> <source> <mode> <p_tram> <p_pq> \
-           [--verify] [--timeout <seconds>] [--bufsize <items>] +ppn <threads>
+           [--verify] [--timeout <seconds>] [--bufsize <items>] \
+           [--bucket-width <units>] [--round-delay <ms>] \
+           [--flush-interval <rounds>] [--partition-jitter <percent>] \
+           [--diag <prefix>] +ppn <threads>
 ```
 
 | mode | input | argument 2 |
@@ -53,10 +56,16 @@ unweighted `.sg` gets weights the same way.
 legacy CSV files:
 
 ```
-./graph_convert gen  3 16384 262144 1 rmat14.wsg
-./graph_convert csv  graphs/mid_graph.csv 0 1 mid_graph.wsg
-./graph_convert stat rmat14.wsg
+./graph_convert gen    3 16384 262144 1 rmat14.wsg
+./graph_convert csv    graphs/mid_graph.csv 0 1 mid_graph.wsg
+./graph_convert stat   rmat14.wsg
+./graph_convert source 3 16384 262144 1      # a source vertex worth using
 ```
+
+`source` matters more than it sounds. A third of an RMAT graph's vertices have no
+out-edges, and a source with none never satisfies the convergence test — the run
+sits until `--timeout`. It prints the lowest-numbered vertex of at least mean
+out-degree, and the graph's degree summary alongside.
 
 The files it writes are real GAPBS files, so GAPBS's own kernels can be run on the
 identical input. Use GAPBS's `converter` for SNAP, DIMACS and MatrixMarket text.
@@ -71,3 +80,21 @@ sbatch scripts/verify_2node.sh         # message-envelope invariants, two nodes
 
 `scripts/verify.sh --update-golden` re-records `scripts/golden_digests.txt` after a
 deliberate change to the graphs. The first two run in CI on every push.
+
+## Measurements
+
+```
+scripts/diagnose.sh <h1|h2|h3|h4|all> [outdir]   # the step 6 experiment matrix
+scripts/diag_report.py <outdir>                  # turn it into tables
+sbatch scripts/diagnose_delta.sbatch all 20      # how the reported runs were taken
+```
+
+The four knobs above exist for these A/Bs and are inert at their defaults.
+`--diag` writes the controller's own round-by-round series; `make sssp_smp_diag`
+adds counters on the relaxation path — bucket occupancy, per-vertex arrivals,
+reject rates by destination degree, per-PE idleness — which is why they are a
+separate binary. Every wall-clock number comes from `sssp_smp` and every
+structural number from `sssp_smp_diag`, deliberately.
+
+What this was for, and what it found, is in
+[design/scale-free-diagnosis.md](design/scale-free-diagnosis.md).

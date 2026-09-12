@@ -206,8 +206,8 @@ baseline never moves under you mid-refactor.
 | **3** | The defect list above: `updates_in_tram` leak, `tram_hold` rows → `num_dest`, `dest_table` overflow, `first_nonzero` OOB, `rand()` flush, `fast_exit` → flag, `NODE_COUNT` → runtime, delete `processHeapShared` | Verify passes. **Measure the §1 fix alone and re-run the `p_tram` sweep** | 3 days |
 | **4** | Genuine varsize messages (`char buffer[]`); `setUsersize` on all send paths. Re-run the buffer-size sweep, now co-varied with `LCI_ATTR_PACKET_SIZE` | ~~Verify identical; wire bytes drop at `bufSize < 2048`~~ **Done.** Verify identical; second clause withdrawn — `bufSize` never reached the wire because the constructor argument was dead, not because of padding. Closed on 2 nodes by `scripts/verify_2node.sh`; see `design/varsize-messages.md` | 3 days |
 | **5** | Retire all non-SMP and dead code (below). `graphlib` v1: in-memory Kronecker/RMAT/uniform/mesh generators + GAPBS `.sg`/`.wsg` binary reader; flat CSR replacing per-vertex `std::vector` | **Done.** Verify identical on all ten pre-existing configurations; the gate now runs 18, adding RMAT and files. A generated graph written to `.wsg` and read back solves to the same digest as the in-memory run. See `design/graphlib.md` | 2 wk |
-| **6** | Scale-free diagnosis: H1–H4 below, each an A/B with everything else fixed | **In progress.** Instrument built and gated; measurements running. See `design/scale-free-diagnosis.md` and the per-hypothesis notes | 2 wk |
-| **7** | Build the winners: `CombiningHold` (byte-oriented from day one) + `on_absorb`; batch-local combining in `deliver`; adaptive bucketing; adaptive tail cadence + idle flush | Verify identical flag on **and** off | 4 wk |
+| **6** | Scale-free diagnosis: H1–H4 below, each an A/B with everything else fixed | **Done.** Four notes written. **Three of the four hypotheses are refuted for RMAT and confirmed for the mesh** — they are real problems of the class ACIC already wins on. Only H2 survives as a scale-free explanation. See `design/scale-free-diagnosis.md` | 2 wk |
+| **7** | Build the winners, **in the order step 6 established, which is not the order below**: (1) adaptive flush cadence — 3.2× on the mesh from one existing constant; (2) `CombiningHold` (byte-oriented from day one) + `on_absorb`, *before* the batch-local fold in `deliver`, whose reach shrinks with problem size; (3) adaptive bucketing, worth 1.7× on the mesh and 9% on RMAT; (4) idle flush. **Not** measurement-based load balancing | Verify identical flag on **and** off | 4 wk |
 | **8** | Type erasure: `HTramCore` + `HTram<T>` + `HTramOps` + `BuiltinOp`. Strictly mechanical | **Byte-identical verify vs. step 7** | 1 wk |
 | **9** | `Locator` + `dest_slot` item field; fix `thisIndex`/`CkMyPe()` conflation. K=1 `BlockLocator` → identical; then K=8 `HashLocator` | Verify identical at K=1 | 1.5 wk |
 | **10** | `AcicController` extraction (priority-rank space, watchdog, round-time metric) | Verify identical for SSSP | 1 wk |
@@ -267,6 +267,29 @@ Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
 
 ### Why scale-free loses — four hypotheses (step 6)
 
+> **Answered. `design/scale-free-diagnosis.md` carries the result; the four
+> notes carry the evidence. The short version is that the hypotheses below were
+> asked of the wrong graph class.**
+>
+> H1, H3 and H4 are each **refuted on RMAT and confirmed on the mesh**. The
+> controller has *more* bucket resolution on RMAT (18.5 buckets above the
+> frontier per round) than on the uniform graph (9.7) or the mesh (2.2, with 60%
+> of rounds having none). A 1-D partition of a power law is imbalanced 1.19× at
+> 32 PEs, which the calibration shows costs nothing; the mesh is balanced 1.00×
+> in edges and idles its PEs 85% of rounds — **including on one PE, where there
+> is no partition**. And flushing the aggregation buffers every round rather
+> than one in five is 3.2× faster on the mesh and 4% *slower* on RMAT.
+>
+> **The finding no hypothesis anticipated:** on a power-law graph the redundant
+> work is not order-dependent, so no ordering can prevent it. Switching ACIC's
+> work admission off entirely (`p_heap` 0.005 → 0.999) changes RMAT's rejected
+> updates by nothing measurable, 1.161 → 1.129 per edge, and makes the run 1.14×
+> *faster* because the bookkeeping is not free. The same switch costs the mesh
+> **5.5×** its rejected updates. ACIC's central mechanism is not mistuned on
+> scale-free graphs — it has nothing to bite on, because hub contention puts the
+> competing updates in the same bucket at the same time. Which leaves combining,
+> H2, as the only remaining line of attack on the class the paper has to explain.
+
 > **Two corrections found while building the instrument, both of which change
 > how the hypotheses below must be read.**
 >
@@ -291,9 +314,15 @@ Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
 > combining pays wherever traffic concentrates, and traffic concentrates for
 > two different reasons. See `design/h2-hub-redundancy.md`.
 
-- **H1 — bucket width has no resolution on RMAT.** *(RMAT inputs now exist; step 5 left
-  `bucket_multiplier` on the `log(V)` rule precisely so this can be measured before it is
-  changed.)* `bucket(d) = d/log(V)` (`:843`, which
+- **H1 — bucket width has no resolution on RMAT.** *(**Refuted.** RMAT and the
+  uniform graph occupy 199 and 204 of the 2048 buckets respectively and
+  concentrate half their updates into the same 36; the percentile knob moves
+  RMAT's runtime by 1.17× and its redundant work not at all. Deriving the width
+  from the distribution is still worth doing — 1.7× on the mesh — but it is not
+  the scale-free fix. Note also that `histo_reduction_width` (256) exceeds the
+  entire occupied range on both random-graph classes, so the sliding window
+  never slides on either. See `design/h1-bucket-resolution.md`.)*
+  `bucket(d) = d/log(V)` (`:843`, which
   reduces algebraically to `1/log(V)`) is fixed at startup and derived from nothing but `|V|`.
   RMAT's small diameter collapses the range into a handful of the 2048 buckets, so percentile
   thresholds have nothing to cut and the controller degenerates toward plain distributed
@@ -308,20 +337,26 @@ Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
   control behaving as it must. Batch-local combining alone absorbs 41.6% at
   bufSize 2048 against an 8–12% break-even. See
   `design/h2-hub-redundancy.md`.)* Addressed by combining, above.
-- **H3 — 1D partitioning imbalances on a power law.** The **overdecomposition** half will
+- **H3 — 1D partitioning imbalances on a power law.** *(**Refuted as a spatial
+  problem.** 1.19× max/mean in edges at 32 PEs, in a region a deliberate-skew
+  calibration shows costs nothing measurable; RMAT's PEs are idle 9% of rounds
+  against the mesh's 85%. The expectation below that migration LB is a poor fit
+  is confirmed and now measured — but it is a statement about high-diameter
+  graphs. See `design/h3-partitioning.md`.)* The **overdecomposition** half will
   likely pay, but via `HashLocator` scattering hubs and via more schedulable work overlapping
   the `[whenidle]` drain — *not* via load balancing. Measurement-based migration LB is a
   dubious fit: SSSP imbalance is temporal (the frontier moves), so past load anti-predicts
   future load. Build the migration path because it's cheap and unblocks routing; expect the LB
   result may be negative and write it up honestly. Your own
   `~/paratreet2/design/uf2-k-chares.md` reached this shape of conclusion for UnionFindLib.
-- **H4 — the tail advances only at reduction cadence.** *(There is a concrete
-  mechanism here, not only a cadence: with `IDLE_FLUSH` compiled out and the
-  periodic timer off, a partly-filled aggregation buffer has exactly two ways
-  out — fill to `bufSize`, or catch one of the per-chare `tflush` draws, which
-  fire on average one round in five. In the tail there is not enough traffic
-  left to fill anything. `--flush-interval` makes that an A/B directly, and
-  `--round-delay` tests the cadence claim separately.)* Re-enable htram's idle-triggered
+- **H4 — the tail advances only at reduction cadence.** *(**Confirmed far more
+  strongly than stated, and it is not the tail and not RMAT.** On the mesh the
+  whole run is cadence-bound: 4 ms of added round delay multiplies runtime 27.7×
+  on one node and 38.5× on two, with the round count unchanged, and flushing
+  every round instead of one in five is 3.2× faster. The tail as defined — after
+  99% of vertices settle — is 3.2% of mesh runtime, so chasing it would have
+  been chasing the wrong few percent. On RMAT buffers fill on their own and
+  flushing every round is 4% slower. See `design/h4-tail-cadence.md`.)* Re-enable htram's idle-triggered
   partial flush (`IDLE_FLUSH` is `#if`'d out at `htram_group.h:7`; `idleFlush()` is a stub),
   make the cadence adaptive, and replace the two-tier `histogram_sum <= N*100` hack (`:494`)
   with a controller over histogram *shape* — exactly what the 2024 future-work asks for.

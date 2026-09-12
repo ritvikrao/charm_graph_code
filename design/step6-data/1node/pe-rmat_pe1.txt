@@ -1,0 +1,1 @@
+DIAG_PE 0 vertices=1048576 edges=16776045 updates_created=17154174 updates_processed=17154175 distance_changes=1323403 rejected=16584461 batch_items=17154174 batch_absorbable=1650224 rounds=873 idle_rounds=81
