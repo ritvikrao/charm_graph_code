@@ -1,0 +1,94 @@
+host=cn039.delta.ncsa.illinois.edu nodes=1 variants=scripts/ab/7.2-batch-fold.txt scale=20 ppn=16 reps=5
+uniform: 1048576 vertices, 16764135 edges, mean out-degree 15.99, max 32, 31538 isolated (3.0%)
+mesh: 1048576 vertices, 4190208 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 1048576 vertices, 16776045 edges, mean out-degree 16.00, max 69197, 501926 isolated (47.9%)
+scale=2^20 (V=1048576, E=16777216; mesh 1024x1024), ppn=16, reps=5
+== A/B: scripts/ab/7.2-batch-fold.txt ==
+    rep 1 uniform off: ok 0.239369
+    rep 1 uniform fold: ok 0.239211
+    rep 1 uniform hold: ok 0.257974
+    rep 1 uniform hold+fold: ok 0.294916
+    rep 1 mesh off: ok 0.832943
+    rep 1 mesh fold: ok 0.846153
+    rep 1 mesh hold: ok 0.782845
+    rep 1 mesh hold+fold: ok 0.817094
+    rep 1 rmat off: ok 0.242650
+    rep 1 rmat fold: ok 0.243082
+    rep 1 rmat hold: ok 0.293796
+    rep 1 rmat hold+fold: ok 0.271829
+    rep 2 uniform off: ok 0.255475
+    rep 2 uniform fold: ok 0.255692
+    rep 2 uniform hold: ok 0.310484
+    rep 2 uniform hold+fold: ok 0.286813
+    rep 2 mesh off: ok 0.821006
+    rep 2 mesh fold: ok 0.774730
+    rep 2 mesh hold: ok 0.804509
+    rep 2 mesh hold+fold: ok 0.754297
+    rep 2 rmat off: ok 0.224762
+    rep 2 rmat fold: ok 0.261955
+    rep 2 rmat hold: ok 0.239349
+    rep 2 rmat hold+fold: ok 0.270090
+    rep 3 uniform off: ok 0.216868
+    rep 3 uniform fold: ok 0.258989
+    rep 3 uniform hold: ok 0.256093
+    rep 3 uniform hold+fold: ok 0.300727
+    rep 3 mesh off: ok 0.708031
+    rep 3 mesh fold: ok 0.663293
+    rep 3 mesh hold: ok 0.617880
+    rep 3 mesh hold+fold: ok 0.659066
+    rep 3 rmat off: ok 0.219384
+    rep 3 rmat fold: ok 0.243009
+    rep 3 rmat hold: ok 0.276889
+    rep 3 rmat hold+fold: ok 0.271987
+    rep 4 uniform off: ok 0.238680
+    rep 4 uniform fold: ok 0.247746
+    rep 4 uniform hold: ok 0.302420
+    rep 4 uniform hold+fold: ok 0.306983
+    rep 4 mesh off: ok 0.611295
+    rep 4 mesh fold: ok 0.611274
+    rep 4 mesh hold: ok 0.636916
+    rep 4 mesh hold+fold: ok 0.661614
+    rep 4 rmat off: ok 0.271193
+    rep 4 rmat fold: ok 0.264096
+    rep 4 rmat hold: ok 0.279531
+    rep 4 rmat hold+fold: ok 0.276802
+    rep 5 uniform off: ok 0.225835
+    rep 5 uniform fold: ok 0.273803
+    rep 5 uniform hold: ok 0.300702
+    rep 5 uniform hold+fold: ok 0.349728
+    rep 5 mesh off: ok 0.815805
+    rep 5 mesh fold: ok 0.771685
+    rep 5 mesh hold: ok 0.762210
+    rep 5 mesh hold+fold: ok 0.800560
+    rep 5 rmat off: ok 0.226501
+    rep 5 rmat fold: ok 0.245823
+    rep 5 rmat hold: ok 0.232020
+    rep 5 rmat hold+fold: ok 0.329776
+Results under ab-7.2f-1n/. Summarise with scripts/diag_report.py ab-7.2f-1n
+== report ==
+A/B  baseline = off; medians over repetitions, spread is min..max compute_s
+
+  mesh
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created  dist_changes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------  ------------  ------------  -------  ------------
+    off        0.8158     0.6113..0.8329  1.00x    0       3730    1.046    26076      140705640   26062          0             -             5845351  1817129     
+    fold       0.7717     0.6113..0.8462  0.95x    0       3692    0.5571   25830      143533832   25809          0             -             5963379  1673041     
+    hold       0.7622     0.6179..0.8045  0.93x    0       3628    0.571    25579      98473208    25579          0.6361        39.48         6751525  1868560     
+    hold+fold  0.7543     0.6591..0.8171  0.92x    0       3635    0.5715   25612      98410768    25612          0.6408        39.69         6765771  1871741     
+
+  rmat
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    off        0.2265     0.2194..0.2712  1.00x    0       309     1.153    10723      478660144   471            0             -             19937024  1563759     
+    fold       0.2458     0.243..0.2641   1.09x    0       304     1.028    10724      476342256   470            0             -             19840436  1559259     
+    hold       0.2769     0.232..0.2938   1.22x    0       294     1.026    9534       427587976   445            0.1389        11.57         20258753  1583653     
+    hold+fold  0.272      0.2701..0.3298  1.20x    0       231     1.023    9297       426521064   231            0.1516        12.34         20372413  1564687     
+
+  uniform
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    off        0.2387     0.2169..0.2555  1.00x    0       380     0.9368   8734       403356848   37             0             -             16800686  2558735     
+    fold       0.2557     0.2392..0.2738  1.07x    0       381     0.9366   8717       403706328   33             0             -             16815291  2571151     
+    hold       0.3007     0.2561..0.3105  1.26x    0       407     0.9362   8753       403151112   37             0.000978      0.09749       16808512  2565864     
+    hold+fold  0.3007     0.2868..0.3497  1.26x    0       387     0.936    8723       403067384   37             0.000978      0.09754       16804999  2560902     
+

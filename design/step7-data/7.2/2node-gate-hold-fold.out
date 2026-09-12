@@ -1,0 +1,19 @@
+### binary: /scratch/mzu/rao1/acic-s7-2f-v2n/charm_graph_code/sssp_smp
+### nodes:  cn[039,046]
+### extra:  --combine hold --batch-fold on
+random_bs1                   PASS  Compute time: 0.298313
+random_bs7                   PASS  Compute time: 0.036853
+random_bs63                  PASS  Compute time: 0.020408
+random_bs256                 PASS  Compute time: 0.015539
+random_bs1024                PASS  Compute time: 0.019861
+random_bs2048                PASS  Compute time: 0.024029
+random_bs256_ps4096          PASS  Compute time: 0.018235
+random_bs256_ps16384         PASS  Compute time: 0.018013
+random_bs256_ps65536         PASS  Compute time: 0.022675
+mesh_bs63                    PASS  Compute time: 0.024215
+mesh_bs2048                  PASS  Compute time: 0.053044
+big_bs256                    PASS  Compute time: 0.057272
+big_bs2048                   PASS  Compute time: 0.055693
+rmat_bs63                    PASS  Compute time: 0.050155
+rmat_bs2048                  PASS  Compute time: 0.036799
+2-NODE GATE PASSED

@@ -17,6 +17,8 @@ mainmodule sssp_smp
   readonly bool verify_mode;
   readonly int flush_round_interval;
   readonly int flush_policy;
+  readonly int combine_mode;
+  readonly bool batch_fold;
   readonly int partition_jitter_percent;
   readonly double timeout_seconds;
   readonly double reduction_delay;

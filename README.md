@@ -30,7 +30,8 @@ builds `graph_digest` and `graph_convert`, which need no Charm++ at all.
            [--verify] [--timeout <seconds>] [--bufsize <items>] \
            [--bucket-width <units>] [--round-delay <ms>] \
            [--flush-interval <rounds>] [--partition-jitter <percent>] \
-           [--flush-policy fixed|stale|adaptive] \
+           [--flush-policy fixed|stale|adaptive] [--combine off|hold] \
+           [--batch-fold off|on] \
            [--diag <prefix>] +ppn <threads>
 ```
 
@@ -76,7 +77,7 @@ identical input. Use GAPBS's `converter` for SNAP, DIMACS and MatrixMarket text.
 ```
 scripts/verify.sh                      # 18 configurations, one node
 scripts/check_generator_portability.sh # graphs identical across toolchains
-sbatch scripts/verify_2node.sh         # message-envelope invariants, two nodes
+sbatch scripts/verify_2node.sh         # message-envelope invariants, two nodes (submit from the repo root)
 ```
 
 `scripts/verify.sh --update-golden` re-records `scripts/golden_digests.txt` after a
@@ -114,3 +115,5 @@ scripts/diag_report.py <outdir> ab                # medians and ratios
 | mechanism | flag | default | note |
 |---|---|---|---|
 | adaptive flush cadence | `--flush-policy` | `adaptive` | [design/step7-flush-cadence.md](design/step7-flush-cadence.md) |
+| source-side combining hold | `--combine` | `off` (a loss) | [design/step7-combining.md](design/step7-combining.md) |
+| batch-local fold at delivery | `--batch-fold` | `off` (a loss) | [design/step7-combining.md](design/step7-combining.md) |

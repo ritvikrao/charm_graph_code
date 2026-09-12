@@ -95,6 +95,23 @@ int flush_round_interval = 5;
 // fixed is the pre-step-7 behaviour and what every step 6 number used.
 enum { FLUSH_FIXED = 0, FLUSH_STALE = 1, FLUSH_ADAPTIVE = 2 };
 int flush_policy = FLUSH_ADAPTIVE;
+// --combine off|hold. hold turns on htram's source-side CombiningHold: an
+// update waits in its destination's hold until a full buffer's worth has been
+// admitted or a flush reaches it, and a later update for the same vertex folds
+// into it, keeping the smaller distance. The loser never travels; absorb()
+// below does the bookkeeping it would otherwise have done at the receiver.
+// Step 6 measured RMAT's rejected updates at 1.14 per edge against a
+// batch-local fold's reach of 9.9%; this is the part whose reach is not bounded
+// by one message. See design/step7-combining.md.
+enum { COMBINE_OFF = 0, COMBINE_HOLD = 1 };
+int combine_mode = COMBINE_OFF;
+// --batch-fold off|on: the receiver-side half. Before a delivered batch is
+// processed, updates in it that repeat a destination vertex are folded to the
+// one with the smallest distance, and the rest are accounted as processed.
+// Step 6 measured what this can reach -- 41.6% of a batch at 2^14 on RMAT,
+// 9.9% at 2^20 -- and the plan requires its contribution to be reported
+// separately from the source hold's.
+bool batch_fold = false;
 // --timeout <seconds>: abandon a run that has not converged. 0 disables it.
 // There is deliberately no default: a truncated run is a failed run, and the
 // old behaviour was to give up after 30 s and print the partial distances with
@@ -161,6 +178,8 @@ enum {
   STAT_EDGES,
   STAT_DISTANCE_CHANGES,
   STAT_GRAPH_BYTES,
+  STAT_ABSORBED,      // updates folded away at the source by --combine
+  STAT_FOLDED,        // updates folded away in a delivered batch, --batch-fold
   STAT_INSTRUCTIONS,  // PAPI builds only
   STAT_BATCH_ITEMS,   // ACIC_DIAG builds only, from here down
   STAT_BATCH_ABSORBABLE,
@@ -403,6 +422,36 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg.rfind("--combine", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--combine=", 0) == 0)
+          value = arg.substr(10);
+        else if (arg == "--combine" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "off")
+          combine_mode = COMBINE_OFF;
+        else if (value == "hold")
+          combine_mode = COMBINE_HOLD;
+        else {
+          ckout << "--combine must be off or hold" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg.rfind("--batch-fold", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--batch-fold=", 0) == 0)
+          value = arg.substr(13);
+        else if (arg == "--batch-fold" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "off")
+          batch_fold = false;
+        else if (value == "on")
+          batch_fold = true;
+        else {
+          ckout << "--batch-fold must be off or on" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg.rfind("--diag=", 0) == 0) {
         diag_prefix = arg.substr(7);
       } else if (arg == "--diag") {
@@ -427,7 +476,8 @@ public:
             << "[--verify] [--timeout <seconds>] [--bufsize <items>]" << endl
             << "       [--bucket-width <distance units>] "
             << "[--round-delay <ms>] [--flush-interval <rounds>] "
-            << "[--flush-policy fixed|stale|adaptive] "
+            << "[--flush-policy fixed|stale|adaptive] [--combine off|hold] "
+            << "[--batch-fold off|on] "
             << "[--partition-jitter <percent>] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
@@ -1038,6 +1088,15 @@ public:
     ckout << "Rejected updates: " << msg_stats[STAT_REJECTED] << endl;
     ckout << "Rejected updates normalized to |E|: "
           << (double)msg_stats[STAT_REJECTED] / msg_stats[STAT_EDGES] << endl;
+    // Absorbed updates were created and then folded into a better one before
+    // they left their source, so they are in neither count above. Rejected
+    // plus absorbed is the redundant work a run did, wherever it was caught.
+    ckout << "Absorbed updates: " << msg_stats[STAT_ABSORBED]
+          << ", normalized to |E|: "
+          << (double)msg_stats[STAT_ABSORBED] / msg_stats[STAT_EDGES] << endl;
+    ckout << "Batch-folded updates: " << msg_stats[STAT_FOLDED]
+          << ", normalized to |E|: "
+          << (double)msg_stats[STAT_FOLDED] / msg_stats[STAT_EDGES] << endl;
     ckout << "Number of threshold changes: " << threshold_change_counter
           << endl;
     ckout << "Number of reductions: " << reduction_counts << endl;
@@ -1094,6 +1153,9 @@ public:
     ckout << "TRAM node messages: " << values[3]
           << ", bytes allocated: " << values[4] << endl;
     ckout << "TRAM stale-destination flushes: " << values[5] << endl;
+    if (n > 7 && values[7])
+      ckout << "TRAM hold: absorbed " << values[6] << " of " << values[7]
+            << " items (" << 100.0 * values[6] / values[7] << "%)" << endl;
     if (verify_mode)
       arr.verify_hash();
     else
@@ -1205,6 +1267,9 @@ private:
   long wasted_updates = 0; // number of updates that don't have the final answer
   long rejected_updates = 0; // number of updates that don't decrease a distance
                              // value/create more messages
+  long absorbed_updates = 0; // folded into a better update by the source hold
+  long folded_updates = 0;   // folded into a better update in a delivered batch
+  std::vector<int> fold_table; // --batch-fold, reused between batches
   tram_proxy_t tram_proxy;
   tram_t *tram; // tram library
   SharedInfo *shared_local;
@@ -1338,6 +1403,8 @@ public:
     // abandoned, and htram now tolerates a null one.
     tram->set_func_ptr_retarr(SsspChares::process_update_caller,
                               get_dest_proc_local_caller, nullptr, this);
+    if (combine_mode == COMBINE_HOLD)
+      tram->enableCombining(&hold_ops, this);
     shared_local = shared.ckLocalBranch();
 #ifdef PAPI
     eventset = PAPI_NULL;
@@ -1631,6 +1698,10 @@ public:
 #ifdef ACIC_DIAG
     self->count_batch_duplicates(new_vertex_and_distances, count);
 #endif
+    if (batch_fold) {
+      self->fold_batch(new_vertex_and_distances, count);
+      return;
+    }
     for (int i = 0; i < count; i++) {
       self->process_update(new_vertex_and_distances[i]);
     }
@@ -1671,6 +1742,88 @@ public:
     batch_items += count;
   }
 #endif
+
+  /**
+   * --batch-fold. One pass keeps, for each destination vertex, the index of the
+   * smallest-distance update seen so far; a loser is accounted for on the spot
+   * and marked by setting its destination to -1, then a second pass processes
+   * what is left in delivery order. The batch is this PE's own slice of the
+   * message, so marking it in place touches nothing another PE reads.
+   *
+   * A folded update costs the receiver exactly what a rejected one would have:
+   * its histogram bucket goes back and it counts as processed.
+   */
+  void fold_batch(Update *items, int count) {
+    if (count <= 0)
+      return;
+    size_t slots = 64;
+    while (slots < (size_t)count * 2)
+      slots <<= 1;
+    fold_table.assign(slots, -1);
+    const size_t mask = slots - 1;
+    for (int i = 0; i < count; i++) {
+      long key = items[i].dest_vertex;
+      size_t slot = (size_t)splitmix64((uint64_t)key) & mask;
+      int j;
+      while ((j = fold_table[slot]) != -1 && items[j].dest_vertex != key)
+        slot = (slot + 1) & mask;
+      if (j == -1) {
+        fold_table[slot] = i;
+        continue;
+      }
+      int loser = i;
+      if (items[i].distance < items[j].distance) {
+        loser = j;
+        fold_table[slot] = i;
+      }
+      histogram[get_histo_bucket(items[loser].distance)]--;
+      updates_processed_locally++;
+      folded_updates++;
+      items[loser].dest_vertex = -1;
+    }
+    for (int i = 0; i < count; i++)
+      if (items[i].dest_vertex != -1)
+        process_update(items[i]);
+  }
+
+  // --combine hold. The key is the destination vertex and the fold keeps the
+  // smaller distance, which is safe because relaxation is idempotent and
+  // monotone: the loser could only ever have been rejected, or have caused a
+  // relaxation the winner would redo.
+  static uint64_t hold_key(const void *item) {
+    return (uint64_t)((const Update *)item)->dest_vertex;
+  }
+  static bool hold_min(void *held, const void *incoming, void *retired) {
+    Update *h = (Update *)held;
+    const Update *in = (const Update *)incoming;
+    if (in->distance < h->distance) {
+      std::memcpy(retired, h, sizeof(Update));
+      *h = *in;
+      return true;
+    }
+    std::memcpy(retired, in, sizeof(Update));
+    return false;
+  }
+  static void hold_absorb(void *p, const void *retired) {
+    ((SsspChares *)p)->absorb(*(const Update *)retired);
+  }
+  static const HoldOps hold_ops;
+
+  /**
+   * An update that will never be delivered, because the source hold folded it
+   * into a better one for the same vertex. Everything the receiver would have
+   * done to account for a rejected update happens here instead: the histogram
+   * gives its bucket back and the update counts as processed. Without this the
+   * termination test -- every created update processed -- can never be met.
+   *
+   * The bucket is recomputed from the distance, exactly as generate_updates()
+   * computed it when it counted the update in.
+   */
+  void absorb(const Update &u) {
+    histogram[get_histo_bucket(u.distance)]--;
+    updates_processed_locally++;
+    absorbed_updates++;
+  }
 
   static int get_dest_proc_local_caller(void *p, Update new_upd) {
     return ((SsspChares *)p)->get_dest_proc_local(new_upd);
@@ -2021,6 +2174,8 @@ public:
     // few million vertices.
     msg_stats[STAT_GRAPH_BYTES] =
         (long)(local_graph.bytes() + sizeof(cost) * (size_t)num_vertices);
+    msg_stats[STAT_ABSORBED] = absorbed_updates;
+    msg_stats[STAT_FOLDED] = folded_updates;
 #ifdef PAPI
     msg_stats[STAT_INSTRUCTIONS] = values[0];
 #endif
@@ -2103,5 +2258,9 @@ public:
 
   void stop_periodic_flush() { tram->stop_periodic_flush(); }
 };
+
+const HoldOps SsspChares::hold_ops = {sizeof(Update), SsspChares::hold_key,
+                                     SsspChares::hold_min,
+                                     SsspChares::hold_absorb};
 
 #include "sssp_smp.def.h"

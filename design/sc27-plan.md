@@ -207,7 +207,7 @@ baseline never moves under you mid-refactor.
 | **4** | Genuine varsize messages (`char buffer[]`); `setUsersize` on all send paths. Re-run the buffer-size sweep, now co-varied with `LCI_ATTR_PACKET_SIZE` | ~~Verify identical; wire bytes drop at `bufSize < 2048`~~ **Done.** Verify identical; second clause withdrawn — `bufSize` never reached the wire because the constructor argument was dead, not because of padding. Closed on 2 nodes by `scripts/verify_2node.sh`; see `design/varsize-messages.md` | 3 days |
 | **5** | Retire all non-SMP and dead code (below). `graphlib` v1: in-memory Kronecker/RMAT/uniform/mesh generators + GAPBS `.sg`/`.wsg` binary reader; flat CSR replacing per-vertex `std::vector` | **Done.** Verify identical on all ten pre-existing configurations; the gate now runs 18, adding RMAT and files. A generated graph written to `.wsg` and read back solves to the same digest as the in-memory run. See `design/graphlib.md` | 2 wk |
 | **6** | Scale-free diagnosis: H1–H4 below, each an A/B with everything else fixed | **Done.** Four notes written. **Three of the four hypotheses are refuted for RMAT and confirmed for the mesh** — they are real problems of the class ACIC already wins on. Only H2 survives as a scale-free explanation. See `design/scale-free-diagnosis.md` | 2 wk |
-| **7** | Build the winners, **in the order step 6 established, which is not the order below**: (1) ~~adaptive flush cadence — 3.2× on the mesh from one existing constant~~ **Done: `--flush-policy adaptive`, default. 3.6× on the mesh on one node, 3.8× on two, no slower on RMAT or uniform. The ungated first attempt cost 7–12% on two nodes and is kept as `stale`; see `design/step7-flush-cadence.md`**; (2) `CombiningHold` (byte-oriented from day one) + `on_absorb`, *before* the batch-local fold in `deliver`, whose reach shrinks with problem size; (3) adaptive bucketing, worth 1.7× on the mesh and 9% on RMAT; (4) idle flush. **Not** measurement-based load balancing | Verify identical flag on **and** off | 4 wk |
+| **7** | Build the winners, **in the order step 6 established, which is not the order below**: (1) ~~adaptive flush cadence — 3.2× on the mesh from one existing constant~~ **Done: `--flush-policy adaptive`, default. 3.6× on the mesh on one node, 3.8× on two, no slower on RMAT or uniform. The ungated first attempt cost 7–12% on two nodes and is kept as `stale`; see `design/step7-flush-cadence.md`**; (2) ~~`CombiningHold` (byte-oriented from day one) + `on_absorb`, *before* the batch-local fold in `deliver`, whose reach shrinks with problem size~~ **Done, and both lose: `--combine hold` 1.17–1.39× slower on RMAT, `--batch-fold on` 1.09–1.14×; both off by default. Folding removes cheap receiver rejects, not relaxations, and under WPs a delivered batch is one source's message, so the fold and the hold catch the same same-source redundancy and the fold finds zero with the hold on; see `design/step7-combining.md`**; (3) adaptive bucketing, worth 1.7× on the mesh and 9% on RMAT; (4) idle flush. **Not** measurement-based load balancing | Verify identical flag on **and** off | 4 wk |
 | **8** | Type erasure: `HTramCore` + `HTram<T>` + `HTramOps` + `BuiltinOp`. Strictly mechanical | **Byte-identical verify vs. step 7** | 1 wk |
 | **9** | `Locator` + `dest_slot` item field; fix `thisIndex`/`CkMyPe()` conflation. K=1 `BlockLocator` → identical; then K=8 `HashLocator` | Verify identical at K=1 | 1.5 wk |
 | **10** | `AcicController` extraction (priority-rank space, watchdog, round-time metric) | Verify identical for SSSP | 1 wk |
@@ -261,6 +261,15 @@ Two corrections to my initial framing, both important:
 The adaptive on/off policy — disable per destination below an 8% trailing absorb rate,
 re-probe one round in 16 — is itself a figure: *"the system turns combining off on road
 networks and on for RMAT, automatically."*
+
+> **Step 7.2 result: built as specified, correct, and a net loss.** Absorbing an
+> update removes a receiver reject, which costs one comparison, and does not
+> reduce relaxations. RMAT's are unchanged and the mesh's rise. The second
+> correction above does not hold for this library: a delivery callback under WPs
+> sees one source PE's message, so the batch-local fold reaches only same-source
+> redundancy, which is exactly what the hold already catches. The 8% adaptive
+> on/off policy is moot, since no absorb rate observed (up to 51%) paid. See
+> `design/step7-combining.md`.
 
 Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
 `rejected_updates` and `:588` prints it normalized to `|E|`. Run it on RMAT after step 3.

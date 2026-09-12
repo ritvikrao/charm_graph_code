@@ -1,0 +1,52 @@
+why-mesh-off: Compute time: 0.172381
+why-mesh-off: Rejected updates normalized to |E|: 1.069401
+why-mesh-off: Absorbed updates: 0, normalized to |E|: 0.000000
+why-mesh-off: Distance changes: 464805, per vertex: 1.773090
+why-mesh-off: TRAM messages: 8615, bytes sent: 35994128, bytes allocated: 423582320
+why-mesh-off: Updates: created: 1494012
+why-mesh-hold: Compute time: 0.160431
+why-mesh-hold: Rejected updates normalized to |E|: 0.587896
+why-mesh-hold: Absorbed updates: 630508, normalized to |E|: 0.602476
+why-mesh-hold: Distance changes: 463444, per vertex: 1.767899
+why-mesh-hold: TRAM messages: 8381, bytes sent: 24912176, bytes allocated: 412077008
+why-mesh-hold: TRAM hold: absorbed 630508 of 1662928 items (37.915532%)
+why-mesh-hold: Updates: created: 1662928
+why-rmat-off: Compute time: 0.096024
+why-rmat-off: Rejected updates normalized to |E|: 1.228219
+why-rmat-off: Absorbed updates: 0, normalized to |E|: 0.000000
+why-rmat-off: Distance changes: 428621, per vertex: 1.635059
+why-rmat-off: TRAM messages: 3031, bytes sent: 127587064, bytes allocated: 149028208
+why-rmat-off: Updates: created: 5314107
+why-rmat-hold: Compute time: 0.118507
+why-rmat-hold: Rejected updates normalized to |E|: 1.011007
+why-rmat-hold: Absorbed updates: 1386467, normalized to |E|: 0.330618
+why-rmat-hold: Distance changes: 469899, per vertex: 1.792522
+why-rmat-hold: TRAM messages: 2552, bytes sent: 105816128, bytes allocated: 125476736
+why-rmat-hold: TRAM hold: absorbed 1386467 of 5793771 items (23.930304%)
+why-rmat-hold: Updates: created: 5793771
+nofill-mesh-off: Compute time: 0.159484
+nofill-mesh-off: Rejected updates normalized to |E|: 1.080442
+nofill-mesh-off: Absorbed updates: 0, normalized to |E|: 0.000000
+nofill-mesh-off: Distance changes: 465703, per vertex: 1.776516
+nofill-mesh-off: TRAM messages: 8809, bytes sent: 36368584, bytes allocated: 433120912
+nofill-mesh-off: Updates: created: 1509485
+nofill-mesh-hold: Compute time: 0.183291
+nofill-mesh-hold: Rejected updates normalized to |E|: 0.581736
+nofill-mesh-hold: Absorbed updates: 677372, normalized to |E|: 0.647256
+nofill-mesh-hold: Distance changes: 473129, per vertex: 1.804844
+nofill-mesh-hold: TRAM messages: 8456, bytes sent: 25086056, bytes allocated: 415764608
+nofill-mesh-hold: TRAM hold: absorbed 677372 of 1716987 items (39.451201%)
+nofill-mesh-hold: Updates: created: 1716987
+nofill-rmat-off: Compute time: 0.108236
+nofill-rmat-off: Rejected updates normalized to |E|: 1.264631
+nofill-rmat-off: Absorbed updates: 0, normalized to |E|: 0.000000
+nofill-rmat-off: Distance changes: 443826, per vertex: 1.693062
+nofill-rmat-off: TRAM messages: 3286, bytes sent: 131287984, bytes allocated: 161566048
+nofill-rmat-off: Updates: created: 5468142
+nofill-rmat-hold: Compute time: 0.121695
+nofill-rmat-hold: Rejected updates normalized to |E|: 1.074468
+nofill-rmat-hold: Absorbed updates: 1234478, normalized to |E|: 0.294375
+nofill-rmat-hold: Distance changes: 483948, per vertex: 1.846115
+nofill-rmat-hold: TRAM messages: 2802, bytes sent: 112266624, bytes allocated: 137768736
+nofill-rmat-hold: TRAM hold: absorbed 1234478 of 5910386 items (20.886588%)
+nofill-rmat-hold: Updates: created: 5910386

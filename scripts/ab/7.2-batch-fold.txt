@@ -1,0 +1,6 @@
+# Step 7.2, receiver side: the batch-local fold in the delivery callback, alone
+# and on top of the source hold, so the two contributions can be read apart.
+off --combine off --batch-fold off
+fold --combine off --batch-fold on
+hold --combine hold --batch-fold off
+hold+fold --combine hold --batch-fold on

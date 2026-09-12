@@ -1,0 +1,4 @@
+# Step 7.2: source-side CombiningHold. Both variants run the step 7.1 default
+# flush policy, so the only difference is whether updates fold at the source.
+off --combine off
+hold --combine hold

@@ -370,6 +370,11 @@ AB_METRICS = [
     ("tram_msgs", r"^TRAM messages: ([0-9]+)"),
     ("bytes_sent", r"^TRAM messages: [0-9]+, bytes sent: ([0-9]+)"),
     ("stale_flushes", r"^TRAM stale-destination flushes: ([0-9]+)"),
+    ("absorbed/|E|", r"^Absorbed updates: [0-9]+, normalized to \|E\|: ([0-9.eE+-]+)"),
+    ("hold_absorb%", r"^TRAM hold: absorbed [0-9]+ of [0-9]+ items \(([0-9.eE+-]+)%\)"),
+    # Printed every round; the last one is the converged total.
+    ("created", r"LAST:^Updates: created: ([0-9]+)"),
+    ("dist_changes", r"^Distance changes: ([0-9]+)"),
 ]
 
 
@@ -388,6 +393,11 @@ def log_metrics(path):
     except OSError:
         return found
     for col, pattern in AB_METRICS:
+        if pattern.startswith("LAST:"):
+            hits = re.findall(pattern[5:], text, re.M)
+            if hits:
+                found[col] = float(hits[-1])
+            continue
         m = re.search(pattern, text, re.M)
         if m:
             found[col] = float(m.group(1))
