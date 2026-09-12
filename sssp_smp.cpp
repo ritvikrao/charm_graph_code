@@ -46,6 +46,9 @@ int generate_mode;   // 0 = read from file, 1 = generate automatically
 int S;               // seed for randomization
 cost lmax;           // long maximum
 #define HISTO_BUCKET_COUNT 2048 // needed macro for array init
+// Degrees and arrival counts are binned by floor(log2(x)) + 1, with 0 in its
+// own bin. 32 covers any count a long can hold that a run could produce.
+#define DEGREE_CLASSES 32
 int histo_reduction_width = HISTO_BUCKET_COUNT / 8;
 double reduction_delay =
     0.1;                   // each histogram reduction happens at this interval
@@ -55,15 +58,58 @@ bool verify_mode = false;  // --verify: check the result against serial Dijkstra
 // reference. Filled in by Main; not a Charm readonly, because only PE 0 needs
 // it and the chares get their slice through their own entry methods.
 GraphSpec graph_spec;
-// Flush the aggregation buffers once every this many controller rounds.
-// Step 7 of the SC27 plan makes this cadence adaptive; until then it is at
-// least a named, reproducible knob rather than a coin flip.
+// Flush the aggregation buffers once every this many controller rounds, on
+// average -- each chare draws independently, so this is a rate and not a
+// period. Step 7 of the SC27 plan makes this cadence adaptive; until then it is
+// at least a named, reproducible knob rather than a coin flip, and --flush-
+// interval makes it an A/B.
+//
+// It matters more than it looks. htram's own idle-triggered flush is compiled
+// out (IDLE_FLUSH at htram_group.h:7; idleFlush() returns true and does
+// nothing) and the periodic timer is off by default, so a partly-filled
+// aggregation buffer has exactly two ways out: fill to bufSize, or catch one of
+// these draws. In the tail there is not enough traffic left to fill anything,
+// which is the mechanism H4 of step 6 is about.
 int flush_round_interval = 5;
 // --timeout <seconds>: abandon a run that has not converged. 0 disables it.
 // There is deliberately no default: a truncated run is a failed run, and the
 // old behaviour was to give up after 30 s and print the partial distances with
 // the same banner and the same exit status as a converged run.
 double timeout_seconds = 0.0;
+// --bucket-width <w>: distance units per histogram bucket. The width is
+// otherwise derived from |V| alone -- log V for the random-graph modes, sqrt V
+// for the mesh -- which is exactly what H1 of step 6 puts in question: a rule
+// that reads nothing about the distances the graph actually produces. 0 keeps
+// the derived rule, so this is inert unless passed.
+double bucket_width_override = 0.0;
+// --round-delay <ms>: wait this long between the end of one controller round
+// and the start of the next. The cycle is otherwise back-to-back -- every chare
+// calls contribute_histogram() at the end of current_thresholds() -- so the
+// cadence is whatever a reduction plus a broadcast costs, and is not a knob at
+// all. 0 keeps that, which is what every measurement so far was taken with.
+double round_delay_ms = 0.0;
+// --partition-jitter <percent>: how far a PE's share of the vertices may
+// deviate from V/N in the uniform mode, which draws its partition sizes at
+// random rather than dividing evenly.
+//
+// This is not a cosmetic option. Mode 1 is the only mode that does it: the mesh
+// and RMAT both hand each PE exactly V/N vertices. So a comparison of load
+// balance between the uniform graph and a scale-free one is, at the default,
+// comparing a deliberately skewed partition against an even one. H3 of step 6
+// is that comparison, so it runs every mode at 0. The default stays 20 because
+// that is what every measurement to date used and what the golden digests were
+// recorded with.
+//
+// The digests do not move either way. A uniform graph's adjacency is a function
+// of the global vertex id alone, so which PE owns a vertex changes who
+// generates it and nothing about what is generated -- which is also why the
+// gate can require the same digest at ppn 1 and ppn 4.
+int partition_jitter_percent = 20;
+// --diag <prefix>: write the controller's own time series to
+// <prefix>.rounds.csv, and in the ACIC_DIAG build the bucket, vertex-count,
+// degree and arrival profiles beside it. Empty disables all of them.
+// design/scale-free-diagnosis.md lists what each file holds.
+std::string diag_prefix;
 // tram constants
 // Aggregation buffer size in items, settable with --bufsize. htram used to
 // accept this and then ignore it, so changing the buffer size meant editing
@@ -76,6 +122,47 @@ bool enable_buffer_flushing =
 tram_proxy_t tram_proxy;
 
 void fast_exit(void *obj, double time);
+
+/**
+ * Layout of the msg_stats reduction that print_distances() sends to done().
+ * The array grew by accretion with its indices open-coded at both ends, as
+ * `3 + HISTO_BUCKET_COUNT` and friends; naming them is the only way to append
+ * to it without arithmetic errors that a reduction would never report.
+ */
+enum {
+  STAT_WASTED = 0,
+  STAT_REJECTED,
+  STAT_VCOUNT, // HISTO_BUCKET_COUNT + 1 entries: one per bucket, plus infinity
+  STAT_NOTED = STAT_VCOUNT + HISTO_BUCKET_COUNT + 1,
+  STAT_EDGES,
+  STAT_DISTANCE_CHANGES,
+  STAT_GRAPH_BYTES,
+  STAT_INSTRUCTIONS,  // PAPI builds only
+  STAT_BATCH_ITEMS,   // ACIC_DIAG builds only, from here down
+  STAT_BATCH_ABSORBABLE,
+  STAT_HISTO_CREATED, // HISTO_BUCKET_COUNT entries
+  // Vertices binned by out-degree, and the traffic that lands on each bin.
+  // H2 is a claim about *where* the redundant updates go, not how many there
+  // are, and a total cannot answer it.
+  STAT_DEG_VERTICES = STAT_HISTO_CREATED + HISTO_BUCKET_COUNT,
+  STAT_DEG_EDGES = STAT_DEG_VERTICES + DEGREE_CLASSES,
+  STAT_DEG_ARRIVALS = STAT_DEG_EDGES + DEGREE_CLASSES,
+  STAT_DEG_REJECTS = STAT_DEG_ARRIVALS + DEGREE_CLASSES,
+  // The same traffic binned by how much of it each vertex received, which is
+  // the concentration figure: what share of all arrivals lands on what share
+  // of the vertices. That is what a combining table has to exploit.
+  STAT_ARR_VERTICES = STAT_DEG_REJECTS + DEGREE_CLASSES,
+  STAT_ARR_ARRIVALS = STAT_ARR_VERTICES + DEGREE_CLASSES,
+  STAT_END = STAT_ARR_ARRIVALS + DEGREE_CLASSES
+};
+
+#ifdef ACIC_DIAG
+const int stat_count = STAT_END;
+#elif defined(PAPI)
+const int stat_count = STAT_INSTRUCTIONS + 1;
+#else
+const int stat_count = STAT_INSTRUCTIONS;
+#endif
 
 void start_reductions(void *obj, double time) { arr.contribute_histogram(0); }
 
@@ -135,6 +222,35 @@ public:
   }
 };
 
+/**
+ * One row of the controller's own time series, kept by Main and written out at
+ * the end by --diag. Everything here is already computed inside
+ * reduce_histogram(); recording it costs a push_back on PE 0 per round and
+ * nothing at all on the worker path, which is what makes it safe to leave in
+ * the timed build.
+ *
+ * `occupied` and `span` are the measurement H1 turns on. The reduction only
+ * carries a window of histo_reduction_width buckets, so both describe the
+ * window rather than the whole 2048-bucket range -- but the window is also
+ * exactly what the percentile cut has to work with, so it is the right
+ * denominator for asking whether the controller has any resolution to use.
+ */
+struct RoundRecord {
+  double t;      // seconds since compute_begin
+  long histogram_sum;
+  int window_first;  // bucket index the reduced window starts at
+  int first_nonzero; // the frontier: lowest bucket still holding work
+  int occupied;      // buckets inside the window holding a positive count
+  int span;          // last occupied bucket - first occupied + 1, or 0
+  int heap_threshold;
+  int tram_threshold;
+  long updates_created;
+  long updates_processed;
+  long updates_noted;
+  long distance_changes;
+  long done_vertices;
+};
+
 class Main : public CBase_Main {
 private:
   long start_vertex;
@@ -148,6 +264,7 @@ private:
   int reduction_counts = 0;
   int no_incoming = 0;
   std::vector<double> reduction_times;
+  std::vector<RoundRecord> rounds; // --diag; see RoundRecord
   bool first_qd_done = false;
   bool second_qd_done = false;
   int activeBucketMax = 10;
@@ -199,6 +316,52 @@ public:
           return;
         }
         buffer_size = std::stoi(m->argv[++i]);
+      } else if (arg.rfind("--bucket-width=", 0) == 0) {
+        bucket_width_override = std::stod(arg.substr(15));
+      } else if (arg == "--bucket-width") {
+        if (i + 1 >= m->argc) {
+          ckout << "--bucket-width needs a width in distance units" << endl;
+          CkExit(1);
+          return;
+        }
+        bucket_width_override = std::stod(m->argv[++i]);
+      } else if (arg.rfind("--round-delay=", 0) == 0) {
+        round_delay_ms = std::stod(arg.substr(14));
+      } else if (arg == "--round-delay") {
+        if (i + 1 >= m->argc) {
+          ckout << "--round-delay needs a value in milliseconds" << endl;
+          CkExit(1);
+          return;
+        }
+        round_delay_ms = std::stod(m->argv[++i]);
+      } else if (arg.rfind("--partition-jitter=", 0) == 0) {
+        partition_jitter_percent = std::stoi(arg.substr(19));
+      } else if (arg == "--partition-jitter") {
+        if (i + 1 >= m->argc) {
+          ckout << "--partition-jitter needs a percentage" << endl;
+          CkExit(1);
+          return;
+        }
+        partition_jitter_percent = std::stoi(m->argv[++i]);
+      } else if (arg.rfind("--flush-interval=", 0) == 0) {
+        flush_round_interval = std::stoi(arg.substr(17));
+      } else if (arg == "--flush-interval") {
+        if (i + 1 >= m->argc) {
+          ckout << "--flush-interval needs a number of controller rounds"
+                << endl;
+          CkExit(1);
+          return;
+        }
+        flush_round_interval = std::stoi(m->argv[++i]);
+      } else if (arg.rfind("--diag=", 0) == 0) {
+        diag_prefix = arg.substr(7);
+      } else if (arg == "--diag") {
+        if (i + 1 >= m->argc) {
+          ckout << "--diag needs an output path prefix" << endl;
+          CkExit(1);
+          return;
+        }
+        diag_prefix = m->argv[++i];
       } else if (arg.rfind("--", 0) == 0) {
         ckout << "Unknown option " << arg.c_str() << endl;
         CkExit(1);
@@ -212,6 +375,9 @@ public:
             << "<mode 0=csv,1=uniform,2=mesh,3=rmat,4=gapbs> "
             << "<tram percentile> <heap percentile> "
             << "[--verify] [--timeout <seconds>] [--bufsize <items>]" << endl
+            << "       [--bucket-width <distance units>] "
+            << "[--round-delay <ms>] [--flush-interval <rounds>] "
+            << "[--partition-jitter <percent>] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -219,6 +385,22 @@ public:
             << "  mode 0 reads a comma-separated edge list serially on PE 0 "
             << "and is kept only for the graphs/ directory; convert those to "
             << ".wsg with tools/graph_convert." << endl;
+      CkExit(1);
+      return;
+    }
+    if (partition_jitter_percent < 0 || partition_jitter_percent > 100) {
+      ckout << "--partition-jitter must be a percentage in 0..100" << endl;
+      CkExit(1);
+      return;
+    }
+    if (flush_round_interval < 1) {
+      ckout << "--flush-interval must be at least 1 (flush every round)"
+            << endl;
+      CkExit(1);
+      return;
+    }
+    if (bucket_width_override < 0.0) {
+      ckout << "--bucket-width must be positive" << endl;
       CkExit(1);
       return;
     }
@@ -295,14 +477,22 @@ public:
       // for each pe, generate a random vertex and edge count, and send to pes
       long remaining_vertices = V;
       long current_start_index = 0; // tracks start vertex for indices
-      // Partition sizes vary by +-20%. Drawn with the same portable generator
-      // as the graph itself, so a run has the same load balance on every
-      // machine -- <random> would not give that. See graphlib/rng.h.
+      // Partition sizes vary by +-partition-jitter percent, 20 by default.
+      // Drawn with the same portable generator as the graph itself, so a run
+      // has the same load balance on every machine -- <random> would not give
+      // that. See graphlib/rng.h.
+      //
+      // Integer arithmetic throughout, because 80V/100N and 4V/5N are the same
+      // rational and so floor to the same value: at the default this draws the
+      // identical partition the previous code did.
       VertexRng partition_rng(-1, S);
-      long vertex_low = (V * 4) / (N * 5);
-      long vertex_span = ((V * 6) / (N * 5)) - vertex_low + 1;
-      long edge_low = (num_global_edges * 4) / (N * 5);
-      long edge_span = ((num_global_edges * 6) / (N * 5)) - edge_low + 1;
+      const long low_pct = 100 - partition_jitter_percent;
+      const long high_pct = 100 + partition_jitter_percent;
+      long vertex_low = (V * low_pct) / (N * 100);
+      long vertex_span = ((V * high_pct) / (N * 100)) - vertex_low + 1;
+      long edge_low = (num_global_edges * low_pct) / (N * 100);
+      long edge_span =
+          ((num_global_edges * high_pct) / (N * 100)) - edge_low + 1;
       long *vertex_counts = new long[N];
       long *edge_counts = new long[N];
       for (int i = 0; i < N; i++) {
@@ -533,6 +723,31 @@ public:
     arr[dest_proc].start_algo(new_edge);
   }
 
+  void record_round(double now, long histogram_sum, int first_nonzero,
+                    int occupied, int span, int heap_threshold,
+                    int tram_threshold,
+                    long updates_created, long updates_processed,
+                    long updates_noted, long distance_changes,
+                    long done_vertices) {
+    if (diag_prefix.empty())
+      return;
+    RoundRecord r;
+    r.t = now - compute_begin;
+    r.histogram_sum = histogram_sum;
+    r.window_first = last_first_nonzero;
+    r.first_nonzero = first_nonzero;
+    r.occupied = occupied;
+    r.span = span;
+    r.heap_threshold = heap_threshold;
+    r.tram_threshold = tram_threshold;
+    r.updates_created = updates_created;
+    r.updates_processed = updates_processed;
+    r.updates_noted = updates_noted;
+    r.distance_changes = distance_changes;
+    r.done_vertices = done_vertices;
+    rounds.push_back(r);
+  }
+
   /**
    * Receive histo values from pes
    * The idea is to get the distribution of update values, then
@@ -554,13 +769,22 @@ public:
     int tram_threshold = 0;
     int bfs_threshold = heap_threshold;
     long active_counter = 0;
+    int occupied = 0;      // buckets in the window with a positive count
+    int window_last = -1;  // index of the last of them, within the window
     // calculate the total histogram sum
     for (int i = 0; i < histo_reduction_width; i++) {
       histogram_sum += histo_values[i];
-      if ((histo_values[i] > 0) && (first_nonzero == -1)) {
-        first_nonzero = i + last_first_nonzero;
+      if (histo_values[i] > 0) {
+        occupied++;
+        window_last = i;
+        if (first_nonzero == -1) {
+          first_nonzero = i + last_first_nonzero;
+        }
       }
     }
+    int span = (first_nonzero == -1)
+                   ? 0
+                   : window_last - (first_nonzero - last_first_nonzero) + 1;
 #ifdef PRINT_HISTO
     histoSeq->insert(last_first_nonzero, histo_reduction_width, histo_values);
 #endif
@@ -576,6 +800,9 @@ public:
         (updates_created > 1000) &&
         (updates_created == previous_updates_created) &&
         (updates_processed == previous_updates_processed)) {
+      record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
+                   -1, -1, updates_created, updates_processed, updates_noted,
+                   distance_changes, done_vertex_count);
       ckout << endl << "updates_processed and updates_created match" << endl;
 #ifdef INFO_PRINTS
       ckout << "Threshold: " << previous_threshold << endl;
@@ -644,6 +871,14 @@ public:
       // and sums that garbage into the next global histogram.
       first_nonzero = last_first_nonzero;
     }
+    // Recorded before the -1 is folded away below, so a round whose window
+    // held nothing reads as exactly that rather than as a window that happened
+    // not to move. heap_threshold - first_nonzero is the controller's actual
+    // dynamic range for the round, which is what H1 is really asking about.
+    record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
+                 heap_threshold, tram_threshold, updates_created,
+                 updates_processed, updates_noted, distance_changes,
+                 done_vertex_count);
     // arr.contribute_histogram(first_nonzero-1);
     last_first_nonzero = first_nonzero;
     arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
@@ -653,51 +888,127 @@ public:
     // CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
   }
 
+  /**
+   * --diag output. Written once, at the end, from PE 0 -- nothing here is on a
+   * timed path. The round series comes from Main's own record; the bucket
+   * profile is a cumulative per-bucket creation count reduced over the PEs,
+   * which exists only in the ACIC_DIAG build because keeping it costs an extra
+   * increment per relaxation.
+   */
+  void write_diag_files(long *msg_stats) {
+    if (diag_prefix.empty())
+      return;
+    std::string rounds_path = diag_prefix + ".rounds.csv";
+    std::ofstream out(rounds_path.c_str());
+    out << "round,t,histogram_sum,window_first,first_nonzero,occupied,span,"
+           "heap_threshold,tram_threshold,updates_created,updates_processed,"
+           "updates_noted,distance_changes,done_vertices\n";
+    for (size_t i = 0; i < rounds.size(); i++) {
+      const RoundRecord &r = rounds[i];
+      out << i << ',' << r.t << ',' << r.histogram_sum << ','
+          << r.window_first << ',' << r.first_nonzero << ',' << r.occupied
+          << ',' << r.span << ',' << r.heap_threshold << ','
+          << r.tram_threshold << ','
+          << r.updates_created << ',' << r.updates_processed << ','
+          << r.updates_noted << ',' << r.distance_changes << ','
+          << r.done_vertices << '\n';
+    }
+    ckout << "DIAG wrote " << rounds.size() << " rounds to "
+          << rounds_path.c_str() << endl;
+#ifdef ACIC_DIAG
+    std::string buckets_path = diag_prefix + ".buckets.csv";
+    std::ofstream buckets(buckets_path.c_str());
+    buckets << "bucket,created\n";
+    for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
+      buckets << i << ',' << msg_stats[STAT_HISTO_CREATED + i] << '\n';
+    ckout << "DIAG wrote " << HISTO_BUCKET_COUNT << " buckets to "
+          << buckets_path.c_str() << endl;
+
+    std::string degree_path = diag_prefix + ".degree.csv";
+    std::ofstream degree_out(degree_path.c_str());
+    degree_out << "class,min_degree,vertices,out_edges,arrivals,rejects\n";
+    for (int i = 0; i < DEGREE_CLASSES; i++)
+      degree_out << i << ',' << (i == 0 ? 0 : (1L << (i - 1))) << ','
+                 << msg_stats[STAT_DEG_VERTICES + i] << ','
+                 << msg_stats[STAT_DEG_EDGES + i] << ','
+                 << msg_stats[STAT_DEG_ARRIVALS + i] << ','
+                 << msg_stats[STAT_DEG_REJECTS + i] << '\n';
+
+    std::string arrivals_path = diag_prefix + ".arrivals.csv";
+    std::ofstream arrivals_out(arrivals_path.c_str());
+    arrivals_out << "class,min_arrivals,vertices,arrivals\n";
+    for (int i = 0; i < DEGREE_CLASSES; i++)
+      arrivals_out << i << ',' << (i == 0 ? 0 : (1L << (i - 1))) << ','
+                   << msg_stats[STAT_ARR_VERTICES + i] << ','
+                   << msg_stats[STAT_ARR_ARRIVALS + i] << '\n';
+    ckout << "DIAG wrote degree and arrival profiles to "
+          << degree_path.c_str() << " and " << arrivals_path.c_str() << endl;
+#endif
+#ifdef VCOUNT
+    // Vertices whose tentative distance currently falls in each bucket, plus
+    // one trailing row for the unreached. The controller's done_vertices
+    // column is a prefix sum of this, which is why it reads 0 in a build
+    // without VCOUNT.
+    std::string vcount_path = diag_prefix + ".vcount.csv";
+    std::ofstream vcount_out(vcount_path.c_str());
+    vcount_out << "bucket,vertices\n";
+    for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
+      vcount_out << i << ',' << msg_stats[STAT_VCOUNT + i] << '\n';
+    vcount_out << "unreached," << msg_stats[STAT_VCOUNT + HISTO_BUCKET_COUNT]
+               << '\n';
+    ckout << "DIAG wrote vertex counts to " << vcount_path.c_str() << endl;
+#endif
+  }
+
   void done(long *msg_stats, int N) {
     // ends program, prints that program is ended
     // ckout << "Completed" << endl;
     // CkPrintf("Memory usage at end: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
     total_time = CkWallTimer() - start_time;
-    ckout << "Actual edges: " << msg_stats[4 + HISTO_BUCKET_COUNT] << endl;
+    ckout << "Actual edges: " << msg_stats[STAT_EDGES] << endl;
     ckout << "Read time: " << read_time << endl;
     ckout << "Compute time: " << compute_time << endl;
     ckout << "Total time: " << total_time << endl;
-    ckout << "Wasted updates: " << msg_stats[0] - V << endl;
+    ckout << "Wasted updates: " << msg_stats[STAT_WASTED] - V << endl;
     ckout << "Wasted updates normalized to |E|: "
-          << (double)(msg_stats[0] - V) / msg_stats[4 + HISTO_BUCKET_COUNT]
+          << (double)(msg_stats[STAT_WASTED] - V) / msg_stats[STAT_EDGES]
           << endl;
-    ckout << "Rejected updates: " << msg_stats[1] << endl;
+    ckout << "Rejected updates: " << msg_stats[STAT_REJECTED] << endl;
     ckout << "Rejected updates normalized to |E|: "
-          << (double)msg_stats[1] / msg_stats[4 + HISTO_BUCKET_COUNT] << endl;
+          << (double)msg_stats[STAT_REJECTED] / msg_stats[STAT_EDGES] << endl;
     ckout << "Number of threshold changes: " << threshold_change_counter
           << endl;
     ckout << "Number of reductions: " << reduction_counts << endl;
-    ckout << "Updates noted: " << msg_stats[3 + HISTO_BUCKET_COUNT] << endl;
-    ckout << "Distance changes: " << msg_stats[5 + HISTO_BUCKET_COUNT]
-          << ", per vertex: " << msg_stats[5 + HISTO_BUCKET_COUNT] * 1.0 / V
+    ckout << "Updates noted: " << msg_stats[STAT_NOTED] << endl;
+    ckout << "Distance changes: " << msg_stats[STAT_DISTANCE_CHANGES]
+          << ", per vertex: " << msg_stats[STAT_DISTANCE_CHANGES] * 1.0 / V
           << endl;
 #ifdef VCOUNT
     long vcount_sum = 0;
-    ckout << "Vcount: [ ";
-    for (int i = 0; i < HISTO_BUCKET_COUNT + 1; i++) {
-      ckout << msg_stats[i + 2] << ", ";
-      vcount_sum += msg_stats[i + 2];
-    }
-    ckout << endl;
+    for (int i = 0; i < HISTO_BUCKET_COUNT + 1; i++)
+      vcount_sum += msg_stats[STAT_VCOUNT + i];
     ckout << "Vcount sum: " << vcount_sum << endl;
 #endif
-    ckout << "Graph bytes: " << msg_stats[6 + HISTO_BUCKET_COUNT]
-          << ", per edge: "
-          << msg_stats[6 + HISTO_BUCKET_COUNT] * 1.0 /
-                 msg_stats[4 + HISTO_BUCKET_COUNT]
-          << endl;
+    ckout << "Graph bytes: " << msg_stats[STAT_GRAPH_BYTES] << ", per edge: "
+          << msg_stats[STAT_GRAPH_BYTES] * 1.0 / msg_stats[STAT_EDGES] << endl;
 #ifdef PAPI
-    ckout << "Total insts: " << msg_stats[7 + HISTO_BUCKET_COUNT] << endl;
+    ckout << "Total insts: " << msg_stats[STAT_INSTRUCTIONS] << endl;
     ckout << "Insts per edge: "
-          << msg_stats[7 + HISTO_BUCKET_COUNT] * 1.0 /
-                 msg_stats[4 + HISTO_BUCKET_COUNT]
-          << endl;
+          << msg_stats[STAT_INSTRUCTIONS] * 1.0 / msg_stats[STAT_EDGES] << endl;
 #endif
+#ifdef ACIC_DIAG
+    // The receiver-side half of the combining ceiling: how much of the traffic
+    // a fold inside the delivery callback could have collapsed. Reported
+    // against rejected updates, which bound what *any* combining scheme could
+    // remove, so the gap between the two is the part that needs a hold living
+    // longer than one batch.
+    ckout << "Batch items: " << msg_stats[STAT_BATCH_ITEMS]
+          << ", absorbable within a batch: " << msg_stats[STAT_BATCH_ABSORBABLE]
+          << " (" << 100.0 * msg_stats[STAT_BATCH_ABSORBABLE] /
+                         (msg_stats[STAT_BATCH_ITEMS] ? msg_stats[STAT_BATCH_ITEMS] : 1)
+          << "%)" << endl;
+#endif
+    write_diag_files(msg_stats);
     arr.get_max_cost();
   }
 
@@ -838,6 +1149,34 @@ private:
       pq;          // heap of messages
   long *histogram; // local histogram of data, from 0 to max_size, divided into
                    // HISTO_BUCKET_COUNT buckets
+#ifdef ACIC_DIAG
+  // histogram[] is the live population and is back at zero when the run ends,
+  // so it cannot answer how much of the bucket range a graph ever reached.
+  // This one is only ever incremented. It costs a second 16 KB array touched
+  // once per relaxation, which is why it is not in the timed build.
+  long *histo_created = nullptr;
+  long batch_items = 0;      // updates delivered to this PE in batches
+  long batch_absorbable = 0; // ... repeating a destination inside their batch
+  std::vector<long> batch_table;  // open addressed, reused between batches
+  long *arrivals_per_vertex = nullptr; // updates delivered to each local vertex
+  long deg_vertices[DEGREE_CLASSES] = {0};
+  long deg_edges[DEGREE_CLASSES] = {0};
+  long deg_arrivals[DEGREE_CLASSES] = {0};
+  long deg_rejects[DEGREE_CLASSES] = {0};
+  long arr_vertices[DEGREE_CLASSES] = {0};
+  long arr_arrivals[DEGREE_CLASSES] = {0};
+
+  // floor(log2(x)) + 1, with 0 in its own bin: 0 -> 0, 1 -> 1, 2..3 -> 2,
+  // 4..7 -> 3, and so on.
+  static int degree_class(long x) {
+    int c = 0;
+    while (x > 0 && c < DEGREE_CLASSES - 1) {
+      x >>= 1;
+      c++;
+    }
+    return c;
+  }
+#endif
   long *vcount; // array of vertex distances, calculated with same formula as
                 // histogram
   int heap_threshold; // highest bucket where messages can be pushed to heap
@@ -950,9 +1289,15 @@ public:
   void initialize_data(long *partition, int dividers) {
     histogram = new long[HISTO_BUCKET_COUNT];
     vcount = new long[HISTO_BUCKET_COUNT + 1]; // histo buckets plus infty
+#ifdef ACIC_DIAG
+    histo_created = new long[HISTO_BUCKET_COUNT];
+#endif
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++) {
       histogram[i] = 0;
       vcount[i] = 0;
+#ifdef ACIC_DIAG
+      histo_created[i] = 0;
+#endif
     }
     vcount[HISTO_BUCKET_COUNT] = 0;
     partition_index = new long[dividers];
@@ -973,6 +1318,11 @@ public:
     distances = new cost[num_vertices];
     for (long i = 0; i < num_vertices; i++)
       distances[i] = lmax;
+#ifdef ACIC_DIAG
+    arrivals_per_vertex = new long[num_vertices];
+    for (long i = 0; i < num_vertices; i++)
+      arrivals_per_vertex[i] = 0;
+#endif
     vcount[HISTO_BUCKET_COUNT] += num_vertices;
     flush_rng = VertexRng(thisIndex, S);
     heap_threshold = initial_threshold;
@@ -982,7 +1332,7 @@ public:
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
       pq_hold[i].reserve(4096);
     info_array = new long[histo_reduction_width + 7];
-    bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * log(V));
+    set_bucket_width(log(V));
     CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
   }
 
@@ -998,13 +1348,12 @@ public:
 
   void generate_2d_graph(long *partition, int dividers) {
     initialize_data(partition, dividers);
-    bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * sqrt(V));
+    set_bucket_width(sqrt(V));
 #ifdef INFO_PRINTS
     ckout << "Generating local graph on PE " << CkMyPe() << " with "
           << num_vertices << " vertices" << endl;
 #endif
     long side_length = mesh_side_length(V);
-    bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * sqrt(V));
     cost max_edges_sum = 0;
     std::vector<Edge> adjacency; // one scratch buffer, reused for every vertex
     local_graph.begin(num_vertices, 4 * num_vertices);
@@ -1033,9 +1382,11 @@ public:
   void generate_local_graph(long _num_vertices, long _num_edges,
                             long *partition, int dividers) {
 #ifdef INFO_PRINTS
+    // _num_edges is not printed: it is a draw Main made that nothing acts on,
+    // because gen_random_vertex derives a vertex's degree from the vertex id.
+    // Printing it suggested this PE had been told how many edges to make.
     ckout << "Generating local graph on PE " << CkMyPe() << " with "
-          << _num_vertices << " vertices and " << _num_edges << " edges"
-          << endl;
+          << _num_vertices << " vertices" << endl;
 #endif
     initialize_data(partition, dividers);
     cost max_edges_sum = 0;
@@ -1074,7 +1425,7 @@ public:
    */
   void generate_rmat_graph(long *partition, int dividers) {
     initialize_data(partition, dividers);
-    bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * log(V));
+    set_bucket_width(log(V));
 
     const long first_edge = (long)((double)num_global_edges * thisIndex / N);
     const long last_edge = (long)((double)num_global_edges * (thisIndex + 1) / N);
@@ -1129,7 +1480,7 @@ public:
    */
   void load_gapbs_graph(std::string path, long *partition, int dividers) {
     initialize_data(partition, dividers);
-    bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * log(V));
+    set_bucket_width(log(V));
     GapbsHeader header = gapbs_read_header(path);
     std::vector<long> row_offset;
     std::vector<Edge> edges;
@@ -1205,14 +1556,73 @@ public:
                                     int count) {
     // ckout << "PE " << CkMyPe() << " receiving " << count << " updates" <<
     // endl;
+    SsspChares *self = (SsspChares *)p;
+#ifdef ACIC_DIAG
+    self->count_batch_duplicates(new_vertex_and_distances, count);
+#endif
     for (int i = 0; i < count; i++) {
-      ((SsspChares *)p)->process_update(new_vertex_and_distances[i]);
+      self->process_update(new_vertex_and_distances[i]);
     }
-    //((SsspChares *)p)->process_heap();
+    // self->process_heap();
   }
+
+#ifdef ACIC_DIAG
+  /**
+   * The receiver-side half of the combining ceiling: how many items in this
+   * batch repeat a destination another item in the same batch already carries.
+   * A min-combine folds each repeat into the entry already there, so this is
+   * exactly what the batch-local fold the plan proposes could absorb -- an
+   * upper bound on it, since it ignores whether the fold would also have to
+   * keep the loser for the histogram.
+   *
+   * It is a ceiling from below, not from above: source-side combining sees
+   * items this never does, and rejected_updates bounds every scheme. The three
+   * numbers together say which half of the redundancy is reachable from where.
+   */
+  void count_batch_duplicates(const Update *items, int count) {
+    if (count <= 0)
+      return;
+    size_t slots = 64;
+    while (slots < (size_t)count * 2)
+      slots <<= 1;
+    batch_table.assign(slots, -1);
+    const size_t mask = slots - 1;
+    for (int i = 0; i < count; i++) {
+      long key = items[i].dest_vertex;
+      size_t slot = (size_t)splitmix64((uint64_t)key) & mask;
+      while (batch_table[slot] != -1 && batch_table[slot] != key)
+        slot = (slot + 1) & mask;
+      if (batch_table[slot] == key)
+        batch_absorbable++;
+      else
+        batch_table[slot] = key;
+    }
+    batch_items += count;
+  }
+#endif
 
   static int get_dest_proc_local_caller(void *p, Update new_upd) {
     return ((SsspChares *)p)->get_dest_proc_local(new_upd);
+  }
+
+  /**
+   * Set the histogram's bucket width, in distance units. Each graph mode passes
+   * the width it derives from |V| -- log V for the random-graph modes, sqrt V
+   * for the mesh -- and --bucket-width replaces that wholesale, which is what
+   * makes H1 of the SC27 plan an A/B rather than a rebuild. Neither rule reads
+   * anything about the distances the graph actually produces, which is the
+   * substance of the hypothesis.
+   *
+   * The reciprocal is written the long way round because that is the
+   * expression every recorded measurement was taken with. Scaling numerator and
+   * denominator by the same power of two cannot change a correctly rounded
+   * quotient, so it is the same double as 1.0 / width -- but the golden digests
+   * do depend on it, so there is no reason to find out the hard way.
+   */
+  void set_bucket_width(double natural_width) {
+    double width =
+        bucket_width_override > 0.0 ? bucket_width_override : natural_width;
+    bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * width);
   }
 
   /**
@@ -1240,6 +1650,9 @@ public:
       // count
       int neighbor_bucket = get_histo_bucket(new_update.distance);
       histogram[neighbor_bucket]++;
+#ifdef ACIC_DIAG
+      histo_created[neighbor_bucket]++;
+#endif
       updates_created_locally++;
       // Bucket 0 means "send now"; a bucket above the threshold hands the
       // item to the library's own per-destination hold, to be released when
@@ -1277,6 +1690,11 @@ public:
     long local_index = dest_vertex - start_vertex;
     cost this_cost = new_vertex_and_distance.distance;
     int this_bucket = get_histo_bucket(this_cost);
+#ifdef ACIC_DIAG
+    arrivals_per_vertex[local_index]++;
+    const int deg_class = degree_class(local_graph.degree(local_index));
+    deg_arrivals[deg_class]++;
+#endif
     if (this_cost < distances[local_index]) {
 #ifdef VCOUNT
       vcount[this_bucket]++;
@@ -1322,6 +1740,9 @@ public:
       histogram[this_bucket]--;
       updates_noted++;
       updates_processed_locally++;
+#ifdef ACIC_DIAG
+      deg_rejects[deg_class]++;
+#endif
     }
   }
 
@@ -1472,7 +1893,23 @@ public:
     //    tram->sanityCheck();
     //    tram->flush_everything();
     arr[thisIndex].process_heap();
-    contribute_histogram(behind_first_nonzero);
+    // The controller's cadence is normally not a knob: this call closes the
+    // loop, so a round costs exactly a reduction plus a broadcast and nothing
+    // sets the period. H4 says the tail advances only at that cadence, which
+    // is testable by making the period longer and seeing whether the tail
+    // grows with it. Default 0 keeps the closed loop, which is what every
+    // measurement so far was taken with.
+    if (round_delay_ms > 0.0) {
+      pending_first_nonzero = behind_first_nonzero;
+      CcdCallFnAfter(delayed_contribute, (void *)this, round_delay_ms);
+    } else
+      contribute_histogram(behind_first_nonzero);
+  }
+
+  int pending_first_nonzero = 0;
+  static void delayed_contribute(void *p, double) {
+    SsspChares *self = (SsspChares *)p;
+    self->contribute_histogram(self->pending_first_nonzero);
   }
 
   /**
@@ -1488,37 +1925,66 @@ public:
     }
     // ckout << "PE " << CkMyPe() << " total instructions: " << values[0] <<
     // endl;
-    long msg_stats[8 + HISTO_BUCKET_COUNT];
-#else
-    long msg_stats[7 + HISTO_BUCKET_COUNT];
 #endif
-    msg_stats[0] = wasted_updates;
-    msg_stats[1] = rejected_updates;
+    std::vector<long> msg_stats(stat_count, 0);
+    msg_stats[STAT_WASTED] = wasted_updates;
+    msg_stats[STAT_REJECTED] = rejected_updates;
     for (int i = 0; i < HISTO_BUCKET_COUNT + 1; i++) {
-      msg_stats[i + 2] = vcount[i];
+      msg_stats[STAT_VCOUNT + i] = vcount[i];
     }
-    msg_stats[3 + HISTO_BUCKET_COUNT] = updates_noted;
-    msg_stats[4 + HISTO_BUCKET_COUNT] = actual_edges;
-    msg_stats[5 + HISTO_BUCKET_COUNT] = distance_changes;
+    msg_stats[STAT_NOTED] = updates_noted;
+    msg_stats[STAT_EDGES] = actual_edges;
+    msg_stats[STAT_DISTANCE_CHANGES] = distance_changes;
     // Topology bytes actually held, summed over PEs. Reported from inside the
     // run because peak RSS cannot see it: this runtime reserves a fixed ~554 MB
     // regardless of graph or PE count, which swamps the graph until it passes a
     // few million vertices.
-    msg_stats[6 + HISTO_BUCKET_COUNT] =
+    msg_stats[STAT_GRAPH_BYTES] =
         (long)(local_graph.bytes() + sizeof(cost) * (size_t)num_vertices);
 #ifdef PAPI
-    msg_stats[7 + HISTO_BUCKET_COUNT] = values[0];
+    msg_stats[STAT_INSTRUCTIONS] = values[0];
+#endif
+#ifdef ACIC_DIAG
+    msg_stats[STAT_BATCH_ITEMS] = batch_items;
+    msg_stats[STAT_BATCH_ABSORBABLE] = batch_absorbable;
+    for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
+      msg_stats[STAT_HISTO_CREATED + i] = histo_created[i];
+    for (long i = 0; i < num_vertices; i++) {
+      long degree = local_graph.degree(i);
+      int dc = degree_class(degree);
+      deg_vertices[dc]++;
+      deg_edges[dc] += degree;
+      int ac = degree_class(arrivals_per_vertex[i]);
+      arr_vertices[ac]++;
+      arr_arrivals[ac] += arrivals_per_vertex[i];
+    }
+    for (int i = 0; i < DEGREE_CLASSES; i++) {
+      msg_stats[STAT_DEG_VERTICES + i] = deg_vertices[i];
+      msg_stats[STAT_DEG_EDGES + i] = deg_edges[i];
+      msg_stats[STAT_DEG_ARRIVALS + i] = deg_arrivals[i];
+      msg_stats[STAT_DEG_REJECTS + i] = deg_rejects[i];
+      msg_stats[STAT_ARR_VERTICES + i] = arr_vertices[i];
+      msg_stats[STAT_ARR_ARRIVALS + i] = arr_arrivals[i];
+    }
+    // One line per PE, read back out of the run log by the harness. H3 asks
+    // whether a contiguous 1-D partitioning of a power law leaves one PE
+    // holding the work, and that is a question about the spread across PEs,
+    // not about a sum or a maximum -- so print the spread rather than reduce
+    // it away. At one line per PE this is affordable up to any PE count a
+    // diagnosis run uses.
+    ckout << "DIAG_PE " << CkMyPe() << " vertices=" << num_vertices
+          << " edges=" << actual_edges
+          << " updates_created=" << updates_created_locally
+          << " updates_processed=" << updates_processed_locally
+          << " distance_changes=" << distance_changes
+          << " rejected=" << rejected_updates
+          << " batch_items=" << batch_items
+          << " batch_absorbable=" << batch_absorbable << endl;
 #endif
 
     CkCallback cb(CkReductionTarget(Main, done), mainProxy);
-
-#ifdef PAPI
-    contribute((8 + HISTO_BUCKET_COUNT) * sizeof(long), msg_stats,
+    contribute(stat_count * sizeof(long), msg_stats.data(),
                CkReduction::sum_long, cb);
-#else
-    contribute((7 + HISTO_BUCKET_COUNT) * sizeof(long), msg_stats,
-               CkReduction::sum_long, cb);
-#endif
     // mainProxy.done();
   }
 

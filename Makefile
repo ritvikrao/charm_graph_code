@@ -17,7 +17,7 @@ CHARMCFLAGS = $(OPTS) -g -O3
 GRAPH_FLAGS = -DGRAPH -DBUCKETS_BY_DEST -DHTRAM_GRAPH_TYPES_HEADER=\"$(CURDIR)/weighted_node_struct.h\"
 SSSP_FLAGS  = $(CHARMCFLAGS) -DTRAM_SMP -DGROUPBY $(GRAPH_FLAGS) -I$(CURDIR) -I$(HTRAM_DIR)
 
-BINARY = sssp_smp sssp_smp_projections sssp_smp_papi
+BINARY = sssp_smp sssp_smp_diag sssp_smp_projections sssp_smp_papi
 all: sssp_smp
 
 .PHONY: all clean remove-out $(HTRAM_DIR)/libhtram_group_graph.a
@@ -31,6 +31,16 @@ SSSP_SRC = sssp_smp.cpp sssp_smp.ci weighted_node_struct.h \
 sssp_smp: $(SSSP_SRC) $(HTRAM_DIR)/libhtram_group_graph.a
 	$(CHARMC_SMP) $(SSSP_FLAGS) sssp_smp.ci
 	$(CHARMC_SMP) $(SSSP_FLAGS) $(HTRAM_DIR)/libhtram_group_graph.a -language charm++ -o $@ sssp_smp.cpp -std=c++1z
+
+# The diagnosis build for step 6 of the SC27 plan. It adds a cumulative
+# per-bucket creation profile, a per-PE work line, and the batch-local
+# combining ceiling -- all of which cost work on the relaxation path, which is
+# why they are a separate binary. Everything it measures is a property of the
+# graph and the algorithm rather than of the clock, so the structural numbers
+# come from here and the timed A/Bs come from sssp_smp.
+sssp_smp_diag: $(SSSP_SRC) $(HTRAM_DIR)/libhtram_group_graph.a
+	$(CHARMC_SMP) $(SSSP_FLAGS) sssp_smp.ci
+	$(CHARMC_SMP) $(SSSP_FLAGS) $(HTRAM_DIR)/libhtram_group_graph.a -language charm++ -o $@ sssp_smp.cpp -std=c++1z -DACIC_DIAG -DVCOUNT
 
 sssp_smp_papi: $(SSSP_SRC) $(HTRAM_DIR)/libhtram_group_graph.a
 	$(CHARMC_SMP) $(SSSP_FLAGS) sssp_smp.ci

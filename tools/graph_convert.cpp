@@ -16,6 +16,7 @@
  *   graph_convert gen  <mode 1|2|3> <vertices> <edges|degree> <seed> <out.wsg>
  *   graph_convert csv  <in.csv> <vertices> <seed> <out.wsg>
  *   graph_convert stat <file.sg|file.wsg>
+ *   graph_convert source <mode 1|2|3> <vertices> <edges|degree> <seed>
  */
 #include "graphlib/graphlib.h"
 
@@ -40,13 +41,10 @@ static void flatten(const LocalCsr &csr, std::vector<long> &row_offset,
   row_offset[(size_t)csr.num_vertices()] = (long)edges.size();
 }
 
-static int do_gen(int argc, char **argv) {
-  if (argc < 7) {
-    std::fprintf(stderr, "gen needs <mode> <vertices> <edges|degree> <seed> "
-                         "<out.wsg>\n");
-    return 2;
-  }
-  GraphSpec spec;
+// <mode> <vertices> <edges|degree> <seed>, starting at argv[2]. Shared by gen
+// and source, which describe the same graph and differ only in what they do
+// with it.
+static bool spec_from_args(char **argv, GraphSpec &spec) {
   spec.mode = atoi(argv[2]);
   spec.num_vertices = atol(argv[3]);
   spec.seed = atoi(argv[5]);
@@ -55,11 +53,23 @@ static int do_gen(int argc, char **argv) {
     spec.num_edges = atol(argv[4]);
     if (!rmat_vertex_count_ok(spec.num_vertices)) {
       std::fprintf(stderr, "rmat needs a power-of-two vertex count\n");
-      return 2;
+      return false;
     }
   } else {
     spec.average_degree = atol(argv[4]);
   }
+  return true;
+}
+
+static int do_gen(int argc, char **argv) {
+  if (argc < 7) {
+    std::fprintf(stderr, "gen needs <mode> <vertices> <edges|degree> <seed> "
+                         "<out.wsg>\n");
+    return 2;
+  }
+  GraphSpec spec;
+  if (!spec_from_args(argv, spec))
+    return 2;
   std::string out = argv[6];
 
   LocalCsr csr;
@@ -123,6 +133,64 @@ static int do_csv(int argc, char **argv) {
   return 0;
 }
 
+/**
+ * Print a usable source vertex, and the out-degree distribution behind the
+ * choice.
+ *
+ * RMAT makes this a real question rather than a formality. A third of the
+ * vertices of a scale-free graph have no out-edges at all, so an arbitrary
+ * source both solves a trivial problem and -- because the convergence test
+ * wants more than a thousand updates before it will believe a run finished --
+ * never terminates. Picking the source by hand per configuration is how a
+ * measurement quietly becomes irreproducible, so pick it by a stated rule: the
+ * lowest-numbered vertex whose out-degree is at least the graph's mean. That
+ * is deterministic, it is the same vertex at every PE count, and it is not
+ * "the biggest hub", which would be a different experiment.
+ */
+static int do_source(int argc, char **argv) {
+  if (argc < 6) {
+    std::fprintf(stderr, "source needs <mode> <vertices> <edges|degree> "
+                         "<seed>\n");
+    return 2;
+  }
+  GraphSpec spec;
+  if (!spec_from_args(argv, spec))
+    return 2;
+  LocalCsr csr;
+  build_full_csr<LongEdge>(spec, csr);
+
+  long isolated = 0, max_degree = 0;
+  for (long v = 0; v < csr.num_vertices(); v++) {
+    long d = csr.degree(v);
+    if (d == 0)
+      isolated++;
+    if (d > max_degree)
+      max_degree = d;
+  }
+  double mean = csr.num_vertices()
+                    ? (double)csr.num_edges() / (double)csr.num_vertices()
+                    : 0.0;
+  long threshold = (long)mean;
+  if (threshold < 1)
+    threshold = 1;
+  long source = -1;
+  for (long v = 0; v < csr.num_vertices() && source < 0; v++)
+    if (csr.degree(v) >= threshold)
+      source = v;
+  if (source < 0) {
+    std::fprintf(stderr, "no vertex has out-degree %ld or more\n", threshold);
+    return 1;
+  }
+  std::fprintf(stderr,
+               "%s: %ld vertices, %ld edges, mean out-degree %.2f, "
+               "max %ld, %ld isolated (%.1f%%)\n",
+               mode_name(spec.mode), csr.num_vertices(), csr.num_edges(), mean,
+               max_degree, isolated,
+               csr.num_vertices() ? 100.0 * isolated / csr.num_vertices() : 0.0);
+  std::printf("%ld\n", source);
+  return 0;
+}
+
 static int do_stat(int argc, char **argv) {
   if (argc < 3) {
     std::fprintf(stderr, "stat needs a file\n");
@@ -142,8 +210,10 @@ int main(int argc, char **argv) {
                  "usage: %s gen  <mode 1|2|3> <vertices> <edges|degree> "
                  "<seed> <out.wsg>\n"
                  "       %s csv  <in.csv> <vertices> <seed> <out.wsg>\n"
-                 "       %s stat <file.sg|file.wsg>\n",
-                 argv[0], argv[0], argv[0]);
+                 "       %s stat <file.sg|file.wsg>\n"
+                 "       %s source <mode 1|2|3> <vertices> <edges|degree> "
+                 "<seed>\n",
+                 argv[0], argv[0], argv[0], argv[0]);
     return 2;
   }
   std::string command = argv[1];
@@ -153,6 +223,8 @@ int main(int argc, char **argv) {
     return do_csv(argc, argv);
   if (command == "stat")
     return do_stat(argc, argv);
+  if (command == "source")
+    return do_source(argc, argv);
   std::fprintf(stderr, "unknown command %s\n", command.c_str());
   return 2;
 }

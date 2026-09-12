@@ -16,8 +16,11 @@ mainmodule sssp_smp
   readonly int initial_threshold;
   readonly bool verify_mode;
   readonly int flush_round_interval;
+  readonly int partition_jitter_percent;
   readonly double timeout_seconds;
   readonly double reduction_delay;
+  readonly double bucket_width_override;
+  readonly double round_delay_ms;
   readonly double flush_timer;
   readonly bool enable_buffer_flushing;
   readonly CProxy_HTram tram_proxy;

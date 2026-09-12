@@ -18,6 +18,9 @@
 #      every generated graph while leaving checks 1 and 2 green, because both
 #      of those move together when the generator does.
 #
+# A fourth check runs at the end: sssp_smp_diag, the step 6 diagnosis build,
+# must reach the golden digest too. Its counters sit on the relaxation path.
+#
 # The generated graph is a pure function of (V, edges, seed, mode), so a digest
 # must also be identical across PE counts. The matrix below varies ppn for that
 # reason; every row of a given graph must produce the same digest.
@@ -68,8 +71,12 @@ CONFIGS=(
   "0 GRAPH_MESH 1 0 4 0.999 0.005 4"
 )
 
+# sssp_smp_diag is built here too. It is the binary every structural number in
+# the step 6 diagnosis comes from, so it has to be known to solve the same
+# graphs to the same answers as the one it is reasoning about; its extra
+# counters are on the relaxation path and could perfectly well be wrong.
 # shellcheck disable=SC2086
-if ! make sssp_smp tools ${SSSP_MAKE_ARGS:-} > "$WORK/build.log" 2>&1; then
+if ! make sssp_smp sssp_smp_diag tools ${SSSP_MAKE_ARGS:-} > "$WORK/build.log" 2>&1; then
   echo "BUILD FAILED"
   tail -30 "$WORK/build.log"
   exit 1
@@ -155,8 +162,31 @@ if ! diff -u "$GOLDEN" <(printf '%s' "$results" | sort -u); then
   failures=$((failures + 1))
 fi
 
+# The diagnosis build must agree with the production build wherever both run.
+# One configuration per graph family is enough: what could differ is the
+# instrumentation, not the mode.
+DIAG_CONFIGS=(
+  "10000 160000 1 1 1 0.999 0.005 4"
+  "10000 0 1 0 2 0.999 0.005 4"
+  "16384 262144 1 0 3 0.999 0.005 4"
+)
+for cfg in "${DIAG_CONFIGS[@]}"; do
+  read -r V E SEED SRC MODE PTRAM PPQ PPN <<< "$cfg"
+  key="$V $E $SEED $SRC $MODE $PTRAM $PPQ"
+  out=$(./sssp_smp_diag "$V" "$E" "$SEED" "$SRC" "$MODE" "$PTRAM" "$PPQ" \
+          --verify --timeout 300 "$PE_FLAG" "$PPN" 2>&1)
+  digest=$(echo "$out" | grep -m1 "^VERIFY parallel digest" | sed 's/^VERIFY parallel digest //')
+  want=$(grep -m1 -F "$key | " "$GOLDEN" | sed 's/^.* | //')
+  if ! echo "$out" | grep -q "^VERIFY PASS" || [ "$digest" != "$want" ]; then
+    echo "FAIL (sssp_smp_diag): $cfg"
+    echo "    diag:   $digest"
+    echo "    golden: $want"
+    failures=$((failures + 1))
+  fi
+done
+
 if [ $failures -ne 0 ]; then
   echo "VERIFY GATE FAILED ($failures)"
   exit 1
 fi
-echo "VERIFY GATE PASSED (${#CONFIGS[@]} configurations)"
+echo "VERIFY GATE PASSED (${#CONFIGS[@]} configurations, plus ${#DIAG_CONFIGS[@]} on sssp_smp_diag)"

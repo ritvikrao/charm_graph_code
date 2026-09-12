@@ -9,6 +9,7 @@ charmrun
 
 # Program binaries (see BINARY in Makefile)
 sssp_smp
+sssp_smp_diag
 sssp_smp_projections
 sssp_smp_papi
 
@@ -25,6 +26,8 @@ graph_convert
 
 # Run output
 slurm-*.out
+acic-diag-*.out
+diag-out*/
 histos.txt
 *.mp4
 logs-2node/
