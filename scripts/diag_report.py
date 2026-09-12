@@ -99,6 +99,26 @@ def h1(outdir):
            "mean occ/round", "mean cut above frontier", "rounds with no reach",
            "distinct thr", "rounds", "unreached"], rows)
 
+    pct = read_csv(os.path.join(outdir, "h1", "percentile.tsv"))
+    if pct:
+        print("    heap-percentile sweep. A controller with resolution to use")
+        print("    should respond to this knob; one that has degenerated to")
+        print("    'admit the frontier bucket' will not.")
+        rows = []
+        spread = {}
+        for r in pct:
+            rows.append([r["graph"], r["heap_percentile"],
+                         r["compute_s"] or "FAILED", r["rejected_per_edge"],
+                         r["threshold_changes"], r["reductions"]])
+            if r["compute_s"]:
+                spread.setdefault(r["graph"], []).append(float(r["compute_s"]))
+        table(["graph", "p_heap", "compute_s", "rej/|E|", "thr changes",
+               "rounds"], rows)
+        for g, times in sorted(spread.items()):
+            print("    %-8s slowest / fastest across the knob: %.2fx"
+                  % (g, max(times) / min(times)))
+        print()
+
     sweep = read_csv(os.path.join(outdir, "h1", "sweep.tsv"))
     if sweep:
         print("    bucket-width sweep (compute seconds, median of the reps)")
@@ -223,14 +243,24 @@ def h3(outdir):
         pr = pe_rows(path)
         if not pr:
             continue
+        # A PE can hold its fair share of the graph and still sit out most
+        # of the run, because the frontier moves. idle_rounds is the rounds in
+        # which a PE processed nothing at all.
+        idle = [r.get("idle_rounds", 0) for r in pr]
+        total_rounds = max([r.get("rounds", 0) for r in pr] + [0])
         rows.append([name, pes, len(pr),
                      "%.2f" % imbalance([r["edges"] for r in pr]),
                      "%.2f" % imbalance([r["updates_created"] for r in pr]),
                      "%.2f" % imbalance([r["updates_processed"] for r in pr]),
+                     "%.0f%%" % (100.0 * sum(idle) / (len(pr) * total_rounds))
+                     if total_rounds else "-",
+                     "%.0f%%" % (100.0 * max(idle) / total_rounds)
+                     if total_rounds else "-",
                      min(r["edges"] for r in pr), max(r["edges"] for r in pr)])
     rows.sort(key=lambda r: (r[0], r[1]))
     table(["graph", "PEs", "rows", "edges max/mean", "created max/mean",
-           "processed max/mean", "min edges", "max edges"], rows)
+           "processed max/mean", "mean idle rounds", "worst PE idle",
+           "min edges", "max edges"], rows)
 
     jitter = read_csv(os.path.join(outdir, "h3", "jitter.tsv"))
     if jitter:

@@ -244,6 +244,12 @@ struct RoundRecord {
   int span;          // last occupied bucket - first occupied + 1, or 0
   int heap_threshold;
   int tram_threshold;
+  // Whether this round took the histogram_sum <= N*100 branch, which abandons
+  // the configured percentiles for 0.9999 -- that is, admits everything. The
+  // plan calls this the two-tier hack; knowing which round it fires on is the
+  // difference between a tail that is cadence-bound and one that is bound by a
+  // controller that has stopped controlling.
+  int two_tier;
   long updates_created;
   long updates_processed;
   long updates_noted;
@@ -725,7 +731,7 @@ public:
 
   void record_round(double now, long histogram_sum, int first_nonzero,
                     int occupied, int span, int heap_threshold,
-                    int tram_threshold,
+                    int tram_threshold, int two_tier,
                     long updates_created, long updates_processed,
                     long updates_noted, long distance_changes,
                     long done_vertices) {
@@ -740,6 +746,7 @@ public:
     r.span = span;
     r.heap_threshold = heap_threshold;
     r.tram_threshold = tram_threshold;
+    r.two_tier = two_tier;
     r.updates_created = updates_created;
     r.updates_processed = updates_processed;
     r.updates_noted = updates_noted;
@@ -801,7 +808,7 @@ public:
         (updates_created == previous_updates_created) &&
         (updates_processed == previous_updates_processed)) {
       record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
-                   -1, -1, updates_created, updates_processed, updates_noted,
+                   -1, -1, 0, updates_created, updates_processed, updates_noted,
                    distance_changes, done_vertex_count);
       ckout << endl << "updates_processed and updates_created match" << endl;
 #ifdef INFO_PRINTS
@@ -816,7 +823,8 @@ public:
     // calculate target percentile
     double heap_percent; // heap percentage
     double tram_percent; // tram percentage
-    if (histogram_sum <= N * 100) {
+    const int two_tier = (histogram_sum <= N * 100) ? 1 : 0;
+    if (two_tier) {
       heap_percent = 0.9999;
       tram_percent = 0.9999;
     } else {
@@ -876,7 +884,7 @@ public:
     // not to move. heap_threshold - first_nonzero is the controller's actual
     // dynamic range for the round, which is what H1 is really asking about.
     record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
-                 heap_threshold, tram_threshold, updates_created,
+                 heap_threshold, tram_threshold, two_tier, updates_created,
                  updates_processed, updates_noted, distance_changes,
                  done_vertex_count);
     // arr.contribute_histogram(first_nonzero-1);
@@ -901,14 +909,14 @@ public:
     std::string rounds_path = diag_prefix + ".rounds.csv";
     std::ofstream out(rounds_path.c_str());
     out << "round,t,histogram_sum,window_first,first_nonzero,occupied,span,"
-           "heap_threshold,tram_threshold,updates_created,updates_processed,"
-           "updates_noted,distance_changes,done_vertices\n";
+           "heap_threshold,tram_threshold,two_tier,updates_created,"
+           "updates_processed,updates_noted,distance_changes,done_vertices\n";
     for (size_t i = 0; i < rounds.size(); i++) {
       const RoundRecord &r = rounds[i];
       out << i << ',' << r.t << ',' << r.histogram_sum << ','
           << r.window_first << ',' << r.first_nonzero << ',' << r.occupied
           << ',' << r.span << ',' << r.heap_threshold << ','
-          << r.tram_threshold << ','
+          << r.tram_threshold << ',' << r.two_tier << ','
           << r.updates_created << ',' << r.updates_processed << ','
           << r.updates_noted << ',' << r.distance_changes << ','
           << r.done_vertices << '\n';
@@ -1159,6 +1167,14 @@ private:
   long batch_absorbable = 0; // ... repeating a destination inside their batch
   std::vector<long> batch_table;  // open addressed, reused between batches
   long *arrivals_per_vertex = nullptr; // updates delivered to each local vertex
+  // A per-PE total says how much work a PE did over the whole run, which is
+  // the wrong question for a frontier algorithm: the load moves, so a PE can
+  // hold a fair share of the graph and still be idle for most of it. Counting
+  // the rounds in which this PE processed nothing at all costs one comparison
+  // per round and answers the temporal half directly.
+  long controller_rounds = 0;
+  long idle_rounds = 0;
+  long processed_at_last_round = 0;
   long deg_vertices[DEGREE_CLASSES] = {0};
   long deg_edges[DEGREE_CLASSES] = {0};
   long deg_arrivals[DEGREE_CLASSES] = {0};
@@ -1857,6 +1873,12 @@ public:
   void current_thresholds(int _heap_threshold, int _tram_threshold,
                           int _bfs_threshold, int behind_first_nonzero,
                           int phase) {
+#ifdef ACIC_DIAG
+    controller_rounds++;
+    if (updates_processed_locally == processed_at_last_round)
+      idle_rounds++;
+    processed_at_last_round = updates_processed_locally;
+#endif
     heap_threshold = _heap_threshold;
     tram_threshold = _tram_threshold;
     bfs_threshold = _bfs_threshold;
@@ -1979,7 +2001,9 @@ public:
           << " distance_changes=" << distance_changes
           << " rejected=" << rejected_updates
           << " batch_items=" << batch_items
-          << " batch_absorbable=" << batch_absorbable << endl;
+          << " batch_absorbable=" << batch_absorbable
+          << " rounds=" << controller_rounds
+          << " idle_rounds=" << idle_rounds << endl;
 #endif
 
     CkCallback cb(CkReductionTarget(Main, done), mainProxy);

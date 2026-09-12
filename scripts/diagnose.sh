@@ -41,6 +41,11 @@ REPS="${SSSP_REPS:-3}"
 PE_FLAG="${SSSP_PE_FLAG:-+ppn}"
 TIMEOUT="${SSSP_TIMEOUT:-600}"
 read -r -a CHARM_FLAGS <<< "${SSSP_CHARM_FLAGS:-}"
+# The two percentile knobs, as positional arguments 6 and 7. Constant for every
+# experiment but H1's percentile sweep, which is the one asking what they are
+# still doing.
+PTRAM=0.999
+PPQ=0.005
 
 V=$((1 << SCALE))
 E=$((V * 16))
@@ -88,7 +93,7 @@ median() { sort -g | awk '{a[NR]=$1} END{ if(NR==0) print ""; else if(NR%2) prin
 run() {
   local bin="$1" log="$2" v="$3" arg2="$4" src="$5" mode="$6"; shift 6
   # shellcheck disable=SC2086
-  $LAUNCH "./$bin" "$v" "$arg2" 1 "$src" "$mode" 0.999 0.005 \
+  $LAUNCH "./$bin" "$v" "$arg2" 1 "$src" "$mode" "$PTRAM" "$PPQ" \
       --timeout "$TIMEOUT" "$@" "$PE_FLAG" "$PPN" \
       ${CHARM_FLAGS[@]+"${CHARM_FLAGS[@]}"} > "$log" 2>&1
   local status=$?
@@ -129,6 +134,30 @@ h1() {
     run sssp_smp_diag "$OUT/h1/$name.diag.log" "$v" "$arg2" "$src" "$mode" \
         --diag "$OUT/h1/$name"
   done
+
+  # If the controller has no resolution to work with, the percentile knob has
+  # nothing to choose and moving it should do nothing. That is a sharper test
+  # of H1 than the width sweep, because it needs no change to the code at all:
+  # these are the numbers the 2024 paper reports as a parameter study.
+  echo "  heap-percentile sweep (median of $REPS, seconds)"
+  printf 'graph\theap_percentile\tcompute_s\trejected_per_edge\tthreshold_changes\treductions\n' \
+      > "$OUT/h1/percentile.tsv"
+  for g in "${GRAPHS[@]}"; do
+    read -r name v arg2 mode src <<< "$g"
+    for pq in 0.001 0.005 0.05 0.5 0.999; do
+      PPQ="$pq"
+      local tag="h1/${name}_p$pq"
+      local t; t=$(timed "$tag" "$v" "$arg2" "$src" "$mode")
+      local log="$OUT/$tag.rep1.log"
+      printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$pq" "$t" \
+          "$(field "$log" 'Rejected updates normalized to |E|: ')" \
+          "$(field "$log" 'Number of threshold changes: ')" \
+          "$(field "$log" 'Number of reductions: ')" \
+          >> "$OUT/h1/percentile.tsv"
+      echo "    $name p_pq=$pq: ${t:-FAILED} s"
+    done
+  done
+  PPQ=0.005
 
   echo "  bucket-width sweep (median of $REPS, seconds)"
   : > "$OUT/h1/sweep.tsv"
