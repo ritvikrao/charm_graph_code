@@ -1,6 +1,10 @@
 #pragma once
 
-#include "NDMeshStreamer.h"
+// Only PUP is needed here. This used to include NDMeshStreamer.h -- Charm++'s
+// own TRAM -- which the retired non-SMP build depended on, and which dragged
+// that whole module into every translation unit that touches a graph type.
+#include "charm++.h"
+#include "pup.h"
 
 typedef long cost;
 
@@ -28,21 +32,6 @@ class Update{
 	}
 };
 
-class Node{
-	public:
-		int home_process;
-		cost distance;
-		std::vector<Edge> adjacent;
-	
-	Node(){}
-	void pup(PUP::er &p) 
-	{
-		p | home_process;
-		p | distance;
-		p | adjacent;
-	}
-};
-
 class LongEdge
 {
 	public:
@@ -56,11 +45,5 @@ class LongEdge
 		p | end;
 		p | distance;
 	}
-};
-
-
-template <>
-struct is_PUPbytes<std::pair<int,int>> {
-  static const bool value = true;
 };
 

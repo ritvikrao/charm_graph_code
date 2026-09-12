@@ -1,8 +1,8 @@
-#include "NDMeshStreamer.h"
 #include "TopoManager.h"
 #include "htram_group.h"
 #include "sssp_smp.decl.h"
 #include "graph_gen.h"
+#include "graphlib/csr.h"
 // #define PAPI
 #ifdef PAPI
 #include <papi.h>
@@ -586,10 +586,15 @@ public:
     ckout << endl;
     ckout << "Vcount sum: " << vcount_sum << endl;
 #endif
-#ifdef PAPI
-    ckout << "Total insts: " << msg_stats[6 + HISTO_BUCKET_COUNT] << endl;
-    ckout << "Insts per edge: "
+    ckout << "Graph bytes: " << msg_stats[6 + HISTO_BUCKET_COUNT]
+          << ", per edge: "
           << msg_stats[6 + HISTO_BUCKET_COUNT] * 1.0 /
+                 msg_stats[4 + HISTO_BUCKET_COUNT]
+          << endl;
+#ifdef PAPI
+    ckout << "Total insts: " << msg_stats[7 + HISTO_BUCKET_COUNT] << endl;
+    ckout << "Insts per edge: "
+          << msg_stats[7 + HISTO_BUCKET_COUNT] * 1.0 /
                  msg_stats[4 + HISTO_BUCKET_COUNT]
           << endl;
 #endif
@@ -714,7 +719,8 @@ public:
  */
 class SsspChares : public CBase_SsspChares {
 private:
-  Node *local_graph;     // structure to hold vertices assigned to this pe
+  LocalCsr local_graph;  // this PE's slice of the topology, flat CSR
+  cost *distances = nullptr; // tentative distance per local vertex
   long start_vertex;     // global index of lowest vertex assigned to this pe
   long num_vertices = 0; // number of vertices assigned to this pe
   VertexRng flush_rng = VertexRng(0, 0); // per-chare flush cadence draw
@@ -862,7 +868,10 @@ public:
     for (int i = 0, j = 0; i < V; j++, i = j * M) {
       dest_table[j] = get_dest_proc(i);
     }
-    local_graph = new Node[num_vertices];
+    distances = new cost[num_vertices];
+    for (long i = 0; i < num_vertices; i++)
+      distances[i] = lmax;
+    vcount[HISTO_BUCKET_COUNT] += num_vertices;
     flush_rng = VertexRng(thisIndex, S);
     heap_threshold = initial_threshold;
     tram_threshold = initial_threshold + 2;
@@ -875,6 +884,16 @@ public:
     CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
   }
 
+  // The mesh is the only input whose exact shape is known in advance, which
+  // makes it the one place a generator bug is caught without a reference
+  // solver. Cheap enough to leave on.
+  void check_mesh_degree(long vertex, long side_length, size_t produced) {
+    int expected = mesh_expected_degree(vertex, side_length);
+    if ((size_t)expected != produced)
+      ckout << "Edge count wrong for vertex " << vertex << ": should be "
+            << expected << " not " << produced << endl;
+  }
+
   void generate_2d_graph(long *partition, int dividers) {
     initialize_data(partition, dividers);
     bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * sqrt(V));
@@ -882,55 +901,25 @@ public:
     ckout << "Generating local graph on PE " << CkMyPe() << " with "
           << num_vertices << " vertices" << endl;
 #endif
-    cost *largest_outedges = new cost[num_vertices];
-    long side_length = (int)std::sqrt((double)V);
+    long side_length = mesh_side_length(V);
     bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * sqrt(V));
-    for (int i = 0; i < num_vertices; i++) {
-      Node new_node;
-      new_node.home_process = thisIndex;
-      new_node.distance = lmax;
-      std::vector<Edge> adj;
-      new_node.adjacent = adj;
-      vcount[HISTO_BUCKET_COUNT]++;
-      long largest_outedge = 0;
-      long this_vertex = (long)i + start_vertex;
-      long x_index = this_vertex / side_length;
-      long y_index = this_vertex % side_length;
-      // See graph_gen.h: identical adjacency for any PE count.
-      gen_mesh_vertex(this_vertex, side_length, S, new_node.adjacent);
-      actual_edges += new_node.adjacent.size();
-      for (size_t j = 0; j < new_node.adjacent.size(); j++) {
-        if (new_node.adjacent[j].distance > largest_outedge)
-          largest_outedge = new_node.adjacent[j].distance;
-      }
-      if (x_index >= side_length) {
-        // Vertex outside the square grid; V was not a perfect square.
-      } else if ((x_index == 0 && y_index == 0) ||
-          (x_index == side_length - 1 && y_index == 0) ||
-          (x_index == 0 && y_index == side_length - 1) ||
-          (x_index == side_length - 1 && y_index == side_length - 1)) {
-        if (new_node.adjacent.size() != 2)
-          ckout << "Edge count wrong for vertex " << this_vertex
-                << " should be 2 not " << new_node.adjacent.size() << endl;
-      } else if (x_index == 0 || y_index == 0 || x_index == side_length - 1 ||
-                 y_index == side_length - 1) {
-        if (new_node.adjacent.size() != 3)
-          ckout << "Edge count wrong for vertex " << this_vertex
-                << " should be 3 not " << new_node.adjacent.size() << endl;
-      } else {
-        if (new_node.adjacent.size() != 4)
-          ckout << "Edge count wrong for vertex " << this_vertex
-                << " should be 4 not " << new_node.adjacent.size() << endl;
-      }
-      std::sort(new_node.adjacent.begin(), new_node.adjacent.end(),
-                [](Edge a, Edge b) { return a.distance < b.distance; });
-      local_graph[i] = new_node;
-      largest_outedges[i] = largest_outedge;
-    }
     cost max_edges_sum = 0;
-    for (int i = 0; i < num_vertices; i++) {
-      max_edges_sum += largest_outedges[i];
+    std::vector<Edge> adjacency; // one scratch buffer, reused for every vertex
+    local_graph.begin(num_vertices, 4 * num_vertices);
+    for (long i = 0; i < num_vertices; i++) {
+      long this_vertex = i + start_vertex;
+      // See graph_gen.h: identical adjacency for any PE count.
+      gen_mesh_vertex(this_vertex, side_length, S, adjacency);
+      actual_edges += adjacency.size();
+      cost largest_outedge = 0;
+      for (size_t j = 0; j < adjacency.size(); j++)
+        if (adjacency[j].distance > largest_outedge)
+          largest_outedge = adjacency[j].distance;
+      max_edges_sum += largest_outedge;
+      check_mesh_degree(this_vertex, side_length, adjacency.size());
+      local_graph.append(adjacency);
     }
+    local_graph.finish();
 #ifdef INFO_PRINTS
     ckout << "PE " << CkMyPe() << " generated " << actual_edges << " edges"
           << endl;
@@ -947,40 +936,27 @@ public:
           << endl;
 #endif
     initialize_data(partition, dividers);
-    cost *largest_outedges = new cost[num_vertices];
-    for (int i = 0; i < num_vertices; i++) {
-      Node new_node;
-      new_node.home_process = thisIndex;
-      new_node.distance = lmax;
-      std::vector<Edge> adj;
-      new_node.adjacent = adj;
-      vcount[HISTO_BUCKET_COUNT]++;
-      long largest_outedge = 0;
-      if ((CkMyPe() == N - 1) && (i >= _num_vertices)) {
-        // Past the end of this PE's share: keep the vertex isolated, but still
-        // record it, or local_graph[i] and largest_outedges[i] stay garbage.
-        local_graph[i] = new_node;
-        largest_outedges[i] = 0;
-        continue;
-      }
-      // Adjacency is a pure function of the global vertex id and the seed, so
-      // the graph does not change with PE count. See graph_gen.h.
-      gen_random_vertex((long)i + start_vertex, V, average_degree, S,
-                        new_node.adjacent);
-      actual_edges += new_node.adjacent.size();
-      for (size_t j = 0; j < new_node.adjacent.size(); j++) {
-        if (new_node.adjacent[j].distance > largest_outedge)
-          largest_outedge = new_node.adjacent[j].distance;
-      }
-      std::sort(new_node.adjacent.begin(), new_node.adjacent.end(),
-                [](Edge a, Edge b) { return a.distance < b.distance; });
-      local_graph[i] = new_node;
-      largest_outedges[i] = largest_outedge;
-    }
     cost max_edges_sum = 0;
-    for (int i = 0; i < num_vertices; i++) {
-      max_edges_sum += largest_outedges[i];
+    std::vector<Edge> adjacency; // one scratch buffer, reused for every vertex
+    local_graph.begin(num_vertices, average_degree * num_vertices);
+    for (long i = 0; i < num_vertices; i++) {
+      adjacency.clear();
+      // Past the end of this PE's share the vertex stays isolated, but it is
+      // still a vertex: it needs a CSR row, or every later row is off by one.
+      if (!((CkMyPe() == N - 1) && (i >= _num_vertices))) {
+        // Adjacency is a pure function of the global vertex id and the seed,
+        // so the graph does not change with PE count. See graph_gen.h.
+        gen_random_vertex(i + start_vertex, V, average_degree, S, adjacency);
+        actual_edges += adjacency.size();
+        cost largest_outedge = 0;
+        for (size_t j = 0; j < adjacency.size(); j++)
+          if (adjacency[j].distance > largest_outedge)
+            largest_outedge = adjacency[j].distance;
+        max_edges_sum += largest_outedge;
+      }
+      local_graph.append(adjacency);
     }
+    local_graph.finish();
     CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
     contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
   }
@@ -988,39 +964,14 @@ public:
   void get_graph(LongEdge *edges, long E, long *partition, int dividers) {
     actual_edges = E;
     initialize_data(partition, dividers);
-    cost *largest_outedges = new cost[num_vertices];
-    if (num_vertices != 0) {
-      for (int i = 0; i < num_vertices; i++) {
-        Node new_node;
-        new_node.home_process = thisIndex;
-        new_node.distance = lmax;
-        std::vector<Edge> adj;
-        new_node.adjacent = adj;
-        local_graph[i] = new_node;
-        vcount[HISTO_BUCKET_COUNT]++;
-        largest_outedges[i] = 0;
-      }
-      for (int i = 0; i < E; i++) {
-        Edge new_edge;
-        new_edge.end = edges[i].end;
-        new_edge.distance = edges[i].distance;
-        int new_edge_origin = edges[i].begin - start_vertex;
-        local_graph[new_edge_origin].adjacent.push_back(new_edge);
-        if (edges[i].distance > largest_outedges[new_edge_origin])
-          largest_outedges[new_edge_origin] = edges[i].distance;
-      }
-      for (int i = 0; i < num_vertices; i++) {
-        std::sort(local_graph[i].adjacent.begin(),
-                  local_graph[i].adjacent.end(),
-                  [](Edge a, Edge b) { return a.distance < b.distance; });
-      }
-    }
-    // reduce largest edge
+    local_graph.build_from_edges(num_vertices, start_vertex, edges, E);
+    // reduce largest edge: edges are sorted by weight within a vertex, so the
+    // heaviest one is the last.
     cost max_edges_sum = 0;
-    if (num_vertices != 0) {
-      for (int i = 0; i < num_vertices; i++) {
-        max_edges_sum += largest_outedges[i];
-      }
+    for (long i = 0; i < num_vertices; i++) {
+      long degree = local_graph.degree(i);
+      if (degree > 0)
+        max_edges_sum += local_graph.edges(i)[degree - 1].distance;
     }
     CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
     contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
@@ -1071,12 +1022,14 @@ public:
   }
 
   void generate_updates(long local_index, bool bfs) {
-    for (int i = 0; i < local_graph[local_index].adjacent.size(); i++) {
+    const Edge *adjacency = local_graph.edges(local_index);
+    const long degree = local_graph.degree(local_index);
+    const cost source_distance = distances[local_index];
+    for (long i = 0; i < degree; i++) {
       // calculate distance pair for neighbor
       Update new_update;
-      new_update.dest_vertex = local_graph[local_index].adjacent[i].end;
-      new_update.distance = local_graph[local_index].distance +
-                            local_graph[local_index].adjacent[i].distance;
+      new_update.dest_vertex = adjacency[i].end;
+      new_update.distance = source_distance + adjacency[i].distance;
       // we are going to send this, so add to the histogram and the send update
       // count
       int neighbor_bucket = get_histo_bucket(new_update.distance);
@@ -1118,22 +1071,22 @@ public:
     long local_index = dest_vertex - start_vertex;
     cost this_cost = new_vertex_and_distance.distance;
     int this_bucket = get_histo_bucket(this_cost);
-    if (this_cost < local_graph[local_index].distance) {
+    if (this_cost < distances[local_index]) {
 #ifdef VCOUNT
       vcount[this_bucket]++;
-      if (local_graph[local_index].distance == lmax) {
+      if (distances[local_index] == lmax) {
         vcount[HISTO_BUCKET_COUNT]--;
       } else
-        vcount[get_histo_bucket(local_graph[local_index].distance)]--;
+        vcount[get_histo_bucket(distances[local_index])]--;
 #endif
-      local_graph[local_index].distance = this_cost;
+      distances[local_index] = this_cost;
       distance_changes++;
       updates_noted++;
       int pq_bucket;
-      if (local_graph[local_index].adjacent.size() > 0) {
+      if (local_graph.degree(local_index) > 0) {
 #ifdef PQ_EDGE_DIST
         pq_bucket = get_histo_bucket(
-            local_graph[local_index].adjacent[0].distance + this_cost);
+            local_graph.edges(local_index)[0].distance + this_cost);
 #ifndef PQ_HOLD_ONLY
         if (pq_bucket > heap_threshold) {
           pq_hold[pq_bucket].push_back(new_vertex_and_distance);
@@ -1185,7 +1138,7 @@ public:
         cost new_distance = new_vertex_and_distance.distance;
         int this_histo_bucket = get_histo_bucket(new_distance);
         long local_index = dest_vertex - start_vertex;
-        if (new_distance == local_graph[local_index].distance) {
+        if (new_distance == distances[local_index]) {
           // for all neighbors
           generate_updates(local_index, false);
         } else {
@@ -1220,7 +1173,7 @@ public:
           dest_vertex < partition_index[thisIndex + 1]) {
         long local_index = dest_vertex - start_vertex;
         //  if the incoming distance is actually smaller
-        if (new_distance == local_graph[local_index].distance) {
+        if (new_distance == distances[local_index]) {
           generate_updates(local_index, false);
         } else {
           rejected_updates++;
@@ -1329,9 +1282,9 @@ public:
     }
     // ckout << "PE " << CkMyPe() << " total instructions: " << values[0] <<
     // endl;
-    long msg_stats[7 + HISTO_BUCKET_COUNT];
+    long msg_stats[8 + HISTO_BUCKET_COUNT];
 #else
-    long msg_stats[6 + HISTO_BUCKET_COUNT];
+    long msg_stats[7 + HISTO_BUCKET_COUNT];
 #endif
     msg_stats[0] = wasted_updates;
     msg_stats[1] = rejected_updates;
@@ -1341,17 +1294,23 @@ public:
     msg_stats[3 + HISTO_BUCKET_COUNT] = updates_noted;
     msg_stats[4 + HISTO_BUCKET_COUNT] = actual_edges;
     msg_stats[5 + HISTO_BUCKET_COUNT] = distance_changes;
+    // Topology bytes actually held, summed over PEs. Reported from inside the
+    // run because peak RSS cannot see it: this runtime reserves a fixed ~554 MB
+    // regardless of graph or PE count, which swamps the graph until it passes a
+    // few million vertices.
+    msg_stats[6 + HISTO_BUCKET_COUNT] =
+        (long)(local_graph.bytes() + sizeof(cost) * (size_t)num_vertices);
 #ifdef PAPI
-    msg_stats[6 + HISTO_BUCKET_COUNT] = values[0];
+    msg_stats[7 + HISTO_BUCKET_COUNT] = values[0];
 #endif
 
     CkCallback cb(CkReductionTarget(Main, done), mainProxy);
 
 #ifdef PAPI
-    contribute((7 + HISTO_BUCKET_COUNT) * sizeof(long), msg_stats,
+    contribute((8 + HISTO_BUCKET_COUNT) * sizeof(long), msg_stats,
                CkReduction::sum_long, cb);
 #else
-    contribute((6 + HISTO_BUCKET_COUNT) * sizeof(long), msg_stats,
+    contribute((7 + HISTO_BUCKET_COUNT) * sizeof(long), msg_stats,
                CkReduction::sum_long, cb);
 #endif
     // mainProxy.done();
@@ -1365,7 +1324,7 @@ public:
   void verify_hash() {
     DistanceDigest digest;
     for (int i = 0; i < num_vertices; i++) {
-      digest.add(start_vertex + i, local_graph[i].distance, lmax);
+      digest.add(start_vertex + i, distances[i], lmax);
     }
     unsigned long long values[4] = {digest.h1, digest.h2, digest.reachable,
                                     digest.distance_sum};
@@ -1377,7 +1336,7 @@ public:
   void get_max_cost() {
     cost max_cost = 0;
     for (int i = 0; i < num_vertices; i++) {
-      cost vertex_cost = local_graph[i].distance;
+      cost vertex_cost = distances[i];
       if (vertex_cost != lmax) {
         if (vertex_cost > max_cost) {
           max_cost = vertex_cost;

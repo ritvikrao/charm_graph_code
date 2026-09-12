@@ -165,6 +165,22 @@ inline long mesh_side_length(long num_vertices) {
 }
 
 /**
+ * How many neighbours gen_mesh_vertex must have produced: 2 at a corner, 3
+ * along an edge, 4 in the interior, 0 for a vertex outside the square when V
+ * is not a perfect square. Used as a self-check on the one input whose exact
+ * structure is known in advance.
+ */
+inline int mesh_expected_degree(long vertex, long side_length) {
+  long x_index = vertex / side_length;
+  long y_index = vertex % side_length;
+  if (x_index >= side_length)
+    return 0;
+  int on_boundary = (x_index == 0 || x_index == side_length - 1) +
+                    (y_index == 0 || y_index == side_length - 1);
+  return 4 - on_boundary;
+}
+
+/**
  * Order-independent checksum over the distance vector. Two independent 64-bit
  * sums plus a population count; summation makes the result invariant to the
  * order vertices are visited in and to how they are spread over PEs.
