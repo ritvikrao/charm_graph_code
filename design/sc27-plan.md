@@ -206,7 +206,7 @@ baseline never moves under you mid-refactor.
 | **3** | The defect list above: `updates_in_tram` leak, `tram_hold` rows → `num_dest`, `dest_table` overflow, `first_nonzero` OOB, `rand()` flush, `fast_exit` → flag, `NODE_COUNT` → runtime, delete `processHeapShared` | Verify passes. **Measure the §1 fix alone and re-run the `p_tram` sweep** | 3 days |
 | **4** | Genuine varsize messages (`char buffer[]`); `setUsersize` on all send paths. Re-run the buffer-size sweep, now co-varied with `LCI_ATTR_PACKET_SIZE` | ~~Verify identical; wire bytes drop at `bufSize < 2048`~~ **Done.** Verify identical; second clause withdrawn — `bufSize` never reached the wire because the constructor argument was dead, not because of padding. Closed on 2 nodes by `scripts/verify_2node.sh`; see `design/varsize-messages.md` | 3 days |
 | **5** | Retire all non-SMP and dead code (below). `graphlib` v1: in-memory Kronecker/RMAT/uniform/mesh generators + GAPBS `.sg`/`.wsg` binary reader; flat CSR replacing per-vertex `std::vector` | **Done.** Verify identical on all ten pre-existing configurations; the gate now runs 18, adding RMAT and files. A generated graph written to `.wsg` and read back solves to the same digest as the in-memory run. See `design/graphlib.md` | 2 wk |
-| **6** | Scale-free diagnosis: H1–H4 below, each an A/B with everything else fixed | A written design note per hypothesis | 2 wk |
+| **6** | Scale-free diagnosis: H1–H4 below, each an A/B with everything else fixed | **In progress.** Instrument built and gated; measurements running. See `design/scale-free-diagnosis.md` and the per-hypothesis notes | 2 wk |
 | **7** | Build the winners: `CombiningHold` (byte-oriented from day one) + `on_absorb`; batch-local combining in `deliver`; adaptive bucketing; adaptive tail cadence + idle flush | Verify identical flag on **and** off | 4 wk |
 | **8** | Type erasure: `HTramCore` + `HTram<T>` + `HTramOps` + `BuiltinOp`. Strictly mechanical | **Byte-identical verify vs. step 7** | 1 wk |
 | **9** | `Locator` + `dest_slot` item field; fix `thisIndex`/`CkMyPe()` conflation. K=1 `BlockLocator` → identical; then K=8 `HashLocator` | Verify identical at K=1 | 1.5 wk |
@@ -267,6 +267,30 @@ Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
 
 ### Why scale-free loses — four hypotheses (step 6)
 
+> **Two corrections found while building the instrument, both of which change
+> how the hypotheses below must be read.**
+>
+> **The uniform mode's partition is deliberately skewed and no other mode's is.**
+> Mode 1 draws each PE's share of the vertices at random within ±20% of `V/N`
+> (`sssp_smp.cpp`, the `partition_rng` block); the mesh and RMAT both divide
+> evenly. At 16 PEs that injected skew measures 1.30 max/mean in edges — the
+> same order as anything the power law produces. So *any* load-balance
+> comparison between the uniform graph and a scale-free one, including
+> whatever informed H3 below, was comparing a deliberately imbalanced partition
+> against an even one. `--partition-jitter` now exposes it; H3 runs every mode
+> at 0 and uses the jitter as a calibration.
+>
+> **The combining-adaptivity figure as drafted is not what the system does.**
+> The combining section below proposes presenting the policy as *"the system
+> turns combining off on road networks and on for RMAT, automatically."* The
+> mesh's batch-local absorb rate is **46%, higher than RMAT's 41.6%**, so a
+> policy keyed on absorb rate switches combining *on* for the high-diameter
+> graph too. The two rates have unrelated causes — RMAT's is structural
+> (hub in-degree), the mesh's is temporal (a narrow frontier revisited) — and
+> `<prefix>.arrivals.csv` separates them. The defensible claim is narrower:
+> combining pays wherever traffic concentrates, and traffic concentrates for
+> two different reasons. See `design/h2-hub-redundancy.md`.
+
 - **H1 — bucket width has no resolution on RMAT.** *(RMAT inputs now exist; step 5 left
   `bucket_multiplier` on the `log(V)` rule precisely so this can be measured before it is
   changed.)* `bucket(d) = d/log(V)` (`:843`, which
@@ -276,7 +300,14 @@ Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
   control. Cheapest test in the plan: log bucket occupancy for RMAT vs. random. Fix: derive
   width from the observed distribution, and use `lmax` — already reduced in `begin()` (`:362`)
   and then discarded.
-- **H2 — redundant updates to hubs.** Addressed by combining, above.
+- **H2 — redundant updates to hubs.** *(Supported, with the framing correction
+  above. On RMAT the reject rate climbs monotonically with destination
+  out-degree, 27% at degree 0 to 99.9% above 4096, and 59% of all rejects land
+  on the 2.9% of vertices with degree ≥128; on the uniform graph the same rate
+  is flat to a tenth of a percent across every degree class, which is the
+  control behaving as it must. Batch-local combining alone absorbs 41.6% at
+  bufSize 2048 against an 8–12% break-even. See
+  `design/h2-hub-redundancy.md`.)* Addressed by combining, above.
 - **H3 — 1D partitioning imbalances on a power law.** The **overdecomposition** half will
   likely pay, but via `HashLocator` scattering hubs and via more schedulable work overlapping
   the `[whenidle]` drain — *not* via load balancing. Measurement-based migration LB is a
@@ -284,7 +315,13 @@ Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
   future load. Build the migration path because it's cheap and unblocks routing; expect the LB
   result may be negative and write it up honestly. Your own
   `~/paratreet2/design/uf2-k-chares.md` reached this shape of conclusion for UnionFindLib.
-- **H4 — the tail advances only at reduction cadence.** Re-enable htram's idle-triggered
+- **H4 — the tail advances only at reduction cadence.** *(There is a concrete
+  mechanism here, not only a cadence: with `IDLE_FLUSH` compiled out and the
+  periodic timer off, a partly-filled aggregation buffer has exactly two ways
+  out — fill to `bufSize`, or catch one of the per-chare `tflush` draws, which
+  fire on average one round in five. In the tail there is not enough traffic
+  left to fill anything. `--flush-interval` makes that an A/B directly, and
+  `--round-delay` tests the cadence claim separately.)* Re-enable htram's idle-triggered
   partial flush (`IDLE_FLUSH` is `#if`'d out at `htram_group.h:7`; `idleFlush()` is a stub),
   make the cadence adaptive, and replace the two-tier `histogram_sum <= N*100` hack (`:494`)
   with a controller over histogram *shape* — exactly what the 2024 future-work asks for.

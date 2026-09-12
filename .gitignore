@@ -40,3 +40,6 @@ core.*
 
 # Machine-specific charmc / htram locations
 config.mk
+
+# Build lock used by scripts/diagnose.sh
+.diagnose-build.lock

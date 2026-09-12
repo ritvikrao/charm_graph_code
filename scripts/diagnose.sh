@@ -58,9 +58,19 @@ MESH_V=$((MESH_SIDE * MESH_SIDE))
 
 mkdir -p "$OUT"
 
-if ! make sssp_smp sssp_smp_diag graph_convert > "$OUT/build.log" 2>&1; then
-  echo "BUILD FAILED"; tail -30 "$OUT/build.log"; exit 1
+# Serialised, because two harnesses sharing a checkout will each delete the
+# other's object files and then fail to link something that was there a moment
+# ago. That is not hypothetical: submitting the one-node and two-node jobs
+# together, both with $SLURM_SUBMIT_DIR pointing at the same tree, cost an
+# allocation to "cannot find sssp_smp.o". A lock is cheaper than remembering.
+exec 9> "$(dirname "$0")/../.diagnose-build.lock"
+if ! flock -w 3600 9; then
+  echo "BUILD FAILED: timed out waiting for the build lock"; exit 1
 fi
+if ! make sssp_smp sssp_smp_diag graph_convert > "$OUT/build.log" 2>&1; then
+  echo "BUILD FAILED"; tail -30 "$OUT/build.log"; flock -u 9; exit 1
+fi
+flock -u 9
 
 # The source vertex is not a free choice on a scale-free graph: a third of an
 # RMAT graph's vertices have no out-edges, and a source with none never
