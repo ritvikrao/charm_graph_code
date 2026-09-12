@@ -36,12 +36,18 @@
 #   SSSP_MAKE_ARGS extra variables for make, e.g. CHARMC_SMP=... HTRAM_DIR=...
 #                  These must be passed on make's command line, which beats
 #                  both the Makefile's defaults and config.mk.
+#   SSSP_EXTRA_ARGS solver options appended to every run, e.g.
+#                  "--flush-policy adaptive". Step 7's gate is that every
+#                  mechanism verifies identically with its flag on and off, so
+#                  the gate runs once per setting. The golden digests do not
+#                  change: they are the answer, not a property of the schedule.
 #
 set -uo pipefail
 
 cd "$(dirname "$0")/.."
 GOLDEN="scripts/golden_digests.txt"
 PE_FLAG="${SSSP_PE_FLAG:-+ppn}"
+read -r -a EXTRA_ARGS <<< "${SSSP_EXTRA_ARGS:-}"
 UPDATE=0
 [ "${1:-}" = "--update-golden" ] && UPDATE=1
 
@@ -103,7 +109,8 @@ for cfg in "${CONFIGS[@]}"; do
   esac
 
   out=$(./sssp_smp "$V" "$arg2" "$SEED" "$SRC" "$MODE" "$PTRAM" "$PPQ" \
-          --verify --timeout 300 "$PE_FLAG" "$PPN" 2>&1)
+          --verify --timeout 300 ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
+          "$PE_FLAG" "$PPN" 2>&1)
   status=$?
   digest=$(echo "$out" | grep -m1 "^VERIFY parallel digest" | sed 's/^VERIFY parallel digest //')
   if [ $status -ne 0 ] || ! echo "$out" | grep -q "^VERIFY PASS"; then
@@ -174,7 +181,8 @@ for cfg in "${DIAG_CONFIGS[@]}"; do
   read -r V E SEED SRC MODE PTRAM PPQ PPN <<< "$cfg"
   key="$V $E $SEED $SRC $MODE $PTRAM $PPQ"
   out=$(./sssp_smp_diag "$V" "$E" "$SEED" "$SRC" "$MODE" "$PTRAM" "$PPQ" \
-          --verify --timeout 300 "$PE_FLAG" "$PPN" 2>&1)
+          --verify --timeout 300 ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
+          "$PE_FLAG" "$PPN" 2>&1)
   digest=$(echo "$out" | grep -m1 "^VERIFY parallel digest" | sed 's/^VERIFY parallel digest //')
   want=$(grep -m1 -F "$key | " "$GOLDEN" | sed 's/^.* | //')
   if ! echo "$out" | grep -q "^VERIFY PASS" || [ "$digest" != "$want" ]; then
@@ -189,4 +197,4 @@ if [ $failures -ne 0 ]; then
   echo "VERIFY GATE FAILED ($failures)"
   exit 1
 fi
-echo "VERIFY GATE PASSED (${#CONFIGS[@]} configurations, plus ${#DIAG_CONFIGS[@]} on sssp_smp_diag)"
+echo "VERIFY GATE PASSED (${#CONFIGS[@]} configurations, plus ${#DIAG_CONFIGS[@]} on sssp_smp_diag)${SSSP_EXTRA_ARGS:+ with $SSSP_EXTRA_ARGS}"

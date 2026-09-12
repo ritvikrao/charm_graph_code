@@ -1,0 +1,94 @@
+host=cn022.delta.ncsa.illinois.edu nodes=2 variants=scripts/ab/7.1-flush-policy.txt scale=20 ppn=16 reps=5
+uniform: 1048576 vertices, 16764135 edges, mean out-degree 15.99, max 32, 31538 isolated (3.0%)
+mesh: 1048576 vertices, 4190208 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 1048576 vertices, 16776045 edges, mean out-degree 16.00, max 69197, 501926 isolated (47.9%)
+scale=2^20 (V=1048576, E=16777216; mesh 1024x1024), ppn=16, reps=5
+== A/B: scripts/ab/7.1-flush-policy.txt ==
+    rep 1 uniform fixed: ok 0.120155
+    rep 1 uniform interval1: ok 0.134673
+    rep 1 uniform stale: ok 0.139435
+    rep 1 uniform adaptive: ok 0.109084
+    rep 1 mesh fixed: ok 1.769501
+    rep 1 mesh interval1: ok 0.474108
+    rep 1 mesh stale: ok 0.417109
+    rep 1 mesh adaptive: ok 0.447500
+    rep 1 rmat fixed: ok 0.129213
+    rep 1 rmat interval1: ok 0.150260
+    rep 1 rmat stale: ok 0.136629
+    rep 1 rmat adaptive: ok 0.123169
+    rep 2 uniform fixed: ok 0.125591
+    rep 2 uniform interval1: ok 0.135122
+    rep 2 uniform stale: ok 0.138546
+    rep 2 uniform adaptive: ok 0.121125
+    rep 2 mesh fixed: ok 1.575844
+    rep 2 mesh interval1: ok 0.489528
+    rep 2 mesh stale: ok 0.463254
+    rep 2 mesh adaptive: ok 0.457115
+    rep 2 rmat fixed: ok 0.123047
+    rep 2 rmat interval1: ok 0.150730
+    rep 2 rmat stale: ok 0.137965
+    rep 2 rmat adaptive: ok 0.121382
+    rep 3 uniform fixed: ok 0.123452
+    rep 3 uniform interval1: ok 0.137996
+    rep 3 uniform stale: ok 0.136562
+    rep 3 uniform adaptive: ok 0.104972
+    rep 3 mesh fixed: ok 1.675175
+    rep 3 mesh interval1: ok 0.471388
+    rep 3 mesh stale: ok 0.445135
+    rep 3 mesh adaptive: ok 0.446856
+    rep 3 rmat fixed: ok 0.135750
+    rep 3 rmat interval1: ok 0.122862
+    rep 3 rmat stale: ok 0.146779
+    rep 3 rmat adaptive: ok 0.115359
+    rep 4 uniform fixed: ok 0.121749
+    rep 4 uniform interval1: ok 0.133662
+    rep 4 uniform stale: ok 0.128426
+    rep 4 uniform adaptive: ok 0.122718
+    rep 4 mesh fixed: ok 1.726115
+    rep 4 mesh interval1: ok 0.461221
+    rep 4 mesh stale: ok 0.443910
+    rep 4 mesh adaptive: ok 0.445544
+    rep 4 rmat fixed: ok 0.138924
+    rep 4 rmat interval1: ok 0.153991
+    rep 4 rmat stale: ok 0.131525
+    rep 4 rmat adaptive: ok 0.129657
+    rep 5 uniform fixed: ok 0.121011
+    rep 5 uniform interval1: ok 0.139390
+    rep 5 uniform stale: ok 0.136767
+    rep 5 uniform adaptive: ok 0.122229
+    rep 5 mesh fixed: ok 1.680391
+    rep 5 mesh interval1: ok 0.486157
+    rep 5 mesh stale: ok 0.447723
+    rep 5 mesh adaptive: ok 0.445275
+    rep 5 rmat fixed: ok 0.116142
+    rep 5 rmat interval1: ok 0.142353
+    rep 5 rmat stale: ok 0.141846
+    rep 5 rmat adaptive: ok 0.123885
+Results under ab-7.1b-2n/. Summarise with scripts/diag_report.py ab-7.1b-2n
+== report ==
+A/B  baseline = fixed; medians over repetitions, spread is min..max compute_s
+
+  mesh
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------
+    fixed      1.68       1.576..1.77     1.00x    0       15879   1.754    45561      236030056   0            
+    interval1  0.4741     0.4612..0.4895  0.28x    0       3111    1.52     47118      204736632   0            
+    stale      0.4451     0.4171..0.4633  0.26x    0       2994    1.375    43643      185221008   43643        
+    adaptive   0.4469     0.4453..0.4571  0.27x    0       2994    1.368    43622      184169864   43622        
+
+  rmat
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------
+    fixed      0.1292     0.1161..0.1389  1.00x    0       227     1.428    14431      590174032   0            
+    interval1  0.1503     0.1229..0.154   1.16x    0       209     1.463    19635      604776144   0            
+    stale      0.138      0.1315..0.1468  1.07x    0       210     1.423    18052      588544608   6695         
+    adaptive   0.1232     0.1154..0.1297  0.95x    0       202     1.445    15255      597340808   1701         
+
+  uniform
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------
+    fixed      0.1217     0.1202..0.1256  1.00x    0       327     0.9357   10317      402894328   0            
+    interval1  0.1351     0.1337..0.1394  1.11x    0       324     0.9468   14718      407870280   0            
+    stale      0.1368     0.1284..0.1394  1.12x    0       334     0.9474   12980      408100856   5778         
+    adaptive   0.1211     0.105..0.1227   0.99x    0       338     0.9482   10079      408387840   176          
+

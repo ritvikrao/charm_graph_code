@@ -15,6 +15,12 @@
 #
 # Usage:
 #   scripts/diagnose.sh <h1|h2|h3|h4|all> [outdir]
+#   scripts/diagnose.sh ab <outdir> <variants-file>
+#
+# The ab experiment is step 7's: each mechanism against the configuration it
+# replaces. The variants file holds one variant per line, "name solver-args...";
+# the first line is the baseline the report takes every ratio against, and
+# lines starting with # are skipped.
 #
 # Environment:
 #   SSSP_SCALE   log2 of the vertex count for the generated graphs. Default 16,
@@ -28,12 +34,15 @@
 #   SSSP_CHARM_FLAGS extra runtime flags appended to every run, e.g.
 #                "+setcpuaffinity". Pin these on a shared node or the timed
 #                comparisons measure the scheduler.
+#   SSSP_GRAPHS  space-separated subset of "uniform mesh rmat" for ab. Default
+#                all three.
 #
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
 EXPERIMENT="${1:-all}"
 OUT="${2:-diag-out}"
+VARIANTS_FILE="${3:-}"
 SCALE="${SSSP_SCALE:-16}"
 PPN="${SSSP_PPN:-4}"
 LAUNCH="${SSSP_LAUNCH:-}"
@@ -306,6 +315,49 @@ h4() {
   done
 }
 
+# ---------------------------------------------------------------- A/B --------
+# Every repetition's log is kept and listed in ab/runs.tsv; the report parses
+# the logs rather than the shell pulling fields out here, so a mechanism that
+# adds a counter adds a column without touching this function.
+#
+# Repetitions are interleaved across variants -- rep 1 of every variant, then
+# rep 2 -- so a drift in the node over the course of the job lands on every
+# variant alike instead of on whichever one happened to run last.
+ab() {
+  if [ -z "$VARIANTS_FILE" ] || [ ! -f "$VARIANTS_FILE" ]; then
+    echo "ab needs a variants file: scripts/diagnose.sh ab <outdir> <file>"
+    exit 1
+  fi
+  echo "== A/B: $VARIANTS_FILE =="
+  mkdir -p "$OUT/ab"
+  cp "$VARIANTS_FILE" "$OUT/ab/variants.txt"
+  printf 'graph\tvariant\trep\tstatus\tlog\n' > "$OUT/ab/runs.tsv"
+  local names=() argsets=() line
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in ''|'#'*) continue ;; esac
+    names+=("${line%% *}")
+    if [ "${line#* }" = "$line" ]; then argsets+=(""); else argsets+=("${line#* }"); fi
+  done < "$VARIANTS_FILE"
+  local wanted="${SSSP_GRAPHS:-uniform mesh rmat}"
+  for r in $(seq 1 "$REPS"); do
+    for g in "${GRAPHS[@]}"; do
+      read -r name v arg2 mode src <<< "$g"
+      case " $wanted " in *" $name "*) ;; *) continue ;; esac
+      for i in "${!names[@]}"; do
+        local tag="ab/${name}_${names[$i]}.rep$r"
+        local extra=()
+        read -r -a extra <<< "${argsets[$i]}"
+        local status=ok
+        run sssp_smp "$OUT/$tag.log" "$v" "$arg2" "$src" "$mode" \
+            ${extra[@]+"${extra[@]}"} || status=failed
+        printf '%s\t%s\t%s\t%s\t%s\n' "$name" "${names[$i]}" "$r" "$status" \
+            "$tag.log" >> "$OUT/ab/runs.tsv"
+        echo "    rep $r $name ${names[$i]}: $status $(field "$OUT/$tag.log" 'Compute time: ')"
+      done
+    done
+  done
+}
+
 echo "scale=2^$SCALE (V=$V, E=$E; mesh ${MESH_SIDE}x${MESH_SIDE}), ppn=$PPN, reps=$REPS"
 case "$EXPERIMENT" in
   h1) h1 ;;
@@ -313,6 +365,7 @@ case "$EXPERIMENT" in
   h3) h3 ;;
   h4) h4 ;;
   all) h1; h2; h3; h4 ;;
-  *) echo "Usage: scripts/diagnose.sh <h1|h2|h3|h4|all> [outdir]"; exit 1 ;;
+  ab) ab ;;
+  *) echo "Usage: scripts/diagnose.sh <h1|h2|h3|h4|all> [outdir] | ab <outdir> <variants>"; exit 1 ;;
 esac
 echo "Results under $OUT/. Summarise with scripts/diag_report.py $OUT"

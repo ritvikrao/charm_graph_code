@@ -1,0 +1,114 @@
+host=cn047.delta.ncsa.illinois.edu nodes=1 variants=scripts/ab/7.1-flush-policy.txt scale=20 ppn=16 reps=15
+uniform: 1048576 vertices, 16764135 edges, mean out-degree 15.99, max 32, 31538 isolated (3.0%)
+mesh: 1048576 vertices, 4190208 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 1048576 vertices, 16776045 edges, mean out-degree 16.00, max 69197, 501926 isolated (47.9%)
+scale=2^20 (V=1048576, E=16777216; mesh 1024x1024), ppn=16, reps=15
+== A/B: scripts/ab/7.1-flush-policy.txt ==
+    rep 1 uniform fixed: ok 0.171031
+    rep 1 uniform interval1: ok 0.177496
+    rep 1 uniform adaptive: ok 0.180561
+    rep 1 rmat fixed: ok 0.153646
+    rep 1 rmat interval1: ok 0.158435
+    rep 1 rmat adaptive: ok 0.151871
+    rep 2 uniform fixed: ok 0.182322
+    rep 2 uniform interval1: ok 0.174440
+    rep 2 uniform adaptive: ok 0.175934
+    rep 2 rmat fixed: ok 0.156698
+    rep 2 rmat interval1: ok 0.164977
+    rep 2 rmat adaptive: ok 0.150903
+    rep 3 uniform fixed: ok 0.170502
+    rep 3 uniform interval1: ok 0.178155
+    rep 3 uniform adaptive: ok 0.174731
+    rep 3 rmat fixed: ok 0.148069
+    rep 3 rmat interval1: ok 0.158988
+    rep 3 rmat adaptive: ok 0.149181
+    rep 4 uniform fixed: ok 0.172550
+    rep 4 uniform interval1: ok 0.174474
+    rep 4 uniform adaptive: ok 0.175468
+    rep 4 rmat fixed: ok 0.178816
+    rep 4 rmat interval1: ok 0.162722
+    rep 4 rmat adaptive: ok 0.149093
+    rep 5 uniform fixed: ok 0.171150
+    rep 5 uniform interval1: ok 0.181503
+    rep 5 uniform adaptive: ok 0.170414
+    rep 5 rmat fixed: ok 0.160383
+    rep 5 rmat interval1: ok 0.159783
+    rep 5 rmat adaptive: ok 0.151673
+    rep 6 uniform fixed: ok 0.172207
+    rep 6 uniform interval1: ok 0.183089
+    rep 6 uniform adaptive: ok 0.179511
+    rep 6 rmat fixed: ok 0.151958
+    rep 6 rmat interval1: ok 0.158566
+    rep 6 rmat adaptive: ok 0.151997
+    rep 7 uniform fixed: ok 0.171908
+    rep 7 uniform interval1: ok 0.186782
+    rep 7 uniform adaptive: ok 0.176177
+    rep 7 rmat fixed: ok 0.154866
+    rep 7 rmat interval1: ok 0.158340
+    rep 7 rmat adaptive: ok 0.153433
+    rep 8 uniform fixed: ok 0.168657
+    rep 8 uniform interval1: ok 0.182219
+    rep 8 uniform adaptive: ok 0.174798
+    rep 8 rmat fixed: ok 0.152580
+    rep 8 rmat interval1: ok 0.157234
+    rep 8 rmat adaptive: ok 0.144504
+    rep 9 uniform fixed: ok 0.169800
+    rep 9 uniform interval1: ok 0.173973
+    rep 9 uniform adaptive: ok 0.175506
+    rep 9 rmat fixed: ok 0.150409
+    rep 9 rmat interval1: ok 0.157617
+    rep 9 rmat adaptive: ok 0.143196
+    rep 10 uniform fixed: ok 0.164571
+    rep 10 uniform interval1: ok 0.177424
+    rep 10 uniform adaptive: ok 0.172949
+    rep 10 rmat fixed: ok 0.151299
+    rep 10 rmat interval1: ok 0.155940
+    rep 10 rmat adaptive: ok 0.146639
+    rep 11 uniform fixed: ok 0.170111
+    rep 11 uniform interval1: ok 0.218018
+    rep 11 uniform adaptive: ok 0.181048
+    rep 11 rmat fixed: ok 0.153786
+    rep 11 rmat interval1: ok 0.159654
+    rep 11 rmat adaptive: ok 0.149820
+    rep 12 uniform fixed: ok 0.173650
+    rep 12 uniform interval1: ok 0.176899
+    rep 12 uniform adaptive: ok 0.177441
+    rep 12 rmat fixed: ok 0.151847
+    rep 12 rmat interval1: ok 0.158133
+    rep 12 rmat adaptive: ok 0.151795
+    rep 13 uniform fixed: ok 0.169698
+    rep 13 uniform interval1: ok 0.174415
+    rep 13 uniform adaptive: ok 0.186505
+    rep 13 rmat fixed: ok 0.157941
+    rep 13 rmat interval1: ok 0.154534
+    rep 13 rmat adaptive: ok 0.149692
+    rep 14 uniform fixed: ok 0.172510
+    rep 14 uniform interval1: ok 0.175266
+    rep 14 uniform adaptive: ok 0.213500
+    rep 14 rmat fixed: ok 0.149830
+    rep 14 rmat interval1: ok 0.158710
+    rep 14 rmat adaptive: ok 0.148818
+    rep 15 uniform fixed: ok 0.171187
+    rep 15 uniform interval1: ok 0.178296
+    rep 15 uniform adaptive: ok 0.175808
+    rep 15 rmat fixed: ok 0.158259
+    rep 15 rmat interval1: ok 0.158603
+    rep 15 rmat adaptive: ok 0.143341
+Results under ab-7.1-1n-r15/. Summarise with scripts/diag_report.py ab-7.1-1n-r15
+== report ==
+A/B  baseline = fixed; medians over repetitions, spread is min..max compute_s
+
+  rmat
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------
+    fixed      0.1536     0.1481..0.1788  1.00x    0       277     1.145    10642      475242472   0            
+    interval1  0.1586     0.1545..0.165   1.03x    0       239     1.143    12559      474468944   0            
+    adaptive   0.1497     0.1432..0.1534  0.97x    0       226     1.143    11275      474627520   1979         
+
+  uniform
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------
+    fixed      0.1711     0.1646..0.1823  1.00x    0       367     0.9353   8773       402701752   0            
+    interval1  0.1775     0.174..0.218    1.04x    0       375     0.9374   10365      403664496   0            
+    adaptive   0.1759     0.1704..0.2135  1.03x    0       380     0.9368   9644       403396736   1716         
+

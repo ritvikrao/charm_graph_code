@@ -60,9 +60,8 @@ bool verify_mode = false;  // --verify: check the result against serial Dijkstra
 GraphSpec graph_spec;
 // Flush the aggregation buffers once every this many controller rounds, on
 // average -- each chare draws independently, so this is a rate and not a
-// period. Step 7 of the SC27 plan makes this cadence adaptive; until then it is
-// at least a named, reproducible knob rather than a coin flip, and --flush-
-// interval makes it an A/B.
+// period, and --flush-interval makes it an A/B. Under the default
+// --flush-policy adaptive (below) this draw is the floor, not the whole cadence.
 //
 // It matters more than it looks. htram's own idle-triggered flush is compiled
 // out (IDLE_FLUSH at htram_group.h:7; idleFlush() returns true and does
@@ -71,6 +70,31 @@ GraphSpec graph_spec;
 // these draws. In the tail there is not enough traffic left to fill anything,
 // which is the mechanism H4 of step 6 is about.
 int flush_round_interval = 5;
+// --flush-policy fixed|stale|adaptive. Step 6 found the cadence above is the
+// whole story on a high-diameter graph -- flushing every round is 3.2x faster
+// on the mesh -- and irrelevant or harmful on RMAT, where buffers fill on their
+// own. Both non-fixed policies only ever add flushes to what the fixed draw
+// does; the draw still runs.
+//
+//   stale     flush, every round, each destination whose buffer has not filled
+//             since the previous round. Local and per destination. Rejected:
+//             on two nodes a round is shorter than the time an RMAT stream
+//             takes to fill a buffer, so it fires on half of RMAT's streams,
+//             sends 26% more messages and costs 12%. Kept so that the A/B
+//             that rejected it can be rerun.
+//   adaptive  the same per-destination rule, applied only in rounds where the
+//             controller sees too little work in flight to fill the buffers
+//             at all -- fewer items in the window than one bufSize per
+//             (sender PE, destination) stream. The mesh never has that much
+//             in flight, so it flushes every round; RMAT and the uniform graph
+//             have it for the middle of the run, so they flush as they did.
+//             The default: 3.6x faster on the mesh on one node and 3.8x on
+//             two, and no slower on RMAT or the uniform graph on either. See
+//             design/step7-flush-cadence.md.
+//
+// fixed is the pre-step-7 behaviour and what every step 6 number used.
+enum { FLUSH_FIXED = 0, FLUSH_STALE = 1, FLUSH_ADAPTIVE = 2 };
+int flush_policy = FLUSH_ADAPTIVE;
 // --timeout <seconds>: abandon a run that has not converged. 0 disables it.
 // There is deliberately no default: a truncated run is a failed run, and the
 // old behaviour was to give up after 30 s and print the partial distances with
@@ -250,6 +274,9 @@ struct RoundRecord {
   // difference between a tail that is cadence-bound and one that is bound by a
   // controller that has stopped controlling.
   int two_tier;
+  // Whether this round told the chares that too little is in flight to fill
+  // the aggregation buffers, which is what --flush-policy adaptive acts on.
+  int starved;
   long updates_created;
   long updates_processed;
   long updates_noted;
@@ -359,6 +386,23 @@ public:
           return;
         }
         flush_round_interval = std::stoi(m->argv[++i]);
+      } else if (arg.rfind("--flush-policy", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--flush-policy=", 0) == 0)
+          value = arg.substr(15);
+        else if (arg == "--flush-policy" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "fixed")
+          flush_policy = FLUSH_FIXED;
+        else if (value == "stale")
+          flush_policy = FLUSH_STALE;
+        else if (value == "adaptive")
+          flush_policy = FLUSH_ADAPTIVE;
+        else {
+          ckout << "--flush-policy must be fixed, stale or adaptive" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg.rfind("--diag=", 0) == 0) {
         diag_prefix = arg.substr(7);
       } else if (arg == "--diag") {
@@ -383,6 +427,7 @@ public:
             << "[--verify] [--timeout <seconds>] [--bufsize <items>]" << endl
             << "       [--bucket-width <distance units>] "
             << "[--round-delay <ms>] [--flush-interval <rounds>] "
+            << "[--flush-policy fixed|stale|adaptive] "
             << "[--partition-jitter <percent>] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
@@ -731,7 +776,7 @@ public:
 
   void record_round(double now, long histogram_sum, int first_nonzero,
                     int occupied, int span, int heap_threshold,
-                    int tram_threshold, int two_tier,
+                    int tram_threshold, int two_tier, int starved,
                     long updates_created, long updates_processed,
                     long updates_noted, long distance_changes,
                     long done_vertices) {
@@ -747,6 +792,7 @@ public:
     r.heap_threshold = heap_threshold;
     r.tram_threshold = tram_threshold;
     r.two_tier = two_tier;
+    r.starved = starved;
     r.updates_created = updates_created;
     r.updates_processed = updates_processed;
     r.updates_noted = updates_noted;
@@ -808,7 +854,7 @@ public:
         (updates_created == previous_updates_created) &&
         (updates_processed == previous_updates_processed)) {
       record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
-                   -1, -1, 0, updates_created, updates_processed, updates_noted,
+                   -1, -1, 0, 0, updates_created, updates_processed, updates_noted,
                    distance_changes, done_vertex_count);
       ckout << endl << "updates_processed and updates_created match" << endl;
 #ifdef INFO_PRINTS
@@ -883,14 +929,22 @@ public:
     // held nothing reads as exactly that rather than as a window that happened
     // not to move. heap_threshold - first_nonzero is the controller's actual
     // dynamic range for the round, which is what H1 is really asking about.
+    // Starved: less work in flight than it takes to fill one buffer on every
+    // (sender PE, destination) stream. A buffer on such a stream cannot be
+    // expected to fill, so waiting for it to is pure latency. The count is the
+    // reduced window rather than every bucket, which is the population the
+    // controller is acting on anyway.
+    const long streams = (long)N * (long)CkNumNodes();
+    const int starved = (histogram_sum < streams * (long)buffer_size) ? 1 : 0;
     record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
-                 heap_threshold, tram_threshold, two_tier, updates_created,
+                 heap_threshold, tram_threshold, two_tier, starved,
+                 updates_created,
                  updates_processed, updates_noted, distance_changes,
                  done_vertex_count);
     // arr.contribute_histogram(first_nonzero-1);
     last_first_nonzero = first_nonzero;
     arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
-                           first_nonzero - 1, current_phase);
+                           first_nonzero - 1, current_phase, starved);
 
     // start next reduction round
     // CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
@@ -909,14 +963,14 @@ public:
     std::string rounds_path = diag_prefix + ".rounds.csv";
     std::ofstream out(rounds_path.c_str());
     out << "round,t,histogram_sum,window_first,first_nonzero,occupied,span,"
-           "heap_threshold,tram_threshold,two_tier,updates_created,"
+           "heap_threshold,tram_threshold,two_tier,starved,updates_created,"
            "updates_processed,updates_noted,distance_changes,done_vertices\n";
     for (size_t i = 0; i < rounds.size(); i++) {
       const RoundRecord &r = rounds[i];
       out << i << ',' << r.t << ',' << r.histogram_sum << ','
           << r.window_first << ',' << r.first_nonzero << ',' << r.occupied
           << ',' << r.span << ',' << r.heap_threshold << ','
-          << r.tram_threshold << ',' << r.two_tier << ','
+          << r.tram_threshold << ',' << r.two_tier << ',' << r.starved << ','
           << r.updates_created << ',' << r.updates_processed << ','
           << r.updates_noted << ',' << r.distance_changes << ','
           << r.done_vertices << '\n';
@@ -1039,6 +1093,7 @@ public:
           << ", bytes allocated: " << values[2] << endl;
     ckout << "TRAM node messages: " << values[3]
           << ", bytes allocated: " << values[4] << endl;
+    ckout << "TRAM stale-destination flushes: " << values[5] << endl;
     if (verify_mode)
       arr.verify_hash();
     else
@@ -1872,7 +1927,7 @@ public:
    */
   void current_thresholds(int _heap_threshold, int _tram_threshold,
                           int _bfs_threshold, int behind_first_nonzero,
-                          int phase) {
+                          int phase, int starved) {
 #ifdef ACIC_DIAG
     controller_rounds++;
     if (updates_processed_locally == processed_at_last_round)
@@ -1910,6 +1965,9 @@ public:
     // is worse still on both mean and variance. Independent per-chare draws are
     // what the 2024 measurements were taken with, so keep that and make it
     // reproducible.
+    if (flush_policy == FLUSH_STALE ||
+        (flush_policy == FLUSH_ADAPTIVE && starved))
+      tram->flushStale();
     if (flush_rng.bounded((uint64_t)flush_round_interval) == 0)
       tram->tflush();
     //    tram->sanityCheck();

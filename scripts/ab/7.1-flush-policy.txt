@@ -1,0 +1,8 @@
+# Step 7.1: adaptive flush cadence. Baseline is the shipped fixed draw, one
+# flush in five rounds; interval-1 is step 6's upper bound on what flushing
+# alone can buy on the mesh. stale is the first, purely local rule and
+# adaptive the gated one that replaced it -- see design/step7-flush-cadence.md.
+fixed --flush-policy fixed
+interval1 --flush-policy fixed --flush-interval 1
+stale --flush-policy stale
+adaptive --flush-policy adaptive

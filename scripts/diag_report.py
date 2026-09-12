@@ -7,7 +7,7 @@ prints them in the shape a reader needs. Every number traces back to a file in
 the output directory, which is the point -- the notes cite the tables and the
 tables cite the runs.
 
-  scripts/diag_report.py <outdir> [h1|h2|h3|h4]
+  scripts/diag_report.py <outdir> [h1|h2|h3|h4|ab]
 """
 import csv
 import glob
@@ -360,13 +360,96 @@ def h4(outdir):
                "vs delay 0"], rows)
 
 
+# ----------------------------------------------------------------- A/B --------
+# Metrics read from each run log: (column, regex). Medians are taken per
+# (graph, variant) over the repetitions that completed.
+AB_METRICS = [
+    ("compute_s", r"^Compute time: ([0-9.eE+-]+)"),
+    ("rounds", r"^Number of reductions: ([0-9]+)"),
+    ("rej/|E|", r"^Rejected updates normalized to \|E\|: ([0-9.eE+-]+)"),
+    ("tram_msgs", r"^TRAM messages: ([0-9]+)"),
+    ("bytes_sent", r"^TRAM messages: [0-9]+, bytes sent: ([0-9]+)"),
+    ("stale_flushes", r"^TRAM stale-destination flushes: ([0-9]+)"),
+]
+
+
+def median(xs):
+    xs = sorted(xs)
+    n = len(xs)
+    if n == 0:
+        return None
+    return xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2
+
+
+def log_metrics(path):
+    found = {}
+    try:
+        text = open(path).read()
+    except OSError:
+        return found
+    for col, pattern in AB_METRICS:
+        m = re.search(pattern, text, re.M)
+        if m:
+            found[col] = float(m.group(1))
+    return found
+
+
+def fmt(x):
+    if x is None:
+        return "-"
+    if x == int(x) and abs(x) >= 10:
+        return "%d" % x
+    return "%.4g" % x
+
+
+def ab(outdir):
+    runs = read_csv(os.path.join(outdir, "ab", "runs.tsv"))
+    if not runs:
+        return
+    order = []
+    for r in runs:
+        if r["variant"] not in order:
+            order.append(r["variant"])
+    baseline = order[0]
+    samples = {}
+    failed = {}
+    for r in runs:
+        key = (r["graph"], r["variant"])
+        if r["status"] != "ok":
+            failed[key] = failed.get(key, 0) + 1
+            continue
+        m = log_metrics(os.path.join(outdir, r["log"]))
+        for col, v in m.items():
+            samples.setdefault(key, {}).setdefault(col, []).append(v)
+    print("A/B  baseline = %s; medians over repetitions, spread is min..max "
+          "compute_s" % baseline)
+    print()
+    for graph in sorted({r["graph"] for r in runs}):
+        base = median(samples.get((graph, baseline), {}).get("compute_s", []))
+        rows = []
+        for variant in order:
+            s = samples.get((graph, variant), {})
+            t = s.get("compute_s", [])
+            med = median(t)
+            row = [variant, fmt(med),
+                   "%s..%s" % (fmt(min(t)), fmt(max(t))) if t else "-",
+                   "%.2fx" % (med / base) if med and base else "-",
+                   str(failed.get((graph, variant), 0))]
+            for col, _ in AB_METRICS[1:]:
+                row.append(fmt(median(s.get(col, []))))
+            rows.append(row)
+        print("  " + graph)
+        table(["variant", "compute_s", "spread", "vs base", "failed"] +
+              [c for c, _ in AB_METRICS[1:]], rows)
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
         return 1
     outdir = sys.argv[1]
     which = sys.argv[2] if len(sys.argv) > 2 else "all"
-    for name, fn in (("h1", h1), ("h2", h2), ("h3", h3), ("h4", h4)):
+    for name, fn in (("h1", h1), ("h2", h2), ("h3", h3), ("h4", h4), ("ab", ab)):
         if which in (name, "all") and os.path.isdir(os.path.join(outdir, name)):
             fn(outdir)
     return 0

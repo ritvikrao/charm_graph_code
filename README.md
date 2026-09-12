@@ -30,6 +30,7 @@ builds `graph_digest` and `graph_convert`, which need no Charm++ at all.
            [--verify] [--timeout <seconds>] [--bufsize <items>] \
            [--bucket-width <units>] [--round-delay <ms>] \
            [--flush-interval <rounds>] [--partition-jitter <percent>] \
+           [--flush-policy fixed|stale|adaptive] \
            [--diag <prefix>] +ppn <threads>
 ```
 
@@ -80,6 +81,8 @@ sbatch scripts/verify_2node.sh         # message-envelope invariants, two nodes
 
 `scripts/verify.sh --update-golden` re-records `scripts/golden_digests.txt` after a
 deliberate change to the graphs. The first two run in CI on every push.
+`SSSP_EXTRA_ARGS="--flush-policy fixed" scripts/verify.sh` runs the gate with a
+solver option set; every step 7 mechanism is gated with its flag on and off.
 
 ## Measurements
 
@@ -98,3 +101,16 @@ structural number from `sssp_smp_diag`, deliberately.
 
 What this was for, and what it found, is in
 [design/scale-free-diagnosis.md](design/scale-free-diagnosis.md).
+
+Step 7 builds the mechanisms step 6 pointed at, one at a time, each as an A/B
+against the configuration it replaces:
+
+```
+scripts/stage_scratch.sh <dir>                    # a private copy per batch job
+sbatch [-N 2] scripts/ab_delta.sbatch scripts/ab/<variants>.txt 20
+scripts/diag_report.py <outdir> ab                # medians and ratios
+```
+
+| mechanism | flag | default | note |
+|---|---|---|---|
+| adaptive flush cadence | `--flush-policy` | `adaptive` | [design/step7-flush-cadence.md](design/step7-flush-cadence.md) |

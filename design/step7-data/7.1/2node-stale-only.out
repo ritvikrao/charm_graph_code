@@ -1,0 +1,76 @@
+host=cn114.delta.ncsa.illinois.edu nodes=2 variants=scripts/ab/7.1-flush-policy.txt scale=20 ppn=16 reps=5
+uniform: 1048576 vertices, 16764135 edges, mean out-degree 15.99, max 32, 31538 isolated (3.0%)
+mesh: 1048576 vertices, 4190208 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 1048576 vertices, 16776045 edges, mean out-degree 16.00, max 69197, 501926 isolated (47.9%)
+scale=2^20 (V=1048576, E=16777216; mesh 1024x1024), ppn=16, reps=5
+== A/B: scripts/ab/7.1-flush-policy.txt ==
+    rep 1 uniform fixed: ok 0.121323
+    rep 1 uniform interval1: ok 0.135618
+    rep 1 uniform adaptive: ok 0.126106
+    rep 1 mesh fixed: ok 1.759132
+    rep 1 mesh interval1: ok 0.469610
+    rep 1 mesh adaptive: ok 0.436611
+    rep 1 rmat fixed: ok 0.134780
+    rep 1 rmat interval1: ok 0.131630
+    rep 1 rmat adaptive: ok 0.146660
+    rep 2 uniform fixed: ok 0.101230
+    rep 2 uniform interval1: ok 0.145488
+    rep 2 uniform adaptive: ok 0.130951
+    rep 2 mesh fixed: ok 1.740213
+    rep 2 mesh interval1: ok 0.473388
+    rep 2 mesh adaptive: ok 0.442915
+    rep 2 rmat fixed: ok 0.133496
+    rep 2 rmat interval1: ok 0.139568
+    rep 2 rmat adaptive: ok 0.134607
+    rep 3 uniform fixed: ok 0.124512
+    rep 3 uniform interval1: ok 0.137623
+    rep 3 uniform adaptive: ok 0.129643
+    rep 3 mesh fixed: ok 1.714909
+    rep 3 mesh interval1: ok 0.479214
+    rep 3 mesh adaptive: ok 0.442279
+    rep 3 rmat fixed: ok 0.131249
+    rep 3 rmat interval1: ok 0.141376
+    rep 3 rmat adaptive: ok 0.146364
+    rep 4 uniform fixed: ok 0.127215
+    rep 4 uniform interval1: ok 0.137109
+    rep 4 uniform adaptive: ok 0.148089
+    rep 4 mesh fixed: ok 1.664296
+    rep 4 mesh interval1: ok 0.470294
+    rep 4 mesh adaptive: ok 0.440149
+    rep 4 rmat fixed: ok 0.130797
+    rep 4 rmat interval1: ok 0.145579
+    rep 4 rmat adaptive: ok 0.143569
+    rep 5 uniform fixed: ok 0.127568
+    rep 5 uniform interval1: ok 0.127732
+    rep 5 uniform adaptive: ok 0.109337
+    rep 5 mesh fixed: ok 1.673438
+    rep 5 mesh interval1: ok 0.485406
+    rep 5 mesh adaptive: ok 0.486780
+    rep 5 rmat fixed: ok 0.117383
+    rep 5 rmat interval1: ok 0.153757
+    rep 5 rmat adaptive: ok 0.148348
+Results under ab-7.1-2n/. Summarise with scripts/diag_report.py ab-7.1-2n
+== report ==
+A/B  baseline = fixed; medians over repetitions, spread is min..max compute_s
+
+  mesh
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------
+    fixed      1.715      1.664..1.759    1.00x    0       15879   1.768    45393      237940000   0            
+    interval1  0.4734     0.4696..0.4854  0.28x    0       3111    1.532    47116      206302880   0            
+    adaptive   0.4423     0.4366..0.4868  0.26x    0       3005    1.39     43634      187258832   43634        
+
+  rmat
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------
+    fixed      0.1312     0.1174..0.1348  1.00x    0       227     1.415    14461      585087232   0            
+    interval1  0.1414     0.1316..0.1538  1.08x    0       220     1.475    19640      609476072   0            
+    adaptive   0.1464     0.1346..0.1483  1.12x    0       207     1.457    18231      602341392   6877         
+
+  uniform
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------
+    fixed      0.1245     0.1012..0.1276  1.00x    0       326     0.9357   10300      402891112   0            
+    interval1  0.1371     0.1277..0.1455  1.10x    0       319     0.9448   14948      406999800   0            
+    adaptive   0.1296     0.1093..0.1481  1.04x    0       316     0.9484   12835      408553840   5788         
+
