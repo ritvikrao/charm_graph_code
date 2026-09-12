@@ -1,0 +1,12 @@
+# Step 7.3 prerequisite: step 6's bucket-width sweep (design/h1-bucket-resolution.md),
+# rerun on top of step 7.1's adaptive flush. Widths are multiples of the rule's
+# log V (13.86 at 2^20). Run with SSSP_GRAPHS="uniform rmat".
+x1 --bucket-width 13.862943611198906
+x0.0625 --bucket-width 0.8664339756999316
+x0.125 --bucket-width 1.7328679513998633
+x0.25 --bucket-width 3.4657359027997265
+x0.5 --bucket-width 6.931471805599453
+x2 --bucket-width 27.725887222397812
+x4 --bucket-width 55.451774444795625
+x8 --bucket-width 110.90354888959125
+x16 --bucket-width 221.8070977791825

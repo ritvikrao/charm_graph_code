@@ -1,0 +1,9 @@
+# Step 7.3: the coarse end of the rerun sweep, which ended still improving on RMAT.
+# Random-graph widths as multiples of log V; x1 and x16 repeat as anchors.
+# Run with SSSP_GRAPHS="uniform rmat".
+x1 --bucket-width 13.862943611198906
+x16 --bucket-width 221.8070977791825
+x32 --bucket-width 443.614195558365
+x64 --bucket-width 887.22839111673
+x128 --bucket-width 1774.45678223346
+x256 --bucket-width 3548.91356446692

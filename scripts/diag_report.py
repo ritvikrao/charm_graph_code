@@ -366,6 +366,7 @@ def h4(outdir):
 AB_METRICS = [
     ("compute_s", r"^Compute time: ([0-9.eE+-]+)"),
     ("rounds", r"^Number of reductions: ([0-9]+)"),
+    ("bucket_scale", r"^Bucket scale: ([0-9]+)"),
     ("rej/|E|", r"^Rejected updates normalized to \|E\|: ([0-9.eE+-]+)"),
     ("tram_msgs", r"^TRAM messages: ([0-9]+)"),
     ("bytes_sent", r"^TRAM messages: [0-9]+, bytes sent: ([0-9]+)"),

@@ -1,0 +1,112 @@
+host=cn013.delta.ncsa.illinois.edu nodes=1 variants=scripts/ab/7.3-bucket-policy.txt scale=22 ppn=16 reps=5
+uniform: 4194304 vertices, 67081463 edges, mean out-degree 15.99, max 32, 126856 isolated (3.0%)
+mesh: 4194304 vertices, 16769024 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 4194304 vertices, 67107131 edges, mean out-degree 16.00, max 159698, 2184585 isolated (52.1%)
+scale=2^22 (V=4194304, E=67108864; mesh 2048x2048), ppn=16, reps=5
+== A/B: scripts/ab/7.3-bucket-policy.txt ==
+    rep 1 uniform fixed: ok 0.828104
+    rep 1 uniform t1: ok 0.882427
+    rep 1 uniform t2: ok 0.801235
+    rep 1 uniform t4: ok 0.954903
+    rep 1 uniform t8: ok 0.802869
+    rep 1 mesh fixed: ok 1.425715
+    rep 1 mesh t1: ok 1.436252
+    rep 1 mesh t2: ok 1.338786
+    rep 1 mesh t4: ok 1.394727
+    rep 1 mesh t8: ok 1.443860
+    rep 1 rmat fixed: ok 0.468358
+    rep 1 rmat t1: ok 0.490513
+    rep 1 rmat t2: ok 0.501279
+    rep 1 rmat t4: ok 0.494773
+    rep 1 rmat t8: ok 0.470709
+    rep 2 uniform fixed: ok 0.883620
+    rep 2 uniform t1: ok 0.931391
+    rep 2 uniform t2: ok 0.839024
+    rep 2 uniform t4: ok 0.891697
+    rep 2 uniform t8: ok 0.768595
+    rep 2 mesh fixed: ok 1.406737
+    rep 2 mesh t1: ok 1.484950
+    rep 2 mesh t2: ok 1.384314
+    rep 2 mesh t4: ok 1.340097
+    rep 2 mesh t8: ok 1.315903
+    rep 2 rmat fixed: ok 0.475532
+    rep 2 rmat t1: ok 0.483933
+    rep 2 rmat t2: ok 0.533411
+    rep 2 rmat t4: ok 0.507413
+    rep 2 rmat t8: ok 0.494243
+    rep 3 uniform fixed: ok 0.923859
+    rep 3 uniform t1: ok 0.815977
+    rep 3 uniform t2: ok 0.840025
+    rep 3 uniform t4: ok 0.834166
+    rep 3 uniform t8: ok 0.869779
+    rep 3 mesh fixed: ok 1.403164
+    rep 3 mesh t1: ok 1.341738
+    rep 3 mesh t2: ok 1.357092
+    rep 3 mesh t4: ok 1.317245
+    rep 3 mesh t8: ok 1.355623
+    rep 3 rmat fixed: ok 0.471704
+    rep 3 rmat t1: ok 0.498896
+    rep 3 rmat t2: ok 0.614863
+    rep 3 rmat t4: ok 0.468400
+    rep 3 rmat t8: ok 0.521360
+    rep 4 uniform fixed: ok 0.824874
+    rep 4 uniform t1: ok 0.925134
+    rep 4 uniform t2: ok 0.826440
+    rep 4 uniform t4: ok 0.887964
+    rep 4 uniform t8: ok 0.932692
+    rep 4 mesh fixed: ok 1.396479
+    rep 4 mesh t1: ok 1.324871
+    rep 4 mesh t2: ok 1.307104
+    rep 4 mesh t4: ok 1.417300
+    rep 4 mesh t8: ok 1.344733
+    rep 4 rmat fixed: ok 0.474426
+    rep 4 rmat t1: ok 0.480675
+    rep 4 rmat t2: ok 0.470012
+    rep 4 rmat t4: ok 0.524359
+    rep 4 rmat t8: ok 0.473005
+    rep 5 uniform fixed: ok 0.774819
+    rep 5 uniform t1: ok 0.912158
+    rep 5 uniform t2: ok 0.801337
+    rep 5 uniform t4: ok 0.949399
+    rep 5 uniform t8: ok 0.891043
+    rep 5 mesh fixed: ok 1.375290
+    rep 5 mesh t1: ok 1.348843
+    rep 5 mesh t2: ok 1.295691
+    rep 5 mesh t4: ok 1.347144
+    rep 5 mesh t8: ok 1.304968
+    rep 5 rmat fixed: ok 0.546496
+    rep 5 rmat t1: ok 0.489482
+    rep 5 rmat t2: ok 0.492328
+    rep 5 rmat t4: ok 0.488143
+    rep 5 rmat t8: ok 0.463017
+Results under ab-out-7.3-bucket-policy-1n/. Summarise with scripts/diag_report.py ab-out-7.3-bucket-policy-1n
+== report ==
+A/B  baseline = fixed; medians over repetitions, spread is min..max compute_s
+
+  mesh
+    variant  compute_s  spread        vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    -------  ---------  ------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    fixed    1.403      1.375..1.426  1.00x    0       7145    1             1.008    48822      542025208   48468          0             -             22551937  7149855     
+    t1       1.349      1.325..1.485  0.96x    0       5993    4             1.552    40009      833451760   38309          0             -             34700484  10556356    
+    t2       1.339      1.296..1.384  0.95x    0       6400    2             1.213    43224      651834200   42435          0             -             27130939  8438968     
+    t4       1.347      1.317..1.417  0.96x    0       7141    1             1.008    48783      541669104   48459          0             -             22537068  7146812     
+    t8       1.345      1.305..1.444  0.96x    0       7120    1             1.011    48728      543476056   48371          0             -             22612357  7166713     
+
+  rmat
+    variant  compute_s  spread          vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    -------  ---------  --------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    fixed    0.4744     0.4684..0.5465  1.00x    0       319     1             0.9787   34389      1626844256  267            0             -             67762238  4640728     
+    t1       0.4895     0.4807..0.4989  1.03x    0       84      58            1.041    35359      1728317896  44             0             -             71989673  5448205     
+    t2       0.5013     0.47..0.6149    1.06x    0       97      29            1.031    35061      1712800104  44             0             -             71343297  5156299     
+    t4       0.4948     0.4684..0.5244  1.04x    0       112     14            1.021    34805      1696102256  56             0             -             70647724  4921933     
+    t8       0.473      0.463..0.5214   1.00x    0       143     7             1.014    34662      1683735936  76             0             -             70132556  4902693     
+
+  uniform
+    variant  compute_s  spread          vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    -------  ---------  --------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    fixed    0.8281     0.7748..0.9239  1.00x    0       470     1             0.9356   33693      1611854472  34             0             -             67138141  10143908    
+    t1       0.9122     0.816..0.9314   1.10x    0       140     82            0.9667   34120      1665296704  35             0             -             69364616  10330598    
+    t2       0.8264     0.8012..0.84    1.00x    0       144     41            0.9667   34129      1665329776  32             0             -             69365988  10312731    
+    t4       0.8917     0.8342..0.9549  1.08x    0       171     20            0.945    33454      1628008992  33             0             -             67811380  10260678    
+    t8       0.8698     0.7686..0.9327  1.05x    0       204     10            0.9418   33401      1622621256  33             0             -             67586925  10207815    
+

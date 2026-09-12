@@ -1,0 +1,19 @@
+### binary: /scratch/mzu/rao1/s73-v2n/charm_graph_code/sssp_smp
+### nodes:  cn[013,048]
+### extra:  --bucket-policy adaptive --bucket-target 1
+random_bs1                   PASS  Compute time: 0.335706
+random_bs7                   PASS  Compute time: 0.058573
+random_bs63                  PASS  Compute time: 0.007755
+random_bs256                 PASS  Compute time: 0.004669
+random_bs1024                PASS  Compute time: 0.005377
+random_bs2048                PASS  Compute time: 0.005926
+random_bs256_ps4096          PASS  Compute time: 0.005440
+random_bs256_ps16384         PASS  Compute time: 0.004723
+random_bs256_ps65536         PASS  Compute time: 0.006534
+mesh_bs63                    PASS  Compute time: 0.019933
+mesh_bs2048                  PASS  Compute time: 0.029351
+big_bs256                    PASS  Compute time: 0.039871
+big_bs2048                   PASS  Compute time: 0.024689
+rmat_bs63                    PASS  Compute time: 0.056101
+rmat_bs2048                  PASS  Compute time: 0.016685
+2-NODE GATE PASSED

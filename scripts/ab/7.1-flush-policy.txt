@@ -2,7 +2,9 @@
 # flush in five rounds; interval-1 is step 6's upper bound on what flushing
 # alone can buy on the mesh. stale is the first, purely local rule and
 # adaptive the gated one that replaced it -- see design/step7-flush-cadence.md.
-fixed --flush-policy fixed
-interval1 --flush-policy fixed --flush-interval 1
-stale --flush-policy stale
-adaptive --flush-policy adaptive
+# Every variant pins --bucket-policy fixed, the width these were measured with
+# before step 7.3 made adaptive bucketing the default.
+fixed --flush-policy fixed --bucket-policy fixed
+interval1 --flush-policy fixed --flush-interval 1 --bucket-policy fixed
+stale --flush-policy stale --bucket-policy fixed
+adaptive --flush-policy adaptive --bucket-policy fixed

@@ -31,6 +31,7 @@ builds `graph_digest` and `graph_convert`, which need no Charm++ at all.
            [--bucket-width <units>] [--round-delay <ms>] \
            [--flush-interval <rounds>] [--partition-jitter <percent>] \
            [--flush-policy fixed|stale|adaptive] [--combine off|hold] \
+           [--bucket-policy fixed|adaptive] [--bucket-target <buckets>] \
            [--batch-fold off|on] \
            [--diag <prefix>] +ppn <threads>
 ```
@@ -117,3 +118,4 @@ scripts/diag_report.py <outdir> ab                # medians and ratios
 | adaptive flush cadence | `--flush-policy` | `adaptive` | [design/step7-flush-cadence.md](design/step7-flush-cadence.md) |
 | source-side combining hold | `--combine` | `off` (a loss) | [design/step7-combining.md](design/step7-combining.md) |
 | batch-local fold at delivery | `--batch-fold` | `off` (a loss) | [design/step7-combining.md](design/step7-combining.md) |
+| adaptive bucketing | `--bucket-policy`, `--bucket-target` | `adaptive`, `8` | [design/step7-bucketing.md](design/step7-bucketing.md) |

@@ -1,0 +1,126 @@
+host=cn022.delta.ncsa.illinois.edu nodes=1 variants=scripts/ab/7.3-width-sweep-random.txt scale=20 ppn=16 reps=5
+uniform: 1048576 vertices, 16764135 edges, mean out-degree 15.99, max 32, 31538 isolated (3.0%)
+mesh: 1048576 vertices, 4190208 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 1048576 vertices, 16776045 edges, mean out-degree 16.00, max 69197, 501926 isolated (47.9%)
+scale=2^20 (V=1048576, E=16777216; mesh 1024x1024), ppn=16, reps=5
+== A/B: scripts/ab/7.3-width-sweep-random.txt ==
+    rep 1 uniform x1: ok 0.210318
+    rep 1 uniform x0.0625: ok 0.378791
+    rep 1 uniform x0.125: ok 0.366788
+    rep 1 uniform x0.25: ok 0.308607
+    rep 1 uniform x0.5: ok 0.291507
+    rep 1 uniform x2: ok 0.248078
+    rep 1 uniform x4: ok 0.242193
+    rep 1 uniform x8: ok 0.205753
+    rep 1 uniform x16: ok 0.246532
+    rep 1 rmat x1: ok 0.221506
+    rep 1 rmat x0.0625: ok 0.444272
+    rep 1 rmat x0.125: ok 0.480396
+    rep 1 rmat x0.25: ok 0.323976
+    rep 1 rmat x0.5: ok 0.262860
+    rep 1 rmat x2: ok 0.249360
+    rep 1 rmat x4: ok 0.233451
+    rep 1 rmat x8: ok 0.176074
+    rep 1 rmat x16: ok 0.177645
+    rep 2 uniform x1: ok 0.242779
+    rep 2 uniform x0.0625: ok 0.435719
+    rep 2 uniform x0.125: ok 0.299361
+    rep 2 uniform x0.25: ok 0.268486
+    rep 2 uniform x0.5: ok 0.254700
+    rep 2 uniform x2: ok 0.195442
+    rep 2 uniform x4: ok 0.214188
+    rep 2 uniform x8: ok 0.196306
+    rep 2 uniform x16: ok 0.226196
+    rep 2 rmat x1: ok 0.272214
+    rep 2 rmat x0.0625: ok 0.508028
+    rep 2 rmat x0.125: ok 0.457740
+    rep 2 rmat x0.25: ok 0.258986
+    rep 2 rmat x0.5: ok 0.273656
+    rep 2 rmat x2: ok 0.205580
+    rep 2 rmat x4: ok 0.205936
+    rep 2 rmat x8: ok 0.200737
+    rep 2 rmat x16: ok 0.186317
+    rep 3 uniform x1: ok 0.303313
+    rep 3 uniform x0.0625: ok 0.485802
+    rep 3 uniform x0.125: ok 0.271883
+    rep 3 uniform x0.25: ok 0.296956
+    rep 3 uniform x0.5: ok 0.281664
+    rep 3 uniform x2: ok 0.233646
+    rep 3 uniform x4: ok 0.288777
+    rep 3 uniform x8: ok 0.214373
+    rep 3 uniform x16: ok 0.223072
+    rep 3 rmat x1: ok 0.210570
+    rep 3 rmat x0.0625: ok 0.447060
+    rep 3 rmat x0.125: ok 0.331591
+    rep 3 rmat x0.25: ok 0.330835
+    rep 3 rmat x0.5: ok 0.253217
+    rep 3 rmat x2: ok 0.191184
+    rep 3 rmat x4: ok 0.187651
+    rep 3 rmat x8: ok 0.208968
+    rep 3 rmat x16: ok 0.198559
+    rep 4 uniform x1: ok 0.234277
+    rep 4 uniform x0.0625: ok 0.420547
+    rep 4 uniform x0.125: ok 0.354158
+    rep 4 uniform x0.25: ok 0.328368
+    rep 4 uniform x0.5: ok 0.270163
+    rep 4 uniform x2: ok 0.233782
+    rep 4 uniform x4: ok 0.227129
+    rep 4 uniform x8: ok 0.215999
+    rep 4 uniform x16: ok 0.243487
+    rep 4 rmat x1: ok 0.255183
+    rep 4 rmat x0.0625: ok 0.630772
+    rep 4 rmat x0.125: ok 0.472025
+    rep 4 rmat x0.25: ok 0.258904
+    rep 4 rmat x0.5: ok 0.273949
+    rep 4 rmat x2: ok 0.204593
+    rep 4 rmat x4: ok 0.192213
+    rep 4 rmat x8: ok 0.164523
+    rep 4 rmat x16: ok 0.177185
+    rep 5 uniform x1: ok 0.209248
+    rep 5 uniform x0.0625: ok 0.430207
+    rep 5 uniform x0.125: ok 0.279989
+    rep 5 uniform x0.25: ok 0.268874
+    rep 5 uniform x0.5: ok 0.268116
+    rep 5 uniform x2: ok 0.224561
+    rep 5 uniform x4: ok 0.207854
+    rep 5 uniform x8: ok 0.194921
+    rep 5 uniform x16: ok 0.227292
+    rep 5 rmat x1: ok 0.247736
+    rep 5 rmat x0.0625: ok 0.624760
+    rep 5 rmat x0.125: ok 0.388235
+    rep 5 rmat x0.25: ok 0.294124
+    rep 5 rmat x0.5: ok 0.256783
+    rep 5 rmat x2: ok 0.216241
+    rep 5 rmat x4: ok 0.227805
+    rep 5 rmat x8: ok 0.210167
+    rep 5 rmat x16: ok 0.177293
+Results under ab-out-7.3-width-sweep-random-1n/. Summarise with scripts/diag_report.py ab-out-7.3-width-sweep-random-1n
+== report ==
+A/B  baseline = x1; medians over repetitions, spread is min..max compute_s
+
+  rmat
+    variant  compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    -------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    x1       0.2477     0.2106..0.2722  1.00x    0       295     1.151    10665      477763392   435            0             -             19899704  1554764     
+    x0.0625  0.508      0.4443..0.6308  2.05x    0       2257    1.159    15037      480732632   2599           0             -             20020461  990656      
+    x0.125   0.4577     0.3316..0.4804  1.85x    0       1250    1.157    14020      479680216   2688           0             -             19977329  1177289     
+    x0.25    0.2941     0.2589..0.3308  1.19x    0       632     1.138    12342      472417832   1000           0             -             19675917  1461674     
+    x0.5     0.2629     0.2532..0.2739  1.06x    0       499     1.153    11197      478884352   704            0             -             19946050  1565852     
+    x2       0.2056     0.1912..0.2494  0.83x    0       197     1.151    10353      477719872   293            0             -             19898080  1563404     
+    x4       0.2059     0.1877..0.2335  0.83x    0       124     1.17     10269      485516840   105            0             -             20223005  1531487     
+    x8       0.2007     0.1645..0.2102  0.81x    0       94      1.167    10122      484535544   69             0             -             20182233  1541668     
+    x16      0.1776     0.1772..0.1986  0.72x    0       53      1.169    10017      485318928   79             0             -             20214944  1574699     
+
+  uniform
+    variant  compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    -------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    x1       0.2343     0.2092..0.3033  1.00x    0       389     0.937    8744       403464032   34             0             -             16805172  2562560     
+    x0.0625  0.4302     0.3788..0.4858  1.84x    0       1710    0.9361   14013      402568128   1457           0             -             16764348  1793588     
+    x0.125   0.2994     0.2719..0.3668  1.28x    0       1096    0.9356   11440      402529632   1051           0             -             16764489  2066519     
+    x0.25    0.297      0.2685..0.3284  1.27x    0       725     0.9359   10064      402955576   161            0             -             16783111  2501616     
+    x0.5     0.2702     0.2547..0.2915  1.15x    0       612     0.937    8964       403439416   38             0             -             16803983  2561694     
+    x2       0.2336     0.1954..0.2481  1.00x    0       261     0.9375   8619       403666512   35             0             -             16813682  2568835     
+    x4       0.2271     0.2079..0.2888  0.97x    0       187     0.9379   8536       403824376   34             0             -             16820325  2563851     
+    x8       0.2058     0.1949..0.216   0.88x    0       148     0.939    8475       404323224   34             0             -             16841151  2568134     
+    x16      0.2273     0.2231..0.2465  0.97x    0       108     0.9442   8462       406566704   38             0             -             16934638  2587967     
+

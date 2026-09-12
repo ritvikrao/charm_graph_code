@@ -1,4 +1,6 @@
 # Step 7.2: source-side CombiningHold. Both variants run the step 7.1 default
 # flush policy, so the only difference is whether updates fold at the source.
-off --combine off
-hold --combine hold
+# Every variant pins --bucket-policy fixed, the width these were measured with
+# before step 7.3 made adaptive bucketing the default.
+off --combine off --bucket-policy fixed
+hold --combine hold --bucket-policy fixed

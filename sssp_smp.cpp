@@ -112,6 +112,32 @@ int combine_mode = COMBINE_OFF;
 // 9.9% at 2^20 -- and the plan requires its contribution to be reported
 // separately from the source hold's.
 bool batch_fold = false;
+// --bucket-policy fixed|adaptive, --bucket-target <buckets>. The histogram's
+// bucket width is set once from |V| (log V, or sqrt V for the mesh) or by
+// --bucket-width. Step 7.3's rerun of step 6's width sweep, on top of the 7.1
+// flush policy, found that rule too fine on every graph class: 4x coarser is
+// 0.82x on the mesh and 16x is 0.72x on RMAT, while 1/4 of the rule costs
+// 1.2-1.6x on all three. See design/step7-bucketing.md.
+//
+//   adaptive  each round, Main measures the band holding the middle 90% of
+//             the reduced histogram's mass. When that band spans at least
+//             2 * target buckets it merges every k = band / target adjacent
+//             buckets into one, on every PE and in htram's holds. Merging by
+//             an integer factor is exact -- floor(floor(x) / k) is
+//             floor(x / k) -- so no in-flight update is ever counted in one
+//             bucket and uncounted from another. Coarsening only: the finer
+//             resolution cannot be recovered, because the histogram counts
+//             updates that are in flight and no PE holds them.
+//
+// adaptive with target 8 is the default: 0.88x on the mesh and 0.90x on RMAT
+// at 2^20 on one node, against a same-configuration control at 0.97x and
+// 1.05x, and never measurably slower at 2^20 or 2^22 on one or two nodes.
+// fixed is the pre-7.3 behaviour and what every step 6, 7.1 and 7.2 number
+// used. --combine hold falls back to fixed unless adaptive is asked for.
+enum { BUCKET_FIXED = 0, BUCKET_ADAPTIVE = 1 };
+int bucket_policy = BUCKET_ADAPTIVE;
+int bucket_target = 8;
+bool bucket_policy_given = false; // Main only: set by --bucket-policy
 // --timeout <seconds>: abandon a run that has not converged. 0 disables it.
 // There is deliberately no default: a truncated run is a failed run, and the
 // old behaviour was to give up after 30 s and print the partial distances with
@@ -196,7 +222,18 @@ enum {
   // of the vertices. That is what a combining table has to exploit.
   STAT_ARR_VERTICES = STAT_DEG_REJECTS + DEGREE_CLASSES,
   STAT_ARR_ARRIVALS = STAT_ARR_VERTICES + DEGREE_CLASSES,
-  STAT_END = STAT_ARR_ARRIVALS + DEGREE_CLASSES
+  // The live histogram at the end, HISTO_BUCKET_COUNT entries. Summed over
+  // PEs every bucket must be zero: each update is counted where it was created
+  // and uncounted where it was processed, and --bucket-policy adaptive merges
+  // buckets while updates are in flight. A nonzero bucket is a merge, or a
+  // bucket computation, that placed the two ends differently.
+  STAT_HISTO_LIVE = STAT_ARR_ARRIVALS + DEGREE_CLASSES,
+  // Largest disagreement, over every round, between htram's admitted counters
+  // and a recount of what they describe (HTram::admittedDrift), summed over
+  // PEs. Coarsening moves items across the threshold, so this is the check
+  // that it moved the counters with them.
+  STAT_ADMITTED_DRIFT = STAT_HISTO_LIVE + HISTO_BUCKET_COUNT,
+  STAT_END
 };
 
 #ifdef ACIC_DIAG
@@ -296,6 +333,9 @@ struct RoundRecord {
   // Whether this round told the chares that too little is in flight to fill
   // the aggregation buffers, which is what --flush-policy adaptive acts on.
   int starved;
+  // Buckets merged into one since the start, under --bucket-policy adaptive.
+  // Bucket indices in this row are in units of that many original buckets.
+  int bucket_scale;
   long updates_created;
   long updates_processed;
   long updates_noted;
@@ -322,6 +362,8 @@ private:
   int activeBucketMax = 10;
   int current_phase = 0; // 0=initial, 1=bfs, 2=converged_bfs
   int last_first_nonzero = 0;
+  int bucket_scale = 1; // --bucket-policy adaptive: original buckets per bucket
+  int coarsenings = 0;
   long previous_updates_created = 0;
   long previous_updates_processed = 0;
   long previous_distance_changes = 0;
@@ -437,6 +479,29 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg.rfind("--bucket-policy", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--bucket-policy=", 0) == 0)
+          value = arg.substr(16);
+        else if (arg == "--bucket-policy" && i + 1 < m->argc)
+          value = m->argv[++i];
+        bucket_policy_given = true;
+        if (value == "fixed")
+          bucket_policy = BUCKET_FIXED;
+        else if (value == "adaptive")
+          bucket_policy = BUCKET_ADAPTIVE;
+        else {
+          ckout << "--bucket-policy must be fixed or adaptive" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg == "--bucket-target") {
+        if (i + 1 >= m->argc) {
+          ckout << "--bucket-target needs a number of buckets" << endl;
+          CkExit(1);
+          return;
+        }
+        bucket_target = std::stoi(m->argv[++i]);
       } else if (arg.rfind("--batch-fold", 0) == 0) {
         std::string value;
         if (arg.rfind("--batch-fold=", 0) == 0)
@@ -476,7 +541,9 @@ public:
             << "[--verify] [--timeout <seconds>] [--bufsize <items>]" << endl
             << "       [--bucket-width <distance units>] "
             << "[--round-delay <ms>] [--flush-interval <rounds>] "
-            << "[--flush-policy fixed|stale|adaptive] [--combine off|hold] "
+            << "[--flush-policy fixed|stale|adaptive] "
+            << "[--bucket-policy fixed|adaptive] [--bucket-target <buckets>] "
+            << "[--combine off|hold] "
             << "[--batch-fold off|on] "
             << "[--partition-jitter <percent>] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
@@ -504,6 +571,25 @@ public:
       ckout << "--bucket-width must be positive" << endl;
       CkExit(1);
       return;
+    }
+    if (bucket_target < 1) {
+      ckout << "--bucket-target must be at least 1" << endl;
+      CkExit(1);
+      return;
+    }
+    if (bucket_policy == BUCKET_ADAPTIVE && combine_mode == COMBINE_HOLD) {
+      // CombiningHold keeps per-bucket reference lists that cannot be merged
+      // in place. Combining is off by default and measured as a loss, so the
+      // pair was never needed; asking for it by name is an error, and getting
+      // it by default falls back to the width combining was measured with.
+      if (bucket_policy_given) {
+        ckout << "--bucket-policy adaptive cannot be combined with --combine "
+              << "hold" << endl;
+        CkExit(1);
+        return;
+      }
+      bucket_policy = BUCKET_FIXED;
+      ckout << "--combine hold: using --bucket-policy fixed" << endl;
     }
     if (buffer_size <= 0 || buffer_size > BUFSIZE) {
       ckout << "--bufsize must be in 1.." << BUFSIZE << endl;
@@ -824,6 +910,44 @@ public:
     arr[dest_proc].start_algo(new_edge);
   }
 
+  /**
+   * --bucket-policy adaptive. Returns how many adjacent buckets to merge into
+   * one this round, or 1 for none. The band is the reduced window's middle 90%
+   * of mass, so a straggler far above the frontier cannot widen it; rounds
+   * with too little in flight to describe a distribution (the two-tier branch)
+   * are skipped. Never coarsens while anything sits in the clamp bucket: an
+   * update clamped there has lost its real index, so it is the one bucket a
+   * merge cannot place exactly.
+   */
+  int choose_coarsening(const long *histo_values, long histogram_sum,
+                        long clamped, int two_tier, int window_last) {
+    if (bucket_policy != BUCKET_ADAPTIVE || two_tier || histogram_sum <= 0 ||
+        clamped > 0)
+      return 1;
+    const double lo_mass = 0.05 * histogram_sum, hi_mass = 0.95 * histogram_sum;
+    long mass = 0;
+    int lo = -1, hi = -1;
+    for (int i = 0; i < histo_reduction_width; i++) {
+      mass += histo_values[i];
+      if (lo < 0 && mass > lo_mass)
+        lo = i;
+      if (mass >= hi_mass) {
+        hi = i;
+        break;
+      }
+    }
+    if (lo < 0 || hi < 0)
+      return 1;
+    const int k = (hi - lo) / bucket_target;
+    if (k < 2)
+      return 1;
+    // The merged window must still reach everything the window reaches now.
+    const int top = last_first_nonzero + (window_last < 0 ? 0 : window_last);
+    if (top / k >= HISTO_BUCKET_COUNT - 1)
+      return 1;
+    return k;
+  }
+
   void record_round(double now, long histogram_sum, int first_nonzero,
                     int occupied, int span, int heap_threshold,
                     int tram_threshold, int two_tier, int starved,
@@ -843,6 +967,7 @@ public:
     r.tram_threshold = tram_threshold;
     r.two_tier = two_tier;
     r.starved = starved;
+    r.bucket_scale = bucket_scale;
     r.updates_created = updates_created;
     r.updates_processed = updates_processed;
     r.updates_noted = updates_noted;
@@ -868,6 +993,7 @@ public:
     long updates_noted = histo_values[histo_reduction_width + 4];
     long bfs_noted = histo_values[histo_reduction_width + 5];
     long distance_changes = histo_values[histo_reduction_width + 6];
+    long clamped = histo_values[histo_reduction_width + 7];
     int heap_threshold = 0;
     int tram_threshold = 0;
     int bfs_threshold = heap_threshold;
@@ -975,6 +1101,17 @@ public:
       // and sums that garbage into the next global histogram.
       first_nonzero = last_first_nonzero;
     }
+    const int coarsen = choose_coarsening(histo_values, histogram_sum, clamped,
+                                          two_tier, window_last);
+    if (coarsen > 1) {
+      heap_threshold /= coarsen;
+      tram_threshold /= coarsen;
+      bfs_threshold /= coarsen;
+      first_nonzero /= coarsen;
+      previous_threshold = heap_threshold;
+      bucket_scale *= coarsen;
+      coarsenings++;
+    }
     // Recorded before the -1 is folded away below, so a round whose window
     // held nothing reads as exactly that rather than as a window that happened
     // not to move. heap_threshold - first_nonzero is the controller's actual
@@ -994,7 +1131,7 @@ public:
     // arr.contribute_histogram(first_nonzero-1);
     last_first_nonzero = first_nonzero;
     arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
-                           first_nonzero - 1, current_phase, starved);
+                           first_nonzero - 1, current_phase, starved, coarsen);
 
     // start next reduction round
     // CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
@@ -1013,15 +1150,16 @@ public:
     std::string rounds_path = diag_prefix + ".rounds.csv";
     std::ofstream out(rounds_path.c_str());
     out << "round,t,histogram_sum,window_first,first_nonzero,occupied,span,"
-           "heap_threshold,tram_threshold,two_tier,starved,updates_created,"
-           "updates_processed,updates_noted,distance_changes,done_vertices\n";
+           "heap_threshold,tram_threshold,two_tier,starved,bucket_scale,"
+           "updates_created,updates_processed,updates_noted,distance_changes,"
+           "done_vertices\n";
     for (size_t i = 0; i < rounds.size(); i++) {
       const RoundRecord &r = rounds[i];
       out << i << ',' << r.t << ',' << r.histogram_sum << ','
           << r.window_first << ',' << r.first_nonzero << ',' << r.occupied
           << ',' << r.span << ',' << r.heap_threshold << ','
           << r.tram_threshold << ',' << r.two_tier << ',' << r.starved << ','
-          << r.updates_created << ',' << r.updates_processed << ','
+          << r.bucket_scale << ',' << r.updates_created << ',' << r.updates_processed << ','
           << r.updates_noted << ',' << r.distance_changes << ','
           << r.done_vertices << '\n';
     }
@@ -1035,6 +1173,20 @@ public:
       buckets << i << ',' << msg_stats[STAT_HISTO_CREATED + i] << '\n';
     ckout << "DIAG wrote " << HISTO_BUCKET_COUNT << " buckets to "
           << buckets_path.c_str() << endl;
+    // The source's update is processed without ever being created, which is
+    // the same off-by-one the termination test allows for, so bucket 0 ends at
+    // exactly -1 and is not counted.
+    int live_nonzero = 0;
+    for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
+      if (msg_stats[STAT_HISTO_LIVE + i] != (i == 0 ? -1 : 0)) {
+        if (live_nonzero++ < 4)
+          ckout << "DIAG histogram bucket " << i << " ends at "
+                << msg_stats[STAT_HISTO_LIVE + i] << endl;
+      }
+    ckout << "DIAG histogram buckets not back to zero: " << live_nonzero
+          << endl;
+    ckout << "DIAG admitted-count drift: " << msg_stats[STAT_ADMITTED_DRIFT]
+          << endl;
 
     std::string degree_path = diag_prefix + ".degree.csv";
     std::ofstream degree_out(degree_path.c_str());
@@ -1100,6 +1252,8 @@ public:
     ckout << "Number of threshold changes: " << threshold_change_counter
           << endl;
     ckout << "Number of reductions: " << reduction_counts << endl;
+    ckout << "Bucket scale: " << bucket_scale << " (" << coarsenings
+          << " coarsenings)" << endl;
     ckout << "Updates noted: " << msg_stats[STAT_NOTED] << endl;
     ckout << "Distance changes: " << msg_stats[STAT_DISTANCE_CHANGES]
           << ", per vertex: " << msg_stats[STAT_DISTANCE_CHANGES] * 1.0 / V
@@ -1294,6 +1448,7 @@ private:
   // per round and answers the temporal half directly.
   long controller_rounds = 0;
   long idle_rounds = 0;
+  long max_admitted_drift = 0;
   long processed_at_last_round = 0;
   long deg_vertices[DEGREE_CLASSES] = {0};
   long deg_edges[DEGREE_CLASSES] = {0};
@@ -1319,6 +1474,11 @@ private:
   int tram_threshold; // highest bucket where messages can be pushed to tram
   int bfs_threshold;
   double bucket_multiplier;       // constant to calculate bucket
+  // Original buckets merged into each bucket by coarsen_buckets(). The bucket
+  // is the integer quotient of the original index, which is what keeps a merge
+  // exact; a multiplier divided by the scale would round differently.
+  int bucket_scale = 1;
+  double bucket_limit = HISTO_BUCKET_COUNT; // original index that clamps
   std::vector<Update> *pq_hold; // hold for heap messages
   long bfs_created = 0;           // bfs created messages
   long bfs_processed = 0;         // bfs processed messages
@@ -1469,7 +1629,7 @@ public:
     pq_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
       pq_hold[i].reserve(4096);
-    info_array = new long[histo_reduction_width + 7];
+    info_array = new long[histo_reduction_width + 8];
     set_bucket_width(log(V));
     CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
   }
@@ -1854,11 +2014,42 @@ public:
    */
   int get_histo_bucket(cost distance) {
     double bucket = distance * bucket_multiplier;
-    int result = (int)bucket;
-    if (result >= HISTO_BUCKET_COUNT)
+    if (bucket >= bucket_limit)
       return HISTO_BUCKET_COUNT - 1;
-    else
-      return result;
+    int result = (int)bucket;
+    return bucket_scale == 1 ? result : result / bucket_scale;
+  }
+
+  /**
+   * --bucket-policy adaptive: merge every k adjacent buckets into one. Every
+   * structure indexed by bucket moves in ascending order -- bucket i's
+   * contents go to i / k, which has already given its own away -- and htram's
+   * holds follow. Updates already in flight stay consistent whichever width
+   * their creator and their receiver use, because both land in the merged
+   * bucket. Main has already divided the thresholds it sent with this.
+   */
+  void coarsen_buckets(int k) {
+    for (int i = 1; i < HISTO_BUCKET_COUNT; i++) {
+      const int j = i / k;
+      histogram[j] += histogram[i];
+      histogram[i] = 0;
+#ifdef VCOUNT
+      vcount[j] += vcount[i];
+      vcount[i] = 0;
+#endif
+#ifdef ACIC_DIAG
+      histo_created[j] += histo_created[i];
+      histo_created[i] = 0;
+#endif
+      if (!pq_hold[i].empty()) {
+        pq_hold[j].insert(pq_hold[j].end(), pq_hold[i].begin(),
+                          pq_hold[i].end());
+        pq_hold[i].clear();
+      }
+    }
+    bucket_scale *= k;
+    bucket_limit = (double)HISTO_BUCKET_COUNT * bucket_scale;
+    tram->coarsenBuckets(k);
   }
 
   void generate_updates(long local_index, bool bfs) {
@@ -2061,7 +2252,8 @@ public:
     info_array[histo_reduction_width + 4] = updates_noted;
     info_array[histo_reduction_width + 5] = bfs_noted;
     info_array[histo_reduction_width + 6] = distance_changes;
-    contribute((histo_reduction_width + 7) * sizeof(long), info_array,
+    info_array[histo_reduction_width + 7] = histogram[HISTO_BUCKET_COUNT - 1];
+    contribute((histo_reduction_width + 8) * sizeof(long), info_array,
                CkReduction::sum_long, cb);
   }
 
@@ -2080,7 +2272,9 @@ public:
    */
   void current_thresholds(int _heap_threshold, int _tram_threshold,
                           int _bfs_threshold, int behind_first_nonzero,
-                          int phase, int starved) {
+                          int phase, int starved, int coarsen) {
+    if (coarsen > 1)
+      coarsen_buckets(coarsen);
 #ifdef ACIC_DIAG
     controller_rounds++;
     if (updates_processed_locally == processed_at_last_round)
@@ -2101,6 +2295,10 @@ public:
     float selectivity = 1.0;
     // if(behind_first_nonzero > 68) selectivity = 1.0;
     tram->changeThreshold(direct_threshold, tram_threshold, selectivity);
+#ifdef ACIC_DIAG
+    max_admitted_drift =
+        std::max(max_admitted_drift, (long)tram->admittedDrift());
+#endif
 #ifndef PQ_HOLD_ONLY
     arr[thisIndex].clear_pq_hold();
 // add user event
@@ -2182,8 +2380,11 @@ public:
 #ifdef ACIC_DIAG
     msg_stats[STAT_BATCH_ITEMS] = batch_items;
     msg_stats[STAT_BATCH_ABSORBABLE] = batch_absorbable;
-    for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
+    msg_stats[STAT_ADMITTED_DRIFT] = max_admitted_drift;
+    for (int i = 0; i < HISTO_BUCKET_COUNT; i++) {
       msg_stats[STAT_HISTO_CREATED + i] = histo_created[i];
+      msg_stats[STAT_HISTO_LIVE + i] = histogram[i];
+    }
     for (long i = 0; i < num_vertices; i++) {
       long degree = local_graph.degree(i);
       int dc = degree_class(degree);

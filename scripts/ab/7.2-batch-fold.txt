@@ -1,6 +1,8 @@
 # Step 7.2, receiver side: the batch-local fold in the delivery callback, alone
 # and on top of the source hold, so the two contributions can be read apart.
-off --combine off --batch-fold off
-fold --combine off --batch-fold on
-hold --combine hold --batch-fold off
-hold+fold --combine hold --batch-fold on
+# Every variant pins --bucket-policy fixed, the width these were measured with
+# before step 7.3 made adaptive bucketing the default.
+off --combine off --batch-fold off --bucket-policy fixed
+fold --combine off --batch-fold on --bucket-policy fixed
+hold --combine hold --batch-fold off --bucket-policy fixed
+hold+fold --combine hold --batch-fold on --bucket-policy fixed

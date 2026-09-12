@@ -1,0 +1,14 @@
+# Step 7.3 prerequisite: the mesh half of the rerun sweep. Multiples of the rule's
+# sqrt V (1024 at 2^20), extended two steps finer than step 6 because step 6's
+# optimum sat at its finest point. Run with SSSP_GRAPHS=mesh.
+x1 --bucket-width 1024.0
+x0.015625 --bucket-width 16.0
+x0.03125 --bucket-width 32.0
+x0.0625 --bucket-width 64.0
+x0.125 --bucket-width 128.0
+x0.25 --bucket-width 256.0
+x0.5 --bucket-width 512.0
+x2 --bucket-width 2048.0
+x4 --bucket-width 4096.0
+x8 --bucket-width 8192.0
+x16 --bucket-width 16384.0

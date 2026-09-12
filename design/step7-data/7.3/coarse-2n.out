@@ -1,0 +1,90 @@
+host=cn053.delta.ncsa.illinois.edu nodes=2 variants=scripts/ab/7.3-width-sweep-coarse.txt scale=20 ppn=16 reps=5
+uniform: 1048576 vertices, 16764135 edges, mean out-degree 15.99, max 32, 31538 isolated (3.0%)
+mesh: 1048576 vertices, 4190208 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 1048576 vertices, 16776045 edges, mean out-degree 16.00, max 69197, 501926 isolated (47.9%)
+scale=2^20 (V=1048576, E=16777216; mesh 1024x1024), ppn=16, reps=5
+== A/B: scripts/ab/7.3-width-sweep-coarse.txt ==
+    rep 1 uniform x1: ok 0.133668
+    rep 1 uniform x16: ok 0.103519
+    rep 1 uniform x32: ok 0.103073
+    rep 1 uniform x64: ok 0.098658
+    rep 1 uniform x128: ok 0.115350
+    rep 1 uniform x256: ok 0.093750
+    rep 1 rmat x1: ok 0.129719
+    rep 1 rmat x16: ok 0.112883
+    rep 1 rmat x32: ok 0.108699
+    rep 1 rmat x64: ok 0.110677
+    rep 1 rmat x128: ok 0.104827
+    rep 1 rmat x256: ok 0.103024
+    rep 2 uniform x1: ok 0.135009
+    rep 2 uniform x16: ok 0.109620
+    rep 2 uniform x32: ok 0.107557
+    rep 2 uniform x64: ok 0.105887
+    rep 2 uniform x128: ok 0.109582
+    rep 2 uniform x256: ok 0.104000
+    rep 2 rmat x1: ok 0.129232
+    rep 2 rmat x16: ok 0.105062
+    rep 2 rmat x32: ok 0.111084
+    rep 2 rmat x64: ok 0.112375
+    rep 2 rmat x128: ok 0.105391
+    rep 2 rmat x256: ok 0.096450
+    rep 3 uniform x1: ok 0.130824
+    rep 3 uniform x16: ok 0.093621
+    rep 3 uniform x32: ok 0.108700
+    rep 3 uniform x64: ok 0.111995
+    rep 3 uniform x128: ok 0.114549
+    rep 3 uniform x256: ok 0.108316
+    rep 3 rmat x1: ok 0.129409
+    rep 3 rmat x16: ok 0.102709
+    rep 3 rmat x32: ok 0.115977
+    rep 3 rmat x64: ok 0.096743
+    rep 3 rmat x128: ok 0.097760
+    rep 3 rmat x256: ok 0.102457
+    rep 4 uniform x1: ok 0.135853
+    rep 4 uniform x16: ok 0.107040
+    rep 4 uniform x32: ok 0.104479
+    rep 4 uniform x64: ok 0.107339
+    rep 4 uniform x128: ok 0.108115
+    rep 4 uniform x256: ok 0.104933
+    rep 4 rmat x1: ok 0.131292
+    rep 4 rmat x16: ok 0.116553
+    rep 4 rmat x32: ok 0.132615
+    rep 4 rmat x64: ok 0.108610
+    rep 4 rmat x128: ok 0.104693
+    rep 4 rmat x256: ok 0.100175
+    rep 5 uniform x1: ok 0.124219
+    rep 5 uniform x16: ok 0.115430
+    rep 5 uniform x32: ok 0.104213
+    rep 5 uniform x64: ok 0.092657
+    rep 5 uniform x128: ok 0.112990
+    rep 5 uniform x256: ok 0.096259
+    rep 5 rmat x1: ok 0.122147
+    rep 5 rmat x16: ok 0.110969
+    rep 5 rmat x32: ok 0.116909
+    rep 5 rmat x64: ok 0.109349
+    rep 5 rmat x128: ok 0.089301
+    rep 5 rmat x256: ok 0.098444
+Results under ab-out-7.3-width-sweep-coarse-2n/. Summarise with scripts/diag_report.py ab-out-7.3-width-sweep-coarse-2n
+== report ==
+A/B  baseline = x1; medians over repetitions, spread is min..max compute_s
+
+  rmat
+    variant  compute_s  spread           vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    -------  ---------  ---------------  -------  ------  ------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    x1       0.1294     0.1221..0.1313   1.00x    0       213     1.437    15180      594204400   1789           0             -             24748438  1857456     
+    x16      0.111      0.1027..0.1166   0.86x    0       60      1.468    13142      606645776   305            0             -             25268146  1902838     
+    x32      0.116      0.1087..0.1326   0.90x    0       38      1.48     13305      611907128   858            0             -             25487385  1928901     
+    x64      0.1093     0.09674..0.1124  0.84x    0       39      1.485    12969      613788552   546            0             -             25565877  1988485     
+    x128     0.1047     0.0893..0.1054   0.81x    0       35      1.482    12916      612871120   309            0             -             25527400  1963116     
+    x256     0.1002     0.09645..0.103   0.77x    0       34      1.453    12549      600939168   272            0             -             25030766  1947346     
+
+  uniform
+    variant  compute_s  spread           vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    -------  ---------  ---------------  -------  ------  ------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    x1       0.1337     0.1242..0.1359   1.00x    0       324     0.9472   9975       407984120   174            0             -             16992815  2725038     
+    x16      0.107      0.09362..0.1154  0.80x    0       86      0.95     9060       409109904   323            0             -             17040206  2650512     
+    x32      0.1045     0.1031..0.1087   0.78x    0       68      0.9521   8968       410033880   313            0             -             17078765  2693618     
+    x64      0.1059     0.09266..0.112   0.79x    0       59      0.9535   8857       410645576   319            0             -             17104363  2714941     
+    x128     0.113      0.1081..0.1153   0.85x    0       50      0.9845   9035       424005168   208            0             -             17660858  2852861     
+    x256     0.104      0.09375..0.1083  0.78x    0       44      0.9828   9022       423338552   205            0             -             17633055  2880077     
+

@@ -1,0 +1,80 @@
+host=cn022.delta.ncsa.illinois.edu nodes=2 variants=scripts/ab/7.3-width-sweep-mesh.txt scale=20 ppn=16 reps=5
+uniform: 1048576 vertices, 16764135 edges, mean out-degree 15.99, max 32, 31538 isolated (3.0%)
+mesh: 1048576 vertices, 4190208 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 1048576 vertices, 16776045 edges, mean out-degree 16.00, max 69197, 501926 isolated (47.9%)
+scale=2^20 (V=1048576, E=16777216; mesh 1024x1024), ppn=16, reps=5
+== A/B: scripts/ab/7.3-width-sweep-mesh.txt ==
+    rep 1 mesh x1: ok 0.421867
+    rep 1 mesh x0.015625: ok 0.691208
+    rep 1 mesh x0.03125: ok 0.665062
+    rep 1 mesh x0.0625: ok 0.624197
+    rep 1 mesh x0.125: ok 0.647542
+    rep 1 mesh x0.25: ok 0.605568
+    rep 1 mesh x0.5: ok 0.553330
+    rep 1 mesh x2: ok 0.452911
+    rep 1 mesh x4: ok 0.412737
+    rep 1 mesh x8: ok 0.432482
+    rep 1 mesh x16: ok 0.455627
+    rep 2 mesh x1: ok 0.451135
+    rep 2 mesh x0.015625: ok 0.670198
+    rep 2 mesh x0.03125: ok 0.631827
+    rep 2 mesh x0.0625: ok 0.640217
+    rep 2 mesh x0.125: ok 0.588762
+    rep 2 mesh x0.25: ok 0.553948
+    rep 2 mesh x0.5: ok 0.546427
+    rep 2 mesh x2: ok 0.434170
+    rep 2 mesh x4: ok 0.424860
+    rep 2 mesh x8: ok 0.430743
+    rep 2 mesh x16: ok 0.432716
+    rep 3 mesh x1: ok 0.452867
+    rep 3 mesh x0.015625: ok 0.589751
+    rep 3 mesh x0.03125: ok 0.619009
+    rep 3 mesh x0.0625: ok 0.611693
+    rep 3 mesh x0.125: ok 0.629552
+    rep 3 mesh x0.25: ok 0.591790
+    rep 3 mesh x0.5: ok 0.547744
+    rep 3 mesh x2: ok 0.420184
+    rep 3 mesh x4: ok 0.424805
+    rep 3 mesh x8: ok 0.394775
+    rep 3 mesh x16: ok 0.459731
+    rep 4 mesh x1: ok 0.453289
+    rep 4 mesh x0.015625: ok 0.601133
+    rep 4 mesh x0.03125: ok 0.644834
+    rep 4 mesh x0.0625: ok 0.616566
+    rep 4 mesh x0.125: ok 0.636734
+    rep 4 mesh x0.25: ok 0.648868
+    rep 4 mesh x0.5: ok 0.567108
+    rep 4 mesh x2: ok 0.415416
+    rep 4 mesh x4: ok 0.416556
+    rep 4 mesh x8: ok 0.437646
+    rep 4 mesh x16: ok 0.456986
+    rep 5 mesh x1: ok 0.448974
+    rep 5 mesh x0.015625: ok 0.615258
+    rep 5 mesh x0.03125: ok 0.609803
+    rep 5 mesh x0.0625: ok 0.573157
+    rep 5 mesh x0.125: ok 0.649634
+    rep 5 mesh x0.25: ok 0.632162
+    rep 5 mesh x0.5: ok 0.542782
+    rep 5 mesh x2: ok 0.437581
+    rep 5 mesh x4: ok 0.401902
+    rep 5 mesh x8: ok 0.473698
+    rep 5 mesh x16: ok 0.453106
+Results under ab-out-7.3-width-sweep-mesh-2n/. Summarise with scripts/diag_report.py ab-out-7.3-width-sweep-mesh-2n
+== report ==
+A/B  baseline = x1; medians over repetitions, spread is min..max compute_s
+
+  mesh
+    variant    compute_s  spread          vs base  failed  rounds  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    ---------  ---------  --------------  -------  ------  ------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    x1         0.4511     0.4219..0.4533  1.00x    0       3006    1.39     43667      187232360   43667          0             -             7772237   2354964     
+    x0.015625  0.6153     0.5898..0.6912  1.36x    0       2154    10.4     38264      1395464384  24305          0             -             58119300  15791432    
+    x0.03125   0.6318     0.6098..0.6651  1.40x    0       2171    10.02    37448      1344122656  24418          0             -             55980006  15265973    
+    x0.0625    0.6166     0.5732..0.6402  1.37x    0       2597    8.817    37339      1183132792  29226          0             -             49271863  13587074    
+    x0.125     0.6367     0.5888..0.6496  1.41x    0       3801    5.096    48059      684379008   46449          0             -             28483532  8047085     
+    x0.25      0.6056     0.5539..0.6489  1.34x    0       4331    1.987    55799      267399048   55798          0             -             11104845  3291008     
+    x0.5       0.5477     0.5428..0.5671  1.21x    0       3787    1.928    51391      259473784   51391          0             -             10777069  3201455     
+    x2         0.4342     0.4154..0.4529  0.96x    0       2860    1.337    40811      180005600   40811          0             -             7473026   2301726     
+    x4         0.4166     0.4019..0.4249  0.92x    0       2762    1.551    38589      208715088   38589          0             -             8670772   2640410     
+    x8         0.4325     0.3948..0.4737  0.96x    0       2711    2.002    36937      269114696   36937          0             -             11188537  3351535     
+    x16        0.4556     0.4327..0.4597  1.01x    0       2679    2.862    35896      384507488   35884          0             -             15997202  4709192     
+

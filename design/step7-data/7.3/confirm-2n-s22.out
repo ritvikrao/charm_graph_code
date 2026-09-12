@@ -1,0 +1,154 @@
+host=cn048.delta.ncsa.illinois.edu nodes=2 variants=scripts/ab/7.3-bucket-confirm.txt scale=22 ppn=16 reps=10
+uniform: 4194304 vertices, 67081463 edges, mean out-degree 15.99, max 32, 126856 isolated (3.0%)
+mesh: 4194304 vertices, 16769024 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 4194304 vertices, 67107131 edges, mean out-degree 16.00, max 159698, 2184585 isolated (52.1%)
+scale=2^22 (V=4194304, E=67108864; mesh 2048x2048), ppn=16, reps=10
+== A/B: scripts/ab/7.3-bucket-confirm.txt ==
+    rep 1 uniform fixed: ok 0.435046
+    rep 1 uniform t4: ok 0.462166
+    rep 1 uniform t8: ok 0.451705
+    rep 1 uniform fixed-again: ok 0.447551
+    rep 1 mesh fixed: ok 0.940370
+    rep 1 mesh t4: ok 0.965972
+    rep 1 mesh t8: ok 1.035098
+    rep 1 mesh fixed-again: ok 1.022254
+    rep 1 rmat fixed: ok 0.429182
+    rep 1 rmat t4: ok 0.409301
+    rep 1 rmat t8: ok 0.428681
+    rep 1 rmat fixed-again: ok 0.436361
+    rep 2 uniform fixed: ok 0.435522
+    rep 2 uniform t4: ok 0.453475
+    rep 2 uniform t8: ok 0.444120
+    rep 2 uniform fixed-again: ok 0.487200
+    rep 2 mesh fixed: ok 1.002594
+    rep 2 mesh t4: ok 0.969593
+    rep 2 mesh t8: ok 0.974361
+    rep 2 mesh fixed-again: ok 0.974951
+    rep 2 rmat fixed: ok 0.402164
+    rep 2 rmat t4: ok 0.369371
+    rep 2 rmat t8: ok 0.391348
+    rep 2 rmat fixed-again: ok 0.406495
+    rep 3 uniform fixed: ok 0.384572
+    rep 3 uniform t4: ok 0.472227
+    rep 3 uniform t8: ok 0.459786
+    rep 3 uniform fixed-again: ok 0.447337
+    rep 3 mesh fixed: ok 1.061885
+    rep 3 mesh t4: ok 1.015068
+    rep 3 mesh t8: ok 0.987644
+    rep 3 mesh fixed-again: ok 0.972753
+    rep 3 rmat fixed: ok 0.428001
+    rep 3 rmat t4: ok 0.388732
+    rep 3 rmat t8: ok 0.405137
+    rep 3 rmat fixed-again: ok 0.413804
+    rep 4 uniform fixed: ok 0.423248
+    rep 4 uniform t4: ok 0.434295
+    rep 4 uniform t8: ok 0.448426
+    rep 4 uniform fixed-again: ok 0.447359
+    rep 4 mesh fixed: ok 1.008429
+    rep 4 mesh t4: ok 0.950649
+    rep 4 mesh t8: ok 1.028303
+    rep 4 mesh fixed-again: ok 1.021034
+    rep 4 rmat fixed: ok 0.394835
+    rep 4 rmat t4: ok 0.403219
+    rep 4 rmat t8: ok 0.375749
+    rep 4 rmat fixed-again: ok 0.410218
+    rep 5 uniform fixed: ok 0.410570
+    rep 5 uniform t4: ok 0.461208
+    rep 5 uniform t8: ok 0.432469
+    rep 5 uniform fixed-again: ok 0.395885
+    rep 5 mesh fixed: ok 1.007297
+    rep 5 mesh t4: ok 1.000984
+    rep 5 mesh t8: ok 0.970015
+    rep 5 mesh fixed-again: ok 1.012605
+    rep 5 rmat fixed: ok 0.381956
+    rep 5 rmat t4: ok 0.406908
+    rep 5 rmat t8: ok 0.418626
+    rep 5 rmat fixed-again: ok 0.433884
+    rep 6 uniform fixed: ok 0.382472
+    rep 6 uniform t4: ok 0.443929
+    rep 6 uniform t8: ok 0.423321
+    rep 6 uniform fixed-again: ok 0.487569
+    rep 6 mesh fixed: ok 1.058258
+    rep 6 mesh t4: ok 1.002652
+    rep 6 mesh t8: ok 1.057391
+    rep 6 mesh fixed-again: ok 1.012155
+    rep 6 rmat fixed: ok 0.439892
+    rep 6 rmat t4: ok 0.425763
+    rep 6 rmat t8: ok 0.382426
+    rep 6 rmat fixed-again: ok 0.407259
+    rep 7 uniform fixed: ok 0.370494
+    rep 7 uniform t4: ok 0.468116
+    rep 7 uniform t8: ok 0.444685
+    rep 7 uniform fixed-again: ok 0.393294
+    rep 7 mesh fixed: ok 1.010422
+    rep 7 mesh t4: ok 1.001124
+    rep 7 mesh t8: ok 0.945564
+    rep 7 mesh fixed-again: ok 1.030555
+    rep 7 rmat fixed: ok 0.430629
+    rep 7 rmat t4: ok 0.428630
+    rep 7 rmat t8: ok 0.418586
+    rep 7 rmat fixed-again: ok 0.410118
+    rep 8 uniform fixed: ok 0.461491
+    rep 8 uniform t4: ok 0.486010
+    rep 8 uniform t8: ok 0.426384
+    rep 8 uniform fixed-again: ok 0.419289
+    rep 8 mesh fixed: ok 1.030958
+    rep 8 mesh t4: ok 1.015022
+    rep 8 mesh t8: ok 1.014501
+    rep 8 mesh fixed-again: ok 0.962479
+    rep 8 rmat fixed: ok 0.419525
+    rep 8 rmat t4: ok 0.399999
+    rep 8 rmat t8: ok 0.403442
+    rep 8 rmat fixed-again: ok 0.407932
+    rep 9 uniform fixed: ok 0.424363
+    rep 9 uniform t4: ok 0.396280
+    rep 9 uniform t8: ok 0.431515
+    rep 9 uniform fixed-again: ok 0.378794
+    rep 9 mesh fixed: ok 1.000302
+    rep 9 mesh t4: ok 1.020443
+    rep 9 mesh t8: ok 0.972101
+    rep 9 mesh fixed-again: ok 1.059708
+    rep 9 rmat fixed: ok 0.429628
+    rep 9 rmat t4: ok 0.398957
+    rep 9 rmat t8: ok 0.405103
+    rep 9 rmat fixed-again: ok 0.428157
+    rep 10 uniform fixed: ok 0.464157
+    rep 10 uniform t4: ok 0.432843
+    rep 10 uniform t8: ok 0.446073
+    rep 10 uniform fixed-again: ok 0.440380
+    rep 10 mesh fixed: ok 1.038002
+    rep 10 mesh t4: ok 1.026375
+    rep 10 mesh t8: ok 0.995186
+    rep 10 mesh fixed-again: ok 0.980402
+    rep 10 rmat fixed: ok 0.386884
+    rep 10 rmat t4: ok 0.400419
+    rep 10 rmat t8: ok 0.375181
+    rep 10 rmat fixed-again: ok 0.407332
+Results under ab-out-7.3-bucket-confirm-2n/. Summarise with scripts/diag_report.py ab-out-7.3-bucket-confirm-2n
+== report ==
+A/B  baseline = fixed; medians over repetitions, spread is min..max compute_s
+
+  mesh
+    variant      compute_s  spread         vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created    dist_changes
+    -----------  ---------  -------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  ---------  ------------
+    fixed        1.009      0.9404..1.062  1.00x    0       6410    1             1.102    8.971e+04  593160156   89693          0             -             2.466e+07  7732888     
+    t4           1.002      0.9506..1.026  0.99x    0       5934    2             1.337    8.141e+04  719051328   81354          0             -             29906197   9220400     
+    t8           0.9914     0.9456..1.057  0.98x    0       6400    1             1.099    8.969e+04  591348472   89661          0             -             24579740   7.711e+06   
+    fixed-again  1.012      0.9625..1.06   1.00x    0       6417    1             1.101    89706      592403412   8.969e+04      0             -             2.462e+07  7.722e+06   
+
+  rmat
+    variant      compute_s  spread          vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created   dist_changes
+    -----------  ---------  --------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  --------  ------------
+    fixed        0.4238     0.382..0.4399   1.00x    0       279.5   1             1.117    41548      1851201808  1794           0             -             77105861  5523964     
+    t4           0.4018     0.3694..0.4286  0.95x    0       77      26            1.13     38936      1873199128  218.5          0             -             78024027  5.558e+06   
+    t8           0.4043     0.3752..0.4287  0.95x    0       91.5    13            1.133    3.919e+04  1878467488  335.5          0             -             78243349  5559538     
+    fixed-again  0.4102     0.4065..0.4364  0.97x    0       279.5   1             1.116    4.125e+04  1849307240  1802           0             -             77026992  5518313     
+
+  uniform
+    variant      compute_s  spread          vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  absorbed/|E|  hold_absorb%  created    dist_changes
+    -----------  ---------  --------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  ---------  ------------
+    fixed        0.4238     0.3705..0.4642  1.00x    0       379.5   1             0.9355   35643      1611678944  974.5          0             -             67129547   1.014e+07   
+    t4           0.4573     0.3963..0.486   1.08x    0       133.5   20            0.9452   34291      1628477660  423.5          0             -             6.783e+07  1.028e+07   
+    t8           0.4444     0.4233..0.4598  1.05x    0       137.5   10            0.9408   3.423e+04  1620869248  594.5          0             -             67513367   10212823    
+    fixed-again  0.4439     0.3788..0.4876  1.05x    0       373     1             0.9354   3.569e+04  1611611496  1025           0             -             67126633   1.014e+07   
+
