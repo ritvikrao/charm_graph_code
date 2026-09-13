@@ -1,0 +1,11 @@
+{
+  "charm": "360ee698bca0126ec802b07009ab53d954c40f04",
+  "reconverse": "38091f1e950446ce6668560db5211ee356b5c2d7",
+  "htram": "3ac5169c8b856c583e9d68c1d9ab49bb31045ae5",
+  "gapbs": "2972aeb2703165bafd921222f4ed7196f542d3a8",
+  "galois": "b67f94206a8c47fd414446621f6633a31c49fd98",
+  "riken": "552f156297d921856b74f5c238a93bcbd361bb95",
+  "acic_measured_source": "f29245e267abb44c898c774812a76d9a8110514d",
+  "lci_auxiliary_checkout": "b8069dd44e8350db10cebb819d44c598814efd4d",
+  "lci_runtime_source": "dfb924cf3ee25aece37b85473b41d406ad810252"
+}

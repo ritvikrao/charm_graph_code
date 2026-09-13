@@ -13,14 +13,15 @@ cycle). Then extract interfaces around a second kernel. The detailed rationale,
 pilot matrix, controls, and decision gates are in
 [post-step7-review.md](post-step7-review.md).
 
-The strongest current lead is the interaction between **work admission and
-delivery latency**: idle flushing reduced two-node RMAT work but increased mesh
-work. Combining is off and no longer a promised contribution. The historical
-RIKEN gap must be measured again on the current code. Results from one/two nodes
-and mostly one source per synthetic input do not yet establish generality.
-
-This revision changes planning documents only; its proposed fixes, experiments,
-baseline setup, and refactors have not been performed as part of the review.
+The [completed comparison pilot](step75-comparisons.md) now measures the
+external gap, real inputs, held-out sources, scaling through 16 nodes, and
+process-layout sensitivity. It also exposes ACIC progress failures on a
+two-node mesh and full-node RMAT, under adaptive and fixed policies.
+**Fix and validate those progress paths before optimizing or
+generalizing.** Then study the PE-dependent coarsening guard, histogram
+clamping/initial width, and local execution with controlled process geometry.
+Combining remains off and is not a promised contribution. The pilot does not
+yet establish adaptive advantage or satisfy Gate A.
 
 ## Context
 
@@ -217,7 +218,8 @@ to identify exposed delay; apparent idleness alone does not identify a bottlenec
 
 ## Work plan
 
-Steps 1–7 are completed SSSP development. **7.5–7.6 are next**; steps 8–12 are
+Steps 1–7 are completed SSSP development. **The 7.5 comparison pilot is complete;
+7.6 starts with progress and controller robustness**; steps 8–12 are
 conditional and no longer a sequential refactor queue. Research gates produce
 decision reports; implementation gates require correctness and appropriate
 performance checks. Integer-distance refactors retain identical results, with
@@ -232,8 +234,8 @@ one- and two-node validation; PageRank uses a tolerance-based gate.
 | **5** | Dead-code retirement, graphlib, flat CSR, binary inputs | [Graphlib](graphlib.md); 18 verification configurations including generated/file equivalence | complete |
 | **6** | H1–H4 diagnosis on the recorded synthetic configurations | [Diagnosis](scale-free-diagnosis.md); interpretation qualified by later step 7 results below | complete |
 | **7** | Gated flush cadence, combining/fold, bucket coarsening, idle flush | Mesh cadence gain 3.6–3.8×; combining/fold off; confirmed small-input bucketing gains; two-node RMAT idle-flush gain 1.12× with 12.6% fewer created updates. See the [review evidence table](post-step7-review.md#what-the-evidence-supports) for scope and limits | complete |
-| **7.5 — next** | Resolve small-component termination; independent input/result validation; balanced measurement order; repaired/current ACIC, tuned RIKEN, GAPBS; one road and one social/web input; pilot through 4/8/16 nodes. Begin Gluon-Async setup | Current external gap and scaling limits measured on identical inputs; report uncertainty, resources, and failures | ~2 wk |
-| **7.6 — next** | Fixed-versus-adaptive policy study; admission × delivery experiment; at most one or two measured bottleneck optimizations; inspect scale dependence of starvation gate and control cost | **Gate A:** adaptive benefit beyond one global fixed setting, proximity to per-case tuned settings, credible external runtime results | 2–3 wk |
+| **7.5 — pilot complete** | Matched weighted inputs, independent digest checks, fixed-policy tuning, RIKEN/GAPBS/Gluon comparisons, real road/social inputs, 1–16-node scaling, occupancy and process-layout probes | [Measurements and failures](step75-comparisons.md); small-component repair passed, but a separate progress failure keeps the correctness gate open | complete pilot; follow-up in 7.6 |
+| **7.6 — next** | First reproduce/repair observed progress failures across fixed and adaptive policies; then isolate coarsening eligibility × width/clamping and process geometry; use quiet production timings and profile local execution versus GAPBS; retain admission × delivery study after these confounds are controlled | **Gate A:** no unexplained stalls; adaptive benefit over a frozen global fixed setting, proximity to per-case tuning, credible external runtime and resource results | 2–3 wk, one bounded optimization cycle |
 | **8 — conditional** | Minimal generic payload interface/type erasure only when a second algorithm requires it | SSSP results identical on one/two nodes; no unexplained runtime regression | up to 1 wk |
 | **9 — split** | Fix PE/chare identity when introducing new mappings. Overdecomposition/hash placement/migration only if profiling justifies them | Correct on **all supported mappings**, not just K=1; performance benefit required for extra scheduling machinery | budget after diagnosis |
 | **10 — with second kernel** | Extract `AcicController` around observed shared signals, actions, and progress contracts; may precede step 8 | SSSP validation and performance retained; second use exercises shared controller | ~1 wk |
@@ -450,8 +452,9 @@ experiment dates.
 
 | Window | Work | Decision/deliverable |
 |---|---|---|
-| Sep 14–27 | 7.5: validity gaps, current RIKEN/GAPBS/internal comparisons, real inputs, 4–16-node pilot; start Gluon-Async setup | Current performance map with matched inputs and uncertainty |
-| Sep 28–Oct 18 | 7.6: fixed-policy sweeps, latency/admission interaction, one bounded optimization cycle | **Gate A:** adaptivity and external competitiveness; proceed, narrow, or revisit the mechanism |
+| Sep 13, completed | 7.5 comparison pilot: matched inputs, RIKEN/GAPBS/Gluon, 1–16 nodes, occupancy/layout and logging checks | [Performance map and failure ledger](step75-comparisons.md); correctness gate still open |
+| Sep 14–20 | 7.6a: reproduce and repair progress failures; bounded diagnostics and quiet production timing | Progress argument and minimized regressions, including fixed policies |
+| Sep 21–Oct 18 | 7.6b: coarsening eligibility/width/clamping, controlled deployment geometry, local profiles, then admission × delivery; one bounded optimization cycle | **Gate A:** adaptivity and external competitiveness; proceed, narrow, or revisit the mechanism |
 | Oct 19–Nov 15 | Minimal controller extraction and BFS transfer; optional necessary payload work | **Gate B:** shared adaptive benefit transfers, or restrict the paper's scope |
 | Nov 16–Dec 13 | PageRank if needed for the claim; otherwise strengthen SSSP/BFS evaluation | Freeze algorithm scope; do not add BC/k-core by default |
 | Dec–Feb | Scaling, real graphs, selected baselines, ablations, one portability slice, conditional GPU comparison | **Gate C, Feb 15:** evidence sufficient for the chosen claim; no arbitrary 256-node requirement |
@@ -466,8 +469,8 @@ matches the adaptive method, stop generic refactoring until that result is
 understood. One or two more optimization attempts are a bounded investigation,
 not an indefinite prerequisite for writing.
 
-Baseline setup is part of the next milestone. Avoid making installation of
-seven systems a condition for beginning comparisons. Record immutable source
+The initial baseline setup is complete. Avoid making installation of
+seven systems a condition for progress on the observed failures. Record immutable source
 versions, build/runtime settings, raw results, and figure recipes as work
 proceeds. AD/AE dates follow the official CFP; SC26's AD was due after the paper,
 so the old assertion that they necessarily share a deadline is withdrawn.

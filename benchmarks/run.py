@@ -160,6 +160,21 @@ class Campaign:
         text = (self.root/'graphs'/(graph+'.reference.txt')).read_text()
         return list(csv.DictReader(text[text.index('source\t'):].splitlines(), delimiter='\t'))
 
+    def skip_failed(self, graph, row, config, phase, rep):
+        """Account for an unrun slot after its variant failed validation."""
+        self.count += 1
+        record = dict(job=self.job, nodes=self.nodes, workers=self.args.workers,
+                      selection_job=self.args.selection_job, graph=graph,
+                      source=int(row['source']), config=config, phase=phase,
+                      rep=rep, index=self.count, valid=False, skipped=True,
+                      reason='not run after this variant failed validation',
+                      expected={k:int(row[k]) for k in KEYS})
+        with self.records.open('a') as f:
+            f.write(json.dumps(record)+'\n')
+        with gzip.open(self.raw, 'at') as f:
+            f.write('\nSKIPPED '+json.dumps(record)+'\n')
+        print(f'{self.tag} #{self.count} SKIPPED {graph} {config["name"]} source={row["source"]}', flush=True)
+
     def configs(self, graph):
         meta = dict(re.findall(r'(\w+)=(\d+)', (self.root/'graphs'/(graph+'.meta')).read_text()))
         denominator = int(meta['riken_denominator'])
@@ -419,6 +434,40 @@ class Campaign:
                         if not self.run(graph, int(row['source']), c, row, 'quiet-test', rep)['valid']:
                             raise RuntimeError('Quiet comparison failed verification')
 
+    def finish_layout(self):
+        if self.nodes != 1 or self.args.workers != 120 or not self.args.selection_job:
+            raise ValueError('finish_layout requires one node, 120 workers, and --selection-job')
+        tag = f'layout_confirm-1n-120w-{self.args.selection_job}'
+        old = [json.loads(s) for s in (self.root/'logs'/(tag+'.jsonl')).read_text().splitlines()]
+        primary_job = old[0]['selection_job']
+        rng = random.Random(20260913 + int(self.job))
+        for graph in self.args.graphs.split(','):
+            frozen = json.loads((self.root/'logs'/f'benchmark-1n-120w-{primary_job}-{graph}-selected.json').read_text())
+            configs = [dict(engine='acic', name=n, rpn=8) for n in ['current','control']]
+            configs += [dict(c,rpn=8) if c['engine']=='acic' else c for c in frozen
+                        if c['name'] in ['tuned-fixed','riken','gap']]
+            seen = {(r['source'],r['rep'],r['config']['name']) for r in old if r['graph']==graph and r['phase']=='layout-test'}
+            failed = {r['config']['name'] for r in old if r['graph']==graph and not r['valid']}
+            refs = self.references(graph)
+            for c in configs:
+                if c['name'] not in failed:
+                    r = self.run(graph,int(refs[0]['source']),c,refs[0],'layout-completion-warmup')
+                    if not r['valid']:
+                        failed.add(c['name'])
+            for rep in range(self.args.reps):
+                rows = refs[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = configs[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        if (int(row['source']),rep,c['name']) in seen:
+                            continue
+                        if c['name'] in failed:
+                            self.skip_failed(graph,row,c,'layout-completion',rep)
+                        elif not self.run(graph,int(row['source']),c,row,'layout-completion',rep)['valid']:
+                            failed.add(c['name'])
+
     def tiny(self):
         # Independent Python fixture writer and Dijkstra. Every case creates
         # <1001 updates, including an isolated source and a cross-partition path.
@@ -476,7 +525,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')

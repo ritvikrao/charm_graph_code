@@ -1,2 +1,4 @@
 # Unified diff context lines intentionally contain a single leading space.
 benchmarks/*.patch whitespace=-blank-at-eol,-blank-at-eof
+# Normalize the CSV writer's CRLF output when storing comparison tables.
+design/step75-data/*.csv text eol=lf

@@ -1,0 +1,23 @@
+app 3db0a0fd3e5363b0aeccc8a7670f73c0a0c4b026
+htram 3ac5169c8b856c583e9d68c1d9ab49bb31045ae5
+gapbs 2972aeb2703165bafd921222f4ed7196f542d3a8
+riken 552f156297d921856b74f5c238a93bcbd361bb95
+g++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)
+g++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)
+
+Currently Loaded Modules:
+  1) libfabric/2.3.1      6) cray-libsci/26.03.0    11) craype-accel-nvidia80
+  2) craype-network-ofi   7) PrgEnv-gnu/8.7.0       12) cue-login-env/1.1
+  3) gcc-native/14        8) cray-dsmml/0.3.1       13) slurm-env/0.1
+  4) craype/2.7.36        9) craype-x86-milan       14) default-rh96
+  5) cray-mpich/9.1.0    10) cudatoolkit/26.5_13.2
+
+
+
+efbb50c3ab715b1289b20784920629c00326dc02d284deef82b5422e1d40b822  /u/rao1/acic-comparison-deps/bin/acic
+58afc2401444f066c6770517a528bf31613af50d047bcd71cbdfc7d73ff860f8  /u/rao1/acic-comparison-deps/bin/gap_sssp
+a41338a3bd5e5960876dd72c45251ccb3967f86261bc0131eb147ef188e17e1a  /u/rao1/acic-comparison-deps/bin/riken_sssp
+fce48bcc5f07f38f4c38e1300ef0fa2090691daed3ce0c4fdbc7d73518d5f021  /u/rao1/charm_graph_code/benchmarks/gap_driver.cpp
+74c13d99ff62d58554fa64e3f2542025dab108e2e55feacc09160adc6049cf51  /u/rao1/charm_graph_code/benchmarks/prepare_graph.cpp
+e9482ebaeae98158ca1f7d88ae1a3159a7e98410748ffed9c13bd46213564238  /u/rao1/charm_graph_code/benchmarks/reference_gap.cpp
+443d8f5445d60bda945927b7b5de52f3041b7486b8576c35eb437b09e582d13e  /u/rao1/charm_graph_code/benchmarks/riken_driver.cpp

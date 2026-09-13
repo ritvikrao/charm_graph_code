@@ -36,8 +36,11 @@ self-loops are removed, directions are merged, and parallel edges retain the
 minimum weight. Neighbors are sorted by vertex ID. Thus the synthetic inputs
 are **different from the directed generators used in previous step 7 tables**.
 
-* Uniform and RMAT use graphlib with 16 generated arcs per vertex, integer
-  weights 1–1000, and seeds 1 and 2. Mesh uses the same weighted grid generator.
+* Uniform and RMAT use graphlib with a target average out-degree of 16,
+  integer weights 1–1000, and seeds 1 and 2. Uniform draws each out-degree
+  uniformly from 0–32; RMAT draws 16V edges before filtering. The RMAT generator
+  uses probabilities (0.57, 0.19, 0.19, 0.05), permuted labels, and no per-level
+  noise; it is not the official Graph500 generator. Mesh uses the weighted grid generator.
 * [DIMACS New York road distances](https://www.diag.uniroma1.it/~challenge9/download.shtml)
   provide genuinely weighted road topology. Download `USA-road-d.NY.gr.gz`
   from the official `data/USA-road-d/` directory. Preserve integer distance
@@ -242,6 +245,14 @@ choices. Both ACIC builds and both external baselines run on the same eight
 sources with two randomized repetitions. This output sensitivity includes
 asynchronous scheduling/work changes, so it cannot be subtracted as a constant
 overhead from other allocations. `report_extra.py` emits `quiet.md`.
+
+If the layout follow-up fails, `--mode finish_layout --selection-job JOB`
+accounts for its remaining slots using the same frozen configurations. After
+a variant fails validation, its remaining slots are explicitly `skipped`
+without execution or a timing; other variants continue. Reporting preserves
+actual allocation IDs, suppresses the failed variant's timing, and excludes
+skipped slots from attempted-query totals. This cannot rehabilitate a failed
+configuration or imply a measured failure rate over the unrun sources.
 
 After all jobs finish, `archive.py CAMPAIGN OUTPUT` exports compact provenance
 and hashes the full scratch logs. `render_report.py OUTPUT REPORT.md` refreshes

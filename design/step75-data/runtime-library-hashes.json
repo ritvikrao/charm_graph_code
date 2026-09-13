@@ -1,0 +1,22 @@
+{
+  "/u/rao1/charm_reconverse/lib/libreconverse.so": {
+    "realpath": "/u/rao1/charm_reconverse/reconverse-linux-x86_64-shmem/lib/libreconverse.so",
+    "sha256": "46d22a5b975abc1a18ea07371e5d3b5853efd1dc5e852cece4e080396e40b0ea",
+    "bytes": 331056
+  },
+  "/u/rao1/charm_reconverse/reconverse-linux-x86_64-shmem/lib/liblci.so": {
+    "realpath": "/u/rao1/charm_reconverse/reconverse-linux-x86_64-shmem/lib/liblci.so",
+    "sha256": "09353e9cb6817d20e760a05c4b8c2673f005684ab42d26752c0720fcaa69c9e0",
+    "bytes": 410728
+  },
+  "/u/rao1/charm_reconverse/reconverse-linux-x86_64-shmem/lib/liblct.so": {
+    "realpath": "/u/rao1/charm_reconverse/reconverse-linux-x86_64-shmem/lib/liblct.so",
+    "sha256": "ccf95a152fed053b392748c1f4a83f98bc234429e9f8e6f40777a35df6a9a8a9",
+    "bytes": 324976
+  },
+  "/u/rao1/charm_reconverse/reconverse-linux-x86_64-shmem/lib/liblci-ucx.so": {
+    "realpath": "/u/rao1/charm_reconverse/reconverse-linux-x86_64-shmem/lib/liblci-ucx.so",
+    "sha256": "83ea593360929c372e31dec8ba081122574e039f5a22b05fff5c7b556a1d9167",
+    "bytes": 534896
+  }
+}

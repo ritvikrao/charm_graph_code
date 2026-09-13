@@ -1,0 +1,1515 @@
+{
+  "benchmark-16n-16w-22032760-mesh22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 2,
+      "delta": 1024,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-16n-16w-22032760-rmat22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-120w-22033411-mesh22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 1024
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-120w-22033411-rmat22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "3"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-mesh20-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 1024,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 1024
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-mesh22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 1024
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-rmat20-s2-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-rmat20-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-rmat22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-road-ny-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "65536"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 65536,
+      "denominator": 65536,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16384
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-uniform20-s2-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "5",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-uniform20-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-16w-22032688-youtube-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-64w-22032761-mesh22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 1024
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-64w-22032761-rmat22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 16
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-64w-22032761-road-ny-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 65536,
+      "denominator": 65536,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 65536
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-1n-64w-22032761-youtube-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "gap",
+      "name": "gap",
+      "delta": 64
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-mesh20-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 1024,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-mesh22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-rmat20-s2-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-rmat20-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "5",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-rmat22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-road-ny-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "65536"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 65536,
+      "denominator": 65536,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-uniform20-s2-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "5",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-uniform20-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 256,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-2n-16w-22032689-youtube-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-4n-16w-22032758-mesh22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 2,
+      "delta": 64,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-4n-16w-22032758-rmat22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-8n-16w-22032759-mesh22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 1024,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "benchmark-8n-16w-22032759-rmat22-selected.json": [
+    {
+      "engine": "acic",
+      "name": "tuned-fixed",
+      "flags": [
+        "--flush-policy",
+        "fixed",
+        "--flush-interval",
+        "1",
+        "--bucket-policy",
+        "fixed",
+        "--idle-flush",
+        "off",
+        "--bucket-width",
+        "1024"
+      ]
+    },
+    {
+      "engine": "riken",
+      "name": "riken",
+      "rpn": 4,
+      "delta": 16,
+      "denominator": 1024,
+      "presolve": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    },
+    {
+      "engine": "acic",
+      "name": "old-fixed"
+    },
+    {
+      "engine": "acic",
+      "name": "open"
+    }
+  ],
+  "gluon-1n-16w-22033417-mesh20-selected.json": [
+    {
+      "engine": "gluon",
+      "name": "gluon-async",
+      "model": "Async",
+      "partition": "oec",
+      "delta": 1024
+    },
+    {
+      "engine": "gluon",
+      "name": "gluon-sync",
+      "model": "Sync",
+      "partition": "oec",
+      "delta": 1024
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    }
+  ],
+  "gluon-1n-16w-22033417-rmat20-selected.json": [
+    {
+      "engine": "gluon",
+      "name": "gluon-async",
+      "model": "Async",
+      "partition": "oec",
+      "delta": 64
+    },
+    {
+      "engine": "gluon",
+      "name": "gluon-sync",
+      "model": "Sync",
+      "partition": "oec",
+      "delta": 64
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    }
+  ],
+  "gluon-1n-16w-22033417-road-ny-selected.json": [
+    {
+      "engine": "gluon",
+      "name": "gluon-async",
+      "model": "Async",
+      "partition": "oec",
+      "delta": 4096
+    },
+    {
+      "engine": "gluon",
+      "name": "gluon-sync",
+      "model": "Sync",
+      "partition": "oec",
+      "delta": 4096
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    }
+  ],
+  "gluon-1n-16w-22033417-youtube-selected.json": [
+    {
+      "engine": "gluon",
+      "name": "gluon-async",
+      "model": "Async",
+      "partition": "oec",
+      "delta": 1024
+    },
+    {
+      "engine": "gluon",
+      "name": "gluon-sync",
+      "model": "Sync",
+      "partition": "oec",
+      "delta": 0
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    }
+  ],
+  "gluon-2n-16w-22033834-mesh20-selected.json": [
+    {
+      "engine": "gluon",
+      "name": "gluon-async",
+      "model": "Async",
+      "partition": "oec",
+      "delta": 1024
+    },
+    {
+      "engine": "gluon",
+      "name": "gluon-sync",
+      "model": "Sync",
+      "partition": "oec",
+      "delta": 1024
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    }
+  ],
+  "gluon-2n-16w-22033834-rmat20-selected.json": [
+    {
+      "engine": "gluon",
+      "name": "gluon-async",
+      "model": "Async",
+      "partition": "oec",
+      "delta": 64
+    },
+    {
+      "engine": "gluon",
+      "name": "gluon-sync",
+      "model": "Sync",
+      "partition": "cvc",
+      "delta": 1024
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    }
+  ],
+  "gluon-2n-16w-22033834-road-ny-selected.json": [
+    {
+      "engine": "gluon",
+      "name": "gluon-async",
+      "model": "Async",
+      "partition": "oec",
+      "delta": 4096
+    },
+    {
+      "engine": "gluon",
+      "name": "gluon-sync",
+      "model": "Sync",
+      "partition": "cvc",
+      "delta": 65536
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    }
+  ],
+  "gluon-2n-16w-22033834-youtube-selected.json": [
+    {
+      "engine": "gluon",
+      "name": "gluon-async",
+      "model": "Async",
+      "partition": "oec",
+      "delta": 1024
+    },
+    {
+      "engine": "gluon",
+      "name": "gluon-sync",
+      "model": "Sync",
+      "partition": "oec",
+      "delta": 1024
+    },
+    {
+      "engine": "acic",
+      "name": "current"
+    },
+    {
+      "engine": "acic",
+      "name": "control"
+    }
+  ]
+}

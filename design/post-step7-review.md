@@ -6,6 +6,11 @@ selected saved outputs, and read-only inspection of the solver and harness.
 The 2024 paper's referenced `~/Downloads/acic_2024paper.pdf` is absent on Delta;
 historical paper results below are those reported in the existing plan.*
 
+**Follow-up:** the subsequent [step 7.5 comparison report](step75-comparisons.md)
+records the executed pilot, baseline setup, measurements, and failures. The
+text below preserves the pre-experiment review; use the updated
+[working plan](sc27-plan.md) for the next actions.
+
 ## Recommendation
 
 **Insert a short SSSP comparison and adaptivity study before steps 8–12.** Start

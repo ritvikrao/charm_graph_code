@@ -10,29 +10,44 @@ from report import geometric, paired
 logs, out = map(Path, sys.argv[1:3])
 out.mkdir(parents=True, exist_ok=True)
 records, complete, unfinished = [], [], []
-for pattern in ['gluon-*.jsonl', 'confirm-*.jsonl', 'presolve-*.jsonl', 'numa-*.jsonl', 'finish-*.jsonl', 'layout_confirm-*.jsonl', 'quiet-*.jsonl']:
+completed_jobs = set()
+for pattern in ['gluon-*.jsonl', 'confirm-*.jsonl', 'presolve-*.jsonl', 'numa-*.jsonl', 'finish-*.jsonl', 'layout_confirm-*.jsonl', 'quiet-*.jsonl', 'finish_layout-*.jsonl']:
     for path in sorted(logs.glob(pattern)):
         runs = [json.loads(line) for line in path.read_text().splitlines()]
+        runs = [dict(r, phase='layout-test', original_phase=r['phase'], comparison_job=str(r['selection_job']))
+                if r['phase']=='layout-completion' else r for r in runs]
         records += runs
         job = path.stem.rsplit('-', 1)[1]
         stdout = (logs/f'job-{job}.out').read_text()
         if 'CAMPAIGN COMPLETE '+path.stem in stdout:
             complete += runs
+            completed_jobs.add(job)
         else:
             unfinished.append(dict(job=job, records=len(runs), invalid=sum(not r['valid'] for r in runs)))
+resumed = {r['comparison_job'] for r in complete if r.get('original_phase')=='layout-completion'}
+complete += [r for r in records if r['job'] in resumed and r['job'] not in completed_jobs]
+for attempt in unfinished:
+    if attempt['job'] in resumed:
+        attempt['remaining_slots_accounted_for_in_completion_job'] = True
 with gzip.open(out/'extra-runs.jsonl.gz', 'wt') as f:
     for r in records:
         f.write(json.dumps(r, sort_keys=True)+'\n')
 (out/'extra-incomplete-attempts.json').write_text(json.dumps(unfinished, indent=2)+'\n')
+(out/'extra-failed-test-runs.json').write_text(json.dumps(
+    [r for r in records if r['phase'].endswith('-test') and not r['valid'] and not r.get('skipped')], indent=2)+'\n')
 
 
 def source_means(phase):
     observed = defaultdict(list)
+    failed = set()
     for r in complete:
         if r['phase'] == phase:
+            cell_key = (r.get('comparison_job',r['job']),r['nodes'],r['workers'],r['graph'])
             if not r['valid']:
-                raise ValueError('Invalid held-out result')
-            observed[(r['job'], r['nodes'], r['workers'], r['graph'], r['config']['name'], r['source'])].append(r['seconds'])
+                if phase != 'layout-test':
+                    raise ValueError('Invalid held-out result')
+                failed.add((*cell_key,r['config']['name']))
+            observed[(*cell_key,r['config']['name'],r['source'])].append(r.get('seconds',1.0))
     cells = defaultdict(dict)
     for (job, nodes, workers, graph, name, source), times in observed.items():
         if len(times) != 2:
@@ -51,10 +66,14 @@ def source_means(phase):
         sets = [set(v) for v in cell.values()]
         if any(s != sets[0] for s in sets) or len(sets[0]) != 8:
             raise ValueError('Expected eight matched sources')
+    for *key, name in failed:
+        cells[tuple(key)][name] = None
     return cells
 
 
 def ratio(values, name):
+    if values[name] is None or values['current'] is None:
+        return '—'
     r = paired(values[name], values['current'])
     return f'{r[0]:.2f} [{r[1]:.2f}, {r[2]:.2f}]'
 
@@ -90,7 +109,7 @@ table = ['| Physical nodes | Graph | ACIC 8 × 15 (s) | Transferred fixed 8 × 1
          '|---:|---|---:|---:|---:|---:|---|---|---|']
 for (job, nodes, workers, graph), cell in sorted(source_means('layout-test').items()):
     table.append(f'| {nodes} | {graph} | '+
-                 ' | '.join(f'{geometric(cell[n].values()):.4f}' for n in ['current','tuned-fixed','riken','gap'])+' | '+
+                 ' | '.join('FAIL' if cell[n] is None else f'{geometric(cell[n].values()):.4f}' for n in ['current','tuned-fixed','riken','gap'])+' | '+
                  ' | '.join(ratio(cell,n) for n in ['riken','gap','control'])+' |')
 (out/'layout-confirmation.md').write_text('\n'.join(table)+'\n')
 

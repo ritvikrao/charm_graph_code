@@ -54,10 +54,12 @@ main = [json.loads(s) for s in gzip.open(data/'runs.jsonl.gz', 'rt')]
 extra = [json.loads(s) for s in gzip.open(data/'extra-runs.jsonl.gz', 'rt')]
 primary = [r for r in main if r['phase']=='test']
 # completion-test appears in both archives intentionally; count it only once.
-supplemental = [r for r in extra if r['phase'] in ['gluon-test','confirm-test','numa-test','layout-test','quiet-test']]
+supplemental = [r for r in extra if not r.get('skipped') and r['phase'] in ['gluon-test','confirm-test','numa-test','layout-test','quiet-test']]
 section('PROVENANCE_SUMMARY', f'''The primary matrix contains **{len(list(csv.DictReader((data/'summary.csv').open())))} graph/resource cells,
 {len(primary):,} attempted test queries ({sum(r['valid'] for r in primary):,} valid)**,
-plus {len(supplemental):,} paired supplemental test queries. Tuning, warmups,
+plus {len(supplemental):,} supplemental test attempts
+({sum(r['valid'] for r in supplemental):,} valid; {sum(bool(r.get('skipped')) for r in extra)}
+additional planned slots explicitly skipped after validation failure). Tuning, warmups,
 presolve probes, failed adapters, and diagnostic replays are additional records.
 See [provenance.md](step75-data/provenance.md) for pinned revisions and binary
 identities, [job-accounting.psv](step75-data/job-accounting.psv) for Slurm states,

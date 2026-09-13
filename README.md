@@ -93,6 +93,13 @@ solver option set; every step 7 mechanism is gated with its flag on and off.
 
 ## Measurements
 
+The [step 7.5 comparison report](design/step75-comparisons.md) covers nine
+matched weighted inputs, 1–16 CPU nodes, RIKEN/GAPBS/Gluon baselines, process
+layout, and timed-output sensitivity. It records progress failures under
+both current and fixed policies; resolving them is the next correctness gate.
+See [benchmarks/README.md](benchmarks/README.md) for reproduction and
+[design/step75-data](design/step75-data/) for compact measurements and provenance.
+
 ```
 scripts/diagnose.sh <h1|h2|h3|h4|all> [outdir]   # the step 6 experiment matrix
 scripts/diag_report.py <outdir>                  # turn it into tables

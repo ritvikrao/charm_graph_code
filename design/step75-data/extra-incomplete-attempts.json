@@ -1,0 +1,23 @@
+[
+  {
+    "job": "22033282",
+    "records": 12,
+    "invalid": 12
+  },
+  {
+    "job": "22033283",
+    "records": 24,
+    "invalid": 24
+  },
+  {
+    "job": "22033418",
+    "records": 26,
+    "invalid": 26
+  },
+  {
+    "job": "22033887",
+    "records": 12,
+    "invalid": 1,
+    "remaining_slots_accounted_for_in_completion_job": true
+  }
+]
