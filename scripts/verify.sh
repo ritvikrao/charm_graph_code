@@ -135,6 +135,16 @@ for cfg in "${CONFIGS[@]}"; do
     failures=$((failures + 1))
   fi
 
+  # The controller's histogram is a live-population count: the reduced window
+  # cannot hold more updates than exist. A run that says otherwise has computed
+  # every threshold from a number that means nothing, and the way that shows up
+  # in the field is a run that never finishes.
+  if echo "$out" | grep -qE "^CONSERVATION VIOLATED|^COARSEN_CLAMPED"; then
+    echo "FAIL (conservation): $cfg"
+    echo "$out" | grep -m1 -A2 -E "^CONSERVATION VIOLATED|^COARSEN_CLAMPED" | sed 's/^/    /'
+    failures=$((failures + 1))
+  fi
+
   # ppn is deliberately excluded from the key: the digest must not depend on it.
   results+="$key | $digest"$'\n'
 done
@@ -193,8 +203,86 @@ for cfg in "${DIAG_CONFIGS[@]}"; do
   fi
 done
 
+# Progress fixtures: configurations that used to stop making progress and hang.
+#
+# The controller reduces a window of histo_reduction_width buckets starting at
+# the lowest bucket it last saw occupied, so it is blind to work above that
+# window's right edge. A bucket width narrow enough that one edge weight spans
+# more than the window puts the whole frontier there in a single step -- which
+# is what --bucket-width 3 did to rmat22 in the step 7.5 comparisons, where the
+# largest edge weight is 1000 and 256 buckets reach only 768 distance units.
+# The window then summed to -1 rather than to 0, because the injected source
+# update was retired without ever having been created; the "window is empty,
+# open the thresholds" rescue did not fire; and the percentile scan pinned both
+# thresholds at the window's own origin, where they stayed for the rest of the
+# run. See design/step76-progress.md.
+#
+# Each fixture names a policy in its own flags, so it tests that policy whatever
+# SSSP_EXTRA_ARGS says. The timeout is short on purpose: a regression here is a
+# hang, and the gate should say so in a minute rather than in five.
+#
+# V E SEED SRC MODE PTRAM PPQ PPN | flags
+# The first three are the step 7.5 policy verbatim, on the smallest sources
+# that reproduce its hang: they stop after a handful of updates. The rest
+# force the same geometry from a width so narrow that every edge leaves the
+# window, over the coarsening path and over a delayed round.
+FIELD_POLICY="--flush-policy fixed --flush-interval 1 --bucket-policy fixed --idle-flush off --bucket-width 3"
+PROGRESS_CONFIGS=(
+  "16384 262144 1 27 3 0.999 0.005 4|$FIELD_POLICY"
+  "16384 262144 1 31 3 0.999 0.005 1|$FIELD_POLICY"
+  "10000 160000 1 0 1 0.999 0.005 4|$FIELD_POLICY"
+  "10000 0 1 0 2 0.999 0.005 4|--bucket-policy fixed --bucket-width 0.001"
+  "10000 0 1 0 2 0.999 0.005 4|--bucket-policy adaptive --bucket-width 0.001"
+  "10000 0 1 0 2 0.999 0.005 4|--bucket-policy fixed --bucket-width 0.001 --round-delay 2"
+)
+progress_run=0
+for entry in "${PROGRESS_CONFIGS[@]}"; do
+  cfg="${entry%%|*}"
+  read -r -a fixture_args <<< "${entry#*|}"
+  # --combine hold and --bucket-policy adaptive are mutually exclusive by
+  # design: CombiningHold keeps per-bucket reference lists that a merge cannot
+  # move, and the solver rejects the pair rather than silently picking one. The
+  # coarsening fixture names the policy itself, so under SSSP_EXTRA_ARGS
+  # "--combine hold" there is no run to make; skip it rather than record a
+  # failure for a combination that cannot exist.
+  case " ${SSSP_EXTRA_ARGS:-} " in
+    *" --combine hold "*|*"--combine=hold"*) holding=1 ;;
+    *) holding=0 ;;
+  esac
+  case " ${entry#*|} " in
+    *" --bucket-policy adaptive "*) coarsening=1 ;;
+    *) coarsening=0 ;;
+  esac
+  if [ "$holding" = 1 ] && [ "$coarsening" = 1 ]; then
+    echo "skip (combining excludes bucket coarsening): $cfg"
+    continue
+  fi
+  read -r V E SEED SRC MODE PTRAM PPQ PPN <<< "$cfg"
+  progress_run=$((progress_run + 1))
+  # These sources are not in the golden file -- they are chosen for the hang,
+  # not for the generator -- so the answer is checked the strongest way
+  # available in-process, against serial Dijkstra over the same graph.
+  out=$(./sssp_smp "$V" "$E" "$SEED" "$SRC" "$MODE" "$PTRAM" "$PPQ" \
+          --verify --timeout 60 ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
+          "${fixture_args[@]}" "$PE_FLAG" "$PPN" 2>&1)
+  status=$?
+  if [ $status -ne 0 ] || ! echo "$out" | grep -q "^VERIFY PASS"; then
+    echo "FAIL (progress fixture): $cfg ${entry#*|}"
+    echo "$out" | grep -m3 "^PROGRESS_STALL .* main" | sed 's/^/    /'
+    echo "$out" | tail -3 | sed 's/^/    /'
+    failures=$((failures + 1))
+  fi
+  # A run that finishes but reported a stall on the way is still a regression:
+  # it means the controller lost the frontier and only the rescue got it back.
+  if echo "$out" | grep -qE "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED"; then
+    echo "FAIL (progress fixture reported a stall): $cfg ${entry#*|}"
+    echo "$out" | grep -m2 -E "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED" | sed 's/^/    /'
+    failures=$((failures + 1))
+  fi
+done
+
 if [ $failures -ne 0 ]; then
   echo "VERIFY GATE FAILED ($failures)"
   exit 1
 fi
-echo "VERIFY GATE PASSED (${#CONFIGS[@]} configurations, plus ${#DIAG_CONFIGS[@]} on sssp_smp_diag)${SSSP_EXTRA_ARGS:+ with $SSSP_EXTRA_ARGS}"
+echo "VERIFY GATE PASSED (${#CONFIGS[@]} configurations, plus ${#DIAG_CONFIGS[@]} on sssp_smp_diag and $progress_run progress fixtures)${SSSP_EXTRA_ARGS:+ with $SSSP_EXTRA_ARGS}"

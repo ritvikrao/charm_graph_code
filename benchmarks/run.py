@@ -30,6 +30,27 @@ VARIANTS = {
 }
 
 
+# Every loss of progress the step 7.5 campaign recorded, with the allocation
+# and the policy that produced it. Each is replayed on two binaries: `acic`,
+# which is the one that produced the failure, and `acic-progress`, the repaired
+# one. A replay in which `acic` does not fail has reproduced nothing, and
+# cannot be read as evidence that the repair works.
+PROGRESS_CASES = [
+    dict(case='rmat22-1x120-fixed-w3', job=22033411, nodes=1, workers=120,
+         graph='rmat22', sources=[3882232, 2631403], rpn=1, name='tuned-fixed',
+         flags=['--flush-policy', 'fixed', '--flush-interval', '1',
+                '--bucket-policy', 'fixed', '--idle-flush', 'off',
+                '--bucket-width', '3']),
+    dict(case='rmat22-8x15-fixed-w3', job=22033887, nodes=1, workers=120,
+         graph='rmat22', sources=[3882232], rpn=8, name='tuned-fixed',
+         flags=['--flush-policy', 'fixed', '--flush-interval', '1',
+                '--bucket-policy', 'fixed', '--idle-flush', 'off',
+                '--bucket-width', '3']),
+    dict(case='mesh20-2n-current', job=22032689, nodes=2, workers=16,
+         graph='mesh20', sources=[736504], rpn=1, name='current', flags=[]),
+]
+
+
 class Campaign:
     def __init__(self, args):
         self.args = args
@@ -45,7 +66,7 @@ class Campaign:
         self.count = 0
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
-            if path.name in ['acic', 'acic_quiet', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
+            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -55,25 +76,31 @@ class Campaign:
     def run(self, graph, source, config, expected, phase, rep=0, extra=None):
         engine = config['engine']
         workers = self.args.workers
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
             env['PRESOL_SECONDS'] = str(config['presolve_seconds'])
         if engine.startswith('acic'):
             pp = ['1.0', '1.0'] if config['name'] == 'open' else ['0.999', '0.005']
+            # No +commap below: Reconverse has no communication thread
+            # (reconverse/src/cpuaffinity.cpp: "also no commap, we have no
+            # commthreads"), so the flag the recorded campaign passed was never
+            # parsed. The core past the worker region is still left free for
+            # the OS -- the pemap is unchanged -- so these runs are exactly
+            # comparable with the recorded ones.
             args = [str(binary), '0', str(path), '1', str(source), '4', *pp,
                     '--result-digest', '--timeout', str(self.args.timeout),
                     *VARIANTS.get(config['name'], config.get('flags', [])),
                     *(extra or []), '+ppn', str(workers), '+pemap', f'0-{workers-1}',
-                    '+commap', str(workers), '+lci_ndevices', '4']
+                    '+lci_ndevices', '4']
             launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
                       '--ntasks-per-node=1', '--cpu-bind=none']
             if config.get('rpn', 1) != 1:
                 ranks = config['rpn']
                 # Replace the trailing runtime flags with per-process maps.
                 args = ['bash', str(Path(__file__).with_name('launch_acic.sh')),
-                        str(ranks), str(workers), *args[:-8]]
+                        str(ranks), str(workers), *args[:-6]]
                 launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
                           '--ntasks-per-node', str(ranks), '-c', str(128//ranks), '--cpu-bind=none']
         elif engine == 'gluon':
@@ -468,6 +495,47 @@ class Campaign:
                         elif not self.run(graph,int(row['source']),c,row,'layout-completion',rep)['valid']:
                             failed.add(c['name'])
 
+    def progress(self):
+        """Replay the recorded losses of progress on both binaries.
+
+        Each case runs its own failing policy on the binary that produced the
+        failure and on the repaired one, in the same allocation, in randomized
+        order, with and without a delayed round. Delivery delay is included
+        because the failures are a property of what the controller can see
+        rather than of how fast it sees it, and a stall that survives a delay
+        is not a race.
+
+        The mesh case is intermittent -- one query in sixteen -- so it wants
+        repetitions rather than reasoning; the RMAT cases failed every replay
+        and want fewer. Nothing here produces a performance number: a stalled
+        query burns its whole timeout, so the times in this job are not
+        comparable to anything.
+        """
+        rng = random.Random(20260913 + int(self.job))
+        cases = [c for c in PROGRESS_CASES
+                 if c['nodes'] == self.nodes and c['workers'] == self.args.workers]
+        if not cases:
+            raise ValueError(f'no recorded failure at {self.nodes} nodes '
+                             f'x {self.args.workers} workers')
+        for case in cases:
+            refs = {int(r['source']): r for r in self.references(case['graph'])}
+            for source in case['sources']:
+                if source not in refs:
+                    raise ValueError(f'source {source} is not one of the '
+                                     f'recorded {case["graph"]} sources')
+                for rep in range(self.args.reps):
+                    order = [(engine, delay)
+                             for engine in ['acic', 'acic-progress']
+                             for delay in [[], ['--round-delay', '2']]]
+                    rng.shuffle(order)
+                    for engine, delay in order:
+                        config = dict(engine=engine, rpn=case['rpn'],
+                                      name=case['name'], flags=case['flags'],
+                                      case=case['case'], recorded_job=case['job'],
+                                      delayed=bool(delay))
+                        self.run(case['graph'], source, config, refs[source],
+                                 'progress-replay', rep, extra=delay)
+
     def tiny(self):
         # Independent Python fixture writer and Dijkstra. Every case creates
         # <1001 updates, including an isolated source and a cross-partition path.
@@ -525,7 +593,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')

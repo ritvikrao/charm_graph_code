@@ -386,6 +386,27 @@ private:
   int coarsenings = 0;
   long previous_updates_created = 0;
   long previous_updates_processed = 0;
+  // Consecutive rounds in which no update was created or retired anywhere.
+  // Reported on a geometric schedule: a stalled run turns rounds over as fast
+  // as the reduction allows, so a fixed period would bury the log.
+  long stall_rounds = 0;
+  long stall_report_at = 256;
+  int stall_reports = 0;
+  // Rounds whose reduced window held no live update while work was still
+  // outstanding, i.e. the frontier had moved past the window's right edge and
+  // the controller could not see it. Such a round has to admit everything to
+  // stay safe, so it is a round with no admission control at all. One
+  // comparison per round to count, and the count is the difference between a
+  // controller that is steering and one that is only along for the ride.
+  long rounds_window_empty = 0;
+  long max_above_window = 0;
+  // Consecutive rounds whose reduced window claimed more live updates than
+  // exist. A reduction is not a global instant -- each PE contributes its own
+  // state when the round reaches it -- so one such round can be an artifact of
+  // that skew and is not worth a word. A real accounting error does not go
+  // away, hence the run of rounds before anything is said.
+  int above_negative_rounds = 0;
+  bool conservation_warned = false;
   long previous_distance_changes = 0;
   double tram_percentile = 0.01;
   double heap_percentile = 0.01;
@@ -988,6 +1009,56 @@ public:
     return k;
   }
 
+  /**
+   * Bounded diagnostics for a run that has stopped making progress. Three
+   * things are wanted and none of them is visible from one place: what the
+   * controller can see (the reduced window, and the thresholds it computed
+   * from it); what it cannot (work above the window's right edge, which is the
+   * difference between the conserved live count and the window's own sum); and
+   * where that work is actually sitting, which only the PEs know. Hence one
+   * line from here and one per PE.
+   *
+   * Nothing here ends the run. A watchdog that forces an exit destroys the
+   * state that says why the run stopped, which is the only thing a stall is
+   * good for.
+   */
+  void report_stall(long histogram_sum, int occupied, int span, long clamped,
+                    long live_updates, long above_window, long updates_created,
+                    long updates_processed, long updates_noted,
+                    int first_nonzero, int heap_threshold,
+                    int tram_threshold) {
+    stall_reports++;
+    ckout << endl
+          << "PROGRESS_STALL " << stall_reports << " main"
+          << " rounds_without_progress=" << stall_rounds
+          << " t=" << CkWallTimer() - compute_begin
+          << " created=" << updates_created
+          << " processed=" << updates_processed
+          << " noted=" << updates_noted << " live=" << live_updates
+          << " window_first=" << last_first_nonzero
+          << " window_width=" << histo_reduction_width
+          << " first_nonzero=" << first_nonzero << " occupied=" << occupied
+          << " span=" << span << " window_sum=" << histogram_sum
+          << " above_window=" << above_window << " clamped=" << clamped
+          << " heap_threshold=" << heap_threshold
+          << " tram_threshold=" << tram_threshold
+          << " bucket_scale=" << bucket_scale << " phase=" << current_phase
+          << endl;
+    // The conservation invariant. Every live update is charged to exactly one
+    // bucket, so the window can never hold more of them than exist. If it
+    // does, the histogram is not a population count any more and no threshold
+    // derived from it means anything -- including the one that is keeping this
+    // run from finishing.
+    if (above_window < 0)
+      ckout << "PROGRESS_STALL " << stall_reports
+            << " main CONSERVATION VIOLATED: the reduced window sums to "
+            << histogram_sum << " with only " << live_updates
+            << " updates live. Every threshold computed from it is "
+               "meaningless."
+            << endl;
+    arr.report_progress_state(stall_reports);
+  }
+
   void record_round(double now, long histogram_sum, int first_nonzero,
                     int occupied, int span, int heap_threshold,
                     int tram_threshold, int two_tier, int starved,
@@ -1054,6 +1125,39 @@ public:
     int span = (first_nonzero == -1)
                    ? 0
                    : window_last - (first_nonzero - last_first_nonzero) + 1;
+    // Every live update is charged to exactly one bucket of the global
+    // histogram from the moment it is created until it is retired, so
+    // created - processed is that histogram's total over all
+    // HISTO_BUCKET_COUNT buckets. The reduction carries only
+    // histo_reduction_width of them, and the difference is therefore the work
+    // sitting above the window's right edge -- the one thing the controller
+    // otherwise cannot tell apart from having converged. It cannot be
+    // negative, and if it is then no threshold computed from this window means
+    // anything; report_stall() says so rather than letting the run limp on.
+    const long live_updates = updates_created - updates_processed;
+    const long above_window = live_updates - histogram_sum;
+    if (histogram_sum <= 0 && live_updates > 0)
+      rounds_window_empty++;
+    if (above_window > max_above_window)
+      max_above_window = above_window;
+    // The window cannot hold more live updates than exist. One comparison per
+    // round, said once per run, because every threshold below is computed from
+    // a histogram that this would prove is not a population count -- and the
+    // way that shows up is a run that does not finish, which is a much harder
+    // thing to read after the fact than a line saying so while it happens.
+    above_negative_rounds = (above_window < 0) ? above_negative_rounds + 1 : 0;
+    if (above_negative_rounds >= 8 && !conservation_warned) {
+      conservation_warned = true;
+      ckout << endl
+            << "CONSERVATION VIOLATED: the reduced window sums to "
+            << histogram_sum << " with only " << live_updates
+            << " updates live, at round " << reduction_counts
+            << ", window_first=" << last_first_nonzero
+            << ", bucket_scale=" << bucket_scale << ", for "
+            << above_negative_rounds
+            << " rounds. Thresholds computed from this window are meaningless."
+            << endl;
+    }
 #ifdef PRINT_HISTO
     histoSeq->insert(last_first_nonzero, histo_reduction_width, histo_values);
 #endif
@@ -1068,11 +1172,14 @@ public:
     // Each round's broadcast is sent only after every contribution to the
     // previous round has arrived. Unchanged monotone created/processed sums
     // therefore imply a common interval with no update creation/retirement.
-    // processed == created + 1 accounts for the initial source update, which
-    // is processed without being created. It also proves the source started.
+    // updates_created > 0 is what proves the source started: start_algo()
+    // charges the injected source update to its PE, so the count is zero only
+    // before that has happened. It used to be proved by processed == created
+    // + 1, the source update being retired without ever having been created --
+    // which also left the global histogram permanently negative in bucket 0.
     // A minimum traffic volume adds no safety and prevents small components
     // (including an isolated source) from ever terminating.
-    if ((updates_processed - updates_created == 1) &&
+    if ((updates_created > 0) && (updates_processed == updates_created) &&
         (updates_created == previous_updates_created) &&
         (updates_processed == previous_updates_processed)) {
       record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
@@ -1086,6 +1193,16 @@ public:
       arr.print_distances();
       return;
     }
+    // Both sums standing still means no update was created or retired anywhere
+    // in the interval between two rounds. With live work outstanding that is a
+    // stall, not convergence, and nothing will restart it. Counted here, while
+    // previous_* still holds the previous round; reported further down, once
+    // the thresholds this round computed are known.
+    if (updates_created == previous_updates_created &&
+        updates_processed == previous_updates_processed)
+      stall_rounds++;
+    else
+      stall_rounds = 0;
     previous_updates_created = updates_created;
     previous_updates_processed = updates_processed;
     // calculate target percentile
@@ -1123,7 +1240,16 @@ public:
       heap_threshold = HISTO_BUCKET_COUNT - 1;
     if (tram_threshold >= HISTO_BUCKET_COUNT)
       tram_threshold = HISTO_BUCKET_COUNT - 1;
-    if (histogram_sum == 0) {
+    // Nothing live inside the window. Whatever is left is above the window's
+    // right edge, where the controller can neither see it nor aim a threshold
+    // at it, so the only move guaranteed to make progress is to admit
+    // everything: every live update is then below both thresholds, every PE
+    // can retire what it holds, and updates_processed has to rise. Written as
+    // <= rather than ==, because a window that sums to a negative number is
+    // the same situation seen through an accounting error -- and that is the
+    // case that used to deadlock, since the percentile scan cannot reach a
+    // negative target and leaves both thresholds at the window's own origin.
+    if (histogram_sum <= 0) {
       heap_threshold = HISTO_BUCKET_COUNT - 1;
       tram_threshold = HISTO_BUCKET_COUNT - 1;
       bfs_threshold = HISTO_BUCKET_COUNT - 1;
@@ -1169,6 +1295,13 @@ public:
     // controller is acting on anyway.
     const long streams = (long)N * (long)CkNumNodes();
     const int starved = (histogram_sum < streams * (long)buffer_size) ? 1 : 0;
+    if (stall_rounds >= stall_report_at) {
+      report_stall(histogram_sum, occupied, span, clamped, live_updates,
+                   above_window, updates_created, updates_processed,
+                   updates_noted, first_nonzero, heap_threshold,
+                   tram_threshold);
+      stall_report_at *= 2;
+    }
     record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
                  heap_threshold, tram_threshold, two_tier, starved,
                  updates_created,
@@ -1298,6 +1431,13 @@ public:
     ckout << "Number of threshold changes: " << threshold_change_counter
           << endl;
     ckout << "Number of reductions: " << reduction_counts << endl;
+    // A round in this count admitted everything, because the work had moved
+    // past the right edge of the reduced window and nothing the controller
+    // could see said where it went. The maximum is how far behind the window
+    // ever fell, in updates.
+    ckout << "Rounds with the frontier outside the window: "
+          << rounds_window_empty << ", most updates outside it: "
+          << max_above_window << endl;
     ckout << "Bucket scale: " << bucket_scale << " (" << coarsenings
           << " coarsenings)" << endl;
     ckout << "Updates noted: " << msg_stats[STAT_NOTED] << endl;
@@ -1892,9 +2032,24 @@ public:
   }
 
   /**
-   * Method that accepts initial update to source vertex
+   * Method that accepts initial update to source vertex.
+   *
+   * The source update is the one update nobody creates: Main injects it here
+   * and it is then retired exactly like any other. Left uncounted it puts a
+   * permanent -1 into the global histogram, in the bucket distance 0 falls in
+   * -- bucket 0 -- and that is not a bookkeeping curiosity. The controller's
+   * window starts at bucket 0, so a round in which the window holds no live
+   * update sums to -1 rather than to 0, the "window is empty, open the
+   * thresholds" rescue in reduce_histogram() does not fire, and the percentile
+   * scan leaves both thresholds at the window's own origin. Nothing above the
+   * origin is ever admitted again and the run cannot make progress or
+   * terminate. Charging the update to the PE it starts on restores the
+   * invariant both the rescue and the termination test read: a bucket's global
+   * count is the number of live updates in it, and never negative.
    */
   void start_algo(Update new_vertex_and_distance) {
+    histogram[get_histo_bucket(new_vertex_and_distance.distance)]++;
+    updates_created_locally++;
     process_update(new_vertex_and_distance);
   }
 
@@ -2076,7 +2231,34 @@ public:
    * their creator and their receiver use, because both land in the merged
    * bucket. Main has already divided the thresholds it sent with this.
    */
+  bool clamp_coarsen_warned = false;
+
   void coarsen_buckets(int k) {
+    // The clamp bucket is the one bucket a merge cannot place. Its contents
+    // mean "an original index at or past 2048 * scale", not an index, so
+    // sending them to 2047 / k strands them: whoever retires those updates
+    // recomputes the bucket from the distance at the new scale and finds a real
+    // index somewhere above 2048 / k, leaving a live count at 2047 / k that
+    // nothing will ever take away. If that count is the lowest one the
+    // controller can see, the window pins there for the rest of the run.
+    //
+    // choose_coarsening() refuses while the reduced clamp count is positive,
+    // but it reads the count as it stood when the chares contributed, and a
+    // chare keeps retiring and creating updates between contributing and
+    // receiving the broadcast this call is part of. That gap is not closed,
+    // and this says so when it matters rather than leaving a run to hang:
+    // a run that prints this and then stalls at first_nonzero = 2047 / k has
+    // told the whole story.
+    if (histogram[HISTO_BUCKET_COUNT - 1] != 0 && !clamp_coarsen_warned) {
+      clamp_coarsen_warned = true;
+      ckout << endl
+            << "COARSEN_CLAMPED pe=" << CkMyPe() << " k=" << k
+            << " scale=" << bucket_scale << " clamp_bucket="
+            << histogram[HISTO_BUCKET_COUNT - 1] << " strands_at="
+            << (HISTO_BUCKET_COUNT - 1) / k
+            << ": merged buckets while updates were charged to the clamp "
+               "bucket, whose real index the merge cannot know." << endl;
+    }
     for (int i = 1; i < HISTO_BUCKET_COUNT; i++) {
       const int j = i / k;
       histogram[j] += histogram[i];
@@ -2306,6 +2488,47 @@ public:
     info_array[histo_reduction_width + 7] = histogram[HISTO_BUCKET_COUNT - 1];
     contribute((histo_reduction_width + 8) * sizeof(long), info_array,
                CkReduction::sum_long, cb);
+  }
+
+  /**
+   * One line per PE, printed only when Main has seen the run stop making
+   * progress. Answers where this PE's share of the outstanding work is: still
+   * in a hold that no threshold has admitted, admitted but sitting in a buffer
+   * nothing has flushed, delivered but parked above the heap threshold, or
+   * simply not here. The bucket extremes are over all HISTO_BUCKET_COUNT
+   * buckets rather than over the reduced window, which is the point -- work
+   * the controller cannot see is exactly what it cannot aim a threshold at.
+   *
+   * O(HISTO_BUCKET_COUNT) plus a walk of htram's holds, run once per stall
+   * report rather than once per round, so none of it is on a timed path.
+   */
+  void report_progress_state(int tag) {
+    long pq_hold_items = 0, live = 0;
+    int lowest = -1, highest = -1;
+    for (int i = 0; i < HISTO_BUCKET_COUNT; i++) {
+      pq_hold_items += (long)pq_hold[i].size();
+      live += histogram[i];
+      if (histogram[i] > 0) {
+        if (lowest < 0)
+          lowest = i;
+        highest = i;
+      }
+    }
+    long long held = 0, admitted = 0, buffered = 0;
+    tram->pendingItems(&held, &admitted, &buffered);
+    ckout << "PROGRESS_STALL " << tag << " pe=" << CkMyPe()
+          << " created=" << updates_created_locally
+          << " processed=" << updates_processed_locally
+          << " noted=" << updates_noted << " live=" << live
+          << " lowest_live_bucket=" << lowest
+          << " highest_live_bucket=" << highest
+          << " clamped=" << histogram[HISTO_BUCKET_COUNT - 1]
+          << " pq=" << (long)pq.size() << " pq_hold=" << pq_hold_items
+          << " tram_held=" << held << " tram_admitted=" << admitted
+          << " tram_buffered=" << buffered
+          << " heap_threshold=" << heap_threshold
+          << " tram_threshold=" << tram_threshold
+          << " bucket_scale=" << bucket_scale << endl;
   }
 
   void clear_pq_hold() {
