@@ -115,7 +115,9 @@ pre-step-7 settings (`old-fixed`), tuned fixed settings, and relaxed admission
 thresholds, priority queues, and controller; it is not a pure unordered solver.
 There are two randomized passes over the eight held-out sources. Each
 implementation gets a discarded warmup per graph before tuning. Every query
-starts a new process, including solver initialization in its solve interval.
+starts a new process. Timing follows each implementation's kernel entry point:
+GAPBS allocates its distance/frontier vectors inside that call; ACIC constructs
+its per-vertex state with the input graph before starting the solve timer.
 
 Solve times include control and termination and exclude graph input, graph
 construction, optional RIKEN preprocessing, and digest verification. ACIC uses
@@ -132,3 +134,60 @@ ratios with uncertainty. State the direction: baseline/ACIC above one favors
 ACIC. Treat graphs and allocations as separate experimental units; repeated
 sources within one allocation do not quantify allocation-to-allocation noise.
 Use the duplicate control to assess what differences the experiment resolves.
+
+`--mode confirm --selection-job JOB` repeats frozen choices in an independent
+allocation and can try additional RIKEN layouts on the tuning sources (for
+example `--ranks-per-node 2` gives a square four-rank grid on two nodes).
+Confirmation records are separate from the primary matrix. Scaling and high
+occupancy jobs can use `--ranks-per-node 1,2,4`; the original one/two-node pilot
+searches 1 and 4. Record the actual search rather than implying exhaustive tuning.
+
+`report.py CAMPAIGN/logs OUTPUT` exports compressed records, CSV, and Markdown
+tables. It requires completed jobs, matched variants, eight test sources, and
+two repeats. `--allow-partial` is only for monitoring an unfinished campaign.
+
+## Gluon comparison
+
+The supplemental campaign uses [Galois](https://github.com/IntelligentSoftwareSystems/Galois)
+commit `b67f94206a8c47fd414446621f6633a31c49fd98`. Its distributed SSSP push
+application implements both `-exec=Async` and `-exec=Sync`.
+`build_gluon.sh` applies `gluon.patch`, which adds a timer and a digest of master
+vertices after the solver returns. It changes no relaxation, scheduling,
+partitioning, or termination code. The checksum accumulators must be explicitly
+reset before use; their upstream constructor does not initialize the cached
+scalars. The initial adapter omitted this reset and failed verification; those
+attempts are retained separately and contribute no performance results.
+
+The build reuses installed LLVM 19.1.7 (RTTI enabled), Boost 1.73, fmt, libnuma,
+and Cray MPI, with GCC 14 `-O3 -march=znver3`. No LLVM or Boost source tree is
+downloaded or rebuilt. `to_galois.py` translates the canonical CSR into Galois
+`.gr` version 1, preserving every vertex, arc, and integer weight. This adds
+only four graph files to scratch. The unchanged Galois file reader plus the
+independent output check validates the conversion for the measured queries.
+
+```sh
+bash benchmarks/build_gluon.sh
+# Copy deps/bin/gluon_sssp into campaign/bin, then convert the four inputs
+# with to_galois.py on a compute node.
+sbatch -N 1 benchmarks/compare.sbatch /path/to/campaign --mode gluon \
+  --graphs rmat20,mesh20,road-ny,youtube
+sbatch -N 2 benchmarks/compare.sbatch /path/to/campaign --mode gluon \
+  --graphs rmat20,mesh20,road-ny,youtube
+```
+
+Each mode independently tunes priorities {0, denominator/16, denominator} on
+the two training sources. Zero is the upstream unprioritized setting. One node
+uses outgoing edge cut; two nodes also try Cartesian vertex cut. Each rank
+requests 16 Galois workers and 17 Slurm cores to allow communication, with one
+rank per node. The allocation is exclusive. Galois applies its own thread
+binding within the job's resource budget. The synchronous iteration cap is
+raised so it must converge, and every measured result is checked.
+
+After the discarded warmups and tuning, run both frozen Gluon modes plus ACIC
+and its duplicate control on eight test sources, twice, in randomized order.
+Report this as a separate paired experiment: its ACIC times come from the same
+allocations as Gluon. `report_extra.py` exports these results, the independent
+RMAT confirmation, and the preprocessing probe. It preserves incomplete or
+failed adapter attempts in the compressed records rather than presenting them
+as solver speedups. Full process logs remain on scratch; commit their hashes
+and the compact structured measurements.

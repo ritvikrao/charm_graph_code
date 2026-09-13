@@ -43,11 +43,19 @@ class Campaign:
                         FI_CXI_RX_MATCH_MODE='hybrid', NO_AFFINITY='1',
                         OMP_PROC_BIND='close', OMP_PLACES='cores')
         self.count = 0
+        self.binary_hashes = {}
+        for path in (self.root/'bin').iterdir():
+            if path.name in ['acic', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
+                digest = hashlib.sha256()
+                with path.open('rb') as f:
+                    for chunk in iter(lambda: f.read(1048576), b''):
+                        digest.update(chunk)
+                self.binary_hashes[str(path)] = digest.hexdigest()
 
     def run(self, graph, source, config, expected, phase, rep=0, extra=None):
         engine = config['engine']
         workers = self.args.workers
-        binary = self.root / 'bin' / {'acic': 'acic', 'riken': 'riken_sssp', 'gap': 'gap_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -61,6 +69,13 @@ class Campaign:
                     '+commap', str(workers), '+lci_ndevices', '4']
             launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
                       '--ntasks-per-node=1', '--cpu-bind=none']
+        elif engine == 'gluon':
+            launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
+                      '--ntasks-per-node=1', '-c', str(workers+1), '--cpu-bind=cores']
+            args = [str(binary), str(path.with_suffix('.gr')), '-symmetricGraph',
+                    '-exec='+config['model'], '-startNode='+str(source), '-t='+str(workers),
+                    '-runs=1', '-maxIterations=2147483647', '-delta='+str(config['delta']),
+                    '-partition='+config['partition']]
         else:
             ranks = config.get('rpn', 1)
             threads = workers // ranks
@@ -77,6 +92,7 @@ class Campaign:
         record = dict(job=self.job, nodes=self.nodes, workers=workers,
                       graph=graph, source=source, phase=phase, rep=rep,
                       config=config, index=self.count,
+                      binary_sha256=self.binary_hashes[str(binary)],
                       hosts=os.environ.get('SLURM_JOB_NODELIST'), command=cmd)
         begin = time.monotonic()
         with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -145,7 +161,7 @@ class Campaign:
         result = [dict(engine='acic', name=f'fixed-{i}-w{width}',
                        flags=VARIANTS[f'fixed-{i}'] + (['--bucket-width', str(width)] if width else []))
                   for i in [1, 5] for width in widths]
-        for rpn in [1, 4]:
+        for rpn in map(int, self.args.ranks_per_node.split(',')):
             for delta in deltas:
                 result.append(dict(engine='riken', name='riken', rpn=rpn,
                                    delta=delta, denominator=denominator, presolve=0))
@@ -221,6 +237,76 @@ class Campaign:
                     if not self.run(graph, int(row['source']), candidate, row, 'presolve-probe')['valid']:
                         raise RuntimeError('Preprocessing probe failed verification')
 
+    def confirm(self):
+        if not self.args.selection_job:
+            raise ValueError('confirm requires --selection-job with frozen pilot choices')
+        rng = random.Random(20260913 + int(self.job))
+        for graph in self.args.graphs.split(','):
+            path = self.root/'logs'/f'benchmark-{self.nodes}n-{self.args.workers}w-{self.args.selection_job}-{graph}-selected.json'
+            frozen = json.loads(path.read_text())
+            old_riken = next(c for c in frozen if c['engine'] == 'riken')
+            fixed = next(c for c in frozen if c['name'] == 'tuned-fixed')
+            references = self.references(graph)
+            candidates = [c for c in self.configs(graph) if c['engine'] == 'riken'] + [old_riken]
+            samples = {json.dumps(c, sort_keys=True): [] for c in candidates}
+            for row in references[:2]:
+                order = candidates[:]
+                rng.shuffle(order)
+                for c in order:
+                    r = self.run(graph, int(row['source']), c, row, 'confirm-tune')
+                    samples[json.dumps(c, sort_keys=True)].append(r)
+            valid = [c for c in candidates if all(r['valid'] for r in samples[json.dumps(c, sort_keys=True)])]
+            best = min(valid, key=lambda c: statistics.geometric_mean(r['seconds'] for r in samples[json.dumps(c, sort_keys=True)]))
+            configs = [dict(engine='acic', name='current'), dict(engine='acic', name='control'),
+                       fixed, old_riken, dict(best, name='riken-retuned')]
+            for rep in range(self.args.reps):
+                rows = references[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = configs[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        if not self.run(graph, int(row['source']), c, row, 'confirm-test', rep)['valid']:
+                            raise RuntimeError('Confirmation failed verification')
+
+    def gluon(self):
+        rng = random.Random(20260913 + self.nodes)
+        for graph in self.args.graphs.split(','):
+            refs = self.references(graph)
+            denominator = next(c['denominator'] for c in self.configs(graph) if c['engine'] == 'riken')
+            candidates = [dict(engine='gluon', name='gluon-'+model.lower(), model=model,
+                               partition=partition, delta=delta)
+                          for model in ['Async', 'Sync']
+                          for partition in (['oec'] if self.nodes == 1 else ['oec', 'cvc'])
+                          for delta in [0, denominator//16, denominator]]
+            samples = {json.dumps(c, sort_keys=True): [] for c in candidates}
+            for model in ['Async', 'Sync']:
+                c = next(c for c in candidates if c['model'] == model)
+                self.run(graph, int(refs[0]['source']), c, refs[0], 'gluon-warmup')
+            for row in refs[:2]:
+                order = candidates[:]
+                rng.shuffle(order)
+                for c in order:
+                    r = self.run(graph, int(row['source']), c, row, 'gluon-tune')
+                    samples[json.dumps(c, sort_keys=True)].append(r)
+            selected = []
+            for model in ['Async', 'Sync']:
+                valid = [c for c in candidates if c['model'] == model and all(r['valid'] for r in samples[json.dumps(c, sort_keys=True)])]
+                if not valid:
+                    raise RuntimeError('No valid Gluon configuration for '+graph+' '+model)
+                selected.append(min(valid, key=lambda c: statistics.geometric_mean(r['seconds'] for r in samples[json.dumps(c, sort_keys=True)])))
+            selected += [dict(engine='acic', name='current'), dict(engine='acic', name='control')]
+            (self.root/'logs'/(self.tag+'-'+graph+'-selected.json')).write_text(json.dumps(selected, indent=2)+'\n')
+            for rep in range(self.args.reps):
+                rows = refs[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = selected[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        if not self.run(graph, int(row['source']), c, row, 'gluon-test', rep)['valid']:
+                            raise RuntimeError('Gluon comparison failed verification')
+
     def tiny(self):
         # Independent Python fixture writer and Dijkstra. Every case creates
         # <1001 updates, including an isolated source and a cross-partition path.
@@ -278,9 +364,11 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
+    parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')
+    parser.add_argument('--selection-job', help='allocation whose frozen choices are independently confirmed')
     parser.add_argument('--sources', type=int, default=8)
     parser.add_argument('--reps', type=int, default=2)
     parser.add_argument('--timeout', type=int, default=120)

@@ -22,7 +22,7 @@ def paired(base, variant):
         return None
     rng = random.Random(20260913)
     logs = [math.log(x) for x in ratios]
-    boot = sorted(math.exp(statistics.mean(rng.choices(logs, k=len(logs)))) for _ in range(10000))
+    boot = sorted(math.exp(sum(rng.choices(logs, k=len(logs)))/len(logs)) for _ in range(10000))
     return geometric(ratios), boot[249], boot[9749], len(sources)
 
 
@@ -43,10 +43,33 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('logs', type=Path)
     parser.add_argument('output', type=Path)
+    parser.add_argument('--allow-partial', action='store_true', help='progress view only; do not publish incomplete cells')
     args = parser.parse_args()
     records = []
     for path in sorted(args.logs.glob('benchmark-*.jsonl')):
-        records.extend(json.loads(line) for line in path.read_text().splitlines())
+        job_records = [json.loads(line) for line in path.read_text().splitlines()]
+        if not args.allow_partial:
+            job = path.stem.rsplit('-', 1)[1]
+            stdout = (args.logs/f'job-{job}.out').read_text()
+            if 'CAMPAIGN COMPLETE '+path.stem not in stdout:
+                raise ValueError(f'Job {job} did not complete; use --allow-partial only for progress views')
+            grouped = defaultdict(lambda: defaultdict(list))
+            for r in job_records:
+                if r['phase'] == 'test':
+                    grouped[r['graph']][r['config']['name']].append(r)
+            for graph, variants in grouped.items():
+                selected = json.loads((args.logs/f'{path.stem}-{graph}-selected.json').read_text())
+                if set(variants) != {c['name'] for c in selected}:
+                    raise ValueError(f'Missing variants in {job}/{graph}')
+                counts = []
+                for runs in variants.values():
+                    by_source = defaultdict(int)
+                    for r in runs:
+                        by_source[r['source']] += 1
+                    counts.append(dict(by_source))
+                if any(c != counts[0] for c in counts) or set(counts[0].values()) != {2} or len(counts[0]) != 8:
+                    raise ValueError(f'Expected eight paired sources and two repeats in {job}/{graph}')
+        records.extend(job_records)
     cells, observations = summarize(records)
     args.output.mkdir(parents=True, exist_ok=True)
     with gzip.open(args.output/'runs.jsonl.gz', 'wt') as f:

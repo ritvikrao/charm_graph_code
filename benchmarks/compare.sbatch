@@ -12,5 +12,6 @@ set -euo pipefail
 ulimit -c 0
 APP=${ACIC_BENCH_APP:-/u/rao1/charm_graph_code}
 printf 'job=%s hosts=%s\n' "$SLURM_JOB_ID" "$SLURM_JOB_NODELIST"
+sha256sum "$1/bin/acic" "$1/bin/riken_sssp" "$1/bin/gap_sssp"
 lscpu
 python3 -u "$APP/benchmarks/run.py" "$@"

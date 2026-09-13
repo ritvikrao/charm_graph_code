@@ -1,0 +1,64 @@
+diff --git a/lonestar/analytics/distributed/sssp/CMakeLists.txt b/lonestar/analytics/distributed/sssp/CMakeLists.txt
+index 0f8f0ec..6fa6491 100644
+--- a/lonestar/analytics/distributed/sssp/CMakeLists.txt
++++ b/lonestar/analytics/distributed/sssp/CMakeLists.txt
+@@ -1,4 +1,5 @@
+ app_dist(sssp_push sssp-push)
++target_include_directories(sssp-push-dist PRIVATE "${ACIC_BENCH_INCLUDE}")
+ add_test_dist(sssp-push-dist rmat15 ${BASEINPUT}/scalefree/rmat15.gr -graphTranspose=${BASEINPUT}/scalefree/transpose/rmat15.tgr)
+ 
+ app_dist(sssp_pull sssp-pull)
+diff --git a/lonestar/analytics/distributed/sssp/sssp_push.cpp b/lonestar/analytics/distributed/sssp/sssp_push.cpp
+index 8cbdb87..05cca19 100644
+--- a/lonestar/analytics/distributed/sssp/sssp_push.cpp
++++ b/lonestar/analytics/distributed/sssp/sssp_push.cpp
+@@ -27,6 +27,8 @@
+ 
+ #include <iostream>
+ #include <limits>
++#include <chrono>
++#include "common.h"
+ 
+ #ifdef GALOIS_ENABLE_GPU
+ #include "sssp_push_cuda.h"
+@@ -453,6 +455,8 @@ int main(int argc, char** argv) {
+     std::string timer_str("Timer_" + std::to_string(run));
+     galois::StatTimer StatTimer_main(timer_str.c_str(), REGION_NAME);
+ 
++    galois::runtime::getHostBarrier().wait();
++    const auto bench_start = std::chrono::steady_clock::now();
+     StatTimer_main.start();
+     if (execution == Async) {
+       SSSP<true>::go(*hg);
+@@ -460,6 +464,31 @@ int main(int argc, char** argv) {
+       SSSP<false>::go(*hg);
+     }
+     StatTimer_main.stop();
++    const double bench_seconds = std::chrono::duration<double>(
++        std::chrono::steady_clock::now() - bench_start).count();
++    // Timing and checksum adaptation only. The solver above is unchanged.
++    galois::DGReduceMax<double> bench_time;
++    bench_time.update(bench_seconds);
++    const double bench_max_seconds = bench_time.reduce();
++    bench::Digest local_digest;
++    for (auto node : hg->masterNodesRange()) {
++      const auto distance = hg->getData(node).dist_current.load();
++      local_digest.add(hg->getGID(node), distance == infinity ? bench::inf : distance);
++    }
++    galois::DGAccumulator<uint64_t> bench_h1, bench_h2, bench_reached, bench_sum;
++    // DGAccumulator's constructor leaves its cached local/global scalars
++    // uninitialized. Reset them before the first reduction, as kernels do.
++    bench_h1.reset(); bench_h2.reset(); bench_reached.reset(); bench_sum.reset();
++    bench_h1 += local_digest.h1;
++    bench_h2 += local_digest.h2;
++    bench_reached += local_digest.reachable;
++    bench_sum += local_digest.distance_sum;
++    bench::Digest global_digest;
++    global_digest.h1 = bench_h1.reduce();
++    global_digest.h2 = bench_h2.reduce();
++    global_digest.reachable = bench_reached.reduce();
++    global_digest.distance_sum = bench_sum.reduce();
++    if (net.ID == 0) bench::print(src_node, bench_max_seconds, global_digest);
+ 
+     SSSPSanityCheck::go(*hg, DGAccumulator_sum, m, dg_avge);
+ 
