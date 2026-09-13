@@ -89,13 +89,19 @@ sbatch -N 2 benchmarks/compare.sbatch /path/to/campaign
 ```
 
 `compare.sbatch` requests exclusive CPU nodes. Default occupancy is 16 ACIC
-workers/node plus its communication core; OpenMP baselines use 16 workers/node.
-RIKEN tries one rank × 16 threads and four ranks × 4 threads per node. ACIC
-workers bind to cores 0–15 and its communication thread to core 16. Slurm binds
+workers/node, with one further core per process left free for the OS; OpenMP
+baselines use 16 workers/node. RIKEN tries one rank × 16 threads and four
+ranks × 4 threads per node. ACIC workers bind to cores 0–15. Reconverse has no
+communication thread (`reconverse/src/cpuaffinity.cpp`: “also no commap, we
+have no commthreads”), so LCI progress is made by the worker threads in the
+scheduler loop; the free core is for the OS, not for ACIC. The recorded
+campaign passed a `+commap` naming it, which the runtime warned about and
+ignored; the flag has since been removed and the core budget is unchanged. Slurm binds
 baseline ranks to cores; `OMP_PLACES=cores`, `OMP_PROC_BIND=close`, and
 `NO_AFFINITY=1` keep upstream RIKEN affinity code from overriding that binding.
 Record higher occupancy separately using `--workers`; the node budget remains
-equal even though active communication cores differ.
+equal even though the number of OS cores left free differs with the process
+count.
 
 Baseline delta candidates are denominator/{64,16,4,1}. Fixed ACIC tries flush
 intervals {1,5} with bucket widths {default, ceil(training max distance/1024),
@@ -157,8 +163,9 @@ alongside tuned fixed. The reports identify the independent completion job.
 
 `--mode numa --workers 120 --graphs rmat22,mesh22` compares ACIC using one
 process with 120 workers, four with 30, and eight with 15 on one physical node.
-`launch_acic.sh` gives each process a contiguous core region and a separate
-communication core (121, 124, or 128 active cores respectively). Both current
+`launch_acic.sh` gives each process a contiguous core region one core short of
+its stride, leaving that core to the OS, so all three layouts run 120 worker
+threads on 120 cores and leave 1, 4 or 8 free. Both current
 defaults and the specified fixed policy (flush 1, width 1024, no idle flush or
 bucket adaptation) run on all layouts. This fixed policy is a diagnostic
 choice, not the per-case tuned winner. All eight held-out sources run twice

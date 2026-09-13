@@ -66,11 +66,17 @@ hashes, all ten source IDs, reachable sizes, and independent reference digests.
 Delta CPU nodes have 128 physical AMD EPYC 7763 cores and 256 GB memory.
 Measurement allocations are exclusive; “nodes” always means physical nodes.
 The main matrix uses one ACIC SMP process per physical node with 16, 64, or
-120 workers plus a communication core. RIKEN tunes the MPI/OpenMP split:
+120 workers, with one core per process left free for the OS. **These runs also
+passed `+commap`, which Reconverse does not parse: it has no communication
+thread, so that free core carried no ACIC thread and was never meant to.** The
+inert flag is gone from the harness and the core budget is unchanged, so these
+numbers stand; “communication core” below and in earlier notes should be read
+as “the core left to the OS”. RIKEN tunes the MPI/OpenMP split:
 {1,4} ranks/node in the original 16-worker one/two-node pilot, {1,2,4} in the
 larger scaling and occupancy cases. GAPBS uses OpenMP on one node only.
-All comparisons have equal allocated node budgets; active communication
-cores and rank placement are specified in the harness and exact commands.
+All comparisons have equal allocated node budgets; occupancy, the OS core per
+ACIC process, and rank placement are specified in the harness and exact
+commands.
 
 Two deterministic nonzero-degree sources tune each graph/resource case.
 Eight distinct sources are reserved for testing, each with two randomized
@@ -189,9 +195,10 @@ tuning and larger graphs are needed before making a strong general comparison.
 ## Full-node process layout
 
 The layout probe keeps 120 ACIC workers on one physical node and compares
-1 × 120, 4 × 30, and 8 × 15. Each process has a separate communication core;
-the 8 × 15 layout uses all 128 cores and places one process per 16-core NUMA
-domain. Fixed here means flush every round, width 1024, no bucket adaptation
+1 × 120, 4 × 30, and 8 × 15. Each process gets a contiguous core region one
+core short of its stride, leaving that core to the OS, so the 8 × 15 layout
+places one process per 16-core NUMA domain and runs 120 worker threads on 120
+of the 128 cores. Fixed here means flush every round, width 1024, no bucket adaptation
 or idle flush; it is a specified diagnostic policy, not a per-layout tuned winner.
 
 <!-- BEGIN NUMA_TABLE -->
