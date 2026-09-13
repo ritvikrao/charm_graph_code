@@ -318,19 +318,73 @@ from both of the mechanisms in [step76-progress.md](step76-progress.md): the run
 converges, every result validates, and nothing warns. It only spends an order of
 magnitude more work than it needs to.
 
-**No diagnostic caught it**, because `--mode controller` runs one untimed query
-per variant and mesh20's landed in the cheap regime (6.49M, 2,321 rounds, bucket
-scale reaching 64 and `window_first` reaching 1,577 -- against 38 and 350 for
-`two-tier-absolute-1600` on the same source). A cheap trace alone cannot say
-what distinguishes the two. `--mode bimodal` (job 22042108) runs current
-defaults on mesh20 twenty-four times at two nodes, each with its own round
-series, so that two traces differ only in which regime they fell into. The
-`coarsen_reason` column is there to say which round diverged and why.
+### Diagnosed: the two-tier rule and the clamp guard race, and PEs decide it
 
-The suspect is an extra coarsening step: at width 20 and scale 64 one bucket
-spans 1,280 distance units, wider than the mesh's largest edge weight, which is
-the same priority-gap shape the 7.5 note flagged for width 3. That is a
-hypothesis the traces can refute, not a diagnosis.
+Job 22042108 ran current defaults on mesh20 twenty-four times at two nodes with
+a round series each, on source 742372 -- one of the three that wave 2 found
+expensive on every run. It came out 23 expensive and **one cheap**, which is the
+comparison the campaign could not get: two traces of the same source in the same
+allocation, differing only in regime. Even a source that looked deterministic is
+bistable; it is just heavily biased.
+
+The traces disagree in exactly one place, and it is not where I guessed.
+
+| | cheap (rep03) | expensive (rep00, rep05, rep19) |
+|---|---|---|
+| final `bucket_scale` | 92 | **1** |
+| merges | 3 (rounds 72, 96, 1769) | **none** |
+| `coarsen_reason` census | 661 two-tier, 3 merged, 1355 band-narrow | 391 two-tier, **536 clamp-live** |
+| left the two-tier branch at round | 72 | 237 |
+| first `COARSEN_CLAMP_LIVE` | never | **237** |
+| `window_first` reached | 914 | **2047** |
+
+**The expensive regime never coarsens at all.** My hypothesis was the opposite --
+an extra coarsening step making buckets wider than the largest edge weight -- and
+it is wrong. `bucket_scale` stays at 1 for the whole run, the window walks out to
+the clamp bucket, and 80M updates are delivered through a histogram that cannot
+describe them.
+
+The mechanism is a race between two guards, and the numbers name it:
+
+1. While `histogram_sum <= N * 100`, the two-tier branch abandons both
+   percentiles and `choose_coarsening` returns `COARSEN_TWO_TIER`. **Nothing can
+   merge.** At two nodes N is 32, so the limit is 3,200.
+2. A bucket index clamps at `2048 * bucket_scale * width`. mesh20 in file mode
+   derives width 20, so at scale 1 **any distance at or above 40,960 is charged
+   to bucket 2047** -- against a graph whose maximum distance is 246,154.
+3. Once anything is live in the clamp bucket, `choose_coarsening` returns
+   `COARSEN_CLAMP_LIVE` and refuses to merge, because merging over a non-empty
+   clamp bucket strands live counts at `2047 / k`. That guard is the correct
+   one; [step76-progress.md](step76-progress.md) shows what `--coarsen-clamped
+   allow` does without it.
+
+So the run must leave the two-tier branch *before* the frontier reaches distance
+40,960, or it can never coarsen again. The cheap run left at round 72 and merged
+**on that same round**, k = 23, which moved the clamp to `2048 * 23 * 20` =
+942,080 -- past the whole graph, so it never clamped again. The three expensive
+runs left at rounds 237, 243 and 239 and found `CLAMP_LIVE` already set **on that
+exact round**. They never merged.
+
+This is not a third independent hazard. It is the cost of hazard 2's guard, paid
+when a scheduling race is lost, and **the PE-dependent two-tier rule is what
+loses it**: the limit is `N * 100` over the total PE count, so more PEs means a
+higher bar, a longer stay in the branch that cannot merge, and more time for the
+frontier to pass 40,960. At 16 PEs the limit is 1,600 and the crossing comes
+early enough that one node never shows this at all.
+
+**That also explains something the 7.5 campaign recorded and could not account
+for**: its mesh22 table shows coarsening happening at one and two nodes and
+never at four, eight or sixteen. The limit there is 6,400, 12,800 and 25,600.
+The prediction the 7.5 note filed as worth testing is now a mechanism, and it
+says the defect gets monotonically worse with scale -- which is what jobs
+22042109, 22042110 and 22042111 are in the queue to check.
+
+It also explains why every pinned variant is immune, each for its own reason.
+`two-tier-absolute-1600` restores the 16-PE bar at 32 PEs, so the crossing comes
+early and the merge lands before the clamp -- which is why it wins on 8 of 8
+mesh20 sources rather than on average. A fixed width large enough puts the
+graph's whole distance range inside 2048 buckets, so nothing clamps and no
+coarsening is needed.
 
 ### Window-follow is not inert -- it is a rare hazard
 
