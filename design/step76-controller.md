@@ -445,3 +445,125 @@ Turning the branch off entirely remains bad -- 0.62x on mesh20 and road-ny --
 and `two-tier-never` on road-ny is still this project's cleanest refutation of
 work as an objective: it removes fifteen-sixteenths of the delivered work and is
 half the speed.
+
+## Wave 3: four nodes, 64 workers — the prediction holds, and sharpens
+
+Job 22042109, `mesh20,mesh22,rmat22`, 432 timed runs, all valid. mesh20 has no
+frozen 7.5 selection at this node count, so it runs without a `tuned-fixed`
+arm.
+
+| variant | mesh20 | mesh22 | rmat22 |
+|---|---|---|---|
+| control | 1.01x | 0.99x | 0.98x |
+| tuned-fixed | — | 1.49x | 0.99x |
+| width (small) | 1.59x | 1.59x | 0.94x |
+| width-1024 | 1.51x | **1.61x** | 1.00x |
+| two-tier-absolute-1600 | 1.53x | 1.57x | 0.99x |
+| two-tier-never | 0.70x | 0.96x | 1.02x |
+| clamp-strict | 1.01x | 1.00x | 1.01x |
+| window-follow | 1.04x | 0.97x | 0.99x |
+
+The race model predicted the defect worsens monotonically with PE count, and
+every part of that shows up.
+
+**mesh22 has crossed over.** At two nodes it was clean -- per-source spread
+1.1x, and `two-tier-absolute-1600` was a 0.94x *regression*, the counterexample
+that blocked any default change. At four nodes its bar doubles to 6,400 and it
+now loses the race on every run: `bucket_scale` never leaves 1, 416 rounds
+report `COARSEN_CLAMP_LIVE`, `window_first` reaches 2047, and the same knob is
+now worth **1.57x**. Nothing about the graph changed.
+
+**The bistability is gone on mesh20, in the bad direction.** Defaults no longer
+flip: all 64 runs land between 101M and 169M, spread 1.7x. At 64 PEs the bar is
+6,400 and the race is simply lost every time.
+
+**rmat22 is the control, and it stays clean.** 1.00x everywhere, and its
+diagnostic trace shows `current` coarsening normally -- `bucket_scale` 7, one
+merge, no clamp round at all. The mechanism is about distance range, not about
+the knob.
+
+### Fixing the width beats fixing the bar, and the traces say why
+
+The bistability did not disappear; it **moved**. On mesh20 at four nodes:
+
+```
+two-tier-absolute-1600   5 5 5 5 5 5 5 5 6 6 6 6 6 6 103 107    <- 2 of 16 lost
+width-217               10 11 11 12 12 13 13 13 13 13 15 15 16 16 16 16
+width-1024              11 11 12 12 13 13 13 13 13 14 15 16 16 16 17 24
+```
+
+`two-tier-absolute-1600` now loses the race twice in sixteen. The width arms
+never lose it at all, and the reason is structural rather than statistical:
+
+* Pinning the bar makes the race **easier to win**. The clamp still sits at
+  `2048 * width` = about 28,400 with the derived width, and the frontier still
+  runs at it.
+* Setting the width large enough makes the clamp **unreachable**. At width 217
+  it is 444,416, past mesh20's largest distance of 246,154, so nothing is ever
+  charged to bucket 2047 and coarsening is never blocked.
+
+So the two fixes are not interchangeable, and only one of them removes the
+failure mode rather than reducing its probability.
+
+### One rule explains every width result in the campaign
+
+File mode derives the bucket width as `log(V)` -- the natural log of the
+**vertex count**, which has nothing to do with the distances being bucketed.
+The clamp sits at `2048 * width`. So a graph is safe exactly when
+`log(V) > max_distance / 2048`:
+
+| graph | V | max distance | `log(V)` | needs width > | short by | width speedup measured |
+|---|---:|---:|---:|---:|---:|---:|
+| road-ny | 264,346 | 1,290,145 | 12.49 | 630.0 | **50.5x** | **1.86x** |
+| mesh22 | 4,194,304 | 506,463 | 15.25 | 247.3 | 16.2x | 1.61x |
+| mesh20 | 1,048,576 | 246,154 | 13.86 | 120.2 | 8.7x | 1.59x |
+| youtube | 1,134,890 | 7,285 | 13.94 | 3.6 | safe | 1.07x |
+| rmat22 | 4,194,304 | 3,161 | 15.25 | 1.5 | safe | 1.00x |
+
+**The shortfall ranks the measured speedups in order.** The two graphs whose
+derived width already clears the bar are exactly the two where width does
+nothing, and road-ny -- fifty times short, the worst in the table -- is where
+width is worth the most in the whole campaign. This is one mechanism, not five
+graph-specific observations, and it was the largest single effect in 7.6b
+before there was any account of why.
+
+### What the fix cannot be
+
+The obvious repair -- derive the width from the distance range instead of from
+V -- needs a bound on the range before the solve starts. `begin()` already
+broadcasts one: `max_sum`, the sum of every vertex's maximum out-edge. It is
+far too loose to use directly. On mesh20 it is order 8e8, so `max_sum / 2048`
+would be a width near 400,000 and the graph's entire distance range would fall
+in bucket 0 -- no resolution at all, which is the opposite failure.
+
+The sharper observation is that **the controller already has the mechanism for
+this and the guard disables it.** Coarsening exists precisely to widen buckets
+when the range outgrows the histogram, and `COARSEN_CLAMP_LIVE` switches it off
+at the moment it is most needed. The guard is correct as written: bucket 2047
+means "at or above `2048 * scale * width`" rather than an index, so merging
+sends it to `2047 / k` and strands counts that no retirement will remove.
+
+Making coarsening safe with a live clamp bucket is therefore the repair that
+addresses the mechanism rather than the symptom, and it cannot be done by
+rewriting the merge -- an update charged to 2047 before the merge retires to
+`d / (width * k)` after it, so increment and decrement land in different
+buckets whatever the merge does. It needs the live updates re-binned at the new
+scale rather than the counts merged. That is O(live updates) at each of about
+three coarsenings per run, which is affordable, but it is a real change to the
+histogram's maintenance and not a one-line guard fix.
+
+Three candidate repairs, none yet implemented or measured:
+
+1. **Re-bin on coarsening.** Correct by construction, removes the guard
+   entirely. Costs a walk of live updates per coarsening and needs every live
+   update to be enumerable, which the current PQ and TRAM hold structures do
+   not obviously support.
+2. **Seed the width from a cheap range estimate** -- a sampled or bounded
+   probe rather than `max_sum` -- keeping `log(V)` only as a floor.
+3. **Keep `log(V)` but raise `HISTO_BUCKET_COUNT`.** Cheapest, and strictly a
+   postponement: it multiplies the clamp threshold without changing the shape
+   of the failure.
+
+Item 2's stopping rule is one bounded experiment, and this was it. Which repair
+to build is a decision for item 4, where the width question stops being a knob
+and becomes the claim.
