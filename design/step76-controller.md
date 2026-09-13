@@ -198,3 +198,184 @@ sbatch -N 2 benchmarks/compare.sbatch CAMPAIGN --mode controller \
 One and two nodes go first. The four-, eight- and sixteen-node allocations are
 where the two-tier prediction is actually testable, and they are worth their
 node hours only if the knobs move anything at all at the bottom of the range.
+
+They do, so they were submitted: jobs 22042109, 22042110 and 22042111 on
+`mesh20,mesh22,rmat22`. Only mesh22 and rmat22 have frozen selections at those
+node counts, so mesh20 runs there without a `tuned-fixed` arm. mesh20 is
+included anyway, for the reason the next section gives.
+
+## Wave 2: two nodes, 32 workers
+
+Three jobs, 720 timed runs, all valid: 22038075 (mesh20), 22038076 (mesh22),
+22038077 (rmat22, road-ny, youtube). Same shape as wave 1 -- eight held-out
+sources, two repetitions, randomized order, one process per node.
+
+Speedup is current/variant, so above 1 is faster. `noted` and `rounds` are
+medians relative to `current` on the same graph.
+
+| variant | mesh20 | mesh22 | rmat22 | road-ny | youtube |
+|---|---|---|---|---|---|
+| control | 0.92x | 0.98x | 1.01x | 1.04x | 1.03x |
+| tuned-fixed | 1.23x | 1.06x | 0.91x | 1.59x | 1.00x |
+| width (small) | 1.28x | 1.01x | 0.93x | 1.86x | 1.07x |
+| width-1024 | 1.27x | 1.11x | 0.98x | 1.53x | 1.04x |
+| two-tier-absolute-1600 | **1.30x** | 0.94x | 0.97x | 1.07x | 1.07x |
+| two-tier-never | 0.62x | 0.76x | 0.96x | 0.62x | 1.11x |
+| clamp-strict | 1.04x | 1.03x | 0.97x | 1.06x | 1.03x |
+| window-follow | 0.94x | 0.97x | 0.95x | 1.05x | 0.99x |
+
+The small-width arm is width-217 on mesh20, width-495 on mesh22, width-3 on
+rmat22, width-1074 on road-ny and width-8 on youtube; width-65536 is road-ny's
+second candidate and reads 1.53x.
+
+Two things carry over from wave 1 and got stronger. Width is still the largest
+single effect, and on road-ny it is now **1.86x** against `tuned-fixed`'s 1.59x
+-- a derived width beating the tuned fixed policy by a wider margin at two nodes
+than at one. And `clamp-strict` is still free: 0.97x to 1.06x, delivered work
+within 1% on all five graphs. Both of the defaults questions this campaign was
+meant to answer now have the same answer at one node and at two.
+
+But the number that matters in this table is `control` on mesh20, at 0.92x. At
+one node `control` held 0.98x to 1.02x. A control arm that misses its own
+baseline by 8% means the median is summarizing two different things, and the
+next section breaks it apart per source.
+
+### mesh20 at two nodes: defaults do 8-13x the work of any pinned rule
+
+Pooling the four arms that are current defaults for this purpose -- `current`,
+`control`, `clamp-strict`, `window-follow` -- against the arms that pin the
+admission rule, per source (millions of updates noted, min-max over 8 runs):
+
+| source | defaults | spread | pinned rules | spread |
+|---|---|---|---|---|
+| 8720 | 50-62 | 1.2x | 5-8 | 1.4x |
+| 188488 | 8-78 | **9.7x** | 6-9 | 1.5x |
+| 650560 | 6-7 | 1.2x | 5-7 | 1.2x |
+| 736504 | 6-63 | **9.7x** | 5-7 | 1.4x |
+| 742372 | 76-80 | 1.1x | 6-9 | 1.6x |
+| 841388 | 7-55 | **7.8x** | 6-7 | 1.3x |
+| 933220 | 7-60 | **8.5x** | 5-7 | 1.3x |
+| 1015667 | 76-79 | 1.0x | 6-9 | 1.6x |
+
+Two separate things are going on, and the pooled median hid both.
+
+**First, it is mostly not random.** Three sources (8720, 742372, 1015667) take
+the expensive path on every single run, with a spread of 1.0x-1.2x -- as
+reproducible as anything in this campaign. One source (650560) never takes it.
+The remaining four are genuinely bistable: the same source, in the same
+allocation, delivers either ~7M or ~55-78M, 7.8x to 9.7x apart, with nothing in
+between.
+
+**Second, the pinned rules do not care.** `two-tier-absolute-1600` delivers
+5.3M-5.9M on all eight sources; `width-217`, `width-1024` and `tuned-fixed` sit
+between 6M and 9M on all eight. The defaults' cheap regime is that same 6-8M.
+So defaults sometimes behave exactly like a pinned rule and otherwise do an
+order of magnitude more work, and which one depends partly on the source and
+partly on the run.
+
+The nondeterministic half is not machine weather. The run order is randomized
+across variants, so the regimes interleave with the pinned variants in the same
+minutes:
+
+```
+idx  variant                 noted   sec  rounds
+ 84  width-217                 7.2 0.307   2276
+ 87  control                  50.1 0.554    683   <== defaults
+ 89  two-tier-absolute-1600    5.3 0.397   2610
+ 90  clamp-strict             57.4 0.560    678   <== defaults
+ 93  two-tier-absolute-1600    5.7 0.286   2408
+ 94  control                  75.9 0.486    995   <== defaults
+ 95  width-1024                9.4 0.344   1986
+ 97  width-217                 8.6 0.275   2063
+ 98  current                  78.8 0.477    948   <== defaults
+```
+
+Within twelve consecutive launches on the same two nodes, the pinned variants
+never flip and the defaults flip four times. Whatever selects the regime is
+inside the controller, not in the allocation.
+
+**The expensive regime runs fewer rounds, not more** -- about 950 against about
+2,400. Ten times the delivered work in a third of the rounds is coarse
+admission, each round admitting far too much, and not extra iteration.
+
+At one node the same graph is tight: `current` and `control` both 1.2x overall.
+The split appears on crossing to two nodes.
+
+This is a third way the controller's window stops describing reality, distinct
+from both of the mechanisms in [step76-progress.md](step76-progress.md): the run
+converges, every result validates, and nothing warns. It only spends an order of
+magnitude more work than it needs to.
+
+**No diagnostic caught it**, because `--mode controller` runs one untimed query
+per variant and mesh20's landed in the cheap regime (6.49M, 2,321 rounds, bucket
+scale reaching 64 and `window_first` reaching 1,577 -- against 38 and 350 for
+`two-tier-absolute-1600` on the same source). A cheap trace alone cannot say
+what distinguishes the two. `--mode bimodal` (job 22042108) runs current
+defaults on mesh20 twenty-four times at two nodes, each with its own round
+series, so that two traces differ only in which regime they fell into. The
+`coarsen_reason` column is there to say which round diverged and why.
+
+The suspect is an extra coarsening step: at width 20 and scale 64 one bucket
+spans 1,280 distance units, wider than the mesh's largest edge weight, which is
+the same priority-gap shape the 7.5 note flagged for width 3. That is a
+hypothesis the traces can refute, not a diagnosis.
+
+### Window-follow is not inert -- it is a rare hazard
+
+Wave 1 priced `window-follow` at 0.98x-1.03x and found it never fired. At two
+nodes on mesh22 it fired in exactly three of 153 runs, sliding seven windows
+each. Those three runs are exactly the three that blew up:
+
+```
+runs that slid:   total 1.552s   1.107s   1.054s
+work delivered:   158.2M   101.0M    65.4M      (median for this variant: 20M)
+```
+
+The other 150 runs report `Windows slid past an empty reduced window: 0` and sit
+at 19-22M with everything else. So the correlation is 3 for 3: sliding the
+window forward when work is recorded above it never helped and cost 3x to 8x the
+work every time it happened. `two-tier-never` shows a milder version of the same
+shape on mesh22 (6.5x spread, 17M to 112M).
+
+This is a clean negative result for the second repair proposed for the window
+problem, and it argues for leaving `--window-follow` off, which is the default.
+The first repair -- the one shipped in 7.6a -- stands unaffected.
+
+### What the two-tier knob now says
+
+Two nodes is the first allocation where `two-tier-absolute-1600` is not current
+defaults by another name: at 32 PEs the `N * 100` rule gives 3,200 against the
+pinned 1,600. It reads 1.30x on mesh20, 1.07x on road-ny and youtube, 0.97x on
+rmat22, and 0.94x on mesh22 -- so it is not uniformly better across graphs, and
+mesh22 is a real if small regression.
+
+On mesh20 it is uniformly better across *sources*, which the median understates.
+Per source, against pooled defaults:
+
+| source | defaults | pinned | speedup |
+|---|---|---|---|
+| 8720 | 0.557s, 55.9M, 688 rounds | 0.385s, 5.3M, 2621 | 1.45x |
+| 188488 | 0.392s, 40.7M, 1469 | 0.291s, 5.7M, 2397 | 1.35x |
+| 650560 | 0.288s, 6.6M, 1833 | 0.260s, 5.5M, 1924 | 1.11x |
+| 736504 | 0.366s, 6.7M, 2280 | 0.301s, 5.5M, 2214 | 1.21x |
+| 742372 | 0.485s, 78.6M, 975 | 0.310s, 5.8M, 2361 | 1.56x |
+| 841388 | 0.356s, 7.2M, 2263 | 0.340s, 5.6M, 2312 | 1.05x |
+| 933220 | 0.401s, 31.7M, 1446 | 0.341s, 5.5M, 2498 | 1.18x |
+| 1015667 | 0.609s, 77.9M, 666 | 0.378s, 5.9M, 2776 | 1.61x |
+
+Eight sources out of eight, 1.05x to 1.61x, and the gain tracks the size of the
+blowup it prevents. But it is not only the blowup: on 650560, 736504 and 841388
+the defaults never enter the expensive regime and the knob still wins 1.11x,
+1.21x and 1.05x. So the pinned threshold is worth something on its own, and
+removing the 10x path is worth more on top.
+
+That does not make it a default yet. mesh22 at 0.94x is the counterexample, and
+the whole point of the PE-dependent rule is that its limit scales with the
+allocation -- 1,600 is right for 16 PEs by construction and has no claim on 512.
+Jobs 22042109/10/11 at 4, 8 and 16 nodes are where a fixed 1,600 either keeps
+winning or falls apart.
+
+Turning the branch off entirely remains bad -- 0.62x on mesh20 and road-ny --
+and `two-tier-never` on road-ny is still this project's cleanest refutation of
+work as an objective: it removes fifteen-sixteenths of the delivered work and is
+half the speed.

@@ -580,6 +580,34 @@ class Campaign:
                         self.run(graph, int(row['source']), c, row,
                                  'controller-test', rep)
 
+    def bimodal(self):
+        """Wave 2 found mesh20 at two nodes splitting into two regimes.
+
+        Sixteen identical runs under current defaults delivered either about
+        7M updates or about 55-80M, with nothing in between, while every
+        variant that pins the admission rule -- a fixed width, an absolute
+        two-tier limit, the tuned fixed policy -- stayed inside 1.5x. The
+        split is not machine weather: interleaved in the same minutes, the
+        pinned variants never flipped. The bad regime runs about 950 rounds
+        where the good one runs about 2400, so it is coarse admission rather
+        than extra iteration.
+
+        No diagnostic query caught it, because the campaign ran one per
+        variant and that one landed in the good regime. This mode runs
+        current defaults repeatedly, each with its own round series, so that
+        a good and a bad trace differ only in which regime they fell into.
+        """
+        engine = 'acic-progress'
+        for graph in self.args.graphs.split(','):
+            refs = self.references(graph)
+            row = refs[2]
+            config = dict(engine=engine, name='current')
+            for rep in range(self.args.reps):
+                prefix = (self.root/'logs'/f'bimodal-{self.tag}-{graph}-'
+                          f'rep{rep:02d}')
+                self.run(graph, int(row['source']), config, row,
+                         'bimodal', rep, extra=['--diag', str(prefix)])
+
     def progress(self):
         """Replay the recorded losses of progress on both binaries.
 
@@ -678,7 +706,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')
