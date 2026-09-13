@@ -298,8 +298,20 @@ inside the controller, not in the allocation.
 2,400. Ten times the delivered work in a third of the rounds is coarse
 admission, each round admitting far too much, and not extra iteration.
 
-At one node the same graph is tight: `current` and `control` both 1.2x overall.
-The split appears on crossing to two nodes.
+**It is specific to mesh20 at two nodes.** The same per-source breakdown over
+every other graph and both node counts gives a worst-case spread of 1.0x to
+1.4x:
+
+| | mesh20 | mesh22 | rmat22 | road-ny | youtube |
+|---|---|---|---|---|---|
+| 1 node | 1.1x | 1.1x | 1.0x | 1.2x | 1.4x |
+| 2 nodes | **9.7x** | 1.1x | 1.1x | 1.2x | 1.3x |
+
+And at one node mesh20's defaults deliver 5.2M-5.7M -- the cheap regime, on
+every source, every run, indistinguishable from what the pinned rules get at two
+nodes. So this is not a graph that is simply hard to schedule: the same defaults
+on the same graph are well-behaved at 16 PEs and lose an order of magnitude at
+32.
 
 This is a third way the controller's window stops describing reality, distinct
 from both of the mechanisms in [step76-progress.md](step76-progress.md): the run
