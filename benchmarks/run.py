@@ -66,7 +66,7 @@ class Campaign:
         self.count = 0
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
-            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
+            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -76,11 +76,14 @@ class Campaign:
     def run(self, graph, source, config, expected, phase, rep=0, extra=None):
         engine = config['engine']
         workers = self.args.workers
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
             env['PRESOL_SECONDS'] = str(config['presolve_seconds'])
+        # LCI reads its attributes from the environment, so a transport or
+        # packet-pool variant is a config field rather than a command-line one.
+        env.update({k: str(v) for k, v in config.get('env', {}).items()})
         if engine.startswith('acic'):
             pp = ['1.0', '1.0'] if config['name'] == 'open' else ['0.999', '0.005']
             # No +commap below: Reconverse has no communication thread
@@ -613,6 +616,77 @@ class Campaign:
                 self.run(graph, int(row['source']), config, row,
                          'bimodal', rep, extra=['--diag', str(prefix)])
 
+    def deployment(self):
+        """Item 3 of the 7.5 next work: separate the deployment variables.
+
+        The item names four axes and asks for them apart rather than together,
+        because the 7.5 NUMA probe moved process geometry, communication
+        endpoints and the CkNumNodes()-dependent starvation threshold at once
+        and so could not attribute what it measured. Each config here differs
+        from the 8 x 15 candidate by one thing.
+
+        Process count is the rpn sweep at fixed total occupancy: 120 workers
+        per node throughout, so 1 x 120 through 8 x 15 change how many
+        processes carry the same threads. Note this cannot fully isolate
+        process count, because the starvation threshold reads CkNumNodes();
+        the idle-flush arms below are what separate that, by holding rpn at 8
+        and moving the policy instead.
+
+        Transport is the one axis that needs a second binary. The linked tree
+        reconverse-linux-x86_64-shmem is built with LCI_WITH_SHM 0 and the
+        unused -shm tree beside it with LCI_WITH_SHM 1; see
+        design/step76-deployment.md. bin/acic_shm is the same source built
+        against the latter, so `transport-shm` differs from `layout-8x15` by
+        the LCI shared-memory backend and nothing else.
+
+        The packet-pool arms test whether the missing UCX registration cache
+        is on the hot path at all. Registration only happens on the rendezvous
+        path, which LCI takes above max_bcopy_size, derived from packet_size
+        (8192 as built). Raising packet_size past the measured message sizes
+        moves those graphs onto the eager path and out of registration
+        entirely; npackets has to fall to match, or 64 KB x 65536 would be
+        4 GB per process.
+        """
+        # PRECONDITION: bin/acic_progress and bin/acic_shm must be built from
+        # the same source, differing only in which reconverse tree they link.
+        # They are two binaries, so a transport result that straddled a source
+        # change would be measuring the source change. Restage both together,
+        # and not while a controller job that pins acic_progress is queued.
+        engine = 'acic-progress'
+        base = dict(engine=engine, name='layout-8x15', rpn=8)
+        configs = [
+            base,
+            # Process count, at fixed total occupancy.
+            dict(engine=engine, name='layout-1x120', rpn=1),
+            dict(engine=engine, name='layout-2x60', rpn=2),
+            dict(engine=engine, name='layout-4x30', rpn=4),
+            # Starvation policy, with the geometry frozen at the candidate.
+            dict(engine=engine, name='idle-flush-off', rpn=8,
+                 flags=['--idle-flush', 'off']),
+            dict(engine=engine, name='idle-flush-on', rpn=8,
+                 flags=['--idle-flush', 'on']),
+            # Transport endpoints: same source, LCI shared memory enabled.
+            dict(engine='acic-shm', name='transport-shm', rpn=8),
+            # Packet pool: footprint, and whether rendezvous costs anything.
+            dict(engine=engine, name='packets-8192', rpn=8,
+                 env={'LCI_ATTR_NPACKETS': 8192}),
+            dict(engine=engine, name='packets-eager-64k', rpn=8,
+                 env={'LCI_ATTR_PACKET_SIZE': 65536,
+                      'LCI_ATTR_NPACKETS': 4096}),
+        ]
+        rng = random.Random(20260914 + int(self.job))
+        for graph in self.args.graphs.split(','):
+            refs = self.references(graph)
+            for rep in range(self.args.reps):
+                rows = refs[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = configs[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        self.run(graph, int(row['source']), c, row,
+                                 'deployment', rep)
+
     def progress(self):
         """Replay the recorded losses of progress on both binaries.
 
@@ -711,7 +785,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')
