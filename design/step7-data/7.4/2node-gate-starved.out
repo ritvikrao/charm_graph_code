@@ -1,0 +1,19 @@
+### binary: /scratch/mzu/rao1/s74-gate/charm_graph_code/sssp_smp
+### nodes:  cn[110,114]
+### extra:  --idle-flush starved
+random_bs1                   PASS  Compute time: 0.213676
+random_bs7                   PASS  Compute time: 0.040291
+random_bs63                  PASS  Compute time: 0.007313
+random_bs256                 PASS  Compute time: 0.006210
+random_bs1024                PASS  Compute time: 0.006271
+random_bs2048                PASS  Compute time: 0.006688
+random_bs256_ps4096          PASS  Compute time: 0.007514
+random_bs256_ps16384         PASS  Compute time: 0.006458
+random_bs256_ps65536         PASS  Compute time: 0.006608
+mesh_bs63                    PASS  Compute time: 0.018350
+mesh_bs2048                  PASS  Compute time: 0.024563
+big_bs256                    PASS  Compute time: 0.037155
+big_bs2048                   PASS  Compute time: 0.025647
+rmat_bs63                    PASS  Compute time: 0.063008
+rmat_bs2048                  PASS  Compute time: 0.020625
+2-NODE GATE PASSED

@@ -1,8 +1,10 @@
 # Step 7.3: adaptive bucketing against the fixed log V / sqrt V rule, at four
 # targets for how many buckets the middle 90% of in-flight work should span.
 # All variants run the step 7.1 default flush policy.
-fixed --bucket-policy fixed
-t1 --bucket-policy adaptive --bucket-target 1
-t2 --bucket-policy adaptive --bucket-target 2
-t4 --bucket-policy adaptive --bucket-target 4
-t8 --bucket-policy adaptive --bucket-target 8
+# Every variant pins --idle-flush off, the cadence these were measured with
+# before step 7.4 made `starved` the default.
+fixed --bucket-policy fixed --idle-flush off
+t1 --bucket-policy adaptive --bucket-target 1 --idle-flush off
+t2 --bucket-policy adaptive --bucket-target 2 --idle-flush off
+t4 --bucket-policy adaptive --bucket-target 4 --idle-flush off
+t8 --bucket-policy adaptive --bucket-target 8 --idle-flush off

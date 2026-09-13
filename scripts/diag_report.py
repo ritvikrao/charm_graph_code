@@ -371,6 +371,7 @@ AB_METRICS = [
     ("tram_msgs", r"^TRAM messages: ([0-9]+)"),
     ("bytes_sent", r"^TRAM messages: [0-9]+, bytes sent: ([0-9]+)"),
     ("stale_flushes", r"^TRAM stale-destination flushes: ([0-9]+)"),
+    ("idle_flushes", r"^TRAM idle flushes: ([0-9]+)"),
     ("absorbed/|E|", r"^Absorbed updates: [0-9]+, normalized to \|E\|: ([0-9.eE+-]+)"),
     ("hold_absorb%", r"^TRAM hold: absorbed [0-9]+ of [0-9]+ items \(([0-9.eE+-]+)%\)"),
     # Printed every round; the last one is the converged total.

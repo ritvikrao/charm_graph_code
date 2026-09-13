@@ -1,0 +1,211 @@
+host=cn017.delta.ncsa.illinois.edu nodes=2 variants=scripts/ab/7.4-idle-confirm.txt scale=20 ppn=16 reps=20
+uniform: 1048576 vertices, 16764135 edges, mean out-degree 15.99, max 32, 31538 isolated (3.0%)
+mesh: 1048576 vertices, 4190208 edges, mean out-degree 4.00, max 4, 0 isolated (0.0%)
+rmat: 1048576 vertices, 16776045 edges, mean out-degree 16.00, max 69197, 501926 isolated (47.9%)
+scale=2^20 (V=1048576, E=16777216; mesh 1024x1024), ppn=16, reps=20
+== A/B: scripts/ab/7.4-idle-confirm.txt ==
+    rep 1 uniform off: ok 0.114489
+    rep 1 uniform starved: ok 0.123595
+    rep 1 uniform off-again: ok 0.123731
+    rep 1 mesh off: ok 0.424495
+    rep 1 mesh starved: ok 0.424128
+    rep 1 mesh off-again: ok 0.424095
+    rep 1 rmat off: ok 0.126121
+    rep 1 rmat starved: ok 0.110268
+    rep 1 rmat off-again: ok 0.122900
+    rep 2 uniform off: ok 0.117996
+    rep 2 uniform starved: ok 0.115673
+    rep 2 uniform off-again: ok 0.121445
+    rep 2 mesh off: ok 0.429523
+    rep 2 mesh starved: ok 0.431957
+    rep 2 mesh off-again: ok 0.411546
+    rep 2 rmat off: ok 0.132320
+    rep 2 rmat starved: ok 0.107625
+    rep 2 rmat off-again: ok 0.113445
+    rep 3 uniform off: ok 0.117711
+    rep 3 uniform starved: ok 0.099637
+    rep 3 uniform off-again: ok 0.116850
+    rep 3 mesh off: ok 0.413040
+    rep 3 mesh starved: ok 0.404008
+    rep 3 mesh off-again: ok 0.427382
+    rep 3 rmat off: ok 0.110042
+    rep 3 rmat starved: ok 0.119951
+    rep 3 rmat off-again: ok 0.130477
+    rep 4 uniform off: ok 0.120107
+    rep 4 uniform starved: ok 0.127759
+    rep 4 uniform off-again: ok 0.117519
+    rep 4 mesh off: ok 0.435769
+    rep 4 mesh starved: ok 0.434549
+    rep 4 mesh off-again: ok 0.429353
+    rep 4 rmat off: ok 0.125324
+    rep 4 rmat starved: ok 0.107909
+    rep 4 rmat off-again: ok 0.128108
+    rep 5 uniform off: ok 0.124444
+    rep 5 uniform starved: ok 0.123290
+    rep 5 uniform off-again: ok 0.113819
+    rep 5 mesh off: ok 0.443896
+    rep 5 mesh starved: ok 0.436623
+    rep 5 mesh off-again: ok 0.397452
+    rep 5 rmat off: ok 0.127688
+    rep 5 rmat starved: ok 0.129068
+    rep 5 rmat off-again: ok 0.120851
+    rep 6 uniform off: ok 0.132675
+    rep 6 uniform starved: ok 0.122985
+    rep 6 uniform off-again: ok 0.109267
+    rep 6 mesh off: ok 0.428836
+    rep 6 mesh starved: ok 0.423310
+    rep 6 mesh off-again: ok 0.431186
+    rep 6 rmat off: ok 0.111003
+    rep 6 rmat starved: ok 0.121193
+    rep 6 rmat off-again: ok 0.124841
+    rep 7 uniform off: ok 0.116200
+    rep 7 uniform starved: ok 0.118236
+    rep 7 uniform off-again: ok 0.119870
+    rep 7 mesh off: ok 0.431615
+    rep 7 mesh starved: ok 0.383921
+    rep 7 mesh off-again: ok 0.427241
+    rep 7 rmat off: ok 0.129988
+    rep 7 rmat starved: ok 0.114156
+    rep 7 rmat off-again: ok 0.128312
+    rep 8 uniform off: ok 0.113176
+    rep 8 uniform starved: ok 0.112877
+    rep 8 uniform off-again: ok 0.124943
+    rep 8 mesh off: ok 0.436898
+    rep 8 mesh starved: ok 0.397693
+    rep 8 mesh off-again: ok 0.428615
+    rep 8 rmat off: ok 0.135871
+    rep 8 rmat starved: ok 0.115947
+    rep 8 rmat off-again: ok 0.119314
+    rep 9 uniform off: ok 0.100383
+    rep 9 uniform starved: ok 0.117189
+    rep 9 uniform off-again: ok 0.118985
+    rep 9 mesh off: ok 0.392275
+    rep 9 mesh starved: ok 0.435843
+    rep 9 mesh off-again: ok 0.426622
+    rep 9 rmat off: ok 0.131616
+    rep 9 rmat starved: ok 0.116859
+    rep 9 rmat off-again: ok 0.130740
+    rep 10 uniform off: ok 0.113711
+    rep 10 uniform starved: ok 0.113477
+    rep 10 uniform off-again: ok 0.122575
+    rep 10 mesh off: ok 0.417905
+    rep 10 mesh starved: ok 0.411208
+    rep 10 mesh off-again: ok 0.439378
+    rep 10 rmat off: ok 0.140288
+    rep 10 rmat starved: ok 0.113579
+    rep 10 rmat off-again: ok 0.133369
+    rep 11 uniform off: ok 0.097129
+    rep 11 uniform starved: ok 0.122959
+    rep 11 uniform off-again: ok 0.121702
+    rep 11 mesh off: ok 0.433323
+    rep 11 mesh starved: ok 0.411842
+    rep 11 mesh off-again: ok 0.404304
+    rep 11 rmat off: ok 0.110808
+    rep 11 rmat starved: ok 0.115432
+    rep 11 rmat off-again: ok 0.123208
+    rep 12 uniform off: ok 0.122447
+    rep 12 uniform starved: ok 0.121465
+    rep 12 uniform off-again: ok 0.108913
+    rep 12 mesh off: ok 0.423328
+    rep 12 mesh starved: ok 0.426265
+    rep 12 mesh off-again: ok 0.411752
+    rep 12 rmat off: ok 0.129498
+    rep 12 rmat starved: ok 0.108747
+    rep 12 rmat off-again: ok 0.129974
+    rep 13 uniform off: ok 0.117924
+    rep 13 uniform starved: ok 0.120514
+    rep 13 uniform off-again: ok 0.108973
+    rep 13 mesh off: ok 0.422423
+    rep 13 mesh starved: ok 0.397774
+    rep 13 mesh off-again: ok 0.428550
+    rep 13 rmat off: ok 0.141756
+    rep 13 rmat starved: ok 0.105878
+    rep 13 rmat off-again: ok 0.128741
+    rep 14 uniform off: ok 0.124451
+    rep 14 uniform starved: ok 0.116388
+    rep 14 uniform off-again: ok 0.112596
+    rep 14 mesh off: ok 0.412611
+    rep 14 mesh starved: ok 0.424219
+    rep 14 mesh off-again: ok 0.433270
+    rep 14 rmat off: ok 0.110793
+    rep 14 rmat starved: ok 0.116353
+    rep 14 rmat off-again: ok 0.133267
+    rep 15 uniform off: ok 0.122105
+    rep 15 uniform starved: ok 0.119142
+    rep 15 uniform off-again: ok 0.113922
+    rep 15 mesh off: ok 0.424593
+    rep 15 mesh starved: ok 0.414250
+    rep 15 mesh off-again: ok 0.441578
+    rep 15 rmat off: ok 0.140081
+    rep 15 rmat starved: ok 0.109787
+    rep 15 rmat off-again: ok 0.134193
+    rep 16 uniform off: ok 0.119572
+    rep 16 uniform starved: ok 0.118665
+    rep 16 uniform off-again: ok 0.119592
+    rep 16 mesh off: ok 0.422878
+    rep 16 mesh starved: ok 0.408300
+    rep 16 mesh off-again: ok 0.405398
+    rep 16 rmat off: ok 0.127248
+    rep 16 rmat starved: ok 0.113214
+    rep 16 rmat off-again: ok 0.129469
+    rep 17 uniform off: ok 0.122027
+    rep 17 uniform starved: ok 0.100057
+    rep 17 uniform off-again: ok 0.138665
+    rep 17 mesh off: ok 0.419830
+    rep 17 mesh starved: ok 0.392363
+    rep 17 mesh off-again: ok 0.323260
+    rep 17 rmat off: ok 0.122429
+    rep 17 rmat starved: ok 0.112947
+    rep 17 rmat off-again: ok 0.142763
+    rep 18 uniform off: ok 0.128108
+    rep 18 uniform starved: ok 0.113935
+    rep 18 uniform off-again: ok 0.118633
+    rep 18 mesh off: ok 0.438256
+    rep 18 mesh starved: ok 0.425073
+    rep 18 mesh off-again: ok 0.425444
+    rep 18 rmat off: ok 0.135869
+    rep 18 rmat starved: ok 0.105944
+    rep 18 rmat off-again: ok 0.133129
+    rep 19 uniform off: ok 0.099715
+    rep 19 uniform starved: ok 0.122044
+    rep 19 uniform off-again: ok 0.110453
+    rep 19 mesh off: ok 0.404967
+    rep 19 mesh starved: ok 0.429080
+    rep 19 mesh off-again: ok 0.403348
+    rep 19 rmat off: ok 0.116190
+    rep 19 rmat starved: ok 0.107406
+    rep 19 rmat off-again: ok 0.131652
+    rep 20 uniform off: ok 0.100922
+    rep 20 uniform starved: ok 0.118708
+    rep 20 uniform off-again: ok 0.113420
+    rep 20 mesh off: ok 0.437675
+    rep 20 mesh starved: ok 0.405062
+    rep 20 mesh off-again: ok 0.388976
+    rep 20 rmat off: ok 0.120895
+    rep 20 rmat starved: ok 0.117575
+    rep 20 rmat off-again: ok 0.123631
+Results under ab-out-7.4-idle-confirm-2n/. Summarise with scripts/diag_report.py ab-out-7.4-idle-confirm-2n
+== report ==
+A/B  baseline = off; medians over repetitions, spread is min..max compute_s
+
+  mesh
+    variant    compute_s  spread          vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  idle_flushes  absorbed/|E|  hold_absorb%  created    dist_changes
+    ---------  ---------  --------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  ------------  ---------  ------------
+    off        0.4245     0.3923..0.4439  1.00x    0       2780    4             1.518    38568      204322364   3.857e+04      0             0             -             8.488e+06  2592303     
+    starved    0.4188     0.3839..0.4366  0.99x    0       2360    4             1.777    4.371e+04  239039836   5416           38250         0             -             9.931e+06  3009975     
+    off-again  0.426      0.3233..0.4416  1.00x    0       2760    4             1.526    3.854e+04  205277480   3.854e+04      0             0             -             8527547    2.602e+06   
+
+  rmat
+    variant    compute_s  spread          vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  idle_flushes  absorbed/|E|  hold_absorb%  created    dist_changes
+    ---------  ---------  --------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  ------------  ---------  ------------
+    off        0.1275     0.11..0.1418    1.00x    0       74.5    10            1.455    13217      601480952   428.5          0             0             -             25052959   1852582     
+    starved    0.1134     0.1059..0.1291  0.89x    0       74      8             1.269    1.19e+04   525761328   192            353.5         0             -             21898763   1.596e+06   
+    off-again  0.1291     0.1134..0.1428  1.01x    0       73.5    10            1.454    13188      601027396   434            0             0             -             2.503e+07  1851794     
+
+  uniform
+    variant    compute_s  spread           vs base  failed  rounds  bucket_scale  rej/|E|  tram_msgs  bytes_sent  stale_flushes  idle_flushes  absorbed/|E|  hold_absorb%  created    dist_changes
+    ---------  ---------  ---------------  -------  ------  ------  ------------  -------  ---------  ----------  -------------  ------------  ------------  ------------  ---------  ------------
+    off        0.118      0.09713..0.1327  1.00x    0       82      13            0.9557   9062       411636504   176.5          0             0             -             17145527   2770218     
+    starved    0.1187     0.09964..0.1278  1.01x    0       101.5   9             0.9488   9808       408607800   42.5           712.5         0             -             17018578   2675124     
+    off-again  0.1181     0.1089..0.1387   1.00x    0       86.5    13            0.955    9100       411321340   181            0             0             -             1.713e+07  2.753e+06   
+

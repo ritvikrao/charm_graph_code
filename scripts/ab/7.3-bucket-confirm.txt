@@ -1,7 +1,9 @@
 # Step 7.3 confirmation. fixed-again is the same configuration as fixed, run
 # last in each repetition: its ratio is the harness's own position bias, which
 # 7.3-bucket-policy.txt suggested could be ~4%.
-fixed --bucket-policy fixed
-t4 --bucket-policy adaptive --bucket-target 4
-t8 --bucket-policy adaptive --bucket-target 8
-fixed-again --bucket-policy fixed
+# Every variant pins --idle-flush off, the cadence these were measured with
+# before step 7.4 made `starved` the default.
+fixed --bucket-policy fixed --idle-flush off
+t4 --bucket-policy adaptive --bucket-target 4 --idle-flush off
+t8 --bucket-policy adaptive --bucket-target 8 --idle-flush off
+fixed-again --bucket-policy fixed --idle-flush off

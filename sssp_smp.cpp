@@ -112,6 +112,23 @@ int combine_mode = COMBINE_OFF;
 // 9.9% at 2^20 -- and the plan requires its contribution to be reported
 // separately from the source hold's.
 bool batch_fold = false;
+// --idle-flush off|on|starved. The per-chare [whenidle] callback drains the
+// heap; with this on, a PE that finds nothing admissible left also flushes
+// every destination still holding admitted updates. An idle PE cannot add to
+// its buffers until a message arrives, so a buffer it holds only waits for the
+// next round boundary. --flush-policy acts at those boundaries; this acts
+// between them.
+//   on       whenever the PE goes idle.
+//   starved  only while the last round was starved (the --flush-policy
+//            adaptive gate), so a PE that is momentarily idle in the middle
+//            of an RMAT run does not turn full buffers into partial ones.
+enum { IDLE_FLUSH_OFF = 0, IDLE_FLUSH_ON = 1, IDLE_FLUSH_STARVED = 2 };
+// starved by default: it is a 1.09x speedup on the one-node mesh and 1.12x on
+// two-node RMAT, and within the harness's own position bias everywhere else,
+// over 20 repetitions with a repeated-baseline control. Ungated (`on`) it is
+// 1.12-1.16x slower on the uniform graph, where it doubles the message count
+// by turning full buffers into partial ones. See design/step7-idle-flush.md.
+int idle_flush_policy = IDLE_FLUSH_STARVED;
 // --bucket-policy fixed|adaptive, --bucket-target <buckets>. The histogram's
 // bucket width is set once from |V| (log V, or sqrt V for the mesh) or by
 // --bucket-width. Step 7.3's rerun of step 6's width sweep, on top of the 7.1
@@ -502,6 +519,23 @@ public:
           return;
         }
         bucket_target = std::stoi(m->argv[++i]);
+      } else if (arg.rfind("--idle-flush", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--idle-flush=", 0) == 0)
+          value = arg.substr(13);
+        else if (arg == "--idle-flush" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "off")
+          idle_flush_policy = IDLE_FLUSH_OFF;
+        else if (value == "on")
+          idle_flush_policy = IDLE_FLUSH_ON;
+        else if (value == "starved")
+          idle_flush_policy = IDLE_FLUSH_STARVED;
+        else {
+          ckout << "--idle-flush must be off, on or starved" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg.rfind("--batch-fold", 0) == 0) {
         std::string value;
         if (arg.rfind("--batch-fold=", 0) == 0)
@@ -543,6 +577,7 @@ public:
             << "[--round-delay <ms>] [--flush-interval <rounds>] "
             << "[--flush-policy fixed|stale|adaptive] "
             << "[--bucket-policy fixed|adaptive] [--bucket-target <buckets>] "
+            << "[--idle-flush off|on|starved] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
             << "[--partition-jitter <percent>] [--diag <prefix>]" << endl
@@ -1307,6 +1342,8 @@ public:
     ckout << "TRAM node messages: " << values[3]
           << ", bytes allocated: " << values[4] << endl;
     ckout << "TRAM stale-destination flushes: " << values[5] << endl;
+    if (n > 8)
+      ckout << "TRAM idle flushes: " << values[8] << endl;
     if (n > 7 && values[7])
       ckout << "TRAM hold: absorbed " << values[6] << " of " << values[7]
             << " items (" << 100.0 * values[6] / values[7] << "%)" << endl;
@@ -1581,8 +1618,15 @@ public:
 
   bool idle_triggered() {
     process_heap();
+    // A heap that yielded has re-queued itself, so the PE is not idle yet.
+    if (!heap_yielded &&
+        (idle_flush_policy == IDLE_FLUSH_ON ||
+         (idle_flush_policy == IDLE_FLUSH_STARVED && last_round_starved)))
+      tram->flushIdle();
     return true;
   }
+  bool heap_yielded = false;     // process_heap stopped with work left
+  int last_round_starved = 1;    // the first round always is
 
   void initialize_data(long *partition, int dividers) {
     histogram = new long[HISTO_BUCKET_COUNT];
@@ -2167,6 +2211,7 @@ public:
    * returns true (runs when pe is idle)
    */
   void process_heap() {
+    heap_yielded = false;
 #ifdef PQ_HOLD_ONLY
     for (int i = 0; i <= heap_threshold; i++) // iterate to heap threshold
     {
@@ -2192,6 +2237,7 @@ public:
       }
       if (items_processed > 0) {
         pq_hold[i].clear();
+        heap_yielded = true;
         arr[thisIndex].process_heap();
         break;
       }
@@ -2200,6 +2246,7 @@ public:
     int heap_count = 0;
     while (pq.size() > 0) {
       if (++heap_count > 100) {
+        heap_yielded = true;
         thisProxy[thisIndex].process_heap();
         break;
       } // give other eps a chance to run
@@ -2285,6 +2332,7 @@ public:
     tram_threshold = _tram_threshold;
     bfs_threshold = _bfs_threshold;
     current_phase = phase;
+    last_round_starved = starved;
     // after every reduction, push out messages in hold that are in limit
     // replace this loop with call to tram->changethreshold(tram_threshold)
     tram->setHistoBucketCount(HISTO_BUCKET_COUNT);

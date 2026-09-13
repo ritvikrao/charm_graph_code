@@ -1,0 +1,12 @@
+# Step 7.4: flush when the PE has nothing left to do. --flush-policy acts at
+# round boundaries; this acts between them, from the [whenidle] callback that
+# already drains the heap. off is the shipped 7.3 default. `on` flushes every
+# destination holding admitted updates whenever the PE goes idle; `starved`
+# gates that on the same trailing-starvation signal --flush-policy adaptive
+# uses, so a PE idle for a moment mid-run does not turn full buffers into
+# partial ones. off-again is the control: its ratio is the harness's own
+# ~5% position bias (design/step7-bucketing.md).
+off --idle-flush off
+on --idle-flush on
+starved --idle-flush starved
+off-again --idle-flush off

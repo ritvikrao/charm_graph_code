@@ -3,8 +3,10 @@
 # alone can buy on the mesh. stale is the first, purely local rule and
 # adaptive the gated one that replaced it -- see design/step7-flush-cadence.md.
 # Every variant pins --bucket-policy fixed, the width these were measured with
-# before step 7.3 made adaptive bucketing the default.
-fixed --flush-policy fixed --bucket-policy fixed
-interval1 --flush-policy fixed --flush-interval 1 --bucket-policy fixed
-stale --flush-policy stale --bucket-policy fixed
-adaptive --flush-policy adaptive --bucket-policy fixed
+# before step 7.3 made adaptive bucketing the default, and --idle-flush off,
+# the cadence they were measured with before step 7.4 made `starved` the
+# default.
+fixed --flush-policy fixed --bucket-policy fixed --idle-flush off
+interval1 --flush-policy fixed --flush-interval 1 --bucket-policy fixed --idle-flush off
+stale --flush-policy stale --bucket-policy fixed --idle-flush off
+adaptive --flush-policy adaptive --bucket-policy fixed --idle-flush off
