@@ -149,6 +149,100 @@ PROGRESS_STALL 1 pe=0 created=8 processed=6 ... lowest_live_bucket=2047
 `window_sum=-1` with `occupied=0` is the bug; `heap_threshold=0` with the work
 at bucket 2047 is its consequence.
 
+## The replay
+
+Job 22037494, one node, 120 workers, 26 minutes. Both recorded RMAT sources
+under the policy that failed them -- `--flush-policy fixed --flush-interval 1
+--bucket-policy fixed --idle-flush off --bucket-width 3` -- on the binary that
+produced the failures (`bin/acic`, sha256 `efbb50c3...`, the one job 22033411
+recorded) and on the repaired one, in the same allocation, in randomized order,
+with and without a delayed round.
+
+<!-- BEGIN REPLAY_1N -->
+| Case | Source | Binary | Delayed round | Valid | Median solve |
+|---|---:|---|---|---:|---:|
+| rmat22 1 x 120 | 2631403 | `acic` | no | **0/2** | - |
+| rmat22 1 x 120 | 2631403 | `acic` | yes | **0/2** | - |
+| rmat22 1 x 120 | 2631403 | repaired | no | 2/2 | 2.237 s |
+| rmat22 1 x 120 | 2631403 | repaired | yes | 2/2 | 1.994 s |
+| rmat22 1 x 120 | 3882232 | `acic` | no | **0/2** | - |
+| rmat22 1 x 120 | 3882232 | `acic` | yes | **0/2** | - |
+| rmat22 1 x 120 | 3882232 | repaired | no | 2/2 | 2.185 s |
+| rmat22 1 x 120 | 3882232 | repaired | yes | 2/2 | 2.218 s |
+| rmat22 8 x 15 | 3882232 | `acic` | no | **0/2** | - |
+| rmat22 8 x 15 | 3882232 | `acic` | yes | **0/2** | - |
+| rmat22 8 x 15 | 3882232 | repaired | no | 2/2 | 0.259 s |
+| rmat22 8 x 15 | 3882232 | repaired | yes | 2/2 | 0.282 s |
+<!-- END REPLAY_1N -->
+
+**0 of 12 on the binary that failed, 12 of 12 on the repaired one.** Every
+invalid run burned its full 120 second timeout and exited nonzero. The failure
+is therefore reproduced rather than assumed, which is the only thing that makes
+the other column mean anything.
+
+It fails with a delayed round as readily as without, over two process
+geometries. That is what the diagnosis predicts and a delivery race does not:
+the stall is about what the controller can see, not how quickly it sees it.
+
+The medians are diagnostic, not performance. A failing arm burns its timeout,
+so nothing in this job is comparable to a timed cell; what they say is only
+that the repaired runs finish in seconds rather than not at all.
+
+Two suppressed cells of the 7.5 tables are now known to be recoverable -- the
+1 x 120 RMAT tuned-fixed cell with its four timeouts, and the transferred fixed
+8 x 15 cell marked FAIL. Neither is re-measured here. A replay does not become
+a matrix entry by succeeding.
+
+### The mesh case: the clamp race, caught in the act
+
+Jobs 22037495 and 22037496, two nodes, 16 workers, two independent allocations,
+mesh20 source 736504 under current defaults -- 20 repetitions per binary per
+delay setting, 160 runs in all.
+
+| Binary | Valid | Median solve |
+|---|---:|---:|
+| `acic` (produced the failure) | **80/80** | 0.34 s / 0.45 s delayed |
+| repaired | **79/80** | 0.35 s / 0.44 s delayed |
+
+**The binary that failed in 7.5 did not fail once in 80 attempts, and the one
+failure landed on the repaired arm.** That is not a regression: the repair does
+not touch this mechanism, and the recorded rate -- "one query in sixteen" --
+was a single event in a single job, which is no estimate at all. One failure in
+160 is consistent with both arms; these numbers separate nothing.
+
+What the single failure is, is fully instrumented, and it says the hypothesis
+above was right:
+
+```
+COARSEN_CLAMPED pe=27 k=19 scale=1 clamp_bucket=1  strands_at=107
+COARSEN_CLAMPED pe=25 k=19 scale=1 clamp_bucket=-1 strands_at=107
+... 11 PEs, 164 counts stranded between them
+PROGRESS_STALL 13 main rounds_without_progress=1048576 t=66.4
+  created=628809 processed=625473 noted=628809 live=3336
+  window_first=53 window_width=256 first_nonzero=53 occupied=16 span=17
+  window_sum=3336 above_window=0 clamped=0
+  heap_threshold=53 tram_threshold=68 bucket_scale=38
+```
+
+Eleven PEs merged buckets while updates were charged to the clamp bucket, **with
+the shipped `block` guard in place**, which is the race this note could only
+argue for before. One of them shows `clamp_bucket=-1`: that PE's per-bucket
+accounting had already gone negative, which is the skew itself rather than its
+consequence. The run coarsened twice, by 19 and then by 2, and 2047 / 19 / 2 =
+**53** -- the bucket the merge stranded is exactly where `first_nonzero` and
+`heap_threshold` then pinned for 1,848,285 reductions.
+
+It matches the recorded failure at every point that can be compared: 1.85
+million reductions against 1.83 million, 3,336 live updates against 3,313, and
+the same arithmetic, 2047 / 20 = 102, in the original. `above_window = 0`
+confirms it is the second shape and not the one repaired above.
+
+One thing the report does not explain. At the stall, ten PEs hold 2,832 real
+items in `pq` and `pq_hold` at buckets 0 to 52 -- **below** the pinned window
+origin of 53, where the controller cannot see them, but at or under a heap
+threshold of 53, which should admit them. Why they do not drain is open, and it
+is the next thing to ask of this failure rather than something to guess at.
+
 ## The regression
 
 `scripts/verify.sh` grows six progress fixtures, run after the digest checks.
