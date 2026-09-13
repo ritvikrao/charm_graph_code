@@ -10,7 +10,7 @@ from report import geometric, paired
 logs, out = map(Path, sys.argv[1:3])
 out.mkdir(parents=True, exist_ok=True)
 records, complete, unfinished = [], [], []
-for pattern in ['gluon-*.jsonl', 'confirm-*.jsonl', 'presolve-*.jsonl', 'numa-*.jsonl', 'finish-*.jsonl', 'layout_confirm-*.jsonl']:
+for pattern in ['gluon-*.jsonl', 'confirm-*.jsonl', 'presolve-*.jsonl', 'numa-*.jsonl', 'finish-*.jsonl', 'layout_confirm-*.jsonl', 'quiet-*.jsonl']:
     for path in sorted(logs.glob(pattern)):
         runs = [json.loads(line) for line in path.read_text().splitlines()]
         records += runs
@@ -44,6 +44,7 @@ def source_means(phase):
             'confirm-test': {'current', 'control', 'tuned-fixed', 'riken', 'riken-retuned'},
             'numa-test': {f'{p}-{r}x{120//r}' for p in ['current', 'fixed'] for r in [1, 4, 8]},
             'layout-test': {'current', 'control', 'tuned-fixed', 'riken', 'gap'},
+            'quiet-test': {'current', 'quiet', 'riken', 'gap'},
         }[phase]
         if set(cell) != expected:
             raise ValueError('Missing supplemental variants')
@@ -92,6 +93,15 @@ for (job, nodes, workers, graph), cell in sorted(source_means('layout-test').ite
                  ' | '.join(f'{geometric(cell[n].values()):.4f}' for n in ['current','tuned-fixed','riken','gap'])+' | '+
                  ' | '.join(ratio(cell,n) for n in ['riken','gap','control'])+' |')
 (out/'layout-confirmation.md').write_text('\n'.join(table)+'\n')
+
+table = ['| Graph | Default ACIC (s) | Quiet ACIC (s) | RIKEN (s) | GAPBS (s) | Default / quiet [95% CI] | RIKEN / quiet [95% CI] | GAPBS / quiet [95% CI] |',
+         '|---|---:|---:|---:|---:|---|---|---|']
+for (job, nodes, workers, graph), cell in sorted(source_means('quiet-test').items()):
+    ratios = [paired(cell[n],cell['quiet']) for n in ['current','riken','gap']]
+    table.append(f'| {graph} | '+
+                 ' | '.join(f'{geometric(cell[n].values()):.4f}' for n in ['current','quiet','riken','gap'])+' | '+
+                 ' | '.join(f'{r[0]:.2f} [{r[1]:.2f}, {r[2]:.2f}]' for r in ratios)+' |')
+(out/'quiet.md').write_text('\n'.join(table)+'\n')
 
 replays = defaultdict(list)
 for r in complete:

@@ -228,3 +228,22 @@ RMAT confirmation, and the preprocessing probe. It preserves incomplete or
 failed adapter attempts in the compressed records rather than presenting them
 as solver speedups. Full process logs remain on scratch; commit their hashes
 and the compact structured measurements.
+
+## Timed-output sensitivity
+
+The primary ACIC build retains its existing `INFO_PRINTS`, including one
+console line per controller round inside the timer. `build_quiet.sh` creates
+a separate source copy and binary with only that definition removed, using
+the same compiler flags and htram archive. It preserves the application
+source and primary binary. After copying `acic_quiet` into the campaign bin
+directory, run `--mode quiet --workers 16 --selection-job JOB` on one node.
+Use a completed one-node, 16-worker primary job for the frozen RIKEN/GAPBS
+choices. Both ACIC builds and both external baselines run on the same eight
+sources with two randomized repetitions. This output sensitivity includes
+asynchronous scheduling/work changes, so it cannot be subtracted as a constant
+overhead from other allocations. `report_extra.py` emits `quiet.md`.
+
+After all jobs finish, `archive.py CAMPAIGN OUTPUT` exports compact provenance
+and hashes the full scratch logs. `render_report.py OUTPUT REPORT.md` refreshes
+the generated tables in the decision report. Graphs, executable snapshots,
+and full raw solver logs remain on scratch rather than entering Git.

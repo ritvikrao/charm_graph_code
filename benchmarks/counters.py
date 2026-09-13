@@ -11,10 +11,10 @@ import sys
 
 logs, output = map(Path, sys.argv[1:3])
 groups = defaultdict(list)
-for path in sorted(logs.glob('benchmark-*.log.gz')):
+for path in sorted([*logs.glob('benchmark-*.log.gz'), *logs.glob('finish-*.log.gz')]):
     current = None
     def finish():
-        if current and current['phase'] == 'test' and current['valid'] and current['config']['engine'] == 'acic':
+        if current and current['phase'] in ['test', 'completion-test'] and current['valid'] and current['config']['engine'] == 'acic':
             key = (current['nodes'], current['workers'], current['graph'], current['config']['name'])
             groups[key].append(current)
     with gzip.open(path, 'rt') as f:

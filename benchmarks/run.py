@@ -45,7 +45,7 @@ class Campaign:
         self.count = 0
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
-            if path.name in ['acic', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
+            if path.name in ['acic', 'acic_quiet', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -55,12 +55,12 @@ class Campaign:
     def run(self, graph, source, config, expected, phase, rep=0, extra=None):
         engine = config['engine']
         workers = self.args.workers
-        binary = self.root / 'bin' / {'acic': 'acic', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
             env['PRESOL_SECONDS'] = str(config['presolve_seconds'])
-        if engine == 'acic':
+        if engine.startswith('acic'):
             pp = ['1.0', '1.0'] if config['name'] == 'open' else ['0.999', '0.005']
             args = [str(binary), '0', str(path), '1', str(source), '4', *pp,
                     '--result-digest', '--timeout', str(self.args.timeout),
@@ -119,13 +119,13 @@ class Campaign:
                     output, _ = process.communicate()
                 record['returncode'] = -999
         record['launch_wall_seconds'] = time.monotonic()-begin
-        pattern = r'^VERIFY parallel digest (.*)$' if engine == 'acic' else r'^BENCH (.*)$'
+        pattern = r'^VERIFY parallel digest (.*)$' if engine.startswith('acic') else r'^BENCH (.*)$'
         match = re.search(pattern, output, re.M)
         digest = {k: int(v) for k, v in re.findall(r'(h1|h2|reachable|distance_sum)=(\d+)', match[1])} if match else {}
         record['digest'] = digest
         record['expected'] = {k: int(expected[k]) for k in KEYS}
         record['valid'] = record['returncode'] == 0 and digest == record['expected']
-        t = re.search(r'^Compute time: ([\d.eE+-]+)', output, re.M) if engine == 'acic' else re.search(r'^BENCH .*?\bsolve_seconds=([\d.eE+-]+)', output, re.M)
+        t = re.search(r'^Compute time: ([\d.eE+-]+)', output, re.M) if engine.startswith('acic') else re.search(r'^BENCH .*?\bsolve_seconds=([\d.eE+-]+)', output, re.M)
         if t:
             record['seconds'] = float(t[1])
             record['valid'] = record['valid'] and math.isfinite(record['seconds']) and record['seconds'] > 0
@@ -345,14 +345,19 @@ class Campaign:
             raise ValueError('finish requires --selection-job')
         tag = f'benchmark-{self.nodes}n-{self.args.workers}w-{self.args.selection_job}'
         old = [json.loads(s) for s in (self.root/'logs'/(tag+'.jsonl')).read_text().splitlines()]
+        rng = random.Random(20260913 + int(self.job))
         for graph in self.args.graphs.split(','):
             refs = self.references(graph)[2:2+self.args.sources]
             selected = json.loads((self.root/'logs'/(tag+'-'+graph+'-selected.json')).read_text())
             seen = {(r['source'], r['rep'], r['config']['name']) for r in old
                     if r['graph'] == graph and r['phase'] == 'test'}
             for rep in range(self.args.reps):
-                for row in refs:
-                    for c in selected:
+                rows = refs[:]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = selected[:]
+                    rng.shuffle(order)
+                    for c in order:
                         if (int(row['source']), rep, c['name']) not in seen:
                             self.run(graph, int(row['source']), c, row, 'completion-test', rep)
             # Diagnostic reruns are separate, including failures, and cannot
@@ -360,8 +365,11 @@ class Campaign:
             failed = [r for r in old if r['graph'] == graph and r['phase'] == 'test' and not r['valid']]
             for original in failed:
                 row = next(r for r in refs if int(r['source']) == original['source'])
+                other = 'current' if original['config']['name'] == 'tuned-fixed' else 'tuned-fixed'
                 for rep in range(5):
-                    for c in [original['config'], next(c for c in selected if c['name'] == 'tuned-fixed')]:
+                    order = [original['config'], next(c for c in selected if c['name'] == other)]
+                    rng.shuffle(order)
+                    for c in order:
                         self.run(graph, original['source'], c, row, 'failure-replay', rep)
 
     def layout_confirm(self):
@@ -388,6 +396,28 @@ class Campaign:
                     for c in order:
                         if not self.run(graph, int(row['source']), c, row, 'layout-test', rep)['valid']:
                             raise RuntimeError('Layout confirmation failed verification')
+
+    def quiet(self):
+        if self.nodes != 1 or self.args.workers != 16 or not self.args.selection_job:
+            raise ValueError('quiet requires one node, 16 workers, and --selection-job')
+        rng = random.Random(20260913 + int(self.job))
+        for graph in self.args.graphs.split(','):
+            frozen = json.loads((self.root/'logs'/f'benchmark-1n-16w-{self.args.selection_job}-{graph}-selected.json').read_text())
+            configs = [dict(engine='acic', name='current'), dict(engine='acic-quiet', name='quiet')]
+            configs += [c for c in frozen if c['engine'] in ['riken', 'gap']]
+            refs = self.references(graph)
+            for c in configs:
+                if not self.run(graph, int(refs[0]['source']), c, refs[0], 'quiet-warmup')['valid']:
+                    raise RuntimeError('Quiet comparison failed verification')
+            for rep in range(self.args.reps):
+                rows = refs[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = configs[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        if not self.run(graph, int(row['source']), c, row, 'quiet-test', rep)['valid']:
+                            raise RuntimeError('Quiet comparison failed verification')
 
     def tiny(self):
         # Independent Python fixture writer and Dijkstra. Every case creates
@@ -446,7 +476,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')
