@@ -110,7 +110,7 @@ against the configuration it replaces:
 ```
 scripts/stage_scratch.sh <dir>                    # a private copy per batch job
 sbatch [-N 2] scripts/ab_delta.sbatch scripts/ab/<variants>.txt 20
-scripts/diag_report.py <outdir> ab                # medians and ratios
+scripts/diag_report.py <outdir> ab                # medians and speedups
 ```
 
 | mechanism | flag | default | note |
@@ -120,3 +120,10 @@ scripts/diag_report.py <outdir> ab                # medians and ratios
 | batch-local fold at delivery | `--batch-fold` | `off` (a loss) | [design/step7-combining.md](design/step7-combining.md) |
 | adaptive bucketing | `--bucket-policy`, `--bucket-target` | `adaptive`, `8` | [design/step7-bucketing.md](design/step7-bucketing.md) |
 | idle flush | `--idle-flush` | `starved` | [design/step7-idle-flush.md](design/step7-idle-flush.md) |
+
+Ratio columns are named for their direction and always read above 1.00x as more
+of the named thing: `speedup` is baseline/variant, so above 1 is faster;
+`slowdown` is variant/baseline, used where the knob only ever adds time. Job
+outputs under `design/step7-data/` that predate 2026-09-13 print the reciprocal
+under a column headed "vs base", so a number quoted from one of those files is
+the inverse of what the same column prints now.

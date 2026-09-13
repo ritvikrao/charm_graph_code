@@ -10,6 +10,11 @@ can be rerun.
 As `design/h4-tail-cadence.md` said it must be reported: this widens ACIC's lead
 on the class it already wins on. It does nothing for the scale-free deficit.
 
+Speedups below are `baseline / variant`, so above 1 is faster; a regression is
+written as "N× slower" rather than as a fraction. The raw outputs in
+`design/step7-data/7.1/` predate that convention and print the reciprocal in a
+column headed "vs base".
+
 ## Mechanism
 
 A partly filled aggregation buffer leaves htram in exactly two ways: it fills to
@@ -38,12 +43,12 @@ partial buffer, where `tflush()` ships first, which saves a message.
 ## Why the first policy was wrong
 
 `stale` is the per-destination rule applied every round, with no gate. On one
-node it looked fine: 15 repetitions put it at 0.97× on RMAT and 1.03× on the
-uniform graph. On two nodes it is not:
+node it looked fine: 15 repetitions put it at a 1.03× speedup on RMAT and 1.03×
+slower on the uniform graph. On two nodes it is not:
 
 | 2 nodes, 32 PEs | mesh | RMAT | uniform |
 |---|---|---|---|
-| `stale` | 0.26× | **1.07×** (1.12× in a second job) | **1.12×** |
+| `stale` | **3.8×** | **1.07× slower** (1.12× slower in a second job) | **1.12× slower** |
 | `stale` flushes / streams × rounds | 43,643 / 191,616 | 6,695 / 13,440 | 5,778 / 21,376 |
 | `stale` messages vs fixed | −4% | **+25%** | **+26%** |
 
@@ -72,7 +77,7 @@ fall from 6,695 to 1,701 and the uniform graph's from 5,778 to 176.
 
 2^20 vertices, 16 edges per vertex for RMAT and uniform, a 1024 × 1024 mesh,
 16 PEs per node, exclusive Delta CPU nodes, `+setcpuaffinity`, median of 5
-repetitions with the variants interleaved inside each repetition. Ratios are
+repetitions with the variants interleaved inside each repetition. Speedups are
 against `fixed` in the same job; absolute times differ by up to 45% between
 nodes (RMAT's baseline was 0.225 s on cn116 and 0.154 s on cn047), so no number
 here is compared across jobs.
@@ -82,20 +87,20 @@ One node (`design/step7-data/7.1/1node-gated.out`, cn022):
 | variant | mesh | rounds | RMAT | rounds | uniform | rounds |
 |---|---|---|---|---|---|---|
 | `fixed` | 2.333 s | 17,960 | 0.238 s | 277 | 0.229 s | 372 |
-| flush every round | 0.27× | 3,792 | 1.05× | 303 | 1.03× | 379 |
-| `stale` | 0.28× | 3,730 | 0.94× | 254 | 1.06× | 379 |
-| **`adaptive`** | **0.28×** | 3,734 | **0.98×** | 296 | **1.06×** | 398 |
+| flush every round | 3.7× | 3,792 | 1.05× slower | 303 | 1.03× slower | 379 |
+| `stale` | 3.6× | 3,730 | 1.07× | 254 | 1.06× slower | 379 |
+| **`adaptive`** | **3.6×** | 3,734 | **1.02×** | 296 | **1.06× slower** | 398 |
 
 Two nodes (`design/step7-data/7.1/2node-gated.out`, cn[022,053]):
 
 | variant | mesh | rounds | RMAT | rounds | uniform | rounds |
 |---|---|---|---|---|---|---|
 | `fixed` | 1.680 s | 15,879 | 0.129 s | 227 | 0.122 s | 327 |
-| flush every round | 0.28× | 3,111 | 1.16× | 209 | 1.11× | 324 |
-| `stale` | 0.26× | 2,994 | 1.07× | 210 | 1.12× | 334 |
-| **`adaptive`** | **0.27×** | 2,994 | **0.95×** | 202 | **0.99×** | 338 |
+| flush every round | 3.5× | 3,111 | 1.16× slower | 209 | 1.11× slower | 324 |
+| `stale` | 3.8× | 2,994 | 1.07× slower | 210 | 1.12× slower | 334 |
+| **`adaptive`** | **3.8×** | 2,994 | **1.05×** | 202 | **1.00×** | 338 |
 
-The one-node uniform 1.06× is noise, and the logs say so directly: `adaptive`
+The one-node uniform 1.06× slower is noise, and the logs say so directly: `adaptive`
 flushed 36 destinations in 398 rounds on that graph, which cannot move a
 0.23 s run by 6%. The spreads overlap (0.216–0.246 against 0.223–0.261).
 

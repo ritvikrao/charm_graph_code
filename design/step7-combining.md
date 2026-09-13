@@ -2,9 +2,14 @@
 
 **Result: both are built, correct, and a net loss. They ship off by default.**
 `--combine hold` is 1.17–1.39× slower on RMAT and 1.26–1.38× slower on the
-uniform graph. It helps the mesh on one node (0.92–0.93×) and hurts it on two
-(1.07–1.12×). `--batch-fold on` is 1.09–1.14× slower on RMAT and 1.07–1.13× on
-the uniform graph, and does nothing measurable on the mesh.
+uniform graph. It helps the mesh on one node (1.07–1.08× faster) and hurts it on
+two (1.07–1.12× slower). `--batch-fold on` is 1.09–1.14× slower on RMAT and
+1.07–1.13× on the uniform graph, and does nothing measurable on the mesh.
+
+Speedups below are `baseline / variant`, so above 1 is faster; a regression is
+written as "N× slower" rather than as a fraction. The raw outputs in
+`design/step7-data/7.2/` predate that convention and print the reciprocal in a
+column headed "vs base".
 
 Two findings matter more than the ratios, because they change the plan's model
 of what combining is for:
@@ -57,15 +62,15 @@ bookkeeping for each loser, and processes the survivors in delivery order.
 
 2^20, 16 PEs per node, exclusive Delta CPU nodes, `+setcpuaffinity`, median of
 5, variants interleaved within each repetition, all on top of step 7.1's
-`--flush-policy adaptive`. Ratios are against `off` in the same job.
+`--flush-policy adaptive`. Speedups are against `off` in the same job.
 
 **The hold**, two independent jobs per node count (`1node-hold.out` /
 `1node-fold.out`, `2node-hold.out` / `2node-fold.out`):
 
 | | mesh | RMAT | uniform |
 |---|---|---|---|
-| 1 node | **0.92× / 0.93×** | 1.17× / 1.22× | 1.38× / 1.26× |
-| 2 nodes | 1.12× / 1.07× | 1.39× / 1.31× | 1.27× / 1.28× |
+| 1 node | **1.08× / 1.07× faster** | 1.17× / 1.22× slower | 1.38× / 1.26× slower |
+| 2 nodes | 1.12× / 1.07× slower | 1.39× / 1.31× slower | 1.27× / 1.28× slower |
 | items absorbed in the hold (1 node / 2 nodes) | 40% / 51% | 12–13% / 18–19% | 0.1% / 0.2% |
 | rejected + absorbed per edge, 2 nodes (off: rejected only) | 2.08 (1.36) | 1.48 (1.43) | 0.95 (0.95) |
 
@@ -73,11 +78,11 @@ bookkeeping for each loser, and processes the survivors in delivery order.
 
 | | mesh | RMAT | uniform |
 |---|---|---|---|
-| 1 node | 0.95× (spread overlaps) | 1.09× | 1.07× |
-| 2 nodes | 1.00× | 1.14× | 1.13× |
+| 1 node | 1.06× faster (spread overlaps) | 1.09× slower | 1.07× slower |
+| 2 nodes | 1.00× | 1.14× slower | 1.13× slower |
 | folded per edge, 1 node / 2 nodes | 0.52 / 0.91 | 0.12 / 0.21 | 0.001 / 0.002 |
 | folded per edge with the hold also on | **0** | **0** | **0** |
-| `hold+fold` against `off`, 1 node / 2 nodes | 0.92× / 1.12× | 1.20× / 1.30× | 1.26× / 1.35× |
+| `hold+fold` against `off`, 1 node / 2 nodes | 1.08× faster / 1.12× slower | 1.20× / 1.30× slower | 1.26× / 1.35× slower |
 
 **Relaxation work**, updates created per repetition, two nodes
 (`2node-fold-created-per-rep.txt`):

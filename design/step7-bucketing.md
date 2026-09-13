@@ -1,12 +1,16 @@
 # Step 7.3 — adaptive bucketing
 
-**Result: `--bucket-policy adaptive --bucket-target 8`, now the default, is
-0.88× on the mesh and 0.90× on RMAT at 2^20 on one node, and is not measurably
-different from the fixed width at 2^22 on two nodes or on the uniform graph
-anywhere.** It never measured slower than the harness's own noise. The gain is a
+**Result: `--bucket-policy adaptive --bucket-target 8`, now the default, is a
+1.14× speedup on the mesh and 1.11× on RMAT at 2^20 on one node, and is not
+measurably different from the fixed width at 2^22 on two nodes or on the uniform
+graph anywhere.** It never measured slower than the harness's own noise. The gain is a
 tenth of what the plan carried forward from step 6 for the mesh ("1.7×"), and
 that number did not survive step 7.1: it came from switching the controller off
 on a run that was waiting on flush cadence.
+
+Every ratio below is a speedup, `baseline / variant`, so above 1 is faster and
+below 1 is slower. The raw outputs in `design/step7-data/7.3/` predate that
+convention and print the reciprocal in a column headed "vs base".
 
 ## Step 6's width sweep, rerun on top of 7.1
 
@@ -14,19 +18,19 @@ Step 6 swept the bucket width as a multiple of the rule the code uses (log V for
 the random graphs, sqrt V for the mesh) and found the mesh's best point at the
 finest width it tried, 1/16 of the rule, worth 1.70×. Rerun with the same
 graphs and the step 7.1 default flush policy (`sweep-*.out`, `coarse-*.out`;
-compute time against the rule, same job):
+speedup against the rule, same job, so above 1 is faster than the rule):
 
 | width × rule | mesh 1 node | mesh 2 nodes | RMAT 1 node | RMAT 2 nodes | uniform 1 node | uniform 2 nodes |
 |---|---|---|---|---|---|---|
-| 1/16 | 1.02× (rej/\|E\| 5.1) | 1.37× (8.8) | 2.05× | 3.39× | 1.84× | 3.08× |
-| 1/4 | 1.55× | 1.34× | 1.19× | 1.62× | 1.27× | 1.41× |
+| 1/16 | 0.98× (rej/\|E\| 5.1) | 0.73× (8.8) | 0.49× | 0.29× | 0.54× | 0.32× |
+| 1/4 | 0.64× | 0.74× | 0.84× | 0.62× | 0.79× | 0.71× |
 | 1 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 4 | **0.82×** | **0.92×** | 0.83× | 0.90× | 0.97× | 1.02× |
-| 16 | 0.88× | 1.01× | **0.72×** | 0.83× | 0.97× | 0.97× |
-| 256 | – | – | 0.75× | **0.77×** | 0.90× | 0.78× |
+| 4 | **1.21×** | **1.08×** | 1.20× | 1.12× | 1.03× | 0.98× |
+| 16 | 1.14× | 0.99× | **1.39×** | 1.20× | 1.03× | 1.03× |
+| 256 | – | – | 1.34× | **1.29×** | 1.11× | 1.29× |
 
 (The x16 and x256 random-graph rows come from two jobs, `sweep-rand-*` and
-`coarse-*`; x16 is in both and agrees to 0.72/0.80 and 0.83/0.86 on RMAT.)
+`coarse-*`; x16 is in both and agrees to 1.39/1.25 and 1.20/1.17 on RMAT.)
 
 **The step 6 mesh result was the controller switching off.** The mesh's
 distances reach about 490,000; at width 64 that is bucket 7,600 of a 2,048-bucket
@@ -104,30 +108,30 @@ Two invariants the gate cannot see, added to `sssp_smp_diag` and printed under
 ## Measurements
 
 2^20 and 2^22, 16 PEs per node, exclusive Delta CPU nodes, `+setcpuaffinity`,
-variants interleaved within each repetition, ratios against `fixed` in the same
-job. `policy-*.out`, five repetitions:
+variants interleaved within each repetition, speedups against `fixed` in the
+same job. `policy-*.out`, five repetitions:
 
 | | mesh 1n | mesh 2n | mesh 2^22 1n | RMAT 1n | RMAT 2n | RMAT 2^22 1n | uniform 1n | uniform 2n | uniform 2^22 1n |
 |---|---|---|---|---|---|---|---|---|---|
-| target 1 | 0.90× | **1.14×** | 0.96× | 0.87× | 0.89× | 1.03× | 0.98× | 0.87× | 1.10× |
-| target 2 | 0.89× | 1.00× | 0.95× | 0.87× | 0.89× | 1.06× | 1.01× | 0.88× | 1.00× |
-| target 4 | 0.81× | 0.96× | 0.96× | 0.94× | 0.88× | 1.04× | 1.07× | 0.89× | 1.08× |
-| target 8 | 0.85× | 0.94× | 0.96× | 0.92× | 0.91× | 1.00× | 1.03× | 0.83× | 1.05× |
+| target 1 | 1.12× | **0.88×** | 1.04× | 1.15× | 1.13× | 0.97× | 1.02× | 1.15× | 0.91× |
+| target 2 | 1.12× | 1.00× | 1.05× | 1.15× | 1.13× | 0.95× | 0.99× | 1.13× | 1.00× |
+| target 4 | 1.23× | 1.04× | 1.04× | 1.07× | 1.14× | 0.96× | 0.94× | 1.13× | 0.93× |
+| target 8 | 1.17× | 1.06× | 1.04× | 1.09× | 1.10× | 1.00× | 0.97× | 1.21× | 0.95× |
 
 **The harness has a position bias, and it is about 5%.** In the 2^22 mesh
 column, targets 4 and 8 never coarsened: same bucket scale, same rounds and same
-rejected updates as `fixed`, and 0.96×. The confirmation jobs therefore run
+rejected updates as `fixed`, and 1.04×. The confirmation jobs therefore run
 `fixed` twice, first and last in each repetition, with ten repetitions
 (`confirm-*.out`):
 
 | | fixed-again (control) | target 4 | target 8 |
 |---|---|---|---|
-| mesh 2^20, 1 node | 0.97× | **0.86×** | **0.88×** |
-| RMAT 2^20, 1 node | 1.05× | **0.92×** | **0.90×** |
-| uniform 2^20, 1 node | 1.05× | 1.06× | 1.06× |
-| mesh 2^22, 2 nodes | 1.00× | 0.99× | 0.98× |
-| RMAT 2^22, 2 nodes | 0.97× | 0.95× | 0.95× |
-| uniform 2^22, 2 nodes | 1.05× | 1.08× | 1.05× |
+| mesh 2^20, 1 node | 1.03× | **1.16×** | **1.14×** |
+| RMAT 2^20, 1 node | 0.95× | **1.09×** | **1.11×** |
+| uniform 2^20, 1 node | 0.95× | 0.95× | 0.94× |
+| mesh 2^22, 2 nodes | 1.00× | 1.01× | 1.02× |
+| RMAT 2^22, 2 nodes | 1.03× | 1.06× | 1.05× |
+| uniform 2^22, 2 nodes | 0.96× | 0.93× | 0.95× |
 
 Only the first two rows clear the control. That is also the reading of
 `policy-*.out` once differences under 5% are discounted. The one loss above the
@@ -135,12 +139,12 @@ noise is target 1 on the mesh on two nodes, whose 32× coarsening costs 3.2×
 the rejected updates.
 
 **Why target 8.** Targets 4 and 8 are indistinguishable where either gains.
-Target 4 read 1.08× on the uniform graph at 2^22 in both jobs, at the edge of the
-bias, and keeps less resolution on the mesh (1.36 rejected per edge against
+Target 4 read 1.08× slower on the uniform graph at 2^22 in both jobs, at the
+edge of the bias, and keeps less resolution on the mesh (1.36 rejected per edge against
 1.12). Nothing measured favours 4.
 
-**Why the default changes at all.** It gains 10–12% on two of three graph
-classes at the scale every step 6 and 7 number uses, and loses nowhere
+**Why the default changes at all.** It is a 1.11–1.14× speedup on two of three
+graph classes at the scale every step 6 and 7 number uses, and loses nowhere
 measurably. The alternative is a fixed width known to be too fine on every class.
 
 ## What is not explained
@@ -158,11 +162,11 @@ reason.
 
 ## Consequences for the plan
 
-- **Replace "worth 1.7× on the mesh and 9% on RMAT"** with about 12% on the mesh
-  and 10% on RMAT at 2^20, and nothing resolvable at 2^22. Step 6's 1.7× was
-  measured in the cadence-bound regime and is gone.
-- **Ratios under 5% from this harness are noise**, including the 7.1 and 7.2
-  ratios that close to 1.00. The conclusions drawn from those were
+- **Replace "worth 1.7× on the mesh and 9% on RMAT"** with a 1.14× speedup on
+  the mesh and 1.11× on RMAT at 2^20, and nothing resolvable at 2^22. Step 6's
+  1.7× was measured in the cadence-bound regime and is gone.
+- **Differences under 5% from this harness are noise**, including the 7.1 and
+  7.2 ratios that close to 1.00. The conclusions drawn from those were
   "no slower" statements, which this does not change. Anything the paper claims
   at that size needs a control variant like `fixed-again`.
 - **`HISTO_BUCKET_COUNT` and `histo_reduction_width` can stay.** Step 6 noted

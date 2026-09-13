@@ -1,6 +1,6 @@
-# Step 7.4 confirmation. The four-variant sweep put `on` at 0.89x on the
-# one-node mesh and 1.12-1.16x on the uniform graph, so it is out; `starved`
-# never lost but cleared the control band only twice. This is that question
+# Step 7.4 confirmation. The four-variant sweep put `on` at a 1.13x speedup on
+# the one-node mesh but 1.12-1.16x slower on the uniform graph, so it is out;
+# `starved` never lost but cleared the control band only twice. This is that question
 # alone, with more repetitions. off-again is the control: its ratio is the
 # harness's own position bias.
 off --idle-flush off

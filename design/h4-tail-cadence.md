@@ -41,6 +41,9 @@ Adding a fixed delay between the end of one controller round and the start of
 the next. `--round-delay 0` is the shipped behaviour: the cycle is closed, so a
 round costs exactly a reduction plus a broadcast and nothing sets a period.
 
+Each cell is the slowdown against `--round-delay 0` in the same job, so above
+1 is slower.
+
 | delay | mesh 1 node | mesh 2 nodes | RMAT 1 node | uniform 1 node |
 |---|---|---|---|---|
 | 0 ms | 1.00× | 1.00× | 1.00× | 1.00× |
@@ -71,12 +74,13 @@ factor of twenty** — 3,755 rounds at 1, 71,520 at 20 — and its compute time
 follows. That is the mechanism stated above, measured: the mesh advances one
 flush at a time, so the number of rounds it takes is set by how often it
 flushes. The uniform graph shows the same shape weakly (769 rounds at 20 against
-307 at 1) and pays 1.20×. On RMAT the round count also rises, and the time does
-not follow: buffers there fill on their own, so an extra flush only sends a
-smaller message. RMAT at flush-every-round sends 17% more messages for 4% more
+307 at 1) and is 1.20× slower for it. On RMAT the round count also rises, and
+the time does not follow: buffers there fill on their own, so an extra flush
+only sends a smaller message. RMAT at flush-every-round sends 17% more messages for 4% more
 time.
 
-Two nodes, same table: mesh **0.29×** at flush-every-round, RMAT 1.09×.
+Two nodes, same table: flush-every-round is a **3.4× speedup** on the mesh and
+1.09× slower on RMAT.
 
 ## What this is not
 

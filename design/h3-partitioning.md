@@ -52,7 +52,7 @@ An imbalance measurement that reads ~1.0 everywhere is indistinguishable from a
 broken one, so the uniform mode's jitter is turned up deliberately to give the
 instrument something to find:
 
-| jitter | edges max/mean | work max/mean | compute s | rej/\|E\| | vs even |
+| jitter | edges max/mean | work max/mean | compute s | rej/\|E\| | slowdown vs even |
 |---|---|---|---|---|---|
 | 0% | 1.01 | 1.00 | 0.2290 | 0.9350 | 1.00× |
 | 10% | 1.16 | 1.16 | 0.2119 | 0.9350 | 0.93× |

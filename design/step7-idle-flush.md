@@ -6,9 +6,10 @@ harness's own position bias in the other four cells.** The ungated variant,
 `--idle-flush on`, is 1.12–1.16x *slower* on the uniform graph at both node
 counts, and is kept only as the ablation's other arm.
 
-Speedups below are `baseline / variant`, so above 1 is faster. `diag_report.py`
-prints the reciprocal in its "vs base" column, which is what the raw outputs in
-`design/step7-data/7.4/` contain.
+Speedups below are `baseline / variant`, so above 1 is faster; a regression is
+written as "N× slower" rather than as a fraction. The raw outputs in
+`design/step7-data/7.4/` were produced before `diag_report.py` was switched to
+this convention, so they print the reciprocal in a column headed "vs base".
 
 The two wins come from different mechanisms, which is the interesting part:
 on the mesh it removes **rounds**, and on RMAT it removes **relaxation work**.
@@ -67,15 +68,15 @@ number is the harness's own position bias, not a result.
 | | mesh 1n | mesh 2n | RMAT 1n | RMAT 2n | uniform 1n | uniform 2n |
 |---|---|---|---|---|---|---|
 | `on` | **1.13x** | 1.00x | 1.00x | 1.00x | **1.16x slower** | **1.12x slower** |
-| `starved` | 1.07x | 1.02x | 1.04x | 1.06x | 1.00x | 1.02x |
-| `off-again` | 1.02x | 1.03x | 0.99x | 0.98x | 1.07x slower | 1.00x |
+| `starved` | 1.07x | 1.02x | 1.04x | 1.06x | 0.99x | 1.02x |
+| `off-again` | 1.02x | 1.03x | 0.99x | 0.98x | 1.07x slower | 0.99x |
 
 **Confirmation, 20 repetitions, `off` / `starved` / `off-again` only**
 (`confirm-1n.out`, `confirm-2n.out`):
 
 | | mesh | RMAT | uniform |
 |---|---|---|---|
-| `starved`, 1 node | **1.09x** | 1.01x | 0.99x |
+| `starved`, 1 node | **1.09x** | 1.01x | 1.00x |
 | `off-again`, 1 node | 1.02x | 1.00x | 0.98x |
 | `starved`, 2 nodes | 1.01x | **1.12x** | 0.99x |
 | `off-again`, 2 nodes | 1.00x | 0.99x | 1.00x |

@@ -8,6 +8,14 @@ the output directory, which is the point -- the notes cite the tables and the
 tables cite the runs.
 
   scripts/diag_report.py <outdir> [h1|h2|h3|h4|ab]
+
+Ratio columns are named for their direction and always read above 1.00x as
+"more of the named thing": a `speedup` column is baseline/variant, so above 1
+is faster, and a `slowdown` column is variant/baseline, used where the knob
+only ever adds time (injected skew, added round delay). Before 2026-09-13
+every one of these printed variant/baseline under the name "vs base", so a
+number quoted from an output file older than that is the reciprocal of what
+the same column prints now.
 """
 import csv
 import glob
@@ -282,7 +290,7 @@ def h3(outdir):
                          r["compute_s"] or "FAILED", r["rejected_per_edge"],
                          "%.2fx" % (t / base) if t and base else "-"])
         table(["jitter %", "edges max/mean", "processed max/mean", "compute_s",
-               "rej/|E|", "vs even"], rows)
+               "rej/|E|", "slowdown vs even"], rows)
 
 
 # ----------------------------------------------------------------- H4 --------
@@ -336,9 +344,9 @@ def h4(outdir):
             rows.append([r["graph"], r["flush_interval"],
                          r["compute_s"] or "FAILED", r["reductions"],
                          r["rejected_per_edge"], r["tram_messages"],
-                         "%.2fx" % (t / b) if t and b else "-"])
+                         "%.2fx" % (b / t) if t and b else "-"])
         table(["graph", "flush every", "compute_s", "rounds", "rej/|E|",
-               "tram msgs", "vs the default 5"], rows)
+               "tram msgs", "speedup vs the default 5"], rows)
 
     delay = read_csv(os.path.join(outdir, "h4", "delay.tsv"))
     if delay:
@@ -357,7 +365,7 @@ def h4(outdir):
                          r["rejected_per_edge"],
                          "%.2fx" % (t / b) if t and b else "-"])
         table(["graph", "delay ms", "compute_s", "rounds", "rej/|E|",
-               "vs delay 0"], rows)
+               "slowdown vs delay 0"], rows)
 
 
 # ----------------------------------------------------------------- A/B --------
@@ -434,7 +442,9 @@ def ab(outdir):
         for col, v in m.items():
             samples.setdefault(key, {}).setdefault(col, []).append(v)
     print("A/B  baseline = %s; medians over repetitions, spread is min..max "
-          "compute_s" % baseline)
+          "compute_s." % baseline)
+    print("     speedup is baseline/variant, so above 1.00x is faster than "
+          "the baseline.")
     print()
     for graph in sorted({r["graph"] for r in runs}):
         base = median(samples.get((graph, baseline), {}).get("compute_s", []))
@@ -445,13 +455,13 @@ def ab(outdir):
             med = median(t)
             row = [variant, fmt(med),
                    "%s..%s" % (fmt(min(t)), fmt(max(t))) if t else "-",
-                   "%.2fx" % (med / base) if med and base else "-",
+                   "%.2fx" % (base / med) if med and base else "-",
                    str(failed.get((graph, variant), 0))]
             for col, _ in AB_METRICS[1:]:
                 row.append(fmt(median(s.get(col, []))))
             rows.append(row)
         print("  " + graph)
-        table(["variant", "compute_s", "spread", "vs base", "failed"] +
+        table(["variant", "compute_s", "spread", "speedup", "failed"] +
               [c for c, _ in AB_METRICS[1:]], rows)
 
 

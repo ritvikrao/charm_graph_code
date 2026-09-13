@@ -1,6 +1,10 @@
 Step 7.3 job outputs. Full Slurm output: per-repetition compute times, then the
 diag_report.py table. Ratios are only comparable within a file. All 2^20 unless
 noted, 16 PEs per node, on top of the step 7.1 default flush policy.
+These runs predate the 2026-09-13 change to diag_report.py, so their ratio
+column is headed "vs base" and holds variant/baseline: below 1 means faster
+there, the reciprocal of the "speedup" the tool prints now and of the numbers
+quoted in design/step7-bucketing.md.
 
 The bucket-width sweep, step 6's H1 sweep rerun (widths as multiples of the
 log V / sqrt V rule; x1 is the rule):

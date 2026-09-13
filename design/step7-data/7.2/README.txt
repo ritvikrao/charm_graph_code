@@ -1,5 +1,9 @@
 Step 7.2 job outputs. Full Slurm output: per-repetition compute times, then the
 diag_report.py table. Ratios are only comparable within a file.
+These runs predate the 2026-09-13 change to diag_report.py, so their ratio
+column is headed "vs base" and holds variant/baseline: below 1 means faster
+there, the reciprocal of the "speedup" the tool prints now and of the numbers
+quoted in design/step7-combining.md.
 
 1node-hold.out                 job 22012010, cn046        off / hold
 2node-hold.out                 job 22012013, cn[046,055]  off / hold

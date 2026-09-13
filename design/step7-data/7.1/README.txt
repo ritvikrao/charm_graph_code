@@ -1,5 +1,9 @@
 Step 7.1 A/B job outputs. Each file is the full Slurm output: per-repetition
 compute times as they ran, then the diag_report.py table.
+These runs predate the 2026-09-13 change to diag_report.py, so their ratio
+column is headed "vs base" and holds variant/baseline: below 1 means faster
+there, the reciprocal of the "speedup" the tool prints now and of the numbers
+quoted in design/step7-flush-cadence.md.
 
 1node-gated.out            job 22008792, cn022        fixed / interval1 / stale / adaptive
 2node-gated.out            job 22008797, cn[022,053]  fixed / interval1 / stale / adaptive

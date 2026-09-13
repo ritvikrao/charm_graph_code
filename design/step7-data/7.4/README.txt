@@ -1,9 +1,11 @@
 Step 7.4 job outputs. Full Slurm output: per-repetition compute times, then the
-diag_report.py table. Note that diag_report's "vs base" column is
-variant/baseline, so below 1 means faster there; design/step7-idle-flush.md
-quotes the same runs as speedups (baseline/variant, above 1 means faster).
-Ratios are only comparable within a file. All 2^20, 16 PEs per node, on top of
-the step 7.1 and 7.3 defaults.
+diag_report.py table. These runs predate the 2026-09-13 change to
+diag_report.py, so their ratio column is headed "vs base" and holds
+variant/baseline -- below 1 means faster there. The tool now prints
+baseline/variant under the heading "speedup", which is how
+design/step7-idle-flush.md quotes the same runs, so the two are reciprocals of
+each other. Ratios are only comparable within a file. All 2^20, 16 PEs per
+node, on top of the step 7.1 and 7.3 defaults.
 
 The four-variant sweep -- off, on, starved, off-again -- 10 repetitions:
 sweep-1n.out          job 22030830, cn039        one node

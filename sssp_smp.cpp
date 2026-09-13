@@ -133,8 +133,10 @@ int idle_flush_policy = IDLE_FLUSH_STARVED;
 // bucket width is set once from |V| (log V, or sqrt V for the mesh) or by
 // --bucket-width. Step 7.3's rerun of step 6's width sweep, on top of the 7.1
 // flush policy, found that rule too fine on every graph class: 4x coarser is
-// 0.82x on the mesh and 16x is 0.72x on RMAT, while 1/4 of the rule costs
-// 1.2-1.6x on all three. See design/step7-bucketing.md.
+// a 1.22x speedup on the mesh and 16x coarser is 1.39x on RMAT, while 1/4 of
+// the rule is 1.2-1.6x slower on all three. Speedups here and in the design
+// notes are baseline/variant, so above 1 is faster.
+// See design/step7-bucketing.md.
 //
 //   adaptive  each round, Main measures the band holding the middle 90% of
 //             the reduced histogram's mass. When that band spans at least
@@ -146,9 +148,9 @@ int idle_flush_policy = IDLE_FLUSH_STARVED;
 //             resolution cannot be recovered, because the histogram counts
 //             updates that are in flight and no PE holds them.
 //
-// adaptive with target 8 is the default: 0.88x on the mesh and 0.90x on RMAT
-// at 2^20 on one node, against a same-configuration control at 0.97x and
-// 1.05x, and never measurably slower at 2^20 or 2^22 on one or two nodes.
+// adaptive with target 8 is the default: a 1.14x speedup on the mesh and 1.11x
+// on RMAT at 2^20 on one node, against a same-configuration control at 1.03x
+// and 0.95x, and never measurably slower at 2^20 or 2^22 on one or two nodes.
 // fixed is the pre-7.3 behaviour and what every step 6, 7.1 and 7.2 number
 // used. --combine hold falls back to fixed unless adaptive is asked for.
 enum { BUCKET_FIXED = 0, BUCKET_ADAPTIVE = 1 };
