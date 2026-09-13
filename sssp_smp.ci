@@ -20,6 +20,10 @@ mainmodule sssp_smp
   readonly int idle_flush_policy;
   readonly int bucket_policy;
   readonly int bucket_target;
+  readonly int two_tier_per_pe;
+  readonly long two_tier_absolute;
+  readonly int coarsen_clamp_policy;
+  readonly int window_follow;
   readonly int combine_mode;
   readonly bool batch_fold;
   readonly int partition_jitter_percent;

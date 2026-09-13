@@ -495,6 +495,91 @@ class Campaign:
                         elif not self.run(graph,int(row['source']),c,row,'layout-completion',rep)['valid']:
                             failed.add(c['name'])
 
+    def controller(self):
+        """Item 2 of the step 7.5 next work: vary one controller rule at a time.
+
+        Process geometry is frozen at 16 workers per node and one process per
+        node, so the only thing moving is the rule under test. Each variant
+        differs from current defaults by exactly one flag, and `control` is
+        current defaults run a second time -- the difference between current
+        and control is what this allocation can resolve, and no variant closer
+        than that is a result.
+
+        `tuned-fixed` comes from the frozen 7.5 selection for this graph and
+        node count, so the strong fixed policy is the one that was actually
+        tuned rather than one invented here.
+
+        One untimed diagnostic query per variant writes the round series, which
+        carries `coarsen_reason` for every round: why that round could or could
+        not merge buckets. Time and delivered work are both recorded, because
+        fewer rounds is not less work and neither one is less time.
+        """
+        rng = random.Random(20260913 + int(self.job))
+        # Every variant here runs the repaired binary: the knobs below do not
+        # exist in the one the 7.5 campaign measured, and a controller result
+        # that straddled a progress repair would not mean anything anyway.
+        engine = 'acic-progress'
+        for graph in self.args.graphs.split(','):
+            refs = self.references(graph)
+            meta = dict(re.findall(r'(\w+)=(\d+)',
+                                   (self.root/'graphs'/(graph+'.meta')).read_text()))
+            denominator = int(meta['riken_denominator'])
+            training_max = max(int(r['max_distance']) for r in refs
+                               if r['role'] == 'tune')
+            # The same two width candidates the fixed-policy search used, so a
+            # width result here can be compared with that search rather than
+            # standing on its own.
+            widths = sorted({max(1, math.ceil(training_max/1024)), denominator})
+            configs = [dict(engine=engine, name='current'),
+                       dict(engine=engine, name='control')]
+            if self.args.selection_job:
+                tag = (f'benchmark-{self.nodes}n-{self.args.workers}w-'
+                       f'{self.args.selection_job}-{graph}-selected.json')
+                path = self.root/'logs'/tag
+                if path.exists():
+                    frozen = json.loads(path.read_text())
+                    configs += [dict(c, engine=engine) for c in frozen
+                                if c['name'] == 'tuned-fixed']
+            for width in widths:
+                configs.append(dict(engine=engine, name=f'width-{width}',
+                                    flags=['--bucket-width', str(width)]))
+            # The two-tier branch abandons both percentiles for 0.9999. Its
+            # eligibility is N * 100 with N the PE count, so the same graph
+            # enters it at a proportionally larger population on more PEs.
+            # 1600 is what that rule gives on one 16-worker node, held fixed.
+            configs += [
+                dict(engine=engine, name='two-tier-absolute-1600',
+                     flags=['--two-tier-absolute', '1600']),
+                dict(engine=engine, name='two-tier-never',
+                     flags=['--two-tier-absolute', '0']),
+                dict(engine=engine, name='clamp-strict',
+                     flags=['--coarsen-clamped', 'strict']),
+                # No clamp-allow here. Merging over a non-empty clamp bucket
+                # strands live counts at 2047 / k, and a 10,000-vertex mesh
+                # already shows what that does: the window pins to the stranded
+                # bucket, the run never converges, and 45 seconds of it wrote a
+                # 574 MB log. There is nothing to time and the log would fill
+                # scratch; see design/step76-progress.md.
+                dict(engine=engine, name='window-follow',
+                     flags=['--window-follow', 'on']),
+            ]
+            # Untimed, one query, on a tuning source: the round series says why
+            # each round could or could not merge, which no timing can.
+            for c in configs:
+                prefix = (self.root/'logs'/f'controller-{self.tag}-{graph}-'
+                          f'{c["name"]}')
+                self.run(graph, int(refs[0]['source']), c, refs[0],
+                         'controller-diag', extra=['--diag', str(prefix)])
+            for rep in range(self.args.reps):
+                rows = refs[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = configs[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        self.run(graph, int(row['source']), c, row,
+                                 'controller-test', rep)
+
     def progress(self):
         """Replay the recorded losses of progress on both binaries.
 
@@ -593,7 +678,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')

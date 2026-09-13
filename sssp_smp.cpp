@@ -158,6 +158,31 @@ enum { BUCKET_FIXED = 0, BUCKET_ADAPTIVE = 1 };
 int bucket_policy = BUCKET_ADAPTIVE;
 int bucket_target = 8;
 bool bucket_policy_given = false; // Main only: set by --bucket-policy
+// --two-tier-per-pe <n>, --two-tier-absolute <n>. A round holding fewer than
+// this many updates in its reduced window is treated as too small to describe
+// a distribution: both admission percentiles go to 0.9999 and coarsening is
+// skipped. The rule has always been N * 100 with N the total PE count, which
+// makes the same graph on more PEs enter the branch at a proportionally larger
+// population -- a scale dependence nobody chose. --two-tier-absolute pins the
+// count instead, so the two can be told apart. Negative keeps the per-PE rule.
+int two_tier_per_pe = 100;
+long two_tier_absolute = -1;
+// --coarsen-clamped block|allow|strict. The clamp bucket is the one bucket a
+// merge cannot place: its contents mean "at or past the top of the range", not
+// an index, so a merge sends them somewhere no retirement will look. block is
+// the shipped rule -- refuse while the reduced clamp count is positive -- and
+// it reads that count as of the previous contribution, which leaves a gap.
+// strict closes the gap by refusing for the rest of the run once any update
+// has been charged there. allow removes the guard, for measuring what it costs.
+enum { CLAMP_BLOCK = 0, CLAMP_ALLOW = 1, CLAMP_STRICT = 2 };
+int coarsen_clamp_policy = CLAMP_BLOCK;
+// --window-follow off|on. The reduced window starts at the lowest bucket last
+// seen occupied and never moves to anything it cannot see, so work that jumps
+// past its right edge leaves it stranded: every round from then on admits
+// everything, which is safe but is no admission control at all. on slides the
+// window up by one width whenever it is empty and work is outstanding, which
+// finds the frontier in at most HISTO_BUCKET_COUNT / width rounds.
+int window_follow = 0;
 // --timeout <seconds>: abandon a run that has not converged. 0 disables it.
 // There is deliberately no default: a truncated run is a failed run, and the
 // old behaviour was to give up after 30 s and print the partial distances with
@@ -335,6 +360,21 @@ public:
  * exactly what the percentile cut has to work with, so it is the right
  * denominator for asking whether the controller has any resolution to use.
  */
+// Why a round did or did not merge buckets. Item 2 of the step 7.5 next-work
+// list asks for this directly: "record why each round can or cannot coarsen".
+enum {
+  COARSEN_MERGED = 0,        // merged, by the factor in coarsen_k
+  COARSEN_POLICY_OFF = 1,    // --bucket-policy fixed
+  COARSEN_TWO_TIER = 2,      // too little in flight to describe a distribution
+  COARSEN_EMPTY = 3,         // nothing live in the reduced window
+  COARSEN_CLAMP_LIVE = 4,    // updates charged to the clamp bucket right now
+  COARSEN_CLAMP_SEEN = 5,    // --coarsen-clamped strict: some were, earlier
+  COARSEN_NO_BAND = 6,       // the middle 90% of the mass has no two ends
+  COARSEN_BAND_NARROW = 7,   // band < 2 * target: nothing to gain
+  COARSEN_TOP_UNREACHABLE = 8, // the merged window would not reach the top
+  COARSEN_NOT_ASKED = 9        // the round ended before the question came up
+};
+
 struct RoundRecord {
   double t;      // seconds since compute_begin
   long histogram_sum;
@@ -356,6 +396,9 @@ struct RoundRecord {
   // Buckets merged into one since the start, under --bucket-policy adaptive.
   // Bucket indices in this row are in units of that many original buckets.
   int bucket_scale;
+  // Why this round did or did not merge buckets, and by what factor if it did.
+  int coarsen_reason;
+  int coarsen_k;
   long updates_created;
   long updates_processed;
   long updates_noted;
@@ -400,6 +443,7 @@ private:
   // controller that is steering and one that is only along for the ride.
   long rounds_window_empty = 0;
   long max_above_window = 0;
+  long windows_slid = 0; // --window-follow on: windows advanced past empty
   // Consecutive rounds whose reduced window claimed more live updates than
   // exist. A reduction is not a global instant -- each PE contributes its own
   // state when the round reaches it -- so one such round can be an artifact of
@@ -407,6 +451,13 @@ private:
   // away, hence the run of rounds before anything is said.
   int above_negative_rounds = 0;
   bool conservation_warned = false;
+  // Whether the reduced clamp count has ever been positive. --coarsen-clamped
+  // strict refuses to merge from then on: the live count is read as of the
+  // previous contribution, and a chare keeps creating updates between
+  // contributing and receiving the broadcast that carries the merge, so a
+  // count that is zero now does not mean none will be charged before the merge
+  // lands. Monotone, so the answer cannot flap.
+  bool clamp_ever_live = false;
   long previous_distance_changes = 0;
   double tram_percentile = 0.01;
   double heap_percentile = 0.01;
@@ -538,6 +589,52 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg == "--two-tier-per-pe") {
+        if (i + 1 >= m->argc) {
+          ckout << "--two-tier-per-pe needs a number of updates per PE" << endl;
+          CkExit(1);
+          return;
+        }
+        two_tier_per_pe = std::stoi(m->argv[++i]);
+      } else if (arg == "--two-tier-absolute") {
+        if (i + 1 >= m->argc) {
+          ckout << "--two-tier-absolute needs a number of updates" << endl;
+          CkExit(1);
+          return;
+        }
+        two_tier_absolute = std::stol(m->argv[++i]);
+      } else if (arg.rfind("--coarsen-clamped", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--coarsen-clamped=", 0) == 0)
+          value = arg.substr(18);
+        else if (arg == "--coarsen-clamped" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "block")
+          coarsen_clamp_policy = CLAMP_BLOCK;
+        else if (value == "allow")
+          coarsen_clamp_policy = CLAMP_ALLOW;
+        else if (value == "strict")
+          coarsen_clamp_policy = CLAMP_STRICT;
+        else {
+          ckout << "--coarsen-clamped must be block, allow or strict" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg.rfind("--window-follow", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--window-follow=", 0) == 0)
+          value = arg.substr(16);
+        else if (arg == "--window-follow" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "off")
+          window_follow = 0;
+        else if (value == "on")
+          window_follow = 1;
+        else {
+          ckout << "--window-follow must be off or on" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg == "--bucket-target") {
         if (i + 1 >= m->argc) {
           ckout << "--bucket-target needs a number of buckets" << endl;
@@ -603,6 +700,9 @@ public:
             << "[--round-delay <ms>] [--flush-interval <rounds>] "
             << "[--flush-policy fixed|stale|adaptive] "
             << "[--bucket-policy fixed|adaptive] [--bucket-target <buckets>] "
+            << "[--two-tier-per-pe <updates>] [--two-tier-absolute <updates>] "
+            << "[--coarsen-clamped block|allow|strict] "
+            << "[--window-follow off|on] "
             << "[--idle-flush off|on|starved] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
@@ -635,6 +735,11 @@ public:
     }
     if (bucket_target < 1) {
       ckout << "--bucket-target must be at least 1" << endl;
+      CkExit(1);
+      return;
+    }
+    if (two_tier_per_pe < 0) {
+      ckout << "--two-tier-per-pe must not be negative" << endl;
       CkExit(1);
       return;
     }
@@ -981,10 +1086,18 @@ public:
    * merge cannot place exactly.
    */
   int choose_coarsening(const long *histo_values, long histogram_sum,
-                        long clamped, int two_tier, int window_last) {
-    if (bucket_policy != BUCKET_ADAPTIVE || two_tier || histogram_sum <= 0 ||
-        clamped > 0)
-      return 1;
+                        long clamped, int two_tier, int window_last,
+                        int *reason) {
+    if (bucket_policy != BUCKET_ADAPTIVE)
+      return *reason = COARSEN_POLICY_OFF, 1;
+    if (two_tier)
+      return *reason = COARSEN_TWO_TIER, 1;
+    if (histogram_sum <= 0)
+      return *reason = COARSEN_EMPTY, 1;
+    if (coarsen_clamp_policy != CLAMP_ALLOW && clamped > 0)
+      return *reason = COARSEN_CLAMP_LIVE, 1;
+    if (coarsen_clamp_policy == CLAMP_STRICT && clamp_ever_live)
+      return *reason = COARSEN_CLAMP_SEEN, 1;
     const double lo_mass = 0.05 * histogram_sum, hi_mass = 0.95 * histogram_sum;
     long mass = 0;
     int lo = -1, hi = -1;
@@ -998,14 +1111,15 @@ public:
       }
     }
     if (lo < 0 || hi < 0)
-      return 1;
+      return *reason = COARSEN_NO_BAND, 1;
     const int k = (hi - lo) / bucket_target;
     if (k < 2)
-      return 1;
+      return *reason = COARSEN_BAND_NARROW, 1;
     // The merged window must still reach everything the window reaches now.
     const int top = last_first_nonzero + (window_last < 0 ? 0 : window_last);
     if (top / k >= HISTO_BUCKET_COUNT - 1)
-      return 1;
+      return *reason = COARSEN_TOP_UNREACHABLE, 1;
+    *reason = COARSEN_MERGED;
     return k;
   }
 
@@ -1064,7 +1178,8 @@ public:
                     int tram_threshold, int two_tier, int starved,
                     long updates_created, long updates_processed,
                     long updates_noted, long distance_changes,
-                    long done_vertices) {
+                    long done_vertices,
+                    int coarsen_reason = COARSEN_NOT_ASKED, int coarsen_k = 1) {
     if (diag_prefix.empty())
       return;
     RoundRecord r;
@@ -1079,6 +1194,8 @@ public:
     r.two_tier = two_tier;
     r.starved = starved;
     r.bucket_scale = bucket_scale;
+    r.coarsen_reason = coarsen_reason;
+    r.coarsen_k = coarsen_k;
     r.updates_created = updates_created;
     r.updates_processed = updates_processed;
     r.updates_noted = updates_noted;
@@ -1208,7 +1325,14 @@ public:
     // calculate target percentile
     double heap_percent; // heap percentage
     double tram_percent; // tram percentage
-    const int two_tier = (histogram_sum <= N * 100) ? 1 : 0;
+    // Fewer updates in the window than this is treated as too few to describe
+    // a distribution. The default is the historical N * 100, which ties the
+    // rule to the PE count; --two-tier-absolute pins it instead so the two can
+    // be told apart on the same graph at different scales.
+    const long two_tier_limit = (two_tier_absolute >= 0)
+                                    ? two_tier_absolute
+                                    : (long)N * (long)two_tier_per_pe;
+    const int two_tier = (histogram_sum <= two_tier_limit) ? 1 : 0;
     if (two_tier) {
       heap_percent = 0.9999;
       tram_percent = 0.9999;
@@ -1267,14 +1391,31 @@ public:
 #endif
     if (first_nonzero == -1) {
       // Nothing in the reduced window: either the run has converged or all the
-      // remaining work sits past the window's right edge. Either way the window
-      // stays put. Letting -1 through here propagates to
-      // contribute_histogram(-2), which then reads histogram[-1] on every PE
-      // and sums that garbage into the next global histogram.
+      // remaining work sits past the window's right edge. Letting -1 through
+      // here propagates to contribute_histogram(-2), which then reads
+      // histogram[-1] on every PE and sums that garbage into the next global
+      // histogram.
+      //
+      // --window-follow on: if work is outstanding it is above the right edge,
+      // so slide the window one width up rather than leaving it behind. The
+      // buckets it leaves are empty by the same reduction that says the window
+      // is, and the origin is bounded by HISTO_BUCKET_COUNT, so at most
+      // HISTO_BUCKET_COUNT / histo_reduction_width slides happen before the
+      // window contains the lowest live bucket. Off keeps the window where it
+      // is, which is what every measurement before step 7.6 was taken with.
       first_nonzero = last_first_nonzero;
+      if (window_follow && above_window > 0 &&
+          last_first_nonzero + histo_reduction_width < HISTO_BUCKET_COUNT) {
+        first_nonzero = last_first_nonzero + histo_reduction_width;
+        windows_slid++;
+      }
     }
+    if (clamped > 0)
+      clamp_ever_live = true;
+    int coarsen_reason = COARSEN_NOT_ASKED;
     const int coarsen = choose_coarsening(histo_values, histogram_sum, clamped,
-                                          two_tier, window_last);
+                                          two_tier, window_last,
+                                          &coarsen_reason);
     if (coarsen > 1) {
       heap_threshold /= coarsen;
       tram_threshold /= coarsen;
@@ -1306,7 +1447,7 @@ public:
                  heap_threshold, tram_threshold, two_tier, starved,
                  updates_created,
                  updates_processed, updates_noted, distance_changes,
-                 done_vertex_count);
+                 done_vertex_count, coarsen_reason, coarsen);
     // arr.contribute_histogram(first_nonzero-1);
     last_first_nonzero = first_nonzero;
     arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
@@ -1330,6 +1471,7 @@ public:
     std::ofstream out(rounds_path.c_str());
     out << "round,t,histogram_sum,window_first,first_nonzero,occupied,span,"
            "heap_threshold,tram_threshold,two_tier,starved,bucket_scale,"
+           "coarsen_reason,coarsen_k,"
            "updates_created,updates_processed,updates_noted,distance_changes,"
            "done_vertices\n";
     for (size_t i = 0; i < rounds.size(); i++) {
@@ -1338,7 +1480,8 @@ public:
           << r.window_first << ',' << r.first_nonzero << ',' << r.occupied
           << ',' << r.span << ',' << r.heap_threshold << ','
           << r.tram_threshold << ',' << r.two_tier << ',' << r.starved << ','
-          << r.bucket_scale << ',' << r.updates_created << ',' << r.updates_processed << ','
+          << r.bucket_scale << ',' << r.coarsen_reason << ',' << r.coarsen_k
+          << ',' << r.updates_created << ',' << r.updates_processed << ','
           << r.updates_noted << ',' << r.distance_changes << ','
           << r.done_vertices << '\n';
     }
@@ -1435,6 +1578,8 @@ public:
     // past the right edge of the reduced window and nothing the controller
     // could see said where it went. The maximum is how far behind the window
     // ever fell, in updates.
+    ckout << "Windows slid past an empty reduced window: " << windows_slid
+          << endl;
     ckout << "Rounds with the frontier outside the window: "
           << rounds_window_empty << ", most updates outside it: "
           << max_above_window << endl;

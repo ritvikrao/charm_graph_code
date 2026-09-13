@@ -194,17 +194,50 @@ against the in-process serial reference instead.
   and a chare keeps creating and retiring updates between contributing and
   receiving the broadcast that carries the coarsening. That gap is open.
 
-  **This is a hypothesis, and it is not confirmed.** Forty file-mode mesh runs
-  that coarsened to scales of 40 to 88 produced no instance and no stall. What
-  is committed is therefore the detector rather than a repair: `coarsen_buckets`
-  prints `COARSEN_CLAMPED`, once per PE, when it merges over a non-empty clamp
-  bucket, naming the bucket the mass is stranded at. The gate fails on it.
-  A run that prints it and then pins at that bucket has told the whole story;
-  a replay that stalls without printing it refutes the hypothesis. Both
-  outcomes are worth more than a speculative fix, and the honest fix -- the
-  clamp bucket cannot be merged, so either coarsening must not happen while it
-  is occupied or the charged bucket must travel with the update -- is a
-  controller design question, which is item 2.
+  **The mechanism is demonstrated; the race that lets it happen in the field is
+  not.** Forty file-mode mesh runs left to themselves produced no instance --
+  the guard does its job -- so the mechanism was checked by removing the guard.
+  `--coarsen-clamped allow` on a 10,000-vertex file-mode mesh reproduces the
+  recorded signature on demand:
+
+  ```
+  COARSEN_CLAMPED pe=0 k=6 scale=1 clamp_bucket=199 strands_at=341
+  PROGRESS_STALL 1 main ... window_first=341 first_nonzero=341 occupied=5
+    window_sum=232 above_window=0 heap_threshold=341 tram_threshold=341
+    bucket_scale=6
+  PROGRESS_STALL 1 pe=0 ... live=68 lowest_live_bucket=183 highest_live_bucket=351
+    pq=0 pq_hold=90 tram_held=4 tram_admitted=0 tram_buffered=0
+  ```
+
+  341 is 2047 / 6. Three PEs merged with 199, 140 and 85 updates charged to the
+  clamp bucket between them; the 424 phantom counts that leaves at 341 become
+  the lowest thing the controller can see, the window pins there, both
+  thresholds pin with it, and real work at bucket 183 ends up *below* the
+  window, where it is as invisible as work above it. 2.9 million reductions, no
+  convergence, and `VERIFY FAIL: run was truncated`. `above_window = 0` is what
+  separates this from the failure the repair above covers: there the live work
+  is all outside the window, here it is all inside and most of it is not real.
+
+  What is still unproven is that the shipped `block` guard lets this through in
+  the field. It refuses while the reduced clamp count is positive, and the gap
+  argued above is the only way past it. That gap is consistent with a failure
+  that happens to one query in sixteen, and 2047 / 20 = 102 is consistent with
+  the recorded run, but consistency is not evidence. So what ships is the
+  detector rather than a repair: `coarsen_buckets` prints `COARSEN_CLAMPED`,
+  once per PE, naming the merge factor and the bucket the mass is stranded at,
+  and the gate fails on it. A replay that prints it before pinning has proved
+  the race; one that pins without printing it refutes this entirely.
+
+  `--coarsen-clamped strict` -- refuse to merge for the rest of the run once
+  the clamp count has ever been positive -- is the candidate repair, and it is
+  conservative: on a graph that ever clamps, it turns coarsening off. What that
+  costs is an item 2 measurement, not a guess, which is why it is a flag and
+  not a default.
+
+  `--coarsen-clamped allow` is deliberately unsound and the gate does not run
+  it: over the 18-configuration matrix it produced a 574 MB log from one 45
+  second run, because the per-round console output the production build prints
+  is the only thing a stalled run does quickly.
 
 ## Reproducing
 
