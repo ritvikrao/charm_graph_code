@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+"""Paired, independently checked SSSP comparisons inside a Slurm allocation."""
+import argparse
+import csv
+import gzip
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import random
+import re
+import signal
+import statistics
+import struct
+import subprocess
+import time
+
+KEYS = ('h1', 'h2', 'reachable', 'distance_sum')
+VARIANTS = {
+    'current': [],
+    'control': [],
+    'old-fixed': ['--flush-policy', 'fixed', '--flush-interval', '5',
+                  '--bucket-policy', 'fixed', '--idle-flush', 'off'],
+    'open': [],  # Both admission percentiles set below.
+    'fixed-1': ['--flush-policy', 'fixed', '--flush-interval', '1',
+                '--bucket-policy', 'fixed', '--idle-flush', 'off'],
+    'fixed-5': ['--flush-policy', 'fixed', '--flush-interval', '5',
+                '--bucket-policy', 'fixed', '--idle-flush', 'off'],
+}
+
+
+class Campaign:
+    def __init__(self, args):
+        self.args = args
+        self.root = Path(args.campaign)
+        self.nodes = int(os.environ['SLURM_NNODES'])
+        self.job = os.environ['SLURM_JOB_ID']
+        self.tag = f'{args.mode}-{self.nodes}n-{args.workers}w-{self.job}'
+        self.records = self.root / 'logs' / (self.tag + '.jsonl')
+        self.raw = self.root / 'logs' / (self.tag + '.log.gz')
+        self.env = dict(os.environ, PMI_MAX_KVS_ENTRIES='1000',
+                        FI_CXI_RX_MATCH_MODE='hybrid', NO_AFFINITY='1',
+                        OMP_PROC_BIND='close', OMP_PLACES='cores')
+        self.count = 0
+
+    def run(self, graph, source, config, expected, phase, rep=0, extra=None):
+        engine = config['engine']
+        workers = self.args.workers
+        binary = self.root / 'bin' / {'acic': 'acic', 'riken': 'riken_sssp', 'gap': 'gap_sssp'}[engine]
+        path = self.root / 'graphs' / (graph + '.wsg')
+        env = dict(self.env)
+        if 'presolve_seconds' in config:
+            env['PRESOL_SECONDS'] = str(config['presolve_seconds'])
+        if engine == 'acic':
+            pp = ['1.0', '1.0'] if config['name'] == 'open' else ['0.999', '0.005']
+            args = [str(binary), '0', str(path), '1', str(source), '4', *pp,
+                    '--result-digest', '--timeout', str(self.args.timeout),
+                    *VARIANTS.get(config['name'], config.get('flags', [])),
+                    *(extra or []), '+ppn', str(workers), '+pemap', f'0-{workers-1}',
+                    '+commap', str(workers), '+lci_ndevices', '4']
+            launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
+                      '--ntasks-per-node=1', '--cpu-bind=none']
+        else:
+            ranks = config.get('rpn', 1)
+            threads = workers // ranks
+            env['OMP_NUM_THREADS'] = str(threads)
+            launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
+                      '--ntasks-per-node', str(ranks), '-c', str(threads), '--cpu-bind=cores']
+            args = [str(binary), str(path), str(source), str(config['delta'])]
+            if engine == 'riken':
+                args += [str(config['denominator']), str(config.get('presolve', 0))]
+            elif self.nodes != 1:
+                raise ValueError('GAPBS is a single-node baseline')
+        cmd = [*launch, '--unbuffered', '--kill-on-bad-exit=1', *args]
+        self.count += 1
+        record = dict(job=self.job, nodes=self.nodes, workers=workers,
+                      graph=graph, source=source, phase=phase, rep=rep,
+                      config=config, index=self.count,
+                      hosts=os.environ.get('SLURM_JOB_NODELIST'), command=cmd)
+        begin = time.monotonic()
+        with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                              text=True, env=env, start_new_session=True) as process:
+            try:
+                output, _ = process.communicate(timeout=self.args.timeout+90)
+                record['returncode'] = process.returncode
+            except subprocess.TimeoutExpired:
+                # Signal only this launcher's process group. srun tears down
+                # its own step; never kill another user's or allocation's jobs.
+                os.killpg(process.pid, signal.SIGTERM)
+                try:
+                    output, _ = process.communicate(timeout=15)
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    output, _ = process.communicate()
+                record['returncode'] = -999
+        record['launch_wall_seconds'] = time.monotonic()-begin
+        pattern = r'^VERIFY parallel digest (.*)$' if engine == 'acic' else r'^BENCH (.*)$'
+        match = re.search(pattern, output, re.M)
+        digest = {k: int(v) for k, v in re.findall(r'(h1|h2|reachable|distance_sum)=(\d+)', match[1])} if match else {}
+        record['digest'] = digest
+        record['expected'] = {k: int(expected[k]) for k in KEYS}
+        record['valid'] = record['returncode'] == 0 and digest == record['expected']
+        t = re.search(r'^Compute time: ([\d.eE+-]+)', output, re.M) if engine == 'acic' else re.search(r'^BENCH .*?\bsolve_seconds=([\d.eE+-]+)', output, re.M)
+        if t:
+            record['seconds'] = float(t[1])
+            record['valid'] = record['valid'] and math.isfinite(record['seconds']) and record['seconds'] > 0
+        else:
+            record['valid'] = False
+        for field, regex in {
+            'read_seconds': r'^Read time: ([\d.eE+-]+)',
+            'total_seconds': r'^Total time: ([\d.eE+-]+)',
+            'reductions': r'^Number of reductions: (\d+)',
+            'updates_noted': r'^Updates noted: (\d+)',
+            'distance_changes': r'^Distance changes: (\d+)',
+            'rejected': r'^Rejected updates: (\d+)',
+            'tram_bytes': r'^TRAM messages: \d+, bytes sent: (\d+)',
+            'tram_messages': r'^TRAM messages: (\d+)',
+            'construction_seconds': r'construction_seconds=([\d.eE+-]+)',
+            'presolve_seconds': r'presolve_seconds=([\d.eE+-]+)',
+        }.items():
+            value = re.search(regex, output, re.M)
+            if value:
+                record[field] = float(value[1])
+        with gzip.open(self.raw, 'at') as f:
+            f.write('\nRUN ' + json.dumps(record) + '\n' + output)
+        with self.records.open('a') as f:
+            f.write(json.dumps(record) + '\n')
+        print(f'{self.tag} #{self.count} {phase} {graph} src={source} {config} '
+              f'valid={record["valid"]} seconds={record.get("seconds")}', flush=True)
+        if not record['valid']:
+            print(output[-6000:], flush=True)
+        return record
+
+    def references(self, graph):
+        text = (self.root/'graphs'/(graph+'.reference.txt')).read_text()
+        return list(csv.DictReader(text[text.index('source\t'):].splitlines(), delimiter='\t'))
+
+    def configs(self, graph):
+        meta = dict(re.findall(r'(\w+)=(\d+)', (self.root/'graphs'/(graph+'.meta')).read_text()))
+        denominator = int(meta['riken_denominator'])
+        deltas = sorted({max(1, denominator // k) for k in [64, 16, 4, 1]})
+        training_max = max(int(r['max_distance']) for r in self.references(graph) if r['role'] == 'tune')
+        widths = sorted({0, max(1, math.ceil(training_max/1024)), denominator})
+        result = [dict(engine='acic', name=f'fixed-{i}-w{width}',
+                       flags=VARIANTS[f'fixed-{i}'] + (['--bucket-width', str(width)] if width else []))
+                  for i in [1, 5] for width in widths]
+        for rpn in [1, 4]:
+            for delta in deltas:
+                result.append(dict(engine='riken', name='riken', rpn=rpn,
+                                   delta=delta, denominator=denominator, presolve=0))
+        if self.nodes == 1:
+            result += [dict(engine='gap', name='gap', delta=d) for d in deltas]
+        return result
+
+    def benchmark(self):
+        rng = random.Random(20260913 + self.nodes + self.args.workers)
+        graphs = self.args.graphs.split(',')
+        rng.shuffle(graphs)
+        for graph in graphs:
+            references = self.references(graph)
+            training = [x for x in references if x['role'] == 'tune']
+            held_out = [x for x in references if x['role'] == 'test'][:self.args.sources]
+            candidates = self.configs(graph)
+            # One discarded warmup per implementation; every measured query
+            # still starts a fresh process and includes solver initialization.
+            for engine in ['acic', 'riken'] + (['gap'] if self.nodes == 1 else []):
+                config = next(c for c in candidates if c['engine'] == engine)
+                self.run(graph, int(training[0]['source']), config, training[0], 'warmup')
+            samples = {json.dumps(c, sort_keys=True): [] for c in candidates}
+            for row in training:
+                order = candidates[:]
+                rng.shuffle(order)
+                for config in order:
+                    r = self.run(graph, int(row['source']), config, row, 'tune')
+                    samples[json.dumps(config, sort_keys=True)].append(r)
+            selected = []
+            for engine in ['acic', 'riken'] + (['gap'] if self.nodes == 1 else []):
+                choices = [c for c in candidates if c['engine'] == engine and
+                           all(r['valid'] for r in samples[json.dumps(c, sort_keys=True)])]
+                if not choices:
+                    raise RuntimeError(f'No valid {engine} configuration for {graph}')
+                config = min(choices, key=lambda c: statistics.geometric_mean(
+                    r['seconds'] for r in samples[json.dumps(c, sort_keys=True)]))
+                selected.append(dict(config, name='tuned-fixed' if engine == 'acic' else engine,
+                                     **({'flags': config['flags']} if engine == 'acic' else {})))
+            selected += [dict(engine='acic', name=n) for n in ['current', 'control', 'old-fixed', 'open']]
+            (self.root/'logs'/(self.tag+'-'+graph+'-selected.json')).write_text(json.dumps(selected, indent=2)+'\n')
+            for rep in range(self.args.reps):
+                rows = held_out[:]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = selected[:]
+                    rng.shuffle(order)
+                    for config in order:
+                        r = self.run(graph, int(row['source']), config, row, 'test', rep)
+                        if not r['valid']:
+                            raise RuntimeError('Failed correctness or execution gate; see raw log')
+
+    def smoke(self):
+        for graph in self.args.graphs.split(','):
+            row = self.references(graph)[0]
+            configs = [dict(engine='acic', name='current')]
+            configs += [c for c in self.configs(graph) if c['engine'] != 'acic'
+                        and c['delta'] == c.get('denominator', 1024)//4]
+            for config in configs:
+                if not self.run(graph, int(row['source']), config, row, 'smoke')['valid']:
+                    raise RuntimeError('Smoke check failed')
+
+    def presolve(self):
+        # A bounded preprocessing sensitivity check; do not call this the
+        # upstream uncapped 4000-round benchmark configuration.
+        for graph in self.args.graphs.split(','):
+            references = self.references(graph)
+            config = next(c for c in self.configs(graph) if c['engine'] == 'riken'
+                          and c['rpn'] == 4 and c['delta'] == c['denominator']//4)
+            for row in references[:2]:
+                for seconds in [0, 30]:
+                    candidate = dict(config, name='riken-pre30' if seconds else 'riken-no-pre',
+                                     presolve=4000 if seconds else 0, presolve_seconds=max(1, seconds))
+                    if not self.run(graph, int(row['source']), candidate, row, 'presolve-probe')['valid']:
+                        raise RuntimeError('Preprocessing probe failed verification')
+
+    def tiny(self):
+        # Independent Python fixture writer and Dijkstra. Every case creates
+        # <1001 updates, including an isolated source and a cross-partition path.
+        import heapq
+        mask = (1 << 64)-1
+        def mix(x):
+            x = (x + 0x9E3779B97F4A7C15) & mask
+            x = ((x ^ (x >> 30))*0xBF58476D1CE4E5B9) & mask
+            x = ((x ^ (x >> 27))*0x94D049BB133111EB) & mask
+            return x ^ (x >> 31)
+        for kind in ['empty', 'path', 'disconnected']:
+            n = 256
+            rows = [[] for _ in range(n)]
+            if kind != 'empty':
+                length = 256 if kind == 'path' else 16
+                for i in range(length-1):
+                    u, v = (i*73)%n, ((i+1)*73)%n
+                    rows[u].append((v, 1+i%11))
+                    rows[v].append((u, 1+i%11))
+            offsets = [0]
+            for row in rows:
+                offsets.append(offsets[-1]+len(row))
+            graph = 'tiny-'+kind+'-'+self.job
+            with (self.root/'graphs'/(graph+'.wsg')).open('wb') as f:
+                f.write(struct.pack('=Bqq', 0, offsets[-1], n))
+                f.write(struct.pack('='+('q'*(n+1)), *offsets))
+                for row in rows:
+                    for edge in sorted(row):
+                        f.write(struct.pack('=ii', *edge))
+            sources = [0, 1] if kind == 'disconnected' else [0]
+            for source in sources:
+                dist = [mask]*n
+                dist[source] = 0
+                queue = [(0, source)]
+                while queue:
+                    d, u = heapq.heappop(queue)
+                    if d != dist[u]:
+                        continue
+                    for v, w in rows[u]:
+                        if d+w < dist[v]:
+                            dist[v] = d+w
+                            heapq.heappush(queue, (d+w, v))
+                expected = dict(h1=sum(mix(((v*0x9E3779B97F4A7C15)&mask)^mix(d)) for v, d in enumerate(dist))&mask,
+                                h2=sum(mix(((d*0xC2B2AE3D27D4EB4F)&mask)^mix(v+1)) for v, d in enumerate(dist))&mask,
+                                reachable=sum(d != mask for d in dist),
+                                distance_sum=sum(d for d in dist if d != mask))
+                configs = [dict(engine='acic', name=n) for n in ['current', 'old-fixed', 'open']]
+                configs += [dict(engine='acic', name='hold', flags=['--combine', 'hold', '--bucket-policy', 'fixed'])]
+                for config in configs:
+                    r = self.run(graph, source, config, expected, 'termination', extra=['--round-delay', '2', '--verify'])
+                    if not r['valid']:
+                        raise RuntimeError('Small-component termination regression')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(__doc__)
+    parser.add_argument('campaign')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve'], default='benchmark')
+    parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
+    parser.add_argument('--workers', type=int, default=16)
+    parser.add_argument('--sources', type=int, default=8)
+    parser.add_argument('--reps', type=int, default=2)
+    parser.add_argument('--timeout', type=int, default=120)
+    args = parser.parse_args()
+    campaign = Campaign(args)
+    getattr(campaign, args.mode)()
+    print('CAMPAIGN COMPLETE', campaign.tag, flush=True)

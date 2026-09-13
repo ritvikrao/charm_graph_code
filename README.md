@@ -27,7 +27,7 @@ builds `graph_digest` and `graph_convert`, which need no Charm++ at all.
 
 ```
 ./sssp_smp <vertices> <path|edge count> <seed> <source> <mode> <p_tram> <p_pq> \
-           [--verify] [--timeout <seconds>] [--bufsize <items>] \
+           [--verify] [--result-digest] [--timeout <seconds>] [--bufsize <items>] \
            [--bucket-width <units>] [--round-delay <ms>] \
            [--flush-interval <rounds>] [--partition-jitter <percent>] \
            [--flush-policy fixed|stale|adaptive] [--combine off|hold] \
@@ -49,6 +49,11 @@ any machine, so nothing has to be staged. `--verify` solves the same graph with
 serial Dijkstra in-process and compares an order-independent digest; it covers
 every mode but 0.
 
+`--result-digest` emits the parallel distance digest after the timed solve,
+without running serial Dijkstra. The comparison harness checks it against an
+independent reference for every measured query. A timed-out run exits nonzero
+even if its partial result happens to match.
+
 Weights are integers in [1, 1000], a hash of the ordered endpoint pair and the
 seed, so they do not depend on the order edges are read or generated in. An
 unweighted `.sg` gets weights the same way.
@@ -65,10 +70,10 @@ legacy CSV files:
 ./graph_convert source 3 16384 262144 1      # a source vertex worth using
 ```
 
-`source` matters more than it sounds. A third of an RMAT graph's vertices have no
-out-edges, and a source with none never satisfies the convergence test — the run
-sits until `--timeout`. It prints the lowest-numbered vertex of at least mean
-out-degree, and the graph's degree summary alongside.
+`source` prints the lowest-numbered vertex of at least mean out-degree, and the
+graph's degree summary alongside. Many RMAT vertices have no out-edges; they
+now terminate correctly with a one-vertex answer. Comparison sources follow a
+separate, deterministic sampling rule described in [benchmarks/README.md](benchmarks/README.md).
 
 The files it writes are real GAPBS files, so GAPBS's own kernels can be run on the
 identical input. Use GAPBS's `converter` for SNAP, DIMACS and MatrixMarket text.

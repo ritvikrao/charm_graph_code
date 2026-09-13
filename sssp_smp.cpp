@@ -54,6 +54,7 @@ double reduction_delay =
     0.1;                   // each histogram reduction happens at this interval
 int initial_threshold = 3; // initial histo threshold
 bool verify_mode = false;  // --verify: check the result against serial Dijkstra
+bool result_digest = false; // --result-digest: emit distances' digest after timing
 // Everything needed to rebuild the graph from scratch, used by the serial
 // reference. Filled in by Main; not a Charm readonly, because only PE 0 needs
 // it and the chares get their slice through their own entry methods.
@@ -411,6 +412,8 @@ public:
       std::string arg = m->argv[i];
       if (arg == "--verify")
         verify_mode = true;
+      else if (arg == "--result-digest")
+        result_digest = true;
       else if (arg.rfind("--timeout=", 0) == 0)
         timeout_seconds = std::stod(arg.substr(10));
       else if (arg == "--timeout") {
@@ -574,7 +577,7 @@ public:
             << "<start vertex> "
             << "<mode 0=csv,1=uniform,2=mesh,3=rmat,4=gapbs> "
             << "<tram percentile> <heap percentile> "
-            << "[--verify] [--timeout <seconds>] [--bufsize <items>]" << endl
+            << "[--verify] [--result-digest] [--timeout <seconds>] [--bufsize <items>]" << endl
             << "       [--bucket-width <distance units>] "
             << "[--round-delay <ms>] [--flush-interval <rounds>] "
             << "[--flush-policy fixed|stale|adaptive] "
@@ -1062,8 +1065,14 @@ public:
           << ", Done vertices: " << done_vertex_count
           << ", BFS noted: " << bfs_noted;
 #endif
+    // Each round's broadcast is sent only after every contribution to the
+    // previous round has arrived. Unchanged monotone created/processed sums
+    // therefore imply a common interval with no update creation/retirement.
+    // processed == created + 1 accounts for the initial source update, which
+    // is processed without being created. It also proves the source started.
+    // A minimum traffic volume adds no safety and prevents small components
+    // (including an isolated source) from ever terminating.
     if ((updates_processed - updates_created == 1) &&
-        (updates_created > 1000) &&
         (updates_created == previous_updates_created) &&
         (updates_processed == previous_updates_processed)) {
       record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
@@ -1349,7 +1358,7 @@ public:
     if (n > 7 && values[7])
       ckout << "TRAM hold: absorbed " << values[6] << " of " << values[7]
             << " items (" << 100.0 * values[6] / values[7] << "%)" << endl;
-    if (verify_mode)
+    if (verify_mode || result_digest)
       arr.verify_hash();
     else
       CkExit(run_truncated ? 1 : 0);
@@ -1369,6 +1378,15 @@ public:
     ckout << "VERIFY parallel digest h1=" << parallel.h1
           << " h2=" << parallel.h2 << " reachable=" << parallel.reachable
           << " distance_sum=" << parallel.distance_sum << endl;
+
+    // Digest reduction is outside compute_time. External benchmark drivers
+    // compare it with an independently produced reference for every run.
+    // --verify still performs its in-process Dijkstra check when both flags
+    // are present, and a timed-out solve can never become a successful result.
+    if (!verify_mode) {
+      CkExit(run_truncated ? 1 : 0);
+      return;
+    }
 
     double reference_begin = CkWallTimer();
     std::vector<cost> reference;
@@ -1877,22 +1895,6 @@ public:
    * Method that accepts initial update to source vertex
    */
   void start_algo(Update new_vertex_and_distance) {
-    // A source with no out-edges produces no updates at all, and the
-    // termination test in reduce_histogram needs updates_created > 1000 before
-    // it will believe a run has converged -- so such a run sits until the
-    // timeout rather than finishing instantly with a one-vertex answer. That
-    // is easy to hit on RMAT and on real graphs, where a large fraction of
-    // vertices have out-degree zero, so at least say what happened. Making the
-    // predicate itself handle it is a change to the convergence logic and
-    // belongs with the tail work in step 7 of the plan.
-    long local_index = new_vertex_and_distance.dest_vertex - start_vertex;
-    if (local_index >= 0 && local_index < num_vertices &&
-        local_graph.degree(local_index) == 0)
-      ckout << "WARNING: source vertex " << new_vertex_and_distance.dest_vertex
-            << " has no outgoing edges. Nothing can be relaxed, and the "
-               "convergence test will not fire; this run will sit until "
-               "--timeout. Pick a source with out-edges."
-            << endl;
     process_update(new_vertex_and_distance);
   }
 

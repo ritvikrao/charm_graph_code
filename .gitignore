@@ -45,3 +45,4 @@ config.mk
 .diagnose-build.lock
 ab-out*/
 acic-ab-*.out
+__pycache__/
