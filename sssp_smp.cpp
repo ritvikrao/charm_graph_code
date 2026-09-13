@@ -411,8 +411,17 @@ private:
   long start_vertex;
   long *partition_index;
   double start_time;
-  double read_time;
-  double total_time;
+  // Every timer below is -1 until something assigns it, so an unmeasured
+  // phase reports -1 rather than a plausible zero. Before this, read_time was
+  // an uninitialized double that only MODE_CSV and modes 1-2 ever wrote, so
+  // MODE_RMAT and MODE_GAPBS -- the whole benchmark campaign -- printed
+  // whatever the allocation happened to hold. It read 0.0, which is why the
+  // 7.5 note could say the field was unassigned but not that it was wrong.
+  double read_time = -1.0;   // input only, where the mode can separate it
+  double index_time = -1.0;  // MODE_GAPBS: header and offsets, read on PE 0
+  double setup_time = -1.0;  // start_time -> solve start: input + build
+  double stats_time = -1.0;  // solve end -> total: the statistics reduction
+  double total_time = -1.0;
   long max_index;
   int threshold_change_counter;
   int previous_threshold;
@@ -467,7 +476,7 @@ private:
 
 public:
   double compute_begin;
-  double compute_time;
+  double compute_time = -1.0; // set on convergence, or by the timeout handler
   bool run_truncated = false; // set by fast_exit; forces a nonzero exit
 
   /**
@@ -945,6 +954,10 @@ public:
       partition_index[N] = V;
       graph_spec.num_vertices = V;
       graph_spec.num_edges = num_global_edges;
+      // Everything above is PE 0 reading the header and the offsets array to
+      // decide the partition. The edge rows are read by each PE inside
+      // load_gapbs_graph, so this split is index vs graph, not read vs build.
+      index_time = CkWallTimer() - start_time;
       arr.load_gapbs_graph(file_name, partition_index, N + 1);
     } else {
 #ifdef INFO_PRINTS
@@ -1045,8 +1058,15 @@ public:
   void begin(cost max_sum) {
     // ready to begin algorithm
     shared.max_path_value(max_sum);
-    if (generate_mode == 1 || generate_mode == 2)
-      read_time = CkWallTimer() - start_time;
+    // Reached once every chare holds its partition, in every mode, so this is
+    // the one boundary that means the same thing everywhere: the solver could
+    // start now. MODE_UNIFORM and MODE_MESH generate rather than read, so for
+    // them input and build are the same phase and read_time is that phase;
+    // the guard that used to sit here left modes 3 and 4 unassigned.
+    setup_time = CkWallTimer() - start_time;
+    if (generate_mode == MODE_UNIFORM || generate_mode == MODE_MESH ||
+        generate_mode == MODE_RMAT)
+      read_time = setup_time; // generated, so there is no separable input
 #ifdef INFO_PRINTS
     ckout << "The sum of the maximum out-edges is " << max_sum << endl;
 #endif
@@ -1551,9 +1571,17 @@ public:
     // ckout << "Completed" << endl;
     // CkPrintf("Memory usage at end: %f\n", CmiMemoryUsage()/(1024.0*1024.0));
     total_time = CkWallTimer() - start_time;
+    if (setup_time >= 0.0 && compute_time >= 0.0)
+      stats_time = total_time - setup_time - compute_time;
     ckout << "Actual edges: " << msg_stats[STAT_EDGES] << endl;
+    // Three non-overlapping phases that add up to Total time. Anything that
+    // compares cold starts has to say which of these it is comparing; a
+    // number that silently folds setup into solve is not a measurement.
+    ckout << "Setup time: " << setup_time << endl;
+    ckout << "Index time: " << index_time << endl;
     ckout << "Read time: " << read_time << endl;
     ckout << "Compute time: " << compute_time << endl;
+    ckout << "Stats time: " << stats_time << endl;
     ckout << "Total time: " << total_time << endl;
     ckout << "Wasted updates: " << msg_stats[STAT_WASTED] - V << endl;
     ckout << "Wasted updates normalized to |E|: "

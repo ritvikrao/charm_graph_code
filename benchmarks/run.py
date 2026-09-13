@@ -159,7 +159,12 @@ class Campaign:
         else:
             record['valid'] = False
         for field, regex in {
+            # -1 from any of these means the mode did not measure that phase,
+            # not that it took no time. setup + compute + stats == total.
             'read_seconds': r'^Read time: ([\d.eE+-]+)',
+            'setup_seconds': r'^Setup time: ([\d.eE+-]+)',
+            'index_seconds': r'^Index time: ([\d.eE+-]+)',
+            'stats_seconds': r'^Stats time: ([\d.eE+-]+)',
             'total_seconds': r'^Total time: ([\d.eE+-]+)',
             'reductions': r'^Number of reductions: (\d+)',
             'updates_noted': r'^Updates noted: (\d+)',
