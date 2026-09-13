@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Report independently allocated Gluon, confirmation, and presolve probes."""
+"""Report independently allocated baseline, layout, and diagnostic probes."""
 from collections import defaultdict
 import gzip
 import json
@@ -10,7 +10,7 @@ from report import geometric, paired
 logs, out = map(Path, sys.argv[1:3])
 out.mkdir(parents=True, exist_ok=True)
 records, complete, unfinished = [], [], []
-for pattern in ['gluon-*.jsonl', 'confirm-*.jsonl', 'presolve-*.jsonl']:
+for pattern in ['gluon-*.jsonl', 'confirm-*.jsonl', 'presolve-*.jsonl', 'numa-*.jsonl', 'finish-*.jsonl', 'layout_confirm-*.jsonl']:
     for path in sorted(logs.glob(pattern)):
         runs = [json.loads(line) for line in path.read_text().splitlines()]
         records += runs
@@ -39,6 +39,14 @@ def source_means(phase):
             raise ValueError('Expected two repeats')
         cells[(job, nodes, workers, graph)].setdefault(name, {})[source] = geometric(times)
     for cell in cells.values():
+        expected = {
+            'gluon-test': {'current', 'control', 'gluon-async', 'gluon-sync'},
+            'confirm-test': {'current', 'control', 'tuned-fixed', 'riken', 'riken-retuned'},
+            'numa-test': {f'{p}-{r}x{120//r}' for p in ['current', 'fixed'] for r in [1, 4, 8]},
+            'layout-test': {'current', 'control', 'tuned-fixed', 'riken', 'gap'},
+        }[phase]
+        if set(cell) != expected:
+            raise ValueError('Missing supplemental variants')
         sets = [set(v) for v in cell.values()]
         if any(s != sets[0] for s in sets) or len(sets[0]) != 8:
             raise ValueError('Expected eight matched sources')
@@ -65,6 +73,37 @@ for (job, nodes, workers, graph), cell in sorted(source_means('confirm-test').it
                  ' | '.join(f'{geometric(cell[n].values()):.4f}' for n in ['current', 'tuned-fixed', 'riken', 'riken-retuned'])+
                  ' | '+ratio(cell,'control')+' |')
 (out/'confirmation.md').write_text('\n'.join(table)+'\n')
+
+table = ['| Physical nodes | Graph | Policy | 1 × 120 (s) | 4 × 30 (s) | 8 × 15 (s) | 1 × 120 / 4 × 30 [95% CI] | 1 × 120 / 8 × 15 [95% CI] |',
+         '|---:|---|---|---:|---:|---:|---|---|']
+for (job, nodes, workers, graph), cell in sorted(source_means('numa-test').items()):
+    for policy in ['current', 'fixed']:
+        names = [f'{policy}-{r}x{120//r}' for r in [1, 4, 8]]
+        ratios = [paired(cell[names[0]], cell[n]) for n in names[1:]]
+        table.append(f'| {nodes} | {graph} | {policy} | '+
+                     ' | '.join(f'{geometric(cell[n].values()):.4f}' for n in names)+' | '+
+                     ' | '.join(f'{r[0]:.2f} [{r[1]:.2f}, {r[2]:.2f}]' for r in ratios)+' |')
+(out/'numa.md').write_text('\n'.join(table)+'\n')
+
+table = ['| Physical nodes | Graph | ACIC 8 × 15 (s) | Transferred fixed 8 × 15 (s) | RIKEN (s) | GAPBS (s) | RIKEN / ACIC [95% CI] | GAPBS / ACIC [95% CI] | Control / ACIC [95% CI] |',
+         '|---:|---|---:|---:|---:|---:|---|---|---|']
+for (job, nodes, workers, graph), cell in sorted(source_means('layout-test').items()):
+    table.append(f'| {nodes} | {graph} | '+
+                 ' | '.join(f'{geometric(cell[n].values()):.4f}' for n in ['current','tuned-fixed','riken','gap'])+' | '+
+                 ' | '.join(ratio(cell,n) for n in ['riken','gap','control'])+' |')
+(out/'layout-confirmation.md').write_text('\n'.join(table)+'\n')
+
+replays = defaultdict(list)
+for r in complete:
+    if r['phase'] == 'failure-replay':
+        replays[(r['job'], r['graph'], r['source'], r['config']['name'])].append(r)
+table = ['| Job | Graph | Source | Configuration | Valid / attempted | Successful-query geomean (s), diagnostic only |',
+         '|---|---|---:|---|---:|---:|']
+for (job, graph, source, name), runs in sorted(replays.items()):
+    good = [r['seconds'] for r in runs if r['valid']]
+    timing = f'{geometric(good):.4f}' if good else '—'
+    table.append(f'| {job} | {graph} | {source} | {name} | {len(good)}/{len(runs)} | {timing} |')
+(out/'failure-replay.md').write_text('\n'.join(table)+'\n')
 
 table = ['| Graph | Sources | RIKEN no presolve (s) | RIKEN with presolve (s) | Added presolve time (s) | Solve speedup | Approx. queries to amortize |',
          '|---|---:|---:|---:|---:|---:|---:|']

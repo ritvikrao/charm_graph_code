@@ -28,15 +28,22 @@ def paired(base, variant):
 
 def summarize(records):
     observations = defaultdict(list)
+    failures = defaultdict(list)
     for r in records:
         if r['phase'] == 'test':
+            key = (r['nodes'], r['workers'], r['graph'], r['config']['name'])
             if not r['valid'] or r.get('seconds', 0) <= 0:
-                raise ValueError(f'Invalid test run in job {r["job"]}; no silent exclusion')
-            observations[(r['nodes'], r['workers'], r['graph'], r['config']['name'], r['source'])].append(r['seconds'])
+                failures[key].append(r)
+            else:
+                observations[(*key, r['source'])].append(r['seconds'])
     cells = defaultdict(dict)
     for (nodes, workers, graph, name, source), values in observations.items():
         cells[(nodes, workers, graph)].setdefault(name, {})[source] = geometric(values)
-    return cells, observations
+    # Suppress the entire failed variant/cell: averaging just successful
+    # queries would reward nonconvergence. Failed attempts stay in the archive.
+    for (nodes, workers, graph, name) in failures:
+        cells[(nodes, workers, graph)].pop(name, None)
+    return cells, observations, failures
 
 
 if __name__ == '__main__':
@@ -46,12 +53,25 @@ if __name__ == '__main__':
     parser.add_argument('--allow-partial', action='store_true', help='progress view only; do not publish incomplete cells')
     args = parser.parse_args()
     records = []
+    completions = defaultdict(list)
+    for path in sorted(args.logs.glob('finish-*.jsonl')):
+        job = path.stem.rsplit('-', 1)[1]
+        stdout = (args.logs/f'job-{job}.out').read_text()
+        if 'CAMPAIGN COMPLETE '+path.stem not in stdout:
+            if args.allow_partial:
+                continue
+            raise ValueError(f'Completion job {job} did not finish')
+        for line in path.read_text().splitlines():
+            r = json.loads(line)
+            if r['phase'] == 'completion-test':
+                completions[str(r['selection_job'])].append(dict(r, phase='test', original_phase=r['phase']))
     for path in sorted(args.logs.glob('benchmark-*.jsonl')):
         job_records = [json.loads(line) for line in path.read_text().splitlines()]
+        job = path.stem.rsplit('-', 1)[1]
+        job_records += completions[job]
         if not args.allow_partial:
-            job = path.stem.rsplit('-', 1)[1]
             stdout = (args.logs/f'job-{job}.out').read_text()
-            if 'CAMPAIGN COMPLETE '+path.stem not in stdout:
+            if 'CAMPAIGN COMPLETE '+path.stem not in stdout and not completions[job]:
                 raise ValueError(f'Job {job} did not complete; use --allow-partial only for progress views')
             grouped = defaultdict(lambda: defaultdict(list))
             for r in job_records:
@@ -70,11 +90,13 @@ if __name__ == '__main__':
                 if any(c != counts[0] for c in counts) or set(counts[0].values()) != {2} or len(counts[0]) != 8:
                     raise ValueError(f'Expected eight paired sources and two repeats in {job}/{graph}')
         records.extend(job_records)
-    cells, observations = summarize(records)
+    cells, observations, failures = summarize(records)
     args.output.mkdir(parents=True, exist_ok=True)
     with gzip.open(args.output/'runs.jsonl.gz', 'wt') as f:
         for r in records:
             f.write(json.dumps(r, sort_keys=True)+'\n')
+    (args.output/'failed-test-runs.json').write_text(json.dumps(
+        [r for runs in failures.values() for r in runs], indent=2)+'\n')
     names = ['current', 'old-fixed', 'tuned-fixed', 'open', 'riken', 'gap']
     table = ['| Nodes | Workers/node | Graph | Sources | ACIC current (s) | Old fixed (s) | Tuned fixed (s) | Relaxed admission (s) | RIKEN (s) | GAPBS (s) | RIKEN / ACIC [95% CI] |',
              '|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---|']
@@ -83,17 +105,20 @@ if __name__ == '__main__':
     rows = []
     for (nodes, workers, graph), values in sorted(cells.items()):
         current = values.get('current', {})
-        if not current:
-            continue
         estimates = {name: geometric(values[name].values()) for name in names if name in values}
+        source_count = max((len(v) for v in values.values()), default=0)
+        def timing(name):
+            failed = failures.get((nodes, workers, graph, name), [])
+            return f'FAIL ({len(failed)}/16)' if failed else (f'{estimates[name]:.4f}' if name in estimates else '—')
         def ratio(name):
             result = paired(values.get(name, {}), current)
             return '—' if result is None else f'{result[0]:.2f} [{result[1]:.2f}, {result[2]:.2f}]'
-        table.append(f'| {nodes} | {workers} | {graph} | {len(current)} | ' +
-                     ' | '.join(f'{estimates[n]:.4f}' if n in estimates else '—' for n in names) +
+        table.append(f'| {nodes} | {workers} | {graph} | {source_count} | ' +
+                     ' | '.join(timing(n) for n in names) +
                      f' | {ratio("riken")} |')
         controls.append(f'| {nodes} | {workers} | {graph} | {ratio("control")} | {ratio("tuned-fixed")} | {ratio("old-fixed")} |')
-        row = dict(nodes=nodes, workers=workers, graph=graph, sources=len(current), **estimates)
+        row = dict(nodes=nodes, workers=workers, graph=graph, sources=source_count,
+                   failed_variants=','.join(n for n in names if (nodes, workers, graph, n) in failures), **estimates)
         for name in ['riken', 'gap', 'control', 'tuned-fixed', 'old-fixed', 'open']:
             result = paired(values.get(name, {}), current)
             if result:

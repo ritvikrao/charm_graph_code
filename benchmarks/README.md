@@ -2,8 +2,8 @@
 
 This harness compares ACIC, RIKEN Graph500-SSSP, and GAPBS SSSP on identical
 weighted inputs. It is a research pilot, not an official Graph500 or GAP score.
-GAPBS is run only on one node. The distributed asynchronous Gluon baseline is
-a separate follow-up; RIKEN supplies the distributed delta-stepping comparison.
+GAPBS is run only on one node. Gluon-Async and Gluon-Sync use separate paired
+allocations; RIKEN supplies the distributed delta-stepping comparison.
 
 ## Dependencies and storage
 
@@ -145,6 +145,38 @@ searches 1 and 4. Record the actual search rather than implying exhaustive tunin
 `report.py CAMPAIGN/logs OUTPUT` exports compressed records, CSV, and Markdown
 tables. It requires completed jobs, matched variants, eight test sources, and
 two repeats. `--allow-partial` is only for monitoring an unfinished campaign.
+An unsuccessful held-out query suppresses the timing and speedup for that
+entire variant/cell and appears as `FAIL`; the result is never averaged over
+only successful queries. `--mode finish --selection-job JOB --graphs GRAPH`
+can complete unattempted slots using the original frozen choices. It retains
+the original failure and separately replays the failing source five times
+alongside tuned fixed. The reports identify the independent completion job.
+
+`--mode numa --workers 120 --graphs rmat22,mesh22` compares ACIC using one
+process with 120 workers, four with 30, and eight with 15 on one physical node.
+`launch_acic.sh` gives each process a contiguous core region and a separate
+communication core (121, 124, or 128 active cores respectively). Both current
+defaults and the specified fixed policy (flush 1, width 1024, no idle flush or
+bucket adaptation) run on all layouts. This fixed policy is a diagnostic
+choice, not the per-case tuned winner. All eight held-out sources run twice
+in random order. **Changing the process count also changes Charm++'s SMP-node
+count used by the controller:** this is a deployment-geometry sensitivity
+experiment, not an isolated NUMA-affinity ablation. Its results use a separate
+allocation and are reported separately from the main occupancy sweep.
+The four LCI devices per process also mean different total endpoint counts.
+`--mode layout_confirm --workers 120 --selection-job JOB` then pairs the
+selected 8 × 15 layout with the frozen RIKEN/GAPBS choices in a new allocation.
+It transfers the fixed policy chosen at 1 × 120 without retuning it. Since the
+layout was selected after inspecting the geometry probe on these same sources,
+this is deployment confirmation, not a new held-out policy-generalization test.
+
+For the current binary, `Read time` is **not assigned for GAPBS file mode**;
+its printed zero is not a valid measurement. Do not publish it as input time.
+The retained ACIC `Total time` includes setup and the final statistics reduction,
+but there is no matching end-to-end timer for all baselines in this pilot.
+RIKEN's separate construction timer is rank zero's graph-constructor time,
+excluding the adapter's file read and other preparation. In particular, a
+fast repeated-query kernel does not imply cheap fresh-process construction.
 
 ## Gluon comparison
 
@@ -160,7 +192,12 @@ attempts are retained separately and contribute no performance results.
 
 The build reuses installed LLVM 19.1.7 (RTTI enabled), Boost 1.73, fmt, libnuma,
 and Cray MPI, with GCC 14 `-O3 -march=znver3`. No LLVM or Boost source tree is
-downloaded or rebuilt. `to_galois.py` translates the canonical CSR into Galois
+downloaded or rebuilt. The final build excludes the unused Cray LibSci BLAS
+dependency: the two-node adapter's shutdown SIGSEGV was traced to its
+`__crayblas_shutdown` → profiling → `getenv` path (debug job 22033720).
+The one-node results used the prior link and exited successfully; each
+supplemental query records its actual binary hash. Neither change alters the
+SSSP kernel. `to_galois.py` translates the canonical CSR into Galois
 `.gr` version 1, preserving every vertex, arc, and integer weight. This adds
 only four graph files to scratch. The unchanged Galois file reader plus the
 independent output check validates the conversion for the measured queries.

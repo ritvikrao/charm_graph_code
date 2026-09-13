@@ -69,6 +69,13 @@ class Campaign:
                     '+commap', str(workers), '+lci_ndevices', '4']
             launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
                       '--ntasks-per-node=1', '--cpu-bind=none']
+            if config.get('rpn', 1) != 1:
+                ranks = config['rpn']
+                # Replace the trailing runtime flags with per-process maps.
+                args = ['bash', str(Path(__file__).with_name('launch_acic.sh')),
+                        str(ranks), str(workers), *args[:-8]]
+                launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
+                          '--ntasks-per-node', str(ranks), '-c', str(128//ranks), '--cpu-bind=none']
         elif engine == 'gluon':
             launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
                       '--ntasks-per-node=1', '-c', str(workers+1), '--cpu-bind=cores']
@@ -91,6 +98,7 @@ class Campaign:
         self.count += 1
         record = dict(job=self.job, nodes=self.nodes, workers=workers,
                       graph=graph, source=source, phase=phase, rep=rep,
+                      selection_job=self.args.selection_job,
                       config=config, index=self.count,
                       binary_sha256=self.binary_hashes[str(binary)],
                       hosts=os.environ.get('SLURM_JOB_NODELIST'), command=cmd)
@@ -307,6 +315,80 @@ class Campaign:
                         if not self.run(graph, int(row['source']), c, row, 'gluon-test', rep)['valid']:
                             raise RuntimeError('Gluon comparison failed verification')
 
+    def numa(self):
+        if self.args.workers != 120:
+            raise ValueError('The NUMA geometry probe is specified for 120 workers/node')
+        rng = random.Random(20260913 + int(self.job))
+        configs = []
+        for ranks in [1, 4, 8]:
+            for policy in ['current', 'fixed']:
+                configs.append(dict(engine='acic', name=f'{policy}-{ranks}x{120//ranks}', rpn=ranks,
+                                    flags=[] if policy == 'current' else VARIANTS['fixed-1']+['--bucket-width','1024']))
+        for graph in self.args.graphs.split(','):
+            refs = self.references(graph)
+            for c in configs:
+                if not self.run(graph, int(refs[0]['source']), c, refs[0], 'numa-warmup')['valid']:
+                    raise RuntimeError('NUMA layout failed verification')
+            for rep in range(self.args.reps):
+                rows = refs[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = configs[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        if not self.run(graph, int(row['source']), c, row, 'numa-test', rep)['valid']:
+                            raise RuntimeError('NUMA layout failed verification')
+
+    def finish(self):
+        """Complete unattempted slots after a failed job; never replace failures."""
+        if not self.args.selection_job:
+            raise ValueError('finish requires --selection-job')
+        tag = f'benchmark-{self.nodes}n-{self.args.workers}w-{self.args.selection_job}'
+        old = [json.loads(s) for s in (self.root/'logs'/(tag+'.jsonl')).read_text().splitlines()]
+        for graph in self.args.graphs.split(','):
+            refs = self.references(graph)[2:2+self.args.sources]
+            selected = json.loads((self.root/'logs'/(tag+'-'+graph+'-selected.json')).read_text())
+            seen = {(r['source'], r['rep'], r['config']['name']) for r in old
+                    if r['graph'] == graph and r['phase'] == 'test'}
+            for rep in range(self.args.reps):
+                for row in refs:
+                    for c in selected:
+                        if (int(row['source']), rep, c['name']) not in seen:
+                            self.run(graph, int(row['source']), c, row, 'completion-test', rep)
+            # Diagnostic reruns are separate, including failures, and cannot
+            # rescue the original censored performance cell.
+            failed = [r for r in old if r['graph'] == graph and r['phase'] == 'test' and not r['valid']]
+            for original in failed:
+                row = next(r for r in refs if int(r['source']) == original['source'])
+                for rep in range(5):
+                    for c in [original['config'], next(c for c in selected if c['name'] == 'tuned-fixed')]:
+                        self.run(graph, original['source'], c, row, 'failure-replay', rep)
+
+    def layout_confirm(self):
+        """Pair the selected deployment geometry with frozen CPU baselines."""
+        if self.nodes != 1 or self.args.workers != 120 or not self.args.selection_job:
+            raise ValueError('layout_confirm requires one node, 120 workers, and --selection-job')
+        rng = random.Random(20260913 + int(self.job))
+        for graph in self.args.graphs.split(','):
+            path = self.root/'logs'/f'benchmark-1n-120w-{self.args.selection_job}-{graph}-selected.json'
+            frozen = json.loads(path.read_text())
+            configs = [dict(engine='acic', name=n, rpn=8) for n in ['current', 'control']]
+            configs += [dict(c, rpn=8) if c['engine']=='acic' else c
+                        for c in frozen if c['name'] in ['tuned-fixed', 'riken', 'gap']]
+            refs = self.references(graph)
+            for c in configs:
+                if not self.run(graph, int(refs[0]['source']), c, refs[0], 'layout-warmup')['valid']:
+                    raise RuntimeError('Layout confirmation failed verification')
+            for rep in range(self.args.reps):
+                rows = refs[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = configs[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        if not self.run(graph, int(row['source']), c, row, 'layout-test', rep)['valid']:
+                            raise RuntimeError('Layout confirmation failed verification')
+
     def tiny(self):
         # Independent Python fixture writer and Dijkstra. Every case creates
         # <1001 updates, including an isolated source and a cross-partition path.
@@ -364,7 +446,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')
