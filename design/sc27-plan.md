@@ -1,7 +1,26 @@
 # ACIC → SC27: research and engineering plan
 
-*Working plan, drafted 2026-09-10. Code references to `htram_group.*` are in the
+*Working plan, drafted 2026-09-10; revised after step 7 on 2026-09-13.
+Code references to `htram_group.*` are in the
 companion repo at github.com/UIUC-PPL/htram.*
+
+## Current decision after step 7
+
+**Run a focused SSSP comparison and adaptivity study before the generalization
+refactors.** Add steps **7.5** (validity, current baselines, real inputs, modest
+scaling) and **7.6** (fixed-versus-adaptive controls and one bounded optimization
+cycle). Then extract interfaces around a second kernel. The detailed rationale,
+pilot matrix, controls, and decision gates are in
+[post-step7-review.md](post-step7-review.md).
+
+The strongest current lead is the interaction between **work admission and
+delivery latency**: idle flushing reduced two-node RMAT work but increased mesh
+work. Combining is off and no longer a promised contribution. The historical
+RIKEN gap must be measured again on the current code. Results from one/two nodes
+and mostly one source per synthetic input do not yet establish generality.
+
+This revision changes planning documents only; its proposed fixes, experiments,
+baseline setup, and refactors have not been performed as part of the review.
 
 ## Context
 
@@ -11,10 +30,10 @@ Continuous Introspection and Control — a fully asynchronous distributed SSSP i
 self-perpetuating cycle of reductions and broadcasts builds a global histogram of *active
 updates* bucketed by tentative distance; percentile thresholds cut from that histogram gate
 which updates enter a PE's priority queue (`heap_threshold`) and which go on the wire
-(`tram_threshold`). Result: fewer speculative relaxations than Δ-stepping with no global
-synchronization.
+(`tram_threshold`). The intended benefit is fewer speculative relaxations while
+computation proceeds between nonblocking controller collectives.
 
-Three gaps block an SC-class paper:
+The original plan identified three gaps:
 
 1. **Scale-free graphs lose.** RIKEN Δ-stepping is **2.8–3.3× faster** on RMAT. The paper's
    own headline weakness, and the graph class reviewers care most about.
@@ -24,26 +43,35 @@ Three gaps block an SC-class paper:
    library"; htram has *zero* self-tuning. Every knob is a compile-time constant or a fixed
    constructor argument.
 
-**Target:** SC27 full paper. SC27 is Nov 14 2027 in Denver; SC26's paper deadline was
-**Apr 27 2026**, so assume **~late April 2027** — roughly 33 weeks from 2026-09-10. Confirm
-when the CFP drops and re-anchor the schedule then.
+Steps 1–7 have substantially addressed the engineering and validation gaps and
+introduced adaptive policies. Real-input performance, current external
+competitiveness, and adaptation against strong fixed settings remain open.
+The RMAT ratio above describes the 2024 paper, not a fresh comparison.
+
+**Target:** SC27 full paper. Use **early April 2027 provisionally**; the SC27
+paper deadline is unconfirmed. The previous date was based on an incorrect
+SC26 precedent: its paper deadline was **Apr 8**, abstracts Apr 1, and mandatory
+AD appendix Apr 28. See the [official SC26 schedule](https://sc26.supercomputing.org/all-dates-deadlines/).
+Re-anchor when the SC27 CFP appears, including the separate abstract deadline.
 
 **Claim to defend:** *adaptive introspection co-designed across the algorithm and the
-communication layer* — one histogram-driven controller steers both the algorithm's work
-admission and the aggregation library's buffering, combining, and flushing — generalizing
-across a class of graph algorithms and a range of graph structures.
+communication layer* — feedback steers the algorithm's work admission and the
+aggregation library's buffering/flushing, generalizing across a stated class of
+graph algorithms and graph structures. This remains a hypothesis: compare
+shared feedback with independent policies and strong fixed configurations.
 
-**The axis the claim lives on is work-efficiency, not throughput.** See the GPU section
-below: at the top of the throughput ranking, GPUs win by brute force while doing *more* work.
-ACIC's differentiated claim is doing *less* work, plus the graph classes where GPU parallelism
-cannot be saturated at all. Every headline result should be reported in both edge relaxations
-and wall clock, never wall clock alone.
+**Report time to solution and work together.** Work reduction explains a result;
+it does not replace a runtime benefit or establish an energy advantage. Count
+actual edge examinations, successful distance changes, messages, memory, and
+control overhead separately. CPU/GPU advantages are empirical questions.
 
 ---
 
 ## What planning found: three defects that change how to read the 2024 results
 
-All three verified directly in the code. The first is the most important finding here.
+Historical diagnosis, retained for provenance. These defects were addressed in
+steps 2–5; references below describe the earlier code. The mechanism and
+measurement corrections in the step notes supersede the original predictions.
 
 ### 1. A per-edge 2048-iteration scan that has probably been dominating every run
 
@@ -74,6 +102,12 @@ immediately**. That is exactly the setting that avoids this pathology. The tram-
 mechanism, one of ACIC's two core contributions, has plausibly never been evaluated on its
 merits. Re-running that sweep after the fix is the highest-value single experiment available
 and may recover a contribution the paper currently disclaims.
+
+> **Corrected in step 3.** The leak penalized higher `p_tram` more, rather than
+> favoring 0.999. The fixed laptop sweep was nearly flat. Its 2.5–4.1× gain is
+> not a reproduction of the paper's cluster experiment. See
+> [defect-fixes.md](defect-fixes.md#the-p_tram-sweep-re-run); a current multi-node
+> sweep belongs in step 7.6.
 
 ### 2. `HTramMessage` is not a varsize message, so `bufSize` never reaches the wire
 
@@ -127,31 +161,29 @@ by wire bytes and redundant relaxations instead, which is a stronger claim anywa
 
 ## Strategy
 
-**Order of work: solidify SSSP completely, then generalize.** Every scale-free mechanism is
-built, measured, and defended on SSSP alone before a second algorithm exists. This costs one
-thing — the architecture argument that type erasure should precede combining, so the
-combining structure isn't rewritten during the refactor. Reconcile it by writing
-`CombiningHold` against a **byte-oriented interface** (`item_size` + an ops struct) from day
-one, even while the surrounding library is still monomorphic. The later type erasure then
-lifts it unchanged.
+**Order of work: establish the SSSP contribution, then test transfer.** Steps
+7.5–7.6 have a bounded budget; do not wait for SSSP to be optimized completely.
+External comparisons and fixed-policy sweeps determine whether the next action
+is a targeted optimization, a second kernel, or a narrower claim. CombiningHold
+already has a byte-oriented interface but its existence is not a reason to
+generalize the whole library now.
 
-**The abstraction is two families, not one.** The `(key, value, ⊕)` combining contract holds
-for every algorithm — and combining is safe for both families for *different* reasons worth
-stating in the paper: min-family because relax is idempotent and monotone, PageRank because
-`+` is exact and loses nothing. But the *controller* splits on idempotence and on
-absolute-vs-delta payloads. For PageRank the histogrammed population changes from *in-flight
-messages* to *vertex residual mass*, the reduction element becomes `double`, and buckets
-become log-scale. So: **two engines sharing `htram`, `acic`, and `graphlib`** — not one class
-with four template parameters.
+**Min-relaxation and additive-residual algorithms need distinct contracts.**
+SSSP/BFS can exploit monotonicity and idempotence. PageRank must conserve each
+additive contribution, including buffered residual mass, and validate to a
+specified tolerance: floating-point addition is neither exact nor associative.
+Residual priorities and convergence need their own design. Do not promise that
+every graph algorithm fits a `(key, value, combine)` interface.
 
-**Type erasure, not full templating, for htram genericity.** Templating the whole class works
+**Conditional architecture option: type erasure for htram genericity.** Defer
+this choice until a second payload/algorithm establishes the need. Templating the whole class works
 (`tramNonSmp.h:74` is the proof) but kills the static archive, gives one `HTramNodeGrp` per
 payload type, and forces `.ci` instantiation gymnastics on every application. Instead: a
 byte-oriented `HTramCore` + a header-only `HTram<T>` façade + a POD `HTramOps` vtable,
 matching the existing `set_func_ptr_retarr` style. Recover lost inlining with a `BuiltinOp`
 enum (`MIN_I64`/`SUM_F64`/…) switched on *outside* the insert loop.
 
-Target layout:
+Possible later layout, not the next milestone:
 
 ```
 htram/     htram_core.{h,C,ci}  htram_ops.h  htram.h (HTram<T> façade)
@@ -163,56 +195,50 @@ engine/    update_engine.h  algo_{sssp,bfs,cc,pagerank}.h  apps/
 
 ---
 
-## Reconverse port
+## Runtime controls
 
-Mechanically a Charm++ build swap, but your own accumulated notes say the sharp edges are all
-in the runtime configuration, and several bear directly on this paper. Do it in P0, before any
-baseline numbers are recorded, so nothing has to be re-measured later.
+Keep the working Delta launch/build configuration from the completed port.
+The saved A/B scripts use direct execution on one node and `srun` on multiple
+nodes. Do not add a new launcher or CMake migration merely to match the original
+plan's wording.
 
-- **Build:** pass runtime options via `--with-cmake-args`; a bare `-DFOO=BAR` silently becomes
-  a compiler flag instead.
-- **Launch:** `lcrun`, not `mpirun`.
-- **Tracing is the real risk.** Trace flags leak into `argv` under Reconverse — `+traceroot`
-  and `+logsize` broke NAMD outright. The plan leans on Projections for the scale-free
-  diagnosis (P1), so resolve this first: either fix the argv leak upstream or set trace
-  parameters by environment. Also keep traces short — long traces flush mid-run and inflate
-  the measurement by ~30%.
-- **`+lci_ndevices` is a real experimental factor, not a constant.** Its optimum is U-shaped
-  (≈8 at 2 nodes, ≈32 at 16), and the RMR buffer caps devices — 64 B holds only 2, so
-  `>=3` aborts unless that is raised. Pin it and sweep it as a controlled factor.
-- **`LCI_ATTR_PACKET_SIZE` interacts directly with the paper's central knob.** Raising it to
-  32768 closed a 2-node performance cliff elsewhere (12.0 → 7.2 ms/step). An aggregation
-  buffer-size sweep run at the wrong packet size measures the wrong optimum — so this is
-  simultaneously a **confound to control** and a **potential contribution**: co-tuning the
-  aggregation layer against the transport's packet size is exactly the kind of cross-layer
-  adaptivity this paper claims. Worth an explicit experiment.
-- **Diagnose with traces, not profiles.** Prior Reconverse work found idle cycles are
-  effectively free (removing 74%/20%/45% of cycles bought 0%), and that a multi-node gap that
-  looked like idleness was 77% waiting on *same-node* message delivery. ACIC's tail (H4 below)
-  has the same shape — don't conclude from a profile that the tail is idle-bound.
+Record and control worker/rank layout, affinity, compiler/runtime revisions,
+`+lci_ndevices`, and `LCI_ATTR_PACKET_SIZE`. Establish a fixed transport
+configuration for the first comparisons; perform a small sensitivity check
+before attributing a buffer-size optimum to the adaptive method. Promote
+transport co-tuning to a contribution only if a measured interaction warrants it.
+
+Previous Reconverse observations from other applications motivate checks, not
+ACIC performance conclusions. Check trace-argument compatibility and tracing
+overhead before collecting short traces. Use profiles to locate cost and traces
+to identify exposed delay; apparent idleness alone does not identify a bottleneck.
 
 ---
 
 ## Work plan
 
-Steps 1–7 are SSSP-only. Steps 8–12 generalize. Every step ends in a runnable binary
-producing a number; steps 1–4 and 8–9 gate on a **byte-identical `--verify` hash** so the
-baseline never moves under you mid-refactor.
+Steps 1–7 are completed SSSP development. **7.5–7.6 are next**; steps 8–12 are
+conditional and no longer a sequential refactor queue. Research gates produce
+decision reports; implementation gates require correctness and appropriate
+performance checks. Integer-distance refactors retain identical results, with
+one- and two-node validation; PageRank uses a tolerance-based gate.
 
 | # | Step | Gate | Effort |
 |---|---|---|---|
-| **1** | Reconverse port; `lcrun` job scripts; resolve the trace-flag argv leak; pin `+lci_ndevices` / `LCI_ATTR_PACKET_SIZE`. CMake replacing the two hardcoded `charmc` paths | 2024 configs run and reproduce on the new stack | 1 wk |
-| **2** | `--verify`: reduce a 64-bit hash of all `(v, dist)`; serial Dijkstra reference ≤1M edges; CI on every commit. Deterministic weights via `hash(u,v,seed)` replacing `rand()` | Reference matches on mesh + small RMAT | 2 days |
-| **3** | The defect list above: `updates_in_tram` leak, `tram_hold` rows → `num_dest`, `dest_table` overflow, `first_nonzero` OOB, `rand()` flush, `fast_exit` → flag, `NODE_COUNT` → runtime, delete `processHeapShared` | Verify passes. **Measure the §1 fix alone and re-run the `p_tram` sweep** | 3 days |
-| **4** | Genuine varsize messages (`char buffer[]`); `setUsersize` on all send paths. Re-run the buffer-size sweep, now co-varied with `LCI_ATTR_PACKET_SIZE` | ~~Verify identical; wire bytes drop at `bufSize < 2048`~~ **Done.** Verify identical; second clause withdrawn — `bufSize` never reached the wire because the constructor argument was dead, not because of padding. Closed on 2 nodes by `scripts/verify_2node.sh`; see `design/varsize-messages.md` | 3 days |
-| **5** | Retire all non-SMP and dead code (below). `graphlib` v1: in-memory Kronecker/RMAT/uniform/mesh generators + GAPBS `.sg`/`.wsg` binary reader; flat CSR replacing per-vertex `std::vector` | **Done.** Verify identical on all ten pre-existing configurations; the gate now runs 18, adding RMAT and files. A generated graph written to `.wsg` and read back solves to the same digest as the in-memory run. See `design/graphlib.md` | 2 wk |
-| **6** | Scale-free diagnosis: H1–H4 below, each an A/B with everything else fixed | **Done.** Four notes written. **Three of the four hypotheses are refuted for RMAT and confirmed for the mesh** — they are real problems of the class ACIC already wins on. Only H2 survives as a scale-free explanation. See `design/scale-free-diagnosis.md` | 2 wk |
-| **7** | Build the winners, **in the order step 6 established, which is not the order below**: (1) ~~adaptive flush cadence — 3.2× on the mesh from one existing constant~~ **Done: `--flush-policy adaptive`, default. 3.6× on the mesh on one node, 3.8× on two, no slower on RMAT or uniform. The ungated first attempt cost 7–12% on two nodes and is kept as `stale`; see `design/step7-flush-cadence.md`**; (2) ~~`CombiningHold` (byte-oriented from day one) + `on_absorb`, *before* the batch-local fold in `deliver`, whose reach shrinks with problem size~~ **Done, and both lose: `--combine hold` 1.17–1.39× slower on RMAT, `--batch-fold on` 1.09–1.14× slower; both off by default. Folding removes cheap receiver rejects, not relaxations, and under WPs a delivered batch is one source's message, so the fold and the hold catch the same same-source redundancy and the fold finds zero with the hold on; see `design/step7-combining.md`**; (3) ~~adaptive bucketing, worth 1.7× on the mesh and 9% on RMAT~~ **Done: `--bucket-policy adaptive --bucket-target 8`, default. A 1.14x speedup on the mesh and 1.11x on RMAT at 2^20, nothing resolvable at 2^22 or on the uniform graph. Step 6's 1.7× was the controller switching off on a cadence-bound run and did not survive 7.1. The harness has a ~5% position bias, now measured with a control variant; see `design/step7-bucketing.md`**; (4) ~~idle flush~~ **Done: `--idle-flush starved`, default. A 1.09x speedup on the one-node mesh (10% fewer rounds) and 1.12x on two-node RMAT (13% fewer updates created -- the first thing in step 7 to reduce RMAT's relaxation work), and inside the harness's position bias in the other four cells. Ungated (`on`) it is 1.12-1.16x slower on the uniform graph, doubling the message count for the same bytes: the policy has to be gated on the controller's starvation signal, so it belongs in the application, not the library; see `design/step7-idle-flush.md`**. **Not** measurement-based load balancing | Verify identical flag on **and** off | 4 wk |
-| **8** | Type erasure: `HTramCore` + `HTram<T>` + `HTramOps` + `BuiltinOp`. Strictly mechanical | **Byte-identical verify vs. step 7** | 1 wk |
-| **9** | `Locator` + `dest_slot` item field; fix `thisIndex`/`CkMyPe()` conflation. K=1 `BlockLocator` → identical; then K=8 `HashLocator` | Verify identical at K=1 | 1.5 wk |
-| **10** | `AcicController` extraction (priority-rank space, watchdog, round-time metric) | Verify identical for SSSP | 1 wk |
-| **11** | BFS + CC on the engine | Validate vs. GAPBS | 1.5 wk |
-| **12** | PageRank: second engine (delta, non-idempotent, mass histogram, log buckets, descending). Then k-core / BC if Gate B clears early | Convergence vs. GAPBS reference | 3 wk |
+| **1** | Runtime port and reproducible build/launch configuration | Completed development milestone; retain the working Delta configuration | complete |
+| **2** | Deterministic graphs and serial Dijkstra/digest verification | [Verification harness](verify-harness.md); independent and large-run validation remain in 7.5 | complete |
+| **3** | Control-path, memory, and correctness repairs | [Defect fixes](defect-fixes.md); laptop parameter sweep does not close the multi-node performance question | complete |
+| **4** | Variable-size messages and envelope checks | [Message design](varsize-messages.md); two-node correctness gate passed; transport performance sweep remains separate | complete |
+| **5** | Dead-code retirement, graphlib, flat CSR, binary inputs | [Graphlib](graphlib.md); 18 verification configurations including generated/file equivalence | complete |
+| **6** | H1–H4 diagnosis on the recorded synthetic configurations | [Diagnosis](scale-free-diagnosis.md); interpretation qualified by later step 7 results below | complete |
+| **7** | Gated flush cadence, combining/fold, bucket coarsening, idle flush | Mesh cadence gain 3.6–3.8×; combining/fold off; confirmed small-input bucketing gains; two-node RMAT idle-flush gain 1.12× with 12.6% fewer created updates. See the [review evidence table](post-step7-review.md#what-the-evidence-supports) for scope and limits | complete |
+| **7.5 — next** | Resolve small-component termination; independent input/result validation; balanced measurement order; repaired/current ACIC, tuned RIKEN, GAPBS; one road and one social/web input; pilot through 4/8/16 nodes. Begin Gluon-Async setup | Current external gap and scaling limits measured on identical inputs; report uncertainty, resources, and failures | ~2 wk |
+| **7.6 — next** | Fixed-versus-adaptive policy study; admission × delivery experiment; at most one or two measured bottleneck optimizations; inspect scale dependence of starvation gate and control cost | **Gate A:** adaptive benefit beyond one global fixed setting, proximity to per-case tuned settings, credible external runtime results | 2–3 wk |
+| **8 — conditional** | Minimal generic payload interface/type erasure only when a second algorithm requires it | SSSP results identical on one/two nodes; no unexplained runtime regression | up to 1 wk |
+| **9 — split** | Fix PE/chare identity when introducing new mappings. Overdecomposition/hash placement/migration only if profiling justifies them | Correct on **all supported mappings**, not just K=1; performance benefit required for extra scheduling machinery | budget after diagnosis |
+| **10 — with second kernel** | Extract `AcicController` around observed shared signals, actions, and progress contracts; may precede step 8 | SSSP validation and performance retained; second use exercises shared controller | ~1 wk |
+| **11 — transfer gate** | BFS first; CC only for a specific additional hypothesis | **Gate B:** validated transfer with frozen policy constants and direction-optimizing BFS comparisons; narrow claim if transfer fails | 1–2 wk |
+| **12 — broader claim only** | PageRank residual engine if claiming beyond min-relaxation/traversal; defer BC and k-core | Matched damping, dangling-node semantics and residual tolerance; no byte-identical floating-point requirement | ~3 wk |
 
 ### Retire (step 5)
 
@@ -239,355 +265,238 @@ syntax. Delete it with the rest afterward.
 > survives until `graphs/*.csv` are migrated with `tools/graph_convert csv`. See
 > `design/graphlib.md` §1.
 
-### Combining — the paper's central mechanism
+### Combining — completed negative result
 
-Key per **`dest_node` with bucket as a field**, not per `(dest_node, bucket)`: cross-bucket
-folding is where the win is, since `(v,100)` and `(v,50)` live in different buckets and
-per-bucket tables can only fold items that already agree. Open-addressed, power-of-two, 8-bit
-tag prefilter (64 tags/cache line → one miss for a negative lookup), intrusive bucket index,
-**lazy decrease-key**: on improvement update `bkt[i]` and push onto the new bucket list
-without unlinking; `release` skips entries where `bkt[i] != b`. O(1), no allocation.
-Break-even absorb rate ~8–12%.
+Step 7.2 implemented the byte-oriented source hold and batch-local fold; both
+are correct and off by default. The detailed structures, accounting contract,
+and measurements are in [step7-combining.md](step7-combining.md).
 
-Two corrections to my initial framing, both important:
+On the tested RMAT configurations, neither reduced relaxation work. Under WPs,
+the delivered batch contains one source's message, so the fold did not provide
+the intended cross-source combination. Reject/absorb counts did not predict
+whether the insertion and holding costs paid for themselves.
 
-- **`on_absorb` is a correctness requirement, not a metric.** The app owns `histogram[]` and
-  `updates_created` (`sssp_smp.cpp:1099-1100`); silently destroying items makes the
-  termination predicate `processed - created == 1` (`:477`) unreachable and the run hangs.
-- **Source-side combining captures only half the redundancy.** On power-law graphs the
-  dominant redundancy is *across* source PEs. Add a batch-local fold in the `deliver` callback
-  (~30 lines, fits in L2) and **report the two contributions separately**.
+Withdraw the absorb-rate controller and the claim that combining is the central
+mechanism. Preserve the negative result. Revisit only if another scale or
+network establishes a communication saving worth more than the measured cost.
 
-The adaptive on/off policy — disable per destination below an 8% trailing absorb rate,
-re-probe one round in 16 — is itself a figure: *"the system turns combining off on road
-networks and on for RMAT, automatically."*
+### What remains of the step 6 hypotheses
 
-> **Step 7.2 result: built as specified, correct, and a net loss.** Absorbing an
-> update removes a receiver reject, which costs one comparison, and does not
-> reduce relaxations. RMAT's are unchanged and the mesh's rise. The second
-> correction above does not hold for this library: a delivery callback under WPs
-> sees one source PE's message, so the batch-local fold reaches only same-source
-> redundancy, which is exactly what the hold already catches. The 8% adaptive
-> on/off policy is moot, since no absorb rate observed (up to 51%) paid. See
-> `design/step7-combining.md`.
+The detailed historical A/Bs are in
+[scale-free-diagnosis.md](scale-free-diagnosis.md) and the four H1–H4 notes.
+Read “refuted” as a result for the measured configurations, not a statement
+about every scale-free graph, weight distribution, source, and machine.
 
-Measure the ceiling before writing any of it: `sssp_smp.cpp:1257` already counts
-`rejected_updates` and `:588` prints it normalized to `|E|`. Run it on RMAT after step 3.
+| Hypothesis | Recorded result | Current implication |
+|---|---|---|
+| H1: inadequate bucket resolution on RMAT | Resolution was adequate in step 6; coarsening helped small runs, with no resolved 2^22 benefit in step 7.3 | Measure controller overhead and fixed-policy quality at representative scales |
+| H2: expensive hub redundancy | Rejects concentrated at hubs, but source hold and batch fold lost time without reducing RMAT relaxation work | Reject count/absorb rate is not a runtime cost model; combining stays off |
+| H3: partition imbalance | Modest static RMAT imbalance had no measurable cost at up to 32 workers; mesh idleness was mainly temporal | Reassess active edge work and long hub handlers at larger scale before overdecomposition |
+| H4: cadence-limited progress | Large mesh sensitivity; indiscriminate flushing hurt random graphs | Keep gated flushing; study its interaction with admission and its scale-dependent signal |
 
-### Why scale-free loses — four hypotheses (step 6)
+**Withdraw the universal claim that RMAT redundancy cannot depend on ordering.**
+Step 6's percentile sweep found little effect under its tested conditions.
+Step 7.4 later reduced two-node RMAT created updates by 12.6% through idle
+flushing. Its timing explanation is plausible and should be tested directly.
+Neither finding establishes a universal cause for the historical RIKEN gap.
 
-> **Answered. `design/scale-free-diagnosis.md` carries the result; the four
-> notes carry the evidence. The short version is that the hypotheses below were
-> asked of the wrong graph class.**
->
-> H1, H3 and H4 are each **refuted on RMAT and confirmed on the mesh**. The
-> controller has *more* bucket resolution on RMAT (18.5 buckets above the
-> frontier per round) than on the uniform graph (9.7) or the mesh (2.2, with 60%
-> of rounds having none). A 1-D partition of a power law is imbalanced 1.19× at
-> 32 PEs, which the calibration shows costs nothing; the mesh is balanced 1.00×
-> in edges and idles its PEs 85% of rounds — **including on one PE, where there
-> is no partition**. And flushing the aggregation buffers every round rather
-> than one in five is 3.2× faster on the mesh and 4% *slower* on RMAT.
->
-> **The finding no hypothesis anticipated:** on a power-law graph the redundant
-> work is not order-dependent, so no ordering can prevent it. Switching ACIC's
-> work admission off entirely (`p_heap` 0.005 → 0.999) changes RMAT's rejected
-> updates by nothing measurable, 1.161 → 1.129 per edge, and makes the run 1.14×
-> *faster* because the bookkeeping is not free. The same switch costs the mesh
-> **5.5×** its rejected updates. ACIC's central mechanism is not mistuned on
-> scale-free graphs — it has nothing to bite on, because hub contention puts the
-> competing updates in the same bucket at the same time. Which leaves combining,
-> H2, as the only remaining line of attack on the class the paper has to explain.
+The uniform generator's default partition jitter is a separate factor. Pin it
+explicitly for causal A/Bs and record it in cross-system comparisons. All of
+the completed mesh observations need a real road-graph check.
 
-> **Two corrections found while building the instrument, both of which change
-> how the hypotheses below must be read.**
->
-> **The uniform mode's partition is deliberately skewed and no other mode's is.**
-> Mode 1 draws each PE's share of the vertices at random within ±20% of `V/N`
-> (`sssp_smp.cpp`, the `partition_rng` block); the mesh and RMAT both divide
-> evenly. At 16 PEs that injected skew measures 1.30 max/mean in edges — the
-> same order as anything the power law produces. So *any* load-balance
-> comparison between the uniform graph and a scale-free one, including
-> whatever informed H3 below, was comparing a deliberately imbalanced partition
-> against an even one. `--partition-jitter` now exposes it; H3 runs every mode
-> at 0 and uses the jitter as a calibration.
->
-> **The combining-adaptivity figure as drafted is not what the system does.**
-> The combining section below proposes presenting the policy as *"the system
-> turns combining off on road networks and on for RMAT, automatically."* The
-> mesh's batch-local absorb rate is **46%, higher than RMAT's 41.6%**, so a
-> policy keyed on absorb rate switches combining *on* for the high-diameter
-> graph too. The two rates have unrelated causes — RMAT's is structural
-> (hub in-degree), the mesh's is temporal (a narrow frontier revisited) — and
-> `<prefix>.arrivals.csv` separates them. The defensible claim is narrower:
-> combining pays wherever traffic concentrates, and traffic concentrates for
-> two different reasons. See `design/h2-hub-redundancy.md`.
-
-- **H1 — bucket width has no resolution on RMAT.** *(**Refuted.** RMAT and the
-  uniform graph occupy 199 and 204 of the 2048 buckets respectively and
-  concentrate half their updates into the same 36; the percentile knob moves
-  RMAT's runtime by 1.17× and its redundant work not at all. Deriving the width
-  from the distribution is still worth doing — 1.7× on the mesh — but it is not
-  the scale-free fix. [Step 7.3: after 7.1's flush fix it is worth a 1.14×
-  speedup on the mesh and 1.11× on RMAT at 2^20, and nothing at 2^22. The 1.7× was measured
-  while the mesh was cadence-bound; see `design/step7-bucketing.md`.] Note also that `histo_reduction_width` (256) exceeds the
-  entire occupied range on both random-graph classes, so the sliding window
-  never slides on either. See `design/h1-bucket-resolution.md`.)*
-  `bucket(d) = d/log(V)` (`:843`, which
-  reduces algebraically to `1/log(V)`) is fixed at startup and derived from nothing but `|V|`.
-  RMAT's small diameter collapses the range into a handful of the 2048 buckets, so percentile
-  thresholds have nothing to cut and the controller degenerates toward plain distributed
-  control. Cheapest test in the plan: log bucket occupancy for RMAT vs. random. Fix: derive
-  width from the observed distribution, and use `lmax` — already reduced in `begin()` (`:362`)
-  and then discarded.
-- **H2 — redundant updates to hubs.** *(Supported, with the framing correction
-  above. On RMAT the reject rate climbs monotonically with destination
-  out-degree, 27% at degree 0 to 99.9% above 4096, and 59% of all rejects land
-  on the 2.9% of vertices with degree ≥128; on the uniform graph the same rate
-  is flat to a tenth of a percent across every degree class, which is the
-  control behaving as it must. Batch-local combining alone absorbs 41.6% at
-  bufSize 2048 against an 8–12% break-even. See
-  `design/h2-hub-redundancy.md`.)* Addressed by combining, above.
-- **H3 — 1D partitioning imbalances on a power law.** *(**Refuted as a spatial
-  problem.** 1.19× max/mean in edges at 32 PEs, in a region a deliberate-skew
-  calibration shows costs nothing measurable; RMAT's PEs are idle 9% of rounds
-  against the mesh's 85%. The expectation below that migration LB is a poor fit
-  is confirmed and now measured — but it is a statement about high-diameter
-  graphs. See `design/h3-partitioning.md`.)* The **overdecomposition** half will
-  likely pay, but via `HashLocator` scattering hubs and via more schedulable work overlapping
-  the `[whenidle]` drain — *not* via load balancing. Measurement-based migration LB is a
-  dubious fit: SSSP imbalance is temporal (the frontier moves), so past load anti-predicts
-  future load. Build the migration path because it's cheap and unblocks routing; expect the LB
-  result may be negative and write it up honestly. Your own
-  `~/paratreet2/design/uf2-k-chares.md` reached this shape of conclusion for UnionFindLib.
-- **H4 — the tail advances only at reduction cadence.** *(**Confirmed far more
-  strongly than stated, and it is not the tail and not RMAT.** On the mesh the
-  whole run is cadence-bound: 4 ms of added round delay multiplies runtime 27.7×
-  on one node and 38.5× on two, with the round count unchanged, and flushing
-  every round instead of one in five is 3.2× faster. The tail as defined — after
-  99% of vertices settle — is 3.2% of mesh runtime, so chasing it would have
-  been chasing the wrong few percent. On RMAT buffers fill on their own and
-  flushing every round is 4% slower. See `design/h4-tail-cadence.md`.)*
-  *[Step 7.4: done, but re-enabling the stub below would not have done it. `idleFlush()`
-  calls `tflush(true)`, which ships a buffer more than 20% full and never touches
-  `tram_hold`, where admitted items actually wait under `BUCKETS_BY_DEST` -- so it
-  releases almost nothing. A new `flushIdle()` gated on the controller's starvation
-  signal pays: 1.09x on the one-node mesh, from 10% fewer rounds, and 1.12x on two-node
-  RMAT, from 13% fewer updates created. Ungated it loses 1.12-1.16x on the uniform
-  graph, so the gate has to live in the application, which is the only place the round
-  signal exists. The stub stays off. See `design/step7-idle-flush.md`.]*
-  Re-enable htram's idle-triggered
-  partial flush (`IDLE_FLUSH` is `#if`'d out at `htram_group.h:7`; `idleFlush()` is a stub),
-  make the cadence adaptive, and replace the two-tier `histogram_sum <= N*100` hack (`:494`)
-  with a controller over histogram *shape* — exactly what the 2024 future-work asks for.
-  Diagnose with traces: prior Reconverse work found a gap that looked idle was really
-  same-node message delivery.
+The idle-flush task is implemented; do not re-enable the old library stub as a
+new optimization. The relevant next checks are buffer residence age, active
+destination streams, exposed controller delay, and the cost of scanning every
+destination on every idle pass. These belong to step 7.6.
 
 ---
 
 ## Algorithm portfolio
 
-**Frame the portfolio as the GAP Benchmark Suite.** GAPBS specifies exactly six kernels — BFS,
-SSSP, PageRank, Connected Components, Betweenness Centrality, Triangle Counting — which is
-precisely the list you asked for. That gives the paper a standard, recognized scope statement,
-reference implementations for validation, and a single-node efficiency baseline, all for free.
+Use [GAPBS](https://github.com/sbeamer/gapbs) as a validation and comparison
+resource, not a requirement to implement every kernel.
 
-| Tier | Kernel | ⊕ | Priority | Effort | Role |
-|---|---|---|---|---|---|
-| Core | SSSP | min | ascending | steps 1–9 | Reference; tests the controller |
-| Core | BFS | min | ascending level | ~1 wk | Reuses `Update` verbatim |
-| Core | Connected components | min label | — | ~1 wk | **Combining-isolation experiment** |
-| Core | PageRank (async push) | **sum** | **descending** | ~3 wk | Proves ACIC isn't just label-setting |
-| Stretch | Betweenness centrality | sum | two-phase | ~3–4 wk | Needs predecessor storage + reverse traversal |
-| Stretch | k-core | min | ascending | ~2 wk | Monotone; fits. Not a GAPBS kernel — use only if BC slips |
-| Cut | Triangle counting | set intersection | none | unbounded | See below |
+| Priority | Kernel | Purpose and gate |
+|---|---|---|
+| Current | SSSP | Establish adaptive benefit and current distributed competitiveness |
+| After Gate A | BFS | Cheapest transfer test for the controller; compare with direction-optimizing BFS |
+| If claiming beyond traversal/min-relaxation | PageRank | Test additive residuals, distinct priorities, and tolerance-based convergence |
+| Optional | CC | Test a different progress structure; do not assume combining will pay |
+| Deferred | BC, k-core, triangle counting | Additional contracts and communication requirements without a demonstrated need |
 
-**Reposition CC.** Its priority key is a vertex ID, not a cost, so the histogram doesn't drain
-left-to-right and ACIC has no principled progress metric for it. That makes it your *cleanest*
-isolation experiment for combining (huge hub redundancy, no useful prioritization). Frame the
-portfolio as a 2×2 — does prioritization matter? does combining matter? — rather than six
-instances of one pattern.
-
-**Triangle counting should be a limitations paragraph.** It is not a prioritized-update
-algorithm; it needs neighbor-*list* exchange and set intersection, which means a second
-communication primitive inside htram serving nothing else in the paper. "The framework covers
-commutative-combine vertex programs; set-intersection workloads require a different
-aggregation primitive" is stronger than a weak sixth benchmark. Because GAPBS frames the
-scope, saying "five of the six GAP kernels, and here is precisely why the sixth does not fit"
-is a *crisper* claim than an unbounded one. Revisit only if Gate B clears early.
+SSSP plus BFS supports a traversal/min-relaxation claim. A claim spanning
+residual-based graph algorithms needs a successful PageRank transfer. Shared
+infrastructure alone does not establish shared adaptive benefit. For CC,
+validate the component partition independently of representative-label choices.
+Do not promise five of six GAP kernels or classify k-core as a generic min
+operation.
 
 ---
 
 ## Evaluation
 
-### Baselines
+### Baselines and positioning
 
-| Kernel | Distributed CPU baseline | Single-node reference | GPU baseline |
-|---|---|---|---|
-| SSSP | RIKEN Graph500-SSSP Δ-stepping (integrated); D-Galois/Gluon | GAPBS (Δ-stepping) | Gunrock; D-IrGL |
-| BFS | D-Galois/Gluon (direction-optimizing); Graph500 ref | GAPBS (direction-optimizing) | Gunrock; **Atos**; D-IrGL |
-| CC | **FastSV** (CombBLAS); D-Galois CC | GAPBS (Afforest); ConnectIt | Gunrock; D-IrGL |
-| PageRank | D-Galois/Gluon; Gemini | GAPBS (pull-direction) | Gunrock; **Atos**; D-IrGL |
-| BC | D-Galois distributed BC (UT Austin ISS); MFBC | GAPBS (Brandes) | Gunrock |
+Start a bounded SSSP comparison now; expand the baseline set when the kernel
+portfolio is decided. Each baseline gets a documented tuning budget, sensible
+rank/thread layout, and identical input semantics within equal node resources.
 
-**D-Galois/Gluon is the primary multi-algorithm distributed baseline** — it covers four of the
-five kernels in one system, and Gluon reports ~3.9× over Gemini, so it is the number to beat.
-**GAPBS is the single-node reference for all of them**, which SC reviewers routinely demand to
-rule out "a fast parallel version of a slow code." **Gunrock, Atos, and D-IrGL/Gluon-GPU are
-run, not merely cited** — reviewers discount cross-paper comparisons on different hardware.
-Running D-Galois and D-IrGL together is especially clean: both halves of one system, so the
-CPU/GPU difference is not confounded by a framework difference.
+| Stage | System | Role |
+|---|---|---|
+| 7.5 | Repaired pre-step-7 ACIC; current ACIC; strong fixed settings; relaxed admission | Internal attribution and cumulative benefit |
+| 7.5 | [RIKEN Graph500-SSSP](https://github.com/RIKEN-RCCS/Graph500-SSSP) | Historical distributed Δ-stepping comparator; local checkout exists, but audit its input compatibility and delta tuning |
+| 7.5 | [GAPBS SSSP](https://github.com/sbeamer/gapbs) | Optimized one-node baseline and independent reference |
+| Begin during 7.5 | [Gluon-Async/Gluon-Sync](https://iss.oden.utexas.edu/?p=projects/galois/analytics/dist-sssp) | Distributed asynchronous/synchronous comparison |
+| Next, one node | [Wasp, SC25](https://research.chalmers.se/en/publication/549745) | Priority-aware work stealing; separate local scheduling efficiency from distributed effects |
+| After scope gate | Kernel-specific CPU baseline and a bounded GPU comparison | For retained kernels and claims only |
 
-**Positioning — the adjacent work to engage with directly:**
+Explicitly engage [Gluon-Async](https://roshandathathri.github.io/publication/2019-pact):
+asynchronous distributed execution with bulk communication already exists on
+CPUs and GPUs. The new claim must concern feedback and its measured benefit,
+not asynchronous aggregation alone. Discuss distributed control and KLA when
+defining the admission/ordering distinction.
 
-- *Wasp* (SC'25) attacks the same target as ACIC — reducing parallelism-induced redundant work
-  in SSSP via asynchrony and priority-aware work stealing, 1.38–4.7× over prior work — but on
-  shared-memory multicore. Closest competing *idea*. Distinguish: ACIC's introspection is
-  global and distributed (reductions across nodes) rather than local work stealing, and it
-  steers the communication layer, for which a multicore system has no analogue.
-- *Atos* (SC'22) is the closest competing *system*: asynchronous, synchronization-free,
-  PGAS/NVSHMEM, and it implements a concurrent communication aggregator for InfiniBand — which
-  is htram's function, on the GPU. Beats Gunrock, Groute, and Galois. Distinguish on two
-  points, both of which the paper itself supplies: it has **no work-admission mechanism** (its
-  persistent-warp version admits to generating **3.5× more work** than Gunrock and wins anyway
-  on raw throughput), and it **does not scale** — 4 GPUs on NVLink, 8 on Summit, with scaling
-  dropping past 3.
-- Also: distributed control (Zalewski — the async baseline ACIC is measured against), KLA,
-  ConnectIt/Afforest (CC), and Gluon (the closest thing to a competitor for htram itself).
-
-### GPUs: threat assessment, and the two axes where CPU wins
-
-**Decision: the implementation stays CPU-only; GPUs enter as baselines and as positioning.**
-A full hybrid ACIC is realistically a second paper and does not fit alongside the scale-free
-fix, the refactor, and four kernels. But the GPU question cannot be dodged — a reviewer will
-ask it, and on raw throughput the honest answer for some kernels is "GPUs win."
-
-Per-kernel threat, and what it implies:
-
-| Kernel | GPU threat | Why | Implication |
-|---|---|---|---|
-| BFS | **High** | Graph500 BFS #1 (Nov 2025) is eos-dfw, 1024 NVIDIA H100 nodes, ahead of CPU Fugaku at 152K nodes. Direction-optimizing BFS is regular and high-parallelism | Do **not** contest raw TEPS on low-diameter graphs |
-| PageRank | **High** | Dense, regular, iterative — near-perfect GPU fit. Atos beats Galois/Gunrock/Groute | Compete on work and on memory footprint, not throughput |
-| Triangle counting | **Very high** | GPU set-intersection (TRUST et al.) dominates | Independently reinforces cutting TC |
-| SSSP | **Medium** | The ordering constraint fights GPU parallelism; GPU Δ-stepping inherits the same speculation problem, worse | Genuinely contestable |
-| CC | **Medium** | Afforest-style sampling is GPU-friendly, but label propagation converges irregularly | Contestable; also the combining-isolation experiment |
-| BC | **Medium-low** | Two-phase, predecessor storage, memory-bound | Contestable |
-| **High-diameter / road** | **Low, across every kernel** | Insufficient parallelism to saturate even *one* GPU | **The structural refuge** |
-
-Two defensible axes, both of which the competing literature hands you:
-
-1. **Work-efficiency, not throughput.** Atos's own paper reports its persistent-warp version
-   doing 3.5× the work of Gunrock and winning anyway on brute-force throughput. That is the
-   whole GPU strategy stated plainly: buy speed with wasted work. ACIC's thesis is the exact
-   opposite, so report edge relaxations alongside every wall-clock number and make
-   relaxations-per-result a first-class figure. This also connects to energy, which is
-   increasingly a reviewable axis.
-2. **Graph classes and problem sizes GPUs cannot serve.** High-diameter graphs cannot saturate
-   one GPU. And graphs exceeding aggregate GPU memory force host-memory staging that erases
-   the throughput advantage — worth an explicit experiment, since ACIC's CPU-side memory
-   capacity is a genuine structural advantage at the sizes this paper targets.
-
-There is also a scaling story in the competitors' own numbers: the async GPU work (Atos) tops
-out at 4–8 GPUs with scaling degrading past 3, while the GPU systems that *do* scale
-(Graph500 leaders) are bulk-synchronous. **Asynchronous-and-scalable is currently unoccupied
-territory on GPUs** — which is both the right framing for this paper's contribution and the
-natural follow-on paper. Say so in future work; don't try to build it now.
+Keep the implementation CPU-focused. GPU throughput, high-diameter behavior,
+and memory-capacity benefits require experiments. Withdraw claims that road
+graphs guarantee CPU wins or that asynchronous scalable GPU processing is
+unoccupied. The [Atos scheduler paper is ICPP22](https://escholarship.org/uc/item/9f17k8gk);
+its [repository](https://github.com/owensgroup/ATOS) also contains multi-GPU
+BFS/PageRank and aggregation. Do not merge results from its different
+publications into a single “SC22” comparison. Do not infer energy savings from
+edge counts or count an out-of-memory failure as a measured slowdown.
 
 ### Graph inputs
 
-Two paths, deliberately:
+The step 5 generators and GAPBS binary reader already exist. Preserve
+PE-independent generation and record a canonical graph identity across systems;
+matching a generator name and seed is insufficient.
 
-- **Generated in memory, for scale.** Kronecker/RMAT with Graph500 parameters, seeded
-  per-reader so the split is deterministic and reproducible across PE counts. No I/O, no
-  storage, no staging — this is what makes 512-node runs practical, and it is how the largest
-  scaling curves get produced.
-- **Read from disk, for realism.** GAPBS `.sg`/`.wsg` binary only. **GAPBS ships a `converter`
-  tool**, so let it handle every text format (SNAP, DIMACS, MatrixMarket) offline and read one
-  well-defined binary layout at scale. That collapses the I/O work to a single binary reader
-  plus generators and removes the entire text-parsing surface from the critical path. Verify
-  the exact header layout against GAPBS `Writer::WriteSerializedGraph` at implementation time.
+- **Pilot:** mesh, RMAT, uniform, one real weighted road graph, and one social/web
+  graph with documented weights. Keep existing small inputs for continuity,
+  then add larger inputs that exercise communication and memory.
+- **Sources:** several seeds and predeclared multiple sources, with reachability
+  reported. Resolve the small-component termination defect before broad source
+  selection; do not select sources based on measured speed.
+- **Weight sensitivity:** use the existing unit/uniform/file-weight capabilities
+  first. Lognormal and degree-correlated weights remain optional hypotheses;
+  do not add them solely to enlarge the matrix.
+- **Input fairness:** preserve directionality, duplicate handling, weights, and
+  source-ID mappings across preprocessing. Validate conversions. Keep graph
+  construction, conversion/reordering, solve, and validation times distinct.
 
-Real graphs to carry: GAP `twitter`, `web`/sk-2005, `kron`, `urand`, and **`road`** — the
-DIMACS USA road network is genuinely weighted, high-diameter, and the class where an
-asynchronous approach should beat every bulk-synchronous baseline. It is currently untestable
-and is the **most likely source of a headline win**. Keep the mesh generator: it is the only
-ground-truth-checkable input.
+Road networks are a test of the mesh hypothesis, not a promised headline win.
+The reader is implemented; the missing evidence is real-input performance and
+independent validation, not another input library.
 
-Make `WeightAssigner` orthogonal to topology (`UNIT`/`UNIFORM`/`LOGNORMAL`/`DEGREE_CORRELATED`/
-`FROM_FILE`, deterministic in `(u,v,seed)`). This separates "RMAT is hard because of topology"
-from "RMAT is hard because of the weight distribution" — a question a reviewer will ask
-specifically, since the bucket width is tuned to weights in `[1,1000]`.
+### Validation, ablations, and adaptivity
 
-### Validation, ablations, scaling
+Small-graph Dijkstra/digests, golden inputs, generator portability, and two-node
+message-envelope gates exist. The outstanding gaps are termination for small
+reachable components, independent cross-system input/result checks, and
+validation of large runs. See [the review](post-step7-review.md) for the
+shortest-path certificate requirements and measurement protocol.
 
-Nothing exists today beyond one reduced scalar (`get_max_cost`, `:1578`); `print_distances`
-prints nothing (`:1533-1539` commented out). Needed before any performance number: serial
-Dijkstra, then GAPBS reference output for every kernel.
+Compare:
 
-Ablations, one per adaptive mechanism: thresholds off (= distributed control), combining off
-(and each combining point separately), adaptive bucketing off, overdecomposition off, adaptive
-htram buffering off, tail-mode off, and **`LCI_ATTR_PACKET_SIZE` co-tuning off**. Plus one
-GPU-facing experiment: scale a graph past aggregate GPU memory and show where the GPU
-baselines' throughput advantage collapses into host-memory staging.
+1. Repaired historical settings against the final current configuration directly.
+2. One global fixed policy chosen on development inputs.
+3. Best measured fixed settings per case, confirmed on separate runs.
+4. Admission-only adaptation, communication-only/local adaptation, and joint
+   feedback, including an admission × communication-policy interaction matrix.
+5. Targeted mechanism ablations for implemented features, including negative
+   combining results where they inform the explanation.
 
-Scaling: strong and weak, 1 → 512 nodes on Frontier (1024 if the allocation allows), plus a
-portability slice across Frontier (Slingshot), Delta, Vista, and Anvil to show the adaptation
-is not tuned to one interconnect.
+Freeze controller constants before held-out graphs, sources, scales, and a
+second machine. Report adaptive time divided by the best measured fixed time,
+its geometric mean and worst case, tuning cost, and uncertainty. Provisional
+engineering targets are within 10% geometrically and 20% per held-out case;
+these are not established results or acceptance criteria for SC.
+
+Use balanced/randomized variant order, repeated-baseline controls, paired
+uncertainty estimates, and multiple allocation blocks. A ~5% bias observed in
+the existing harness is a reason to improve the design, not a universal cutoff
+for declaring all smaller effects noise. Diagnostic counters can perturb
+scheduling; corroborate them with production counters and bounded traces.
+
+Measure actual edge work, message count/size, off-node traffic where available,
+memory, and exposed controller cost alongside solve time. Relaxing admission
+thresholds still incurs the controller's bookkeeping; label that ablation
+accurately. A separate controller-free experiment must preserve progress and
+safe termination.
+
+### Scaling and portability
+
+First reproduce one/two-node results and increase through 4/8/16 nodes on Delta,
+with larger problems and higher worker occupancy. Audit the starvation gate's
+`P × nodes × buffer_size` scaling, the per-idle destination scan, hub handler
+durations, and reduction latency. Whole-graph edge balance alone does not
+establish balanced active work.
+
+After Gate A, target 32–64 nodes, then 128–512 only where allocations and the
+measured regime justify it. Produce strong and weak scaling; retain efficient
+single-node comparisons. Start portability with one additional architecture or
+interconnect and frozen policy constants. Frontier/Vista/Anvil are candidates,
+not four mandatory campaigns. Confirm access early; node count alone is not a
+research result.
 
 ---
 
 ## Schedule
 
-Anchored on an assumed **Apr 27 2027** deadline (~33 weeks). Writing starts at Gate B, not
-after the campaign, and results freeze with 3.5 weeks of slack.
+Steps 1–7 are complete as development milestones. Do not retain calendar blocks
+for repeating them. The following is a provisional schedule from 2026-09-13,
+with a conservative early-April submission assumption and allocation-dependent
+experiment dates.
 
-| Phase | Window | Steps | Gate |
-|---|---|---|---|
-| **P0 Foundation** | Sep 10 – Oct 23 | 1–4: Reconverse, verify harness, defects, varsize | §1 fix quantified; `p_tram` and buffer sweeps re-run on the new stack |
-| **P1 Solidify SSSP** | Oct 19 – Jan 15 | 5–7: retire dead code, graphlib, diagnose, build the winners | **Gate A (Dec 18):** RMAT within 1.5× of Δ-stepping at 16 nodes, or re-scope |
-| **P2 Generalize** | Jan 11 – Mar 12 | 8–12: erasure, locator, controller, BFS/CC/PR (+BC) | **Gate B (Feb 12):** 4 kernels validated vs. GAPBS |
-| **P3 Adaptive htram** | Feb 1 – Mar 19 | Self-tuning buffer size + flush cadence; transport co-tuning | Within X% of the hand-tuned optimum without being told |
-| **PB Baselines** | Nov 2 – Mar 5 | Background track: stand up RIKEN, D-Galois, GAPBS, FastSV, then Gunrock, D-IrGL, Atos | All baselines runnable on ≥1 machine before Gate C |
-| **P4 Campaign** | Mar 1 – Apr 9 | Scaling, real graphs, ablations, baselines, portability | **Gate C (Mar 19):** 256+ node data in hand |
-| **P5 Writing + AD** | Jan 15 – Apr 27 | Outline at Gate B; full draft Mar 26; AD appendix | **Gate D (Apr 2):** results frozen, writing only |
-| **P6 Artifact Eval** | Jul – Sep 2027 | Post-acceptance AE badge process | Reproducibility scripts already written in P4 |
+| Window | Work | Decision/deliverable |
+|---|---|---|
+| Sep 14–27 | 7.5: validity gaps, current RIKEN/GAPBS/internal comparisons, real inputs, 4–16-node pilot; start Gluon-Async setup | Current performance map with matched inputs and uncertainty |
+| Sep 28–Oct 18 | 7.6: fixed-policy sweeps, latency/admission interaction, one bounded optimization cycle | **Gate A:** adaptivity and external competitiveness; proceed, narrow, or revisit the mechanism |
+| Oct 19–Nov 15 | Minimal controller extraction and BFS transfer; optional necessary payload work | **Gate B:** shared adaptive benefit transfers, or restrict the paper's scope |
+| Nov 16–Dec 13 | PageRank if needed for the claim; otherwise strengthen SSSP/BFS evaluation | Freeze algorithm scope; do not add BC/k-core by default |
+| Dec–Feb | Scaling, real graphs, selected baselines, ablations, one portability slice, conditional GPU comparison | **Gate C, Feb 15:** evidence sufficient for the chosen claim; no arbitrary 256-node requirement |
+| Now–Mar | Outline now; write mechanism and negative results as evidence stabilizes; full draft by Feb 22 | **Gate D, Mar 1:** intended results freeze, leaving March for writing and necessary confirmations |
+| Early Apr, provisional | Abstract, paper, AD at the official CFP's respective dates | Re-anchor as soon as SC27 dates are confirmed |
+| After acceptance, if applicable | Artifact evaluation under the published requirements | Reproduction material already prepared |
 
-Three scheduling notes. **The AD appendix ships with the paper** (April) while **AE evaluation
-is post-acceptance** (summer) — so the pre-deadline budget only needs the AD, but it should be
-written against artifacts that are already scripted. Build for that during P4 rather than
-retrofitting: every figure regenerable by one command, raw data committed, and the machine
-config directory from step 1 doubling as the AE environment description.
+Gate A does not require one RMAT ratio alone to decide the entire project. A
+credible high-diameter result may support a narrower paper, but claims covering
+scale-free graphs must report their actual performance. If one fixed policy
+matches the adaptive method, stop generic refactoring until that result is
+understood. One or two more optimization attempts are a bounded investigation,
+not an indefinite prerequisite for writing.
 
-**PB is a deliberately separate background track**, because standing up seven baselines — three
-of them GPU, one of them research code — is weeks of work that is *fully independent* of ACIC
-development and must not sit on the critical path in March. Sequence it by difficulty: RIKEN
-(already integrated) → GAPBS (trivial, and it unblocks validation in P2) → D-Galois →
-Gunrock → D-IrGL (same stack as D-Galois, so mostly free) → FastSV → Atos last, since it is
-the least-maintained and only strengthens positioning rather than gating a result. If Atos
-resists, cite it and move on — the argument against it rests on numbers printed in its own
-paper, not on a re-run.
+Baseline setup is part of the next milestone. Avoid making installation of
+seven systems a condition for beginning comparisons. Record immutable source
+versions, build/runtime settings, raw results, and figure recipes as work
+proceeds. AD/AE dates follow the official CFP; SC26's AD was due after the paper,
+so the old assertion that they necessarily share a deadline is withdrawn.
 
-**Own step 3 in the paper.** "We found and fixed a control-path pathology; all numbers below
-are against the fixed baseline" is far better than a reviewer finding it.
+Describe the repaired 2024 baseline and the new scientific contribution
+separately. Bug fixes, input support, and mechanical refactors establish the
+foundation; they do not by themselves demonstrate adaptive control.
 
 ---
 
 ## Verification
 
-"Done" means measured, not built:
+“Done” means the relevant evidence exists:
 
-- **Steps 1–4, 8–10:** `--verify` hash matches the pre-change binary on a fixed input set, in
-  CI. This is what makes a refactor safe on a paper deadline.
-- **P0:** serial Dijkstra agrees on mesh + small RMAT; the 2024 random-graph speedup
-  reproduces within noise on the Reconverse stack; a weighted road graph loads and validates.
-- **P1:** each hypothesis gets an A/B with everything else fixed, written up as a design note;
-  Projections traces confirm the *mechanism*, not just the wall clock.
-- **P2:** every kernel validates against its GAPBS reference on ≥3 graph classes before any
-  performance number is quoted.
-- **P3:** the self-tuning claim is checked against a hand-tuned sweep — and that sweep has to
-  exist for the claim to be makeable.
-- **P4:** every figure regenerable from the experiment driver by one command, raw data
-  committed. This doubles as the AD/AE artifact.
+- **Integer-kernel refactors:** identical reference results on one and two nodes,
+  including all supported mappings and flag combinations, plus no unexplained
+  runtime regression. Hash equality is a regression check, not a substitute for
+  independent validation and progress arguments.
+- **7.5:** small-component termination and failure handling validated; input
+  identities matched; independent result checks for measured runs; paired
+  comparisons with allocation/source diversity.
+- **7.6 / Gate A:** fixed-policy references and held-out adaptive evaluation;
+  mechanism supported by minimally perturbing counters/traces; both runtime
+  and work reported.
+- **Gate B:** each retained kernel validates independently on at least three
+  graph classes; PageRank uses matching semantics and tolerance, not hashes.
+- **Campaign:** figures reproducible from recorded raw data and configurations;
+  claim/evidence table names limitations and negative results.
 
-Reuse the campaign methodology already proven in `~/paratreet2/design/` — those A/B notes and
-campaign reports are the right template for P1 and P4.
+Existing A/B design notes remain the experimental history. Where they make
+universal claims from a small matrix, use the qualifications in
+[post-step7-review.md](post-step7-review.md) when writing the paper.
