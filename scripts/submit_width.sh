@@ -19,9 +19,16 @@
 # baseline is the shipped default: logv-frozen is that default stated
 # explicitly, control is the same thing unflagged, and the gap between them is
 # the resolution floor below which no `weight` result is a result.
+#
+# ARMS selects which arms run. The default is the three the node-count sweep
+# needs; the 7.6e range campaign is
+#   ARMS=logv-frozen,logv-range,weight,control scripts/submit_width.sh
+# which adds the arm that keeps the logv width and raises the clamp instead.
+# Jobs 22062931-34 predate that arm and ran the default three.
 set -euo pipefail
 APP=$(cd "$(dirname "$0")/.." && pwd)
 ROOT=${ACIC_BENCH_ROOT:-/scratch/mzu/rao1/acic-comparison-20260913}
+ARMS=${ARMS:-logv-frozen,weight,control}
 
 pending=$(squeue -u "$USER" -h -o '%i' | wc -l)
 if [ "$pending" -ne 0 ]; then
@@ -52,7 +59,7 @@ submit() {
     --output="$ROOT/logs/width-${nodes}n-%j.out" \
     "$APP/benchmarks/compare.sbatch" "$ROOT" \
     --mode width --workers 120 --acic-rpn 8 \
-    --arms logv-frozen,weight,control \
+    --arms "$ARMS" \
     --sources 4 --reps "$reps" --timeout 120
 }
 submit 1 3

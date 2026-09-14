@@ -772,6 +772,18 @@ class Campaign:
                  flags=['--bucket-width-rule', 'weight', '--clamp-freeze', 'off']),
             dict(engine=engine, name='weight', **rpn,
                  flags=['--bucket-width-rule', 'weight', '--clamp-freeze', 'on']),
+            # 7.6e. The three graphs the width rule wins on are not blocked on
+            # coarsening -- no round on any of them was ever refused for the
+            # clamp -- they are out of range, and spend most of a run with the
+            # whole live population in the overflow slot. This arm keeps the
+            # logv width and lets the clamp rise instead, which is the same
+            # range the weight rule buys without the resolution the weight rule
+            # spends to buy it. It should be indistinguishable from
+            # `logv-frozen` on the five graphs already in range, where it
+            # extends zero times.
+            dict(engine=engine, name='logv-range', **rpn,
+                 flags=['--bucket-width-rule', 'logv', '--clamp-freeze', 'on',
+                        '--range-extend', 'on']),
             # The shipped default, unflagged, run twice under two names: the
             # difference between `control` and its explicit twin is what this
             # allocation can resolve, and no arm closer than that is a result.

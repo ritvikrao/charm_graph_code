@@ -25,6 +25,7 @@ mainmodule sssp_smp
   readonly int coarsen_clamp_policy;
   readonly int bucket_width_rule;
   readonly bool clamp_freeze;
+  readonly bool range_extend;
   readonly int window_follow;
   readonly int combine_mode;
   readonly bool batch_fold;
@@ -68,7 +69,7 @@ mainmodule sssp_smp
     entry [expedited] void contribute_histogram(int behind_first_nonzero); //contributes histogram to main pe
     entry void clear_pq_hold();
     entry void report_progress_state(int tag); // one line per PE, on a stall
-    entry void current_thresholds(int _heap_threshold, int _tram_threshold, int _bfs_threshold, int behind_first_nonzero, int phase, int starved, int coarsen); // broadcast bucket limit
+    entry void current_thresholds(int _heap_threshold, int _tram_threshold, int _bfs_threshold, int behind_first_nonzero, int phase, int starved, int coarsen, int extend); // broadcast bucket limit
     entry void print_distances(); // print out the distances on each chare
     entry void stop_periodic_flush();
     entry void get_max_cost(); // get max cost as correctness check

@@ -244,6 +244,17 @@ PROGRESS_CONFIGS=(
   # same run converges in about 0.05 s. This is the one configuration in the
   # gate that fails if --clamp-freeze stops working, so it names it.
   "40000 0 1 0 2 0.999 0.005 4|--bucket-policy adaptive --bucket-width 8 --coarsen-clamped allow --clamp-freeze on"
+  # The range fixture. The same 200x200 mesh binned at width 1 puts every
+  # distance past the clamp, so the overflow slot takes essentially the whole
+  # run and --range-extend has to raise the clamp a dozen times to recover an
+  # ordering. Three things are on test and each has already failed once: the
+  # creation-time flag, without which a raised clamp strands the counts exactly
+  # as the unfrozen merge did; the arrivals trigger, without which the rule
+  # reads its own raise as having done nothing and runs the scale away; and
+  # keeping the overflow index out of the rescale, without which the window
+  # origin is divided to 2047/k and road-ny hangs to the timeout with a wrong
+  # digest. A PASS here is all three.
+  "40000 0 1 0 2 0.999 0.005 4|--bucket-policy adaptive --bucket-width 1 --range-extend on"
 )
 progress_run=0
 for entry in "${PROGRESS_CONFIGS[@]}"; do

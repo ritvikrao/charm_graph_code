@@ -239,10 +239,37 @@ int bucket_width_rule = WIDTH_RULE_LOGV;
 // on freezes the threshold in distance space and leaves bucket 2047 out of the
 // merge, making it an overflow slot rather than an index: increment and
 // decrement both land there for the life of the run, and conservation holds
-// for every bucket. The price is that coarsening no longer extends the
-// representable range, which is tolerable only because the width rule above
-// means the range should not need extending. The two are one repair.
+// for every bucket. The price was that coarsening could no longer extend the
+// representable range, and that was said here to be tolerable because the
+// width rule above would keep the range from needing extension. 7.6d refuted
+// that: the width rule is a per-case setting, so on a graph running the
+// default rule the frozen range is all the range there is. --range-extend
+// below buys it back, using the same freeze -- a fixed overflow index -- as
+// the thing that makes a creation-time flag mean something.
 bool clamp_freeze = true;
+// --range-extend on|off. Raise the clamp threshold when the overflow slot
+// starts holding a real share of the live population, so that a graph whose
+// distances run past 2048 * width does not spend most of its rounds with
+// everything in one bucket and no ordering left to schedule by. Needs the
+// frozen clamp underneath it -- the overflow slot has to stay at a fixed index
+// for an update's creation-time flag to mean anything -- so it does nothing
+// when --clamp-freeze is off. It is also compiled out of a VCOUNT build:
+// vcount is indexed by a vertex's current distance and re-derived at each
+// change, so a clamp that moves between two of those lookups unbalances it.
+// VCOUNT is diagnostic only, and it is the one accounting the bit cannot
+// carry.
+//
+// Default off. It is worth 10x on mesh20 and 3.6x less work on road-ny in
+// eight-PE runs on a login node, and zero extensions fire on a graph already
+// in range -- but 7.6d made a width rule the default on a prior and then
+// measured it losing 2.9x, and the order of those two steps was the mistake.
+// This ships as a flag with a campaign arm behind it.
+bool range_extend = false;
+// The overflow slot must hold this share of the live population before the
+// clamp is raised. It is the one tuned number in the rule: a single freak edge
+// should not cost every bucket half its resolution, and a graph that is
+// genuinely out of range passes an eighth within a few rounds.
+const double RANGE_EXTEND_SHARE = 0.125;
 // --round-delay <ms>: wait this long between the end of one controller round
 // and the start of the next. The cycle is otherwise back-to-back -- every chare
 // calls contribute_histogram() at the end of current_thresholds() -- so the
@@ -421,7 +448,8 @@ enum {
   COARSEN_NO_BAND = 6,       // the middle 90% of the mass has no two ends
   COARSEN_BAND_NARROW = 7,   // band < 2 * target: nothing to gain
   COARSEN_TOP_UNREACHABLE = 8, // the merged window would not reach the top
-  COARSEN_NOT_ASKED = 9        // the round ended before the question came up
+  COARSEN_NOT_ASKED = 9,       // the round ended before the question came up
+  COARSEN_EXTEND = 10          // merged to raise the clamp, not to narrow the band
 };
 
 struct RoundRecord {
@@ -448,6 +476,12 @@ struct RoundRecord {
   // Why this round did or did not merge buckets, and by what factor if it did.
   int coarsen_reason;
   int coarsen_k;
+  // What is sitting in the overflow slot, and how many arrived there this
+  // round. --range-extend reads the second: the first does not fall when the
+  // clamp rises, because a flagged update retires from the overflow slot
+  // whatever the clamp becomes.
+  long clamped;
+  long clamped_arrivals;
   long updates_created;
   long updates_processed;
   long updates_noted;
@@ -504,6 +538,10 @@ private:
   // controller that is steering and one that is only along for the ride.
   long rounds_window_empty = 0;
   long max_above_window = 0;
+  int range_extensions = 0; // --range-extend: times the clamp was raised
+  long last_clamped_created = 0; // overflow arrivals as of the previous round
+  long last_updates_created_seen = 0; // creations as of the previous round
+  long extend_ready_at = 0;      // no extension before this round; see below
   long windows_slid = 0; // --window-follow on: windows advanced past empty
   // Consecutive rounds whose reduced window claimed more live updates than
   // exist. A reduction is not a global instant -- each PE contributes its own
@@ -711,6 +749,21 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg.rfind("--range-extend", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--range-extend=", 0) == 0)
+          value = arg.substr(15);
+        else if (arg == "--range-extend" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "off")
+          range_extend = false;
+        else if (value == "on")
+          range_extend = true;
+        else {
+          ckout << "--range-extend must be off or on" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg.rfind("--window-follow", 0) == 0) {
         std::string value;
         if (arg.rfind("--window-follow=", 0) == 0)
@@ -795,6 +848,7 @@ public:
             << "[--coarsen-clamped block|allow|strict] "
             << "[--bucket-width-rule logv|weight] "
             << "[--clamp-freeze off|on] "
+            << "[--range-extend off|on] "
             << "[--window-follow off|on] "
             << "[--idle-flush off|on|starved] "
             << "[--combine off|hold] "
@@ -810,6 +864,14 @@ public:
       CkExit(1);
       return;
     }
+#ifdef VCOUNT
+    // vcount is indexed by a vertex's current distance and re-derived at every
+    // change, so nothing carries a creation-time bucket for it the way
+    // UPDATE_OVERFLOW_BIT does for the histogram. A clamp that moved between
+    // two of those lookups would unbalance it silently, and vcount exists to
+    // be read. This build measures; it does not extend.
+    range_extend = false;
+#endif
     if (partition_jitter_percent < 0 || partition_jitter_percent > 100) {
       ckout << "--partition-jitter must be a percentage in 0..100" << endl;
       CkExit(1);
@@ -1306,7 +1368,7 @@ public:
                     int tram_threshold, int two_tier, int starved,
                     long updates_created, long updates_processed,
                     long updates_noted, long distance_changes,
-                    long done_vertices,
+                    long done_vertices, long clamped, long clamped_arrivals,
                     int coarsen_reason = COARSEN_NOT_ASKED, int coarsen_k = 1) {
     if (diag_prefix.empty())
       return;
@@ -1324,6 +1386,8 @@ public:
     r.bucket_scale = bucket_scale;
     r.coarsen_reason = coarsen_reason;
     r.coarsen_k = coarsen_k;
+    r.clamped = clamped;
+    r.clamped_arrivals = clamped_arrivals;
     r.updates_created = updates_created;
     r.updates_processed = updates_processed;
     r.updates_noted = updates_noted;
@@ -1350,6 +1414,9 @@ public:
     long bfs_noted = histo_values[histo_reduction_width + 5];
     long distance_changes = histo_values[histo_reduction_width + 6];
     long clamped = histo_values[histo_reduction_width + 7];
+    const long clamped_created = histo_values[histo_reduction_width + 8];
+    const long clamped_arrivals = clamped_created - last_clamped_created;
+    last_clamped_created = clamped_created;
     int heap_threshold = 0;
     int tram_threshold = 0;
     int bfs_threshold = heap_threshold;
@@ -1429,7 +1496,8 @@ public:
         (updates_processed == previous_updates_processed)) {
       record_round(CkWallTimer(), histogram_sum, first_nonzero, occupied, span,
                    -1, -1, 0, 0, updates_created, updates_processed, updates_noted,
-                   distance_changes, done_vertex_count);
+                   distance_changes, done_vertex_count, clamped,
+                   clamped_arrivals);
       ckout << endl << "updates_processed and updates_created match" << endl;
 #ifdef INFO_PRINTS
       ckout << "Threshold: " << previous_threshold << endl;
@@ -1541,14 +1609,77 @@ public:
     if (clamped > 0)
       clamp_ever_live = true;
     int coarsen_reason = COARSEN_NOT_ASKED;
-    const int coarsen = choose_coarsening(histo_values, histogram_sum, clamped,
-                                          two_tier, window_last,
-                                          &coarsen_reason);
+    int coarsen = choose_coarsening(histo_values, histogram_sum, clamped,
+                                    two_tier, window_last, &coarsen_reason);
+    // --range-extend. The band test above asks whether merging would make the
+    // frontier easier to describe. It is the wrong question when the overflow
+    // slot is filling: what is wrong then is not the resolution but the range,
+    // and the two refusals that dominate on a graph out of range -- too little
+    // in flight to describe a distribution, and a band already narrower than
+    // the target -- are both true and both beside the point. mesh20, mesh22
+    // and road-ny spend three quarters of their rounds with first_nonzero
+    // pinned at the overflow slot, one occupied bucket, no ordering left to
+    // schedule by, and 31x to 45x the updates a run in range creates.
+    //
+    // So this asks the other question, and it is asked whatever the band says
+    // and whatever the two-tier branch says. Raising the clamp costs one
+    // merge, which halves resolution -- cheap against having none.
+    const bool can_extend = range_extend && clamp_freeze &&
+                            bucket_policy == BUCKET_ADAPTIVE &&
+                            bucket_scale < (1 << 20);
+    // Of the updates created this round, what share was out of range? That is
+    // the question, and the denominator is the round's own creations rather
+    // than the live population, which was the first denominator and was wrong
+    // in both directions. Early it is too large, because most of what is live
+    // was created before the round; late it collapses to nothing, so a handful
+    // of arrivals against a nearly drained population reads as a range
+    // emergency and the rule keeps doubling a scale that is already wide
+    // enough. On mesh20 that was the difference between 4 extensions and a run
+    // that had not finished in 250x the time.
+    //
+    // The cooldown is for the pipeline, not for the policy. A chare applies an
+    // extension on the broadcast that follows the reduction it was decided
+    // from, so the next round's arrivals were partly charged under the old
+    // clamp and would buy a doubling that has already been bought.
+    const long created_this_round = updates_created - last_updates_created_seen;
+    last_updates_created_seen = updates_created;
+    const bool extend = can_extend && clamped_arrivals > 0 &&
+                        created_this_round > 0 &&
+                        reduction_counts >= extend_ready_at &&
+                        (double)clamped_arrivals >=
+                            RANGE_EXTEND_SHARE * created_this_round;
+    if (extend) {
+      extend_ready_at = reduction_counts + 2;
+      range_extensions++;
+      // A round that was already merging merges by its own k and spends that
+      // on distance; a round that was not merges by two, which is the smallest
+      // step that frees any index space at all.
+      if (coarsen < 2) {
+        coarsen = 2;
+        coarsen_reason = COARSEN_EXTEND;
+      }
+    }
     if (coarsen > 1) {
-      heap_threshold /= coarsen;
-      tram_threshold /= coarsen;
-      bfs_threshold /= coarsen;
-      first_nonzero /= coarsen;
+      // The overflow slot does not move when buckets merge -- that is what the
+      // freeze means -- so an index sitting on it must not be divided with the
+      // rest. Dividing the window origin points the controller at 2047 / k,
+      // where by construction nothing is; dividing a threshold that was open
+      // to the overflow closes it. Either one stops the overflow draining, and
+      // a run whose overflow cannot drain does not finish. This is the same
+      // stranding the clamp freeze was written to prevent, one level up: 7.6d
+      // fixed it in the histogram and left it here, where nothing reached it
+      // because the graphs that coarsen never have anything in the overflow
+      // and the graphs with something in it never coarsened.
+      const int top = HISTO_BUCKET_COUNT - 1;
+      const bool frozen_top = clamp_freeze;
+      if (!(frozen_top && heap_threshold == top))
+        heap_threshold /= coarsen;
+      if (!(frozen_top && tram_threshold == top))
+        tram_threshold /= coarsen;
+      if (!(frozen_top && bfs_threshold == top))
+        bfs_threshold /= coarsen;
+      if (!(frozen_top && first_nonzero == top))
+        first_nonzero /= coarsen;
       previous_threshold = heap_threshold;
       bucket_scale *= coarsen;
       coarsenings++;
@@ -1575,11 +1706,13 @@ public:
                  heap_threshold, tram_threshold, two_tier, starved,
                  updates_created,
                  updates_processed, updates_noted, distance_changes,
-                 done_vertex_count, coarsen_reason, coarsen);
+                 done_vertex_count, clamped, clamped_arrivals, coarsen_reason,
+                 coarsen);
     // arr.contribute_histogram(first_nonzero-1);
     last_first_nonzero = first_nonzero;
     arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
-                           first_nonzero - 1, current_phase, starved, coarsen);
+                           first_nonzero - 1, current_phase, starved, coarsen,
+                           extend ? 1 : 0);
 
     // start next reduction round
     // CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
@@ -1601,7 +1734,7 @@ public:
            "heap_threshold,tram_threshold,two_tier,starved,bucket_scale,"
            "coarsen_reason,coarsen_k,"
            "updates_created,updates_processed,updates_noted,distance_changes,"
-           "done_vertices\n";
+           "done_vertices,clamped,clamped_arrivals\n";
     for (size_t i = 0; i < rounds.size(); i++) {
       const RoundRecord &r = rounds[i];
       out << i << ',' << r.t << ',' << r.histogram_sum << ','
@@ -1611,7 +1744,8 @@ public:
           << r.bucket_scale << ',' << r.coarsen_reason << ',' << r.coarsen_k
           << ',' << r.updates_created << ',' << r.updates_processed << ','
           << r.updates_noted << ',' << r.distance_changes << ','
-          << r.done_vertices << '\n';
+          << r.done_vertices << ',' << r.clamped << ','
+          << r.clamped_arrivals << '\n';
     }
     ckout << "DIAG wrote " << rounds.size() << " rounds to "
           << rounds_path.c_str() << endl;
@@ -1720,7 +1854,8 @@ public:
           << rounds_window_empty << ", most updates outside it: "
           << max_above_window << endl;
     ckout << "Bucket scale: " << bucket_scale << " (" << coarsenings
-          << " coarsenings)" << endl;
+          << " coarsenings, " << range_extensions << " range extensions)"
+          << endl;
     // The width is what the histogram's 2048 buckets span, and until 7.6d no
     // run said what it was -- which is why a rule derived from |V| could bucket
     // distances for a whole campaign without anyone reading it.
@@ -1966,6 +2101,13 @@ private:
   int bucket_scale = 1;
   double bucket_limit = HISTO_BUCKET_COUNT; // original index that clamps
   std::vector<Update> *pq_hold; // hold for heap messages
+  long clamped_created_locally = 0; // updates ever charged to the overflow slot
+  // Updates created under a higher clamp than this PE has yet been told about.
+  // Neither counted nor processed while they wait; they are live either way,
+  // charged to their creator's bucket, so the termination test still sees them.
+  std::vector<Update> deferred_updates;
+  long deferred_peak = 0;
+  long deferred_total = 0;
   long bfs_created = 0;           // bfs created messages
   long bfs_processed = 0;         // bfs processed messages
   int updates_noted = 0; // updates that have either updated a vertex value, or
@@ -2038,7 +2180,7 @@ public:
   }
 
   int get_dest_proc_local(Update upd) {
-    return get_dest_proc_fast(upd.dest_vertex);
+    return get_dest_proc_fast(update_vertex(upd));
   }
 
   SsspChares(CProxy_HTram htram) { tram_proxy = htram; }
@@ -2122,7 +2264,7 @@ public:
     pq_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
       pq_hold[i].reserve(4096);
-    info_array = new long[histo_reduction_width + 8];
+    info_array = new long[histo_reduction_width + 9];
     set_bucket_width(log(V));
     CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
   }
@@ -2351,7 +2493,7 @@ public:
    * count is the number of live updates in it, and never negative.
    */
   void start_algo(Update new_vertex_and_distance) {
-    histogram[get_histo_bucket(new_vertex_and_distance.distance)]++;
+    histogram[charge_new_update(&new_vertex_and_distance)]++;
     updates_created_locally++;
     process_update(new_vertex_and_distance);
   }
@@ -2396,7 +2538,7 @@ public:
     batch_table.assign(slots, -1);
     const size_t mask = slots - 1;
     for (int i = 0; i < count; i++) {
-      long key = items[i].dest_vertex;
+      long key = update_vertex(items[i]);
       size_t slot = (size_t)splitmix64((uint64_t)key) & mask;
       while (batch_table[slot] != -1 && batch_table[slot] != key)
         slot = (slot + 1) & mask;
@@ -2428,10 +2570,17 @@ public:
     fold_table.assign(slots, -1);
     const size_t mask = slots - 1;
     for (int i = 0; i < count; i++) {
-      long key = items[i].dest_vertex;
+      // A loser is retired here rather than in process_update(), so the same
+      // check has to happen before an item can become one.
+      if (created_beyond_my_clamp(items[i])) {
+        defer_until_extended(items[i]);
+        items[i].dest_vertex = -1;
+        continue;
+      }
+      long key = update_vertex(items[i]);
       size_t slot = (size_t)splitmix64((uint64_t)key) & mask;
       int j;
-      while ((j = fold_table[slot]) != -1 && items[j].dest_vertex != key)
+      while ((j = fold_table[slot]) != -1 && update_vertex(items[j]) != key)
         slot = (slot + 1) & mask;
       if (j == -1) {
         fold_table[slot] = i;
@@ -2442,7 +2591,7 @@ public:
         loser = j;
         fold_table[slot] = i;
       }
-      histogram[get_histo_bucket(items[loser].distance)]--;
+      histogram[bucket_of(items[loser])]--;
       updates_processed_locally++;
       folded_updates++;
       items[loser].dest_vertex = -1;
@@ -2457,7 +2606,7 @@ public:
   // monotone: the loser could only ever have been rejected, or have caused a
   // relaxation the winner would redo.
   static uint64_t hold_key(const void *item) {
-    return (uint64_t)((const Update *)item)->dest_vertex;
+    return (uint64_t)update_vertex(*(const Update *)item);
   }
   static bool hold_min(void *held, const void *incoming, void *retired) {
     Update *h = (Update *)held;
@@ -2482,11 +2631,13 @@ public:
    * gives its bucket back and the update counts as processed. Without this the
    * termination test -- every created update processed -- can never be met.
    *
-   * The bucket is recomputed from the distance, exactly as generate_updates()
-   * computed it when it counted the update in.
+   * The bucket comes from bucket_of(), exactly as generate_updates() charged
+   * it when it counted the update in -- which is the distance's bucket unless
+   * the update was charged to the overflow slot, in which case it is that slot
+   * whatever the clamp has since become.
    */
   void absorb(const Update &u) {
-    histogram[get_histo_bucket(u.distance)]--;
+    histogram[bucket_of(u)]--;
     updates_processed_locally++;
     absorbed_updates++;
   }
@@ -2522,8 +2673,69 @@ public:
     double bucket = distance * bucket_multiplier;
     if (bucket >= bucket_limit)
       return HISTO_BUCKET_COUNT - 1;
-    int result = (int)bucket;
-    return bucket_scale == 1 ? result : result / bucket_scale;
+    // long, not int: bucket_limit is 2048 * bucket_scale and --range-extend
+    // raises it, so the pre-scale index passes INT_MAX before the scale cap
+    // does. The quotient is under 2048 by construction either way.
+    long result = (long)bucket;
+    return (int)(bucket_scale == 1 ? result : result / bucket_scale);
+  }
+
+  /**
+   * The bucket an existing update is charged to, which is not always the
+   * bucket its distance falls in now. An update charged to the overflow slot
+   * when it was created carries a flag saying so, and retires from that slot
+   * however far the clamp has since moved; see UPDATE_OVERFLOW_BIT. Every
+   * decrement of the histogram goes through here, because a decrement that
+   * does not match its increment is not a rounding error -- it strands a count
+   * in a bucket nothing will ever empty, and the controller then pins there.
+   */
+  int bucket_of(const Update &u) {
+    return update_overflowed(u) ? HISTO_BUCKET_COUNT - 1
+                                : get_histo_bucket(u.distance);
+  }
+
+  /**
+   * True when this PE has not yet received an extension its creator already
+   * had. A broadcast and a point-to-point message are not ordered against each
+   * other, so a chare can be handed an update created under a clamp higher
+   * than its own. The creator did not flag it, because under the creator's
+   * clamp it was an ordinary bucket; this PE would clamp it, and would then
+   * decrement the overflow slot against an increment that went to a real
+   * bucket -- a count stranded in the one slot no merge ever moves, which is
+   * the whole failure the freeze was written to prevent, arriving by a
+   * different door. It is what made mesh20 finish in 0.28 s one run and not at
+   * all the next.
+   *
+   * The condition detects itself: an update charged to the overflow slot
+   * carries a flag saying so, so an *unflagged* update that this PE would
+   * clamp can only have been created under a higher clamp than this PE's.
+   * This PE is behind, and the answer is to wait rather than to guess.
+   *
+   * The wait is one broadcast. A chare contributes its histogram at the end of
+   * current_thresholds(), so the round-n reduction cannot complete until every
+   * chare has received broadcast n, and Main sends n+1 only after that: every
+   * chare is at generation n before any chare reaches n+1.
+   */
+  bool created_beyond_my_clamp(const Update &u) {
+    return !update_overflowed(u) &&
+           (double)u.distance * bucket_multiplier >= bucket_limit;
+  }
+
+  /** Hold an update until this PE has the clamp its creator had. */
+  void defer_until_extended(const Update &u) {
+    deferred_updates.push_back(u);
+    if ((long)deferred_updates.size() > deferred_peak)
+      deferred_peak = (long)deferred_updates.size();
+  }
+
+  /** Charge a new update to its bucket, flagging it if that is the overflow. */
+  int charge_new_update(Update *u) {
+    const int bucket = get_histo_bucket(u->distance);
+    if (bucket == HISTO_BUCKET_COUNT - 1) {
+      u->dest_vertex |= UPDATE_OVERFLOW_BIT;
+      clamped_created_locally++;
+    }
+    return bucket;
   }
 
   /**
@@ -2536,7 +2748,7 @@ public:
    */
   bool clamp_coarsen_warned = false;
 
-  void coarsen_buckets(int k) {
+  void coarsen_buckets(int k, bool extend) {
     // The clamp bucket is the one bucket a merge cannot place. Its contents
     // mean "an original index at or past 2048 * scale", not an index, so
     // sending them to 2047 / k strands them: whoever retires those updates
@@ -2589,6 +2801,13 @@ public:
     bucket_scale *= k;
     if (!clamp_freeze)
       bucket_limit = (double)HISTO_BUCKET_COUNT * bucket_scale;
+    else if (extend)
+      // --range-extend. The merge above just freed the top half of the index
+      // space, so the same k that bought it can be spent on distance instead:
+      // the clamp moves out by k and every index stays in range. Updates
+      // already charged to the overflow slot keep their flag and retire from
+      // it, which is the whole reason the clamp is allowed to move at all.
+      bucket_limit *= k;
     tram->coarsenBuckets(k, clamp_freeze);
   }
 
@@ -2603,7 +2822,7 @@ public:
       new_update.distance = source_distance + adjacency[i].distance;
       // we are going to send this, so add to the histogram and the send update
       // count
-      int neighbor_bucket = get_histo_bucket(new_update.distance);
+      int neighbor_bucket = charge_new_update(&new_update);
       histogram[neighbor_bucket]++;
 #ifdef ACIC_DIAG
       histo_created[neighbor_bucket]++;
@@ -2620,7 +2839,7 @@ public:
         // get_dest_proc_fast is a table lookup, but it used to run on this
         // path even when LOCAL_TO_TRAM made its result unreachable -- once per
         // outgoing edge, for nothing.
-        if (get_dest_proc_fast(new_update.dest_vertex) == CkMyPe())
+        if (get_dest_proc_fast(update_vertex(new_update)) == CkMyPe())
           process_update(new_update);
         else
           tram->sendItemPrioDeferredDest(new_update, 0);
@@ -2641,10 +2860,14 @@ public:
    * Takes a distance update and immediately adds it to the local heap/pq
    */
   inline void process_update(Update new_vertex_and_distance) {
-    long dest_vertex = new_vertex_and_distance.dest_vertex;
+    if (created_beyond_my_clamp(new_vertex_and_distance)) {
+      defer_until_extended(new_vertex_and_distance);
+      return;
+    }
+    long dest_vertex = update_vertex(new_vertex_and_distance);
     long local_index = dest_vertex - start_vertex;
     cost this_cost = new_vertex_and_distance.distance;
-    int this_bucket = get_histo_bucket(this_cost);
+    int this_bucket = bucket_of(new_vertex_and_distance);
 #ifdef ACIC_DIAG
     arrivals_per_vertex[local_index]++;
     const int deg_class = degree_class(local_graph.degree(local_index));
@@ -2717,9 +2940,9 @@ public:
            j++) // iterate pq bucket in reverse
       {
         Update new_vertex_and_distance = pq_hold[i][j];
-        long dest_vertex = new_vertex_and_distance.dest_vertex;
+        long dest_vertex = update_vertex(new_vertex_and_distance);
         cost new_distance = new_vertex_and_distance.distance;
-        int this_histo_bucket = get_histo_bucket(new_distance);
+        int this_histo_bucket = bucket_of(new_vertex_and_distance);
         long local_index = dest_vertex - start_vertex;
         if (new_distance == distances[local_index]) {
           // for all neighbors
@@ -2747,9 +2970,9 @@ public:
         break;
       } // give other eps a chance to run
       Update new_vertex_and_distance = pq.top();
-      long dest_vertex = new_vertex_and_distance.dest_vertex;
+      long dest_vertex = update_vertex(new_vertex_and_distance);
       cost new_distance = new_vertex_and_distance.distance;
-      int this_histo_bucket = get_histo_bucket(new_distance);
+      int this_histo_bucket = bucket_of(new_vertex_and_distance);
       if (this_histo_bucket > heap_threshold) {
         break;
       }
@@ -2796,7 +3019,16 @@ public:
     info_array[histo_reduction_width + 5] = bfs_noted;
     info_array[histo_reduction_width + 6] = distance_changes;
     info_array[histo_reduction_width + 7] = histogram[HISTO_BUCKET_COUNT - 1];
-    contribute((histo_reduction_width + 8) * sizeof(long), info_array,
+    // Slot 7 is what is sitting in the overflow slot; slot 8 is how many have
+    // ever been put there. --range-extend needs the second, because the first
+    // does not fall when the clamp rises: an update charged to the overflow
+    // slot retires from it whatever the clamp becomes, so a controller that
+    // read the standing count would see its own raise do nothing and raise
+    // again, every round, until the scale ran away. The arrival count's
+    // round-over-round difference is the only thing that says whether the
+    // range is still too small.
+    info_array[histo_reduction_width + 8] = clamped_created_locally;
+    contribute((histo_reduction_width + 9) * sizeof(long), info_array,
                CkReduction::sum_long, cb);
   }
 
@@ -2838,7 +3070,14 @@ public:
           << " tram_buffered=" << buffered
           << " heap_threshold=" << heap_threshold
           << " tram_threshold=" << tram_threshold
-          << " bucket_scale=" << bucket_scale << endl;
+          << " bucket_scale=" << bucket_scale
+          // Held for having been created beyond this PE's clamp. Nonzero here
+          // at a stall would mean the drain in current_thresholds() is not
+          // running, which is the one way --range-extend could lose an update.
+          << " deferred=" << (long)deferred_updates.size()
+          << " deferred_peak=" << deferred_peak
+          << " deferred_total=" << deferred_total
+          << " bucket_limit=" << bucket_limit << endl;
   }
 
   void clear_pq_hold() {
@@ -2856,9 +3095,20 @@ public:
    */
   void current_thresholds(int _heap_threshold, int _tram_threshold,
                           int _bfs_threshold, int behind_first_nonzero,
-                          int phase, int starved, int coarsen) {
+                          int phase, int starved, int coarsen, int extend) {
     if (coarsen > 1)
-      coarsen_buckets(coarsen);
+      coarsen_buckets(coarsen, extend != 0);
+    // This PE now has whatever clamp the broadcast carried, so anything held
+    // for having been created beyond the old one can go through. Re-checked
+    // rather than assumed: process_update() simply defers again if this PE is
+    // somehow still behind, which cannot happen at a skew of one broadcast.
+    if (!deferred_updates.empty()) {
+      std::vector<Update> ready;
+      ready.swap(deferred_updates);
+      deferred_total += (long)ready.size();
+      for (size_t i = 0; i < ready.size(); i++)
+        process_update(ready[i]);
+    }
 #ifdef ACIC_DIAG
     controller_rounds++;
     if (updates_processed_locally == processed_at_last_round)
