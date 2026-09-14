@@ -367,3 +367,46 @@ established either.
 
 What *is* established is that the 7.6d table cannot be read as a property of
 the graphs. It was a property of the process layout.
+
+## Two nodes: the regressions come back, on different graphs
+
+Job 22069453, 324 of 324 valid. Same three arms, same geometry, two nodes.
+Paired medians against `logv-frozen`, with `control` -- the same arm unflagged
+-- as the floor beside each one:
+
+| graph | 1 node | won | 2 nodes | won | 2-node floor |
+|---|---:|---:|---:|---:|---:|
+| mesh20 | 1.20x | 12/12 | **1.47x** | 12/12 | 1.01x |
+| mesh22 | 1.24x | 12/12 | **1.39x** | 12/12 | 1.00x slower |
+| rmat20 | 1.15x | 10/12 | 1.13x | 10/12 | 1.01x |
+| road-ny | 1.05x | 7/12 | 1.09x | 7/12 | 1.03x slower |
+| youtube | 1.24x | 11/12 | 1.08x | 10/12 | 1.02x |
+| rmat20-s2 | 1.25x | 10/12 | 1.01x slower | 6/12 | 1.02x |
+| rmat22 | 1.06x | 8/12 | **1.16x slower** | 1/12 | 1.05x |
+| uniform20-s2 | 1.05x | 9/12 | **1.35x slower** | 0/12 | 1.06x slower |
+| uniform20 | 1.10x | 11/12 | **1.42x slower** | 2/12 | 1.13x slower |
+
+So the one-node re-take did not establish that `weight` is safe; it established
+that it is safe *at one node*. At two, uniform20-s2 loses on 0 of 12 and
+uniform20 on 2 of 12, both beyond their own floors, and rmat22 loses on 1 of
+12. The rule is not a default.
+
+What survives both allocations is narrower and much more consistent than
+anything 7.6d or the one-node table showed: **mesh20 and mesh22 win on 12 of 12
+paired runs at both node counts, and the margin grows with scale** -- 1.20x to
+1.47x and 1.24x to 1.39x. rmat20 is a smaller, steady 1.13-1.15x on 10 of 12.
+road-ny is 1.05x and 1.09x on 7 of 12, which is a tie at both.
+
+Note also that two nodes is the noisier allocation: uniform20's own control
+reads 1.13x slower and uniform20-s2's 1.06x slower, against 1.00-1.05x at one
+node. The uniform20 regression is outside its floor but not by much; the
+uniform20-s2 one is smaller in the median and cleaner in the count.
+
+### Which makes the per-graph map wrong in a second way
+
+`PER_GRAPH_WIDTH_RULE` names road-ny, which is a tie at both node counts, and
+excludes mesh20 and mesh22, which are the only two graphs that win everywhere
+measured so far and win by more as the allocation grows. The map is still left
+alone until eight and sixteen nodes report -- 7.6d was set on one allocation
+and this note is not going to repeat that with two -- but the correction it
+needs is now visible, and it is not the one this note proposed a few hours ago.
