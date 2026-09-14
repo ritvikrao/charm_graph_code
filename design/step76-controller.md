@@ -527,6 +527,32 @@ width is worth the most in the whole campaign. This is one mechanism, not five
 graph-specific observations, and it was the largest single effect in 7.6b
 before there was any account of why.
 
+### The rule out of sample
+
+Applied to all nine graphs the campaign holds, the rule partitions them
+cleanly, and the three it calls unsafe are exactly the three where width was
+worth something:
+
+```
+CLAMPS: mesh20 (8.7x short), mesh22 (16.2x), road-ny (50.5x)
+SAFE:   rmat20, rmat20-s2, rmat22, uniform20, uniform20-s2, youtube
+```
+
+The four graphs not used in 7.6b -- rmat20, rmat20-s2, uniform20, uniform20-s2
+-- are all predicted safe, with maximum distances between 1,234 and 3,446
+against a `log(V)` of 13.86. Their widths were never varied here, so this is a
+prediction rather than a result.
+
+The 7.5 fixed-policy search tuned bucket width independently, and its frozen
+choices are weak, one-sided support. road-ny selected **65536**, by a wide
+margin the largest width anywhere in that search, which is also the graph this
+rule says is the most badly served by `log(V)`. mesh20 and mesh22 selected
+1024. But those choices are not stable across allocations -- rmat22 selected 3
+at 120 workers, nothing at 16, and 1024 at 64 -- so the search is selecting
+noise wherever the width does not matter, and its agreement cannot be leaned on
+where it does. The direct 7.6b width arms are the real test, and they are what
+the table above reports.
+
 ### What the fix cannot be
 
 The obvious repair -- derive the width from the distance range instead of from
