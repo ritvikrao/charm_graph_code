@@ -552,17 +552,47 @@ scale rather than the counts merged. That is O(live updates) at each of about
 three coarsenings per run, which is affordable, but it is a real change to the
 histogram's maintenance and not a one-line guard fix.
 
-Three candidate repairs, none yet implemented or measured:
+**Re-binning is not available.** The histogram is incremented on the PE that
+*creates* an update (`sssp_smp.cpp:2224`, `2470`) and decremented on the PE that
+*retires* it (`2315`, `2359`, `2552`, `2558`, `2594`, `2631`). It is only
+meaningful as a global sum, and no PE owns the live updates counted in its own
+array: an update created on PE A and retired on PE B is A's increment and B's
+decrement, and while it is in a TRAM buffer or on the wire it sits in no
+enumerable structure at all. A PE cannot walk "its" live updates because there
+is no such set. Re-binning would need global quiescence at every coarsening,
+which is the thing the controller runs concurrently with.
 
-1. **Re-bin on coarsening.** Correct by construction, removes the guard
-   entirely. Costs a walk of live updates per coarsening and needs every live
-   update to be enumerable, which the current PQ and TRAM hold structures do
-   not obviously support.
-2. **Seed the width from a cheap range estimate** -- a sampled or bounded
-   probe rather than `max_sum` -- keeping `log(V)` only as a floor.
+What the identity actually rests on is worth stating, because it says where the
+repair has to go. For non-clamped buckets the merge is exact:
+`floor(floor(x/s)/k) == floor(x/(s*k))`, so a count merged from bucket `i` to
+`i/k` lands exactly where the later retirement decrement will look, whichever
+PE performs it. The clamp bucket breaks the identity for one reason only --
+`coarsen_buckets` raises `bucket_limit` to `HISTO_BUCKET_COUNT * bucket_scale`
+(line 2454), so an update clamped at creation is *not* clamped at retirement and
+its decrement lands in an ordinary bucket.
+
+That points at a repair the guard does not need:
+
+1. **Freeze the clamp threshold.** If `bucket_limit` stayed at
+   `HISTO_BUCKET_COUNT * width` rather than scaling, an update clamped at
+   creation stays clamped at retirement, increment and decrement both land on
+   2047, the clamp bucket never has to be merged, and `COARSEN_CLAMP_LIVE` can
+   be deleted. Conservation holds for every bucket. **But coarsening then no
+   longer extends the representable range**, and on mesh20 the clamp would sit
+   at about 28,400 against distances to 246,154 -- the controller would be
+   blind for most of the run. Correct, cheap, and insufficient alone.
+2. **Seed the width from a range estimate**, keeping `log(V)` only as a floor.
+   This is the load-bearing one: with an adequate initial width the clamp is
+   never reached, which is what the width arms demonstrate. `max_sum` is
+   already broadcast and far too loose; what a cheap and tight enough estimate
+   looks like is the open question.
 3. **Keep `log(V)` but raise `HISTO_BUCKET_COUNT`.** Cheapest, and strictly a
    postponement: it multiplies the clamp threshold without changing the shape
    of the failure.
+
+(1) and (2) compose: freezing the threshold makes coarsening safe and lets the
+guard go, and a sound initial width makes the frozen threshold sufficient.
+Neither is implemented or measured here.
 
 Item 2's stopping rule is one bounded experiment, and this was it. Which repair
 to build is a decision for item 4, where the width question stops being a knob
