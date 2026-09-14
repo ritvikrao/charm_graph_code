@@ -410,3 +410,39 @@ measured so far and win by more as the allocation grows. The map is still left
 alone until eight and sixteen nodes report -- 7.6d was set on one allocation
 and this note is not going to repeat that with two -- but the correction it
 needs is now visible, and it is not the one this note proposed a few hours ago.
+
+## Eight nodes, and what holds across three allocations
+
+Job 22069454, 216 of 216 valid, two repeats rather than three so the counts
+below are out of eight.
+
+| graph | 1 node | 2 nodes | 8 nodes | sources won |
+|---|---:|---:|---:|---|
+| mesh20 | 1.20x | 1.47x | **1.56x** | 12/12, 12/12, 8/8 |
+| mesh22 | 1.24x | 1.39x | **1.53x** | 12/12, 12/12, 8/8 |
+| youtube | 1.24x | 1.08x | 1.31x | 11/12, 10/12, 7/8 |
+| road-ny | 1.05x | 1.09x | 1.16x | 7/12, 7/12, 7/8 |
+| rmat20 | 1.15x | 1.13x | 1.06x | 10/12, 10/12, 7/8 |
+| rmat20-s2 | 1.25x | 1.01x slower | 1.35x | 10/12, 6/12, 8/8 |
+| uniform20-s2 | 1.05x | 1.35x slower | 1.05x | 9/12, 0/12, 6/8 |
+| rmat22 | 1.06x | 1.16x slower | 1.01x slower | 8/12, 1/12, 3/8 |
+| uniform20 | 1.10x | 1.42x slower | 1.08x slower | 11/12, 2/12, 1/8 |
+
+**mesh20 and mesh22 win at every allocation on every source -- 28 of 28 paired
+runs each -- and the margin grows monotonically with node count.** That is the
+cleanest signal this project has produced, and it is the one result here that
+does not depend on which allocation it was taken at.
+
+At the other end, uniform20 is the only graph that regresses consistently, and
+rmat22 is a tie or worse at both multi-node points. rmat20 declines steadily as
+nodes grow, 1.15x to 1.06x, and is a mild win throughout.
+
+rmat20-s2 and uniform20-s2 change sign between allocations, and their
+eight-node control floors are 1.10x and 1.12x on only eight pairs. Those two
+are noise at this sample size and are not evidence for anything.
+
+The shape of the answer is therefore not the one 7.6d proposed, nor the one the
+one-node re-take suggested. The width rule is not a default, and it is not a
+road-ny rule. It is a **mesh** rule, and road-ny -- the graph 7.6d measured at
+2.73x and this note put in the map on that basis -- is the weakest consistent
+win in the table.
