@@ -761,15 +761,16 @@ class Campaign:
         """
         rng = random.Random(20260914 + int(self.job))
         engine = 'acic-width'
+        rpn = dict(rpn=self.args.acic_rpn)
         configs = [
             # The shipped behaviour, reproduced exactly on the new binary.
-            dict(engine=engine, name='logv',
+            dict(engine=engine, name='logv', **rpn,
                  flags=['--bucket-width-rule', 'logv', '--clamp-freeze', 'off']),
-            dict(engine=engine, name='logv-frozen',
+            dict(engine=engine, name='logv-frozen', **rpn,
                  flags=['--bucket-width-rule', 'logv', '--clamp-freeze', 'on']),
-            dict(engine=engine, name='weight-unfrozen',
+            dict(engine=engine, name='weight-unfrozen', **rpn,
                  flags=['--bucket-width-rule', 'weight', '--clamp-freeze', 'off']),
-            dict(engine=engine, name='weight',
+            dict(engine=engine, name='weight', **rpn,
                  flags=['--bucket-width-rule', 'weight', '--clamp-freeze', 'on']),
             # The shipped default, unflagged, run twice under two names: the
             # difference between `control` and its explicit twin is what this
@@ -779,7 +780,7 @@ class Campaign:
             # twins `logv-frozen`. Every other arm here states its own flags
             # precisely so that the default may move again without silently
             # renaming a result.
-            dict(engine=engine, name='control'),
+            dict(engine=engine, name='control', **rpn),
         ]
         if self.args.arms:
             keep = self.args.arms.split(',')
@@ -910,6 +911,8 @@ if __name__ == '__main__':
     parser.add_argument('--per-graph-width', choices=['on', 'off'], default='on',
                         help='apply PER_GRAPH_WIDTH_RULE to configs that ask for it')
     parser.add_argument('--arms', help='comma-separated config names to keep, for modes that name their arms')
+    parser.add_argument('--acic-rpn', type=int, default=1,
+                        help='ACIC processes per node; --workers is the per-node total, split among them')
     args = parser.parse_args()
     campaign = Campaign(args)
     getattr(campaign, args.mode)()
