@@ -13,15 +13,31 @@ cycle). Then extract interfaces around a second kernel. The detailed rationale,
 pilot matrix, controls, and decision gates are in
 [post-step7-review.md](post-step7-review.md).
 
-The [completed comparison pilot](step75-comparisons.md) now measures the
-external gap, real inputs, held-out sources, scaling through 16 nodes, and
-process-layout sensitivity. It also exposes ACIC progress failures on a
-two-node mesh and full-node RMAT, under adaptive and fixed policies.
-**Fix and validate those progress paths before optimizing or
-generalizing.** Then study the PE-dependent coarsening guard, histogram
-clamping/initial width, and local execution with controlled process geometry.
-Combining remains off and is not a promised contribution. The pilot does not
-yet establish adaptive advantage or satisfy Gate A.
+The [completed comparison pilot](step75-comparisons.md) measured the external
+gap, real inputs, held-out sources, scaling through 16 nodes, and process-layout
+sensitivity, and exposed ACIC progress failures on a two-node mesh and full-node
+RMAT. Those progress paths are repaired and gated (7.6a). Combining remains off
+and is not a promised contribution.
+
+**Revision, 2026-09-14: process geometry is a confound in every measurement
+taken before 7.6c, and the pilot's external comparison is one of them.** Item 3
+of the 7.5 follow-up separated the deployment variables and found that process
+count dominates everything else by 7x to 20x at fixed worker occupancy: on one
+node at 120 workers, eight processes of fifteen beat one process of 120 by 7.4x
+on mesh22, 20.6x on rmat22 and 15.5x on road-ny, monotone in rank count, while
+no other axis moved more than 2x. **ACIC ran at one process per node in every
+7.5 comparison, while the RIKEN baseline was allowed to tune its rank count and
+chose two or four.** The pilot therefore compared a tuned baseline against an
+untuned ACIC on the one axis that matters most, and no ratio in it — against
+GAPBS, RIKEN or Gluon — can be quoted until it is re-taken.
+
+The same confound reaches inside the project. 7.6d demoted the initial-width
+rule after measuring it at 1.4x to 2.9x slower on four graphs; re-taken at the
+deployment geometry, the same comparison has it winning or tying on all nine
+and **not one graph regressing**. The 7.6d table was a property of the process
+layout, not of the graphs. The pilot does not yet establish adaptive advantage
+or satisfy Gate A, and the first requirement for Gate A is now a re-take of the
+external comparison at a deployable layout.
 
 ## Context
 
@@ -218,9 +234,10 @@ to identify exposed delay; apparent idleness alone does not identify a bottlenec
 
 ## Work plan
 
-Steps 1–7 are completed SSSP development. **The 7.5 comparison pilot is complete;
-7.6a has repaired the reproducible progress failures and 7.6b takes up
-controller robustness**; steps 8–12 are
+Steps 1–7 are completed SSSP development. **The 7.5 comparison pilot is
+complete; 7.6a–7.6c are closed, 7.6d is reopened by its own re-take and 7.6e is
+built and unmeasured; the admission × delivery study that Gate A turns on has
+not started**; steps 8–12 are
 conditional and no longer a sequential refactor queue. Research gates produce
 decision reports; implementation gates require correctness and appropriate
 performance checks. Integer-distance refactors retain identical results, with
@@ -236,8 +253,12 @@ one- and two-node validation; PageRank uses a tolerance-based gate.
 | **6** | H1–H4 diagnosis on the recorded synthetic configurations | [Diagnosis](scale-free-diagnosis.md); interpretation qualified by later step 7 results below | complete |
 | **7** | Gated flush cadence, combining/fold, bucket coarsening, idle flush | Mesh cadence gain 3.6–3.8×; combining/fold off; confirmed small-input bucketing gains; two-node RMAT idle-flush gain 1.12× with 12.6% fewer created updates. See the [review evidence table](post-step7-review.md#what-the-evidence-supports) for scope and limits | complete |
 | **7.5 — pilot complete** | Matched weighted inputs, independent digest checks, fixed-policy tuning, RIKEN/GAPBS/Gluon comparisons, real road/social inputs, 1–16-node scaling, occupancy and process-layout probes | [Measurements and failures](step75-comparisons.md); small-component repair passed, but a separate progress failure keeps the correctness gate open | complete pilot; follow-up in 7.6 |
-| **7.6a — in progress** | Progress repair: the source update is counted, so the controller's empty-window rescue fires instead of pinning both thresholds at the window origin; bounded stall/conservation diagnostics; six minimized regressions in the gate | [Progress repair](step76-progress.md); the two reproducible RMAT failures are repaired and gated, the intermittent mesh one has a detector and an unconfirmed hypothesis | repair and regression done; Delta replay outstanding |
-| **7.6b — next** | Isolate coarsening eligibility × width/clamping and process geometry — including whether the window can follow work that leaves it, which the repair deliberately does not do; use quiet production timings and profile local execution versus GAPBS; retain admission × delivery study after these confounds are controlled | **Gate A:** no unexplained stalls; adaptive benefit over a frozen global fixed setting, proximity to per-case tuning, credible external runtime and resource results | 2–3 wk, one bounded optimization cycle |
+| **7.6a — complete** | Progress repair: the source update is counted, so the controller's empty-window rescue fires instead of pinning both thresholds at the window origin; bounded stall/conservation diagnostics; minimized regressions in the gate | [Progress repair](step76-progress.md); the reproducible RMAT failures are repaired and gated, the intermittent mesh one has a detector and an unconfirmed hypothesis | complete |
+| **7.6b — complete** | Controller robustness as one bounded experiment: initial width, the PE-dependent two-tier eligibility rule, and clamping varied independently with process geometry frozen; why each round can or cannot coarsen recorded | [Controller](step76-controller.md); reduced rounds are not reduced work and were not read as such | complete |
+| **7.6c — complete** | Deployment variables separated one at a time: process count, affinity, transport endpoints, packet pool, starvation policy | [Deployment](step76-deployment.md). **Process count dominates by 7–20×**; the LCI shared-memory backend is worse, not better; the UCX registration-cache warning explains nothing. One node only | complete at one node |
+| **7.6d — reopened** | Initial bucket width: `log(V)` versus the heaviest edge, with the clamp threshold frozen so conservation holds for every bucket | [Width repair](step76-width-repair.md). Demoted to a per-case flag on a table taken at one process per node; the one-node re-take at eight-by-fifteen has it winning or tying on all nine graphs with no regression. **Two, eight and sixteen nodes decide the default** | re-take in flight |
+| **7.6e — built, unmeasured** | Raise the clamp during a run so a graph whose distances exceed `2048 × width` is not scheduled from a single overflow bucket; creation-time flag keeps the histogram conserved | [Range](step76-range.md). The three graphs stuck at bucket scale 1 were never blocked by the clamp guards; they are out of range and do 31–45× the work. Fires zero times where the range suffices | campaign arm pending |
+| **7.6f — not started** | Re-take the 7.5 external comparison at a deployable process geometry, then admission × delivery policies against one global fixed setting and per-case tuned references | **Gate A:** no unexplained stalls; adaptive benefit over a frozen global fixed setting, proximity to per-case tuning, credible external runtime and resource results | 2–3 wk, one bounded optimization cycle |
 | **8 — conditional** | Minimal generic payload interface/type erasure only when a second algorithm requires it | SSSP results identical on one/two nodes; no unexplained runtime regression | up to 1 wk |
 | **9 — split** | Fix PE/chare identity when introducing new mappings. Overdecomposition/hash placement/migration only if profiling justifies them | Correct on **all supported mappings**, not just K=1; performance benefit required for extra scheduling machinery | budget after diagnosis |
 | **10 — with second kernel** | Extract `AcicController` around observed shared signals, actions, and progress contracts; may precede step 8 | SSSP validation and performance retained; second use exercises shared controller | ~1 wk |
@@ -416,6 +437,16 @@ its geometric mean and worst case, tuning cost, and uncertainty. Provisional
 engineering targets are within 10% geometrically and 20% per held-out case;
 these are not established results or acceptance criteria for SC.
 
+**Fix the process geometry before comparing anything, and say what it is.**
+7.6c measured process count at 7–20× at fixed worker occupancy, larger than
+every other deployment axis combined and larger than any algorithmic effect
+this project has recorded. Two things follow. Every system in a comparison must
+be given the same opportunity to choose its layout: the 7.5 pilot tuned RIKEN's
+rank count and left ACIC at one process per node, which is not a comparison.
+And an A/B taken at one geometry does not transfer to another — 7.6d's width
+table reversed on all nine graphs when 120 workers moved from one process into
+eight — so a result is quoted with its layout or not at all.
+
 Use balanced/randomized variant order, repeated-baseline controls, paired
 uncertainty estimates, and multiple allocation blocks. A ~5% bias observed in
 the existing harness is a reason to improve the design, not a universal cutoff
@@ -455,8 +486,9 @@ experiment dates.
 | Window | Work | Decision/deliverable |
 |---|---|---|
 | Sep 13, completed | 7.5 comparison pilot: matched inputs, RIKEN/GAPBS/Gluon, 1–16 nodes, occupancy/layout and logging checks | [Performance map and failure ledger](step75-comparisons.md); correctness gate still open |
-| Sep 13, in progress | 7.6a: reproduce and repair progress failures; bounded diagnostics and quiet production timing | [Progress argument and six minimized regressions](step76-progress.md), including the fixed policy that failed in 7.5; Delta replay of all three recorded failures outstanding |
-| Sep 21–Oct 18 | 7.6b: coarsening eligibility/width/clamping, controlled deployment geometry, local profiles, then admission × delivery; one bounded optimization cycle | **Gate A:** adaptivity and external competitiveness; proceed, narrow, or revisit the mechanism |
+| Sep 13–14, completed | 7.6a–7.6c: progress repair and bounded diagnostics; controller robustness with geometry frozen; deployment variables separated one at a time | [Progress](step76-progress.md), [controller](step76-controller.md), [deployment](step76-deployment.md). Process count dominates by 7–20×, which reopens every earlier comparison |
+| Sep 14, in flight | 7.6d re-take at 1/2/8/16 nodes at eight processes of fifteen, and the 7.6e range arm behind it | Whether the initial-width rule is a default or a per-case flag; whether raising the clamp mid-run is worth its complexity |
+| Sep 15–Oct 18 | 7.6f: re-take the 7.5 external comparison at a deployable geometry with every system allowed to tune its layout, then admission × delivery; one bounded optimization cycle | **Gate A:** adaptivity and external competitiveness; proceed, narrow, or revisit the mechanism |
 | Oct 19–Nov 15 | Minimal controller extraction and BFS transfer; optional necessary payload work | **Gate B:** shared adaptive benefit transfers, or restrict the paper's scope |
 | Nov 16–Dec 13 | PageRank if needed for the claim; otherwise strengthen SSSP/BFS evaluation | Freeze algorithm scope; do not add BC/k-core by default |
 | Dec–Feb | Scaling, real graphs, selected baselines, ablations, one portability slice, conditional GPU comparison | **Gate C, Feb 15:** evidence sufficient for the chosen claim; no arbitrary 256-node requirement |
@@ -496,7 +528,9 @@ foundation; they do not by themselves demonstrate adaptive control.
   comparisons with allocation/source diversity.
 - **7.6 / Gate A:** fixed-policy references and held-out adaptive evaluation;
   mechanism supported by minimally perturbing counters/traces; both runtime
-  and work reported.
+  and work reported. Every comparison states its process geometry, and every
+  system in it was allowed to choose one. Results recorded before 7.6c were
+  taken at one process per node and are superseded rather than merged.
 - **Gate B:** each retained kernel validates independently on at least three
   graph classes; PageRank uses matching semantics and tolerance, not hashes.
 - **Campaign:** figures reproducible from recorded raw data and configurations;
