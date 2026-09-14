@@ -66,14 +66,13 @@ about 124 per hop against a maximum of 1000. That is a fact about the weight
 distribution, not a guarantee, and the right reading of the last column is
 "how much of the margin the graph would have to spend before the rule fails".
 
-**The risk this rule carries is at the other end of the table.** A width of
-1,000 against uniform20's range of 1,234 puts the entire graph in the first two
-buckets, which is no admission control at all. The one measurement that bears on
-it is 7.6b's `width-1024` arm on rmat22 -- the same over-width, 648x -- which
-read 0.98x to 1.00x at every allocation. That is evidence, and it is evidence
-from a different graph; rmat20, rmat20-s2, uniform20 and uniform20-s2 have never
-had their width varied, and they are the reason `--mode width` runs over all
-nine graphs rather than the three that motivated the repair.
+**The risk this rule carries is at the other end of the table**, and it is the
+one that came in. A width of 1,000 against uniform20's range of 1,234 puts the
+entire graph in the first two buckets, which is no admission control at all.
+Before the measurement the only evidence on it was 7.6b's `width-1024` arm on
+rmat22 -- the same over-width, 648x -- reading 0.98x to 1.00x, and I took that
+as reason to expect over-width to be free. **It is not, and the default below
+is `logv` because of it.**
 
 `log(V)` survives as a floor. It binds only when the heaviest edge is smaller
 than it -- essentially, unit-weight inputs, where spanning 2048 hops would leave
@@ -137,17 +136,81 @@ the first time the failure has been reduced to something a gate can run in a
 second. 7.6a's note could only say a 10,000-vertex mesh "never converges and
 wrote a 574 MB log".
 
+## The measurement: the rule is right about which graphs, and wrong as a default
+
+Job 22061958, `--mode width`, all nine campaign graphs, one node, 120 workers,
+540 timed runs, all valid, 56 minutes. `logv` -- the shipped behaviour
+reproduced on the same binary -- is the baseline, so above 1 is faster.
+`control` is the new defaults run a second time, and its spread against `weight`
+is the floor below which nothing here is a result.
+
+| graph | `logv` compute | `logv-frozen` | `weight` | work | rounds | sources won |
+|---|---:|---:|---:|---:|---:|---:|
+| road-ny | 2.467 s | 1.11x | **2.73x** | 0.06 | 1.03 | **4 / 4** |
+| mesh22 | 5.179 s | 1.01x | 1.05x | 0.05 | 3.24 | 2 / 4 |
+| mesh20 | 2.530 s | 0.99x | 1.01x | 0.04 | 3.01 | 1 / 4 |
+| uniform20-s2 | 0.589 s | 1.06x | 0.93x | 1.25 | 1.13 | 2 / 4 |
+| uniform20 | 0.594 s | 1.05x | 0.85x | 1.15 | 0.99 | 1 / 4 |
+| rmat22 | 6.280 s | 1.22x | **1.4x slower** | 1.26 | 0.56 | 1 / 4 |
+| youtube | 1.523 s | 0.82x | **1.7x slower** | 1.24 | 0.27 | 1 / 4 |
+| rmat20 | 1.494 s | 0.98x | **2.4x slower** | 1.44 | 0.67 | 0 / 4 |
+| rmat20-s2 | 1.289 s | 1.04x | **2.9x slower** | 1.65 | 0.83 | 0 / 4 |
+
+Two results are unambiguous, and they point opposite ways. **road-ny gains 2.73x
+on all four sources** -- larger than the 1.86x 7.6b measured, and the graph the
+rule called worst served. **rmat20 and rmat20-s2 lose 2.4x and 2.9x on all four
+sources**, with rmat22 and youtube losing on three of four. mesh20, mesh22,
+uniform20 and uniform20-s2 are bimodal across sources and not resolvable here.
+
+### Why, and it is in the bucket scale
+
+| | mesh20 | mesh22 | road-ny | rmat20 | rmat20-s2 | rmat22 | uniform20 | uniform20-s2 | youtube |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `logv` scale | 1 | 1 | 1 | 8 | 7 | 7 | 10 | 9 | 8 |
+| `weight` scale | 1 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+
+**The graphs `weight` loses on are exactly the ones whose adaptive coarsening
+already works.** They reach scale 7 to 10 unaided, so `log(V)` times that scale
+is an effective width near 112 that the controller chose for itself, and the
+rule overrides it with 1000. The graphs `weight` wins on are exactly the three
+stuck at scale 1 -- which is the clamp race of 7.6b, and the only place the
+controller cannot help itself.
+
+So the diagnosis in `step76-controller.md` stands and sharpens: `log(V)` is not
+wrong because it is small, it is wrong *only where coarsening is blocked*. What
+is refuted is `max_edge_weight` as a global replacement.
+
+### The allocation caveat, which cuts against the result too
+
+This is one node at 120 workers. 7.6b measured the same over-width on rmat22 at
+0.98x with 128 workers spread over eight nodes, and 1.00x at 16 workers on one.
+Same PE count, opposite sign, so what changed is per-node worker density and not
+the number of PEs -- an over-wide width admits everything at once, and 120
+threads sharing one node is where that costs the most. Equally, 7.6b's mesh wins
+of 1.27x to 1.67x were all at two nodes and above, and the meshes are flat here.
+**Neither half of this table has been measured at the allocation where the other
+half was.**
+
+### The freeze is neutral, and stays on
+
+`logv-frozen` reads 0.98x to 1.22x across the nine graphs, with delivered work
+within 8% and rounds within 7% everywhere. The one loss, youtube at 0.82x, sits
+inside that graph's own control spread, which is the widest in the campaign. It
+still coarsens where `logv` does (scale 6 to 10 on the five graphs that
+coarsen), because those graphs never needed the range extension the freeze gives
+up. So the correctness repair is free, and `--clamp-freeze` defaults to `on`:
+conservation now holds for every bucket and `--coarsen-clamped` guards nothing.
+
+`--bucket-width-rule` defaults to `logv`. A rule that wins 2.73x on one graph
+and loses 2.9x on two is not a default, and it was made the default before it
+was measured, which was the wrong order.
+
 ## What is not claimed
 
 The old behaviour and the new one both pass the full gate -- 18 configurations,
 three on `sssp_smp_diag`, seven progress fixtures -- and produce identical
 golden digests, which is what it means for a width to be a schedule and not an
-answer. No timing claim is made here. The prior is 7.6b's `width-1024` arm,
-which is what `weight` reduces to on the eight graphs whose weights top out at
-1000, and which won 1.27x to 1.67x on mesh20 across two, four, eight and
-sixteen nodes without losing a race in 64 runs. Whether this implementation of
-it behaves the same, and what it costs on the four graphs the rule calls safe,
-is what `--mode width` measures.
+answer. Nothing here is measured above one node.
 
 ## One harness addition
 

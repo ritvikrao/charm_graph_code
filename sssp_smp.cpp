@@ -212,9 +212,20 @@ double bucket_width_override = 0.0;
 // rule and not a bound -- no cheap bound on the distance range is available:
 // max_sum, the one global the solver already computed, is the sum of every
 // vertex's heaviest out-edge and so is three orders of magnitude too loose to
-// divide by 2048. This flag is what measures the rule against the old one.
+// divide by 2048.
+//
+// **logv is the default, and weight is not, because weight was measured and
+// lost.** Job 22061958 ran both over all nine campaign graphs at one node and
+// 120 workers: weight is 2.73x faster on road-ny on every source, and 2.4x to
+// 2.9x slower on rmat20 and rmat20-s2 on every source, with rmat22 and youtube
+// losing on three sources of four. The reason is visible in the bucket scale:
+// the graphs weight loses on are exactly the ones whose adaptive coarsening
+// already reaches scale 7-10 by itself, so log(V) times that scale is an
+// effective width near 112 and weight overrides it with 1000. The graphs it
+// wins on are exactly the ones stuck at scale 1. The width rule helps only
+// where the controller cannot help itself. See design/step76-width-repair.md.
 enum { WIDTH_RULE_LOGV = 0, WIDTH_RULE_WEIGHT = 1 };
-int bucket_width_rule = WIDTH_RULE_WEIGHT;
+int bucket_width_rule = WIDTH_RULE_LOGV;
 // --clamp-freeze on|off. Whether the clamp threshold moves when buckets merge.
 //
 // off is the shipped behaviour: coarsen_buckets raises bucket_limit alongside
