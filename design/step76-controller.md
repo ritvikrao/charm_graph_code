@@ -683,3 +683,82 @@ Taken with wave 3, the case for treating the **initial width** as the defect
 and the two-tier bar as a symptom is now three-fold: the width fix removes the
 clamp rather than racing it, it never loses the race in 48 runs across two
 allocations, and it pays fewer rounds for the work it saves.
+
+## Wave 5: sixteen nodes, 256 workers — the two-tier fix inverts
+
+Job 22042111, `mesh20,mesh22,rmat22`, 432 timed runs, all valid.
+
+| variant | mesh20 | mesh22 | rmat22 |
+|---|---|---|---|
+| control | 0.99x | 1.03x | 1.03x |
+| tuned-fixed | — | 1.01x | 1.09x |
+| width (small) | 1.54x | **1.52x** | 0.89x |
+| width-1024 | **1.67x** | 1.47x | 1.15x |
+| two-tier-absolute-1600 | **0.81x** | 0.95x | 0.99x |
+| two-tier-never | 0.42x | 0.65x | 1.01x |
+| clamp-strict | 0.98x | 1.01x | 0.99x |
+| window-follow | 0.95x | 1.01x | 1.03x |
+
+Defaults deliver **347M** updates on mesh20 and **1.02 billion** on mesh22, the
+top of a monotone climb from 32M and 20M at two nodes. The defect scales with
+PE count without limit, as the race model says it must.
+
+### The campaign's conclusion, in one table
+
+Speedup, median work ratio `w`, median round ratio `r`, and how often the
+variant lost the race in sixteen runs:
+
+**mesh20**
+
+| nodes | PEs / bar | defaults noted | `two-tier-absolute-1600` | `width-1024` |
+|---|---|---:|---|---|
+| 2 | 32 / 3,200 | 32M | 1.30x w=0.17 r=1.8 lost 0/16 | 1.27x w=0.23 r=1.5 lost 0/16 |
+| 4 | 64 / 6,400 | 123M | 1.53x w=0.04 r=2.9 lost 2/16 | 1.51x w=0.11 r=2.5 lost 0/16 |
+| 8 | 128 / 12,800 | 216M | 1.14x w=0.02 r=3.3 lost 2/16 | 1.59x w=0.11 r=2.0 lost 0/16 |
+| 16 | 256 / 25,600 | 347M | **0.81x** w=0.01 r=4.6 lost **5/16** | **1.67x** w=0.13 r=1.5 lost 0/16 |
+
+**mesh22**
+
+| nodes | PEs / bar | defaults noted | `two-tier-absolute-1600` | `width-1024` |
+|---|---|---:|---|---|
+| 2 | 32 / 3,200 | 20M | 0.94x w=0.91 r=1.1 | 1.11x w=1.12 r=0.8 |
+| 4 | 64 / 6,400 | 281M | 1.57x w=0.07 r=6.0 lost 0/16 | 1.61x w=0.12 r=5.0 lost 0/16 |
+| 8 | 128 / 12,800 | 537M | 1.37x w=0.04 r=4.0 lost 0/16 | 1.38x w=0.10 r=2.9 lost 0/16 |
+| 16 | 256 / 25,600 | 1,015M | 0.95x w=0.02 r=5.2 lost 1/16 | **1.47x** w=0.09 r=2.7 lost 0/16 |
+
+(At two nodes mesh22 defaults were not failing at all, so "lost" is not
+meaningful in that row and is omitted.)
+
+**The two-tier bar is not a fix.** On mesh20 it runs 1.30x, 1.53x, 1.14x,
+**0.81x** -- it inverts into a regression at 256 PEs while delivering **1% of
+the work**. Its race-loss rate climbs 0, 2, 2, 5 in sixteen, because the bar it
+pins is crossed later as PE count rises, and its round cost climbs 1.8x, 2.9x,
+3.3x, 4.6x.
+
+**The width is a fix.** On mesh20 it runs 1.27x, 1.51x, 1.59x, **1.67x** --
+monotone upward -- and **never once lost the race in 64 runs across four
+allocations**. Its round cost *falls* with scale, 1.5x, 2.5x, 2.0x, 1.5x.
+
+`tuned-fixed` on mesh22 at sixteen nodes is the clearest single number in the
+campaign: **1.01x while delivering 6% of the work**, at 5.48x the rounds. The
+strong fixed policy the 7.5 search selected buys nothing at scale, for exactly
+the reason the two-tier knob inverts.
+
+### What this settles
+
+Rounds are the binding resource at scale, and the two candidate repairs differ
+in what they charge in rounds rather than in how much work they save. Any
+repair that buys a work reduction with a large multiple of rounds inverts
+somewhere between 128 and 256 PEs. The width does not, because it is not
+trading anything: it removes the clamp, so the controller coarsens normally and
+resolves the frontier at the resolution it was designed for.
+
+So of the three candidates in "What the fix cannot be" above, **(2), seeding
+the initial width, is the only one the data supports**, and (1), freezing the
+clamp threshold, remains worth doing alongside it as the correctness
+simplification that lets `COARSEN_CLAMP_LIVE` be deleted. Pinning the two-tier
+bar is now positively contraindicated rather than merely unproven.
+
+Item 2's stopping rule was one bounded experiment. This was it, it is finished,
+and it named a defect, a mechanism, a rule that predicts which graphs suffer,
+and which of two plausible repairs to build.
