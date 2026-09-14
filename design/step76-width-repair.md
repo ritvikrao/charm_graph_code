@@ -268,8 +268,21 @@ became unreachable about ninety minutes in. Compute jobs kept running, but
 every `srun` inside them failed with `Unable to confirm allocation ... Unable
 to contact slurm controller`, so 22062931 and 22062932 spent the rest of their
 walltime producing failed launches -- 231 of 322 and 231 of 310 -- and
-22062933 and 22062934 never started. They need resubmitting, and the failures
-are infrastructure: not one of them is a solver result.
+22062933 and 22062934 never started. The failures are infrastructure: not one of
+them is a solver result.
+
+When the controller returned, 22062933 and 22062934 were still *pending* --
+they had never started -- so they were left alone rather than cancelled, and
+they will run the campaign exactly as submitted, against the binary staged at
+04d340b (sha a072a7f, recorded in `bin/width-manifest.txt` and on every row).
+22063138 and 22063139 replace the ruined one- and two-node jobs against that
+same binary. Nothing was restaged, because restaging under a pending job is
+what `scripts/submit_width.sh` refuses to do and doing it by hand would be the
+same mistake. Two consequences worth writing down: **`benchmarks/run.py` and
+`benchmarks/launch_acic.sh` are read live from the working tree when a job
+starts**, so neither may be edited while these are queued; and the 7.6e range
+arm cannot be measured until they finish, since `logv-range` needs a binary
+that has `--range-extend` at all.
 
 What completed first is worth keeping, because rmat20 and uniform20 got their
 full twelve runs per cell at both one and two nodes, and they are two of the
