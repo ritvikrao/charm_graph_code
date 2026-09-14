@@ -290,24 +290,32 @@ four graphs 7.6d recorded the width rule damaging. Speedups against
 `logv-frozen`, paired medians, `control` being the same arm unflagged and so
 the resolution floor:
 
-| graph | nodes | `weight` | `control` (floor) | 7.6d, same node count at rpn 1 |
-|---|---:|---:|---:|---:|
-| rmat20 | 1 | **1.16x** | 0.99x | 2.4x slower |
-| rmat20 | 2 | 1.02x | 1.05x | -- |
-| uniform20 | 1 | 1.06x | 0.97x | 1.18x slower |
-| uniform20 | 2 | 1.27x slower | 0.97x | -- |
-| mesh20 | 1 | 1.51x (partial, 6-7 runs) | 1.04x | 1.01x |
-| mesh20 | 2 | 1.45x (partial, 2-3 runs) | 0.98x | -- |
+| graph | nodes | pairs | `weight` | won | `control` (floor) | 7.6d at rpn 1 |
+|---|---:|---:|---:|---:|---:|---:|
+| rmat20 | 1 | 12 | **1.11x** | **11/12** | 1.06x slower | 2.4x slower, 0/4 |
+| rmat20 | 2 | 12 | 1.02x | 7/12 | 1.02x slower | -- |
+| uniform20 | 1 | 12 | 1.06x | 11/12 | 1.03x slower | 1.18x slower |
+| uniform20 | 2 | 12 | **1.28x slower** | **0/12** | 1.01x slower | -- |
+| mesh20 | 1 | 7 | 1.40x | 6/6 | 1.00x slower | 1.01x |
+| mesh20 | 2 | 2 | 1.45x | 2/2 | 1.02x slower | -- |
+
+These are paired: a run is compared only against the runs of the same graph,
+source and repeat, which is not how the first pass through this data was read
+and is why rmat20 moved from 1.16x to 1.11x. The paired count is the stronger
+statement in any case. `control` is `logv-frozen` unflagged and reads 1.00x to
+1.06x slower, which is the floor; rmat20's 1.11x median is not far outside it,
+and 11 of 12 paired runs is.
 
 **The rmat20 regression does not survive the geometry change.** 7.6d measured
-`weight` at 2.4x slower on rmat20 on 4/4 sources; at the same node count and
-the same worker count, with those workers in eight processes instead of one,
-it is 1.16x *faster*, against a floor of 0.99x. That is the second time in this
+`weight` at 2.4x slower on rmat20, losing every one of its four sources; at the
+same node count and the same worker count, with those workers in eight
+processes instead of one, it wins 11 of 12 paired runs at a median 1.11x. That is the second time in this
 step that a width result has moved with the allocation rather than with the
 graph, and the first time one has changed sign.
 
-It does not rehabilitate the rule as a default -- uniform20 goes the other way
-at two nodes, mesh22, rmat22, rmat20-s2, youtube and road-ny have no data at
+It does not rehabilitate the rule as a default. uniform20 goes the other way at
+two nodes and does it cleanly -- 1.28x slower on 0 of 12 -- so the geometry
+does not simply favour `weight`; it moves the result, in both directions. mesh22, rmat22, rmat20-s2, youtube and road-ny have no data at
 all here, and the campaign has to be re-run. It does mean the table 7.6d
 demoted the rule on was taken at one process of 120 workers, which the item-3
 deployment campaign then measured at 7x to 20x off the best layout, and that
