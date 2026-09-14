@@ -259,3 +259,43 @@ have silently turned both into duplicates of the `logv` arms on the next run of
 that mode. Every arm now states its own flags. `control` still carries none, by
 design -- it *is* the default, so its meaning moves when the default moves, and
 it now twins `logv-frozen` where in 22061958 it twinned `weight`.
+
+## The node sweep, cut short by the cluster, and what survived
+
+Jobs 22062931-34 re-take the width A/B at one, two, eight and sixteen nodes at
+the deployment geometry (eight processes of fifteen). The Slurm controller
+became unreachable about ninety minutes in. Compute jobs kept running, but
+every `srun` inside them failed with `Unable to confirm allocation ... Unable
+to contact slurm controller`, so 22062931 and 22062932 spent the rest of their
+walltime producing failed launches -- 231 of 322 and 231 of 310 -- and
+22062933 and 22062934 never started. They need resubmitting, and the failures
+are infrastructure: not one of them is a solver result.
+
+What completed first is worth keeping, because rmat20 and uniform20 got their
+full twelve runs per cell at both one and two nodes, and they are two of the
+four graphs 7.6d recorded the width rule damaging. Speedups against
+`logv-frozen`, paired medians, `control` being the same arm unflagged and so
+the resolution floor:
+
+| graph | nodes | `weight` | `control` (floor) | 7.6d, same node count at rpn 1 |
+|---|---:|---:|---:|---:|
+| rmat20 | 1 | **1.16x** | 0.99x | 2.4x slower |
+| rmat20 | 2 | 1.02x | 1.05x | -- |
+| uniform20 | 1 | 1.06x | 0.97x | 1.18x slower |
+| uniform20 | 2 | 1.27x slower | 0.97x | -- |
+| mesh20 | 1 | 1.51x (partial, 6-7 runs) | 1.04x | 1.01x |
+| mesh20 | 2 | 1.45x (partial, 2-3 runs) | 0.98x | -- |
+
+**The rmat20 regression does not survive the geometry change.** 7.6d measured
+`weight` at 2.4x slower on rmat20 on 4/4 sources; at the same node count and
+the same worker count, with those workers in eight processes instead of one,
+it is 1.16x *faster*, against a floor of 0.99x. That is the second time in this
+step that a width result has moved with the allocation rather than with the
+graph, and the first time one has changed sign.
+
+It does not rehabilitate the rule as a default -- uniform20 goes the other way
+at two nodes, mesh22, rmat22, rmat20-s2, youtube and road-ny have no data at
+all here, and the campaign has to be re-run. It does mean the table 7.6d
+demoted the rule on was taken at one process of 120 workers, which the item-3
+deployment campaign then measured at 7x to 20x off the best layout, and that
+none of its numbers should be quoted without that written next to them.
