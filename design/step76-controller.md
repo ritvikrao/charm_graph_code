@@ -623,3 +623,63 @@ Neither is implemented or measured here.
 Item 2's stopping rule is one bounded experiment, and this was it. Which repair
 to build is a decision for item 4, where the width question stops being a knob
 and becomes the claim.
+
+## Wave 4: eight nodes, 128 workers — the two fixes separate
+
+Job 22042110, `mesh20,mesh22,rmat22`, 432 timed runs, all valid.
+
+| variant | mesh20 | mesh22 | rmat22 |
+|---|---|---|---|
+| control | 1.01x | 0.96x | 1.01x |
+| tuned-fixed | — | 1.29x | 0.99x |
+| width (small) | **1.70x** | 1.41x | 0.93x |
+| width-1024 | 1.59x | 1.38x | 0.98x |
+| two-tier-absolute-1600 | 1.14x | 1.37x | 0.96x |
+| two-tier-never | 0.55x | 0.72x | 1.01x |
+| clamp-strict | 1.01x | 0.99x | 0.91x |
+| window-follow | 0.99x | 0.94x | 0.96x |
+
+The defect keeps growing with PE count exactly as the race model says. Median
+work delivered by defaults on mesh20: **32M at two nodes, 123M at four, 216M at
+eight.** On mesh22: 20M, 281M, 537M. rmat22 stays flat and is the control.
+
+### Doing 50x less work buys 1.14x
+
+The interesting number is `two-tier-absolute-1600` on mesh20. It delivers **2%
+of the work** defaults do -- 5M against 216M -- and is only **1.14x** faster,
+down from 1.53x at four nodes. Tracking both fixes across the campaign, with
+`w` the median work ratio and `r` the median round ratio against defaults:
+
+| | | two-tier-absolute-1600 | width (small) |
+|---|---|---|---|
+| mesh20 | 2 nodes | 1.30x, w=0.17, r=1.8 | 1.28x, w=0.23, r=1.5 |
+| | 4 nodes | 1.53x, w=0.04, r=2.9 | 1.59x, w=0.11, r=2.6 |
+| | 8 nodes | **1.14x**, w=0.02, r=3.3 | **1.70x**, w=0.11, r=1.9 |
+| mesh22 | 2 nodes | 0.94x, w=0.91, r=1.1 | 1.01x, w=1.00, r=1.0 |
+| | 4 nodes | 1.57x, w=0.07, r=6.0 | 1.59x, w=0.12, r=4.9 |
+| | 8 nodes | 1.37x, w=0.04, r=4.0 | 1.41x, w=0.11, r=2.8 |
+
+The two fixes reduce work by comparable orders and **differ in what they charge
+in rounds**. On mesh20 at eight nodes the two-tier knob buys its 50x work
+reduction at 3.3x the rounds; the width buys a 9x reduction at 1.9x. At 128 PEs
+a round is a global reduction and rounds are the expensive resource, so the
+cheaper-in-rounds fix wins on time despite doing more work. That is this
+campaign's sharpest instance of its own warning: **work, rounds and time each
+rank these two variants differently, and only time answers the question.**
+
+The bistability is also still with the two-tier knob and still absent from the
+width arms:
+
+```
+two-tier-absolute-1600   4 4 5 5 5 5 5 5 5 5 5 5 5 6 187 195    <- 2 of 16 lost
+width-217               16 18 20 22 22 22 23 23 24 25 26 26 27 27 29 29
+width-1024              21 21 21 22 22 22 23 23 24 25 26 26 27 28 29 30
+```
+
+Same two-in-sixteen failure rate as at four nodes, but a lost race now costs
+187M instead of 103M, so the tail is heavier even where the median is not.
+
+Taken with wave 3, the case for treating the **initial width** as the defect
+and the two-tier bar as a symptom is now three-fold: the width fix removes the
+clamp rather than racing it, it never loses the race in 48 runs across two
+allocations, and it pays fewer rounds for the work it saves.
