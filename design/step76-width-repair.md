@@ -149,13 +149,9 @@ sixteen nodes without losing a race in 64 runs. Whether this implementation of
 it behaves the same, and what it costs on the four graphs the rule calls safe,
 is what `--mode width` measures.
 
-## One harness repair, found on the way
+## One harness addition
 
-`benchmarks/run.py` parsed `Read time`, `Setup time`, `Index time`, `Stats time`
-and `Total time`, and not `Compute time`. The solver has printed it since 7.6c,
-and its own comment in that list says "setup + compute + stats == total", but
-the one phase every controller and deployment comparison is about was never
-recorded -- every such comparison was made on the harness wall clock with the
-`srun` launch inside it. It is parsed now, along with `Bucket width`,
-`Bucket scale` and the heaviest edge, so a run in the record says what it
-bucketed with.
+`benchmarks/run.py` now records `Bucket width`, `Bucket scale` and the heaviest
+edge alongside the phase timers, so a run in the record says what it bucketed
+with -- which nothing did before, and which is how a width derived from |V|
+could bucket distances for a whole campaign without anyone reading the number.

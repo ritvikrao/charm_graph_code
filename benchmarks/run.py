@@ -66,7 +66,7 @@ class Campaign:
         self.count = 0
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
-            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
+            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -76,7 +76,7 @@ class Campaign:
     def run(self, graph, source, config, expected, phase, rep=0, extra=None):
         engine = config['engine']
         workers = self.args.workers
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -168,7 +168,17 @@ class Campaign:
             'setup_seconds': r'^Setup time: ([\d.eE+-]+)',
             'index_seconds': r'^Index time: ([\d.eE+-]+)',
             'stats_seconds': r'^Stats time: ([\d.eE+-]+)',
+            # Compute time is not here because it is already `seconds`, parsed
+            # above: it, and not the harness wall clock, is what every A/B in
+            # this file compares. launch_wall_seconds is the wall clock.
             'total_seconds': r'^Total time: ([\d.eE+-]+)',
+            # What the histogram actually bucketed with. Until 7.6d no run said,
+            # which is how a width derived from |V| bucketed distances for a
+            # whole campaign without anyone reading the number.
+            'bucket_width': r'^Bucket width: ([\d.eE+-]+)',
+            'heaviest_edge': r'^Bucket width: [\d.eE+-]+, heaviest edge: (\d+)',
+            'bucket_scale': r'^Bucket scale: (\d+)',
+            'coarsenings': r'^Bucket scale: \d+ \((\d+) coarsenings\)',
             'reductions': r'^Number of reductions: (\d+)',
             'updates_noted': r'^Updates noted: (\d+)',
             'distance_changes': r'^Distance changes: (\d+)',
@@ -687,6 +697,62 @@ class Campaign:
                         self.run(graph, int(row['source']), c, row,
                                  'deployment', rep)
 
+    def width(self):
+        """The 7.6d repair: bucket by the graph's heaviest edge, not by |V|.
+
+        Two changes ship together and this separates them, because they are
+        independent and only one of them is expected to move a clock.
+
+        The width rule is the one with a measured prior: `weight` reproduces
+        the `width-1024` arm of 7.6b on the eight graphs whose weights top out
+        at 1000, and that arm won on mesh20 and mesh22 at every allocation from
+        two to sixteen nodes and lost no race in 64 runs. What has no prior is
+        the four graphs 7.6b never varied the width on -- rmat20, rmat20-s2,
+        uniform20, uniform20-s2 -- which the rule calls safe already and where
+        a width of 1000 against a distance range near 1,300 puts the entire
+        graph in the first two buckets. If the rule costs anything anywhere, it
+        is there, so they are in this campaign and they are the reason it runs
+        over all nine graphs rather than the three that motivated it.
+
+        The clamp freeze should be invisible here. It changes what a merge does
+        and the width rule is chosen so that merging is not needed, so a
+        difference between `weight` and `weight-unfrozen` would mean the width
+        rule is not doing what it claims. `logv-frozen` is the other half of
+        that cross: the freeze on the old width, where merging does happen.
+
+        Every arm runs one binary, so no result here straddles a build.
+        """
+        rng = random.Random(20260914 + int(self.job))
+        engine = 'acic-width'
+        configs = [
+            # The shipped behaviour, reproduced exactly on the new binary.
+            dict(engine=engine, name='logv',
+                 flags=['--bucket-width-rule', 'logv', '--clamp-freeze', 'off']),
+            dict(engine=engine, name='logv-frozen',
+                 flags=['--bucket-width-rule', 'logv', '--clamp-freeze', 'on']),
+            dict(engine=engine, name='weight-unfrozen',
+                 flags=['--clamp-freeze', 'off']),
+            # The new defaults, and the same thing again: the difference
+            # between them is what this allocation can resolve, and no arm
+            # closer than that is a result.
+            dict(engine=engine, name='weight'),
+            dict(engine=engine, name='control'),
+        ]
+        for graph in self.args.graphs.split(','):
+            refs = self.references(graph)
+            for c in configs:
+                prefix = (self.root/'logs'/f'width-{self.tag}-{graph}-{c["name"]}')
+                self.run(graph, int(refs[0]['source']), c, refs[0],
+                         'width-diag', extra=['--diag', str(prefix)])
+            for rep in range(self.args.reps):
+                rows = refs[2:2+self.args.sources]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = configs[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        self.run(graph, int(row['source']), c, row, 'width', rep)
+
     def progress(self):
         """Replay the recorded losses of progress on both binaries.
 
@@ -785,7 +851,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')

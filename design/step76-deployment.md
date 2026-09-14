@@ -194,9 +194,87 @@ So the packing change is available, but it has to narrow the stored and
 transmitted fields while keeping the bound and the sentinel wide. That is a
 different and smaller change than retyping `cost`.
 
+## The campaign: one axis at a time, one node
+
+Job 22061524, `--mode deployment`, `mesh22,rmat22,road-ny`, 120 workers, 324
+timed runs, all valid, 16 minutes. Every configuration differs from the 8 x 15
+candidate by one thing, and every number below is the median of twelve runs
+paired against `layout-8x15` on the same graph, source and repetition. What is
+compared is the solver's own compute phase, so no `srun` launch is inside it;
+setup is reported separately, which is what 7.6c made possible.
+
+| configuration | mesh22 | rmat22 | road-ny |
+|---|---:|---:|---:|
+| `layout-8x15` (median compute) | 0.783 s | 0.264 s | 0.170 s |
+| `layout-1x120` | 7.4x slower | 20.6x slower | 15.5x slower |
+| `layout-2x60` | 2.8x slower | 2.2x slower | 4.7x slower |
+| `layout-4x30` | 1.4x slower | 1.2x slower | 1.6x slower |
+| `idle-flush-off` | 1.12x slower | 1.01x | 1.5x slower |
+| `idle-flush-on` | 1.01x | 1.06x slower | 1.02x slower |
+| `transport-shm` | 1.02x | **2.0x slower** | 1.02x |
+| `packets-8192` | 1.01x | 1.02x slower | 1.02x |
+| `packets-eager-64k` | 1.02x | 1.01x | 1.00x |
+
+### Process count is the whole of it
+
+The rpn sweep holds total occupancy at 120 workers per node and moves only how
+many processes carry them, and it is monotone on all three graphs and enormous:
+one process per node is **7.4 to 20.6 times slower** than eight. Nothing else in the
+table moves more than a factor of two. The 8 x 15 candidate is confirmed, and
+confirmed by a margin that makes the remaining axes second-order.
+
+Setup scales with it too, and separately from the solve: mesh22's setup is
+0.25 s at 8 x 15 and 1.27 s at 1 x 120, a 5x difference on a phase that is
+mostly reading a file. So the geometry is buying parallel input as well as
+parallel relaxation, which the 7.5 NUMA probe could not have separated because
+it moved geometry, endpoints and the starvation threshold together.
+
+This does not fully isolate process count, and the item said it would not: the
+starvation threshold reads `CkNumNodes()`, so it moves with rpn. The
+`idle-flush` arms are what separate that, by holding rpn at 8 and moving the
+policy instead -- and they move almost nothing, which is the answer. The
+default `starved` policy is right: forcing it off costs 1.5x on road-ny and
+1.12x on mesh22, forcing it on is within noise everywhere. Whatever the rpn
+sweep is measuring, it is not the starvation threshold.
+
+### The shared-memory lead is closed, in the opposite direction
+
+The `-shmem` tree the build links has `LCI_WITH_SHM 0` and the unused `-shm`
+tree beside it has it on, which read like unfortunate naming and a one-line fix.
+It is not: enabling LCI's shared-memory backend is **2x slower on rmat22** and
+neutral on the other two. rmat22 is the graph with by far the most traffic, so
+the axis is being exercised; the backend is simply worse for it than what the
+provider does with the same traffic. The newer tree is the right default and
+the naming is the only thing wrong.
+
+### The registration cache does not explain anything
+
+The earlier section of this note established that the UCX warning is mechanical
+and that registration only happens on the rendezvous path, above
+`max_bcopy_size`, derived from `packet_size`. `packets-eager-64k` raises
+`packet_size` to 64 KB -- past the measured message sizes, so those graphs leave
+the rendezvous path and registration entirely -- and lowers `npackets` to 4096
+to keep the pool affordable. It reads 1.00x to 1.02x on all three graphs.
+`packets-8192`, which shrinks the pool 8-fold at the default packet size, is
+likewise 1.01x to 1.02x.
+
+So the missing registration cache costs nothing measurable, and about 490 MB per
+process of the reservation buys nothing measurable either. The item said not to
+assume the warning explained the observed gap; it does not, and the pool can be
+cut by a factor of eight for free on this workload.
+
+**The caveat is real and it is the same one as before.** This is one node. All
+eight processes are on the same host, so the wire is short and the in-flight
+message counts are the smallest they will ever be. `transport-shm` moving 2x
+shows there is a real transport under test rather than a loopback no-op, but a
+registration cache and a packet pool are both things that should matter more at
+sixteen nodes than at one. These arms say the warning is not the single-node
+gap; they do not say it is nothing anywhere.
+
 ## What this note does not do
 
-No GAPBS profile, no queue/cache/aggregation accounting, no layout separation,
-and no Wasp comparison -- the item marks Wasp as additional rather than a
-prerequisite in any case. Those need allocations, and they need the setup
-timing repair above to have landed first, which it now has.
+No GAPBS profile, no queue/cache/aggregation accounting, and no Wasp comparison
+-- the item marks Wasp as additional rather than a prerequisite in any case. The
+layout separation the item asked for is done, and its answer is that process
+count dominates and the starvation policy does not; the remaining axes are
+untested above one node.
