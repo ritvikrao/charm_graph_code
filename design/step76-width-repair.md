@@ -446,3 +446,55 @@ one-node re-take suggested. The width rule is not a default, and it is not a
 road-ny rule. It is a **mesh** rule, and road-ny -- the graph 7.6d measured at
 2.73x and this note put in the map on that basis -- is the weakest consistent
 win in the table.
+
+## Sixteen nodes, and the answer
+
+Job 22069455, 216 of 216 valid. `weight` wins on all nine graphs here, 1.18x to
+1.93x — but sixteen nodes is also the noisiest allocation in the sweep, with
+control readings from 1.18x to 1.15x slower, a band of about 1.35x, so the
+margins matter less than the counts.
+
+All four allocations, paired speedups against `logv-frozen`, and the paired
+runs the rule won out of forty:
+
+| graph | 1 node | 2 nodes | 8 nodes | 16 nodes | won |
+|---|---:|---:|---:|---:|---:|
+| **mesh20** | 1.20x | 1.47x | 1.56x | 1.93x | **40/40** |
+| **mesh22** | 1.24x | 1.39x | 1.53x | 1.67x | **40/40** |
+| youtube | 1.24x | 1.08x | 1.31x | 1.25x | 34/40 |
+| rmat20 | 1.15x | 1.13x | 1.06x | 1.59x | 34/40 |
+| rmat20-s2 | 1.25x | 1.01x slower | 1.35x | 1.46x | 32/40 |
+| road-ny | 1.05x | 1.09x | 1.16x | 1.18x | 28/40 |
+| uniform20-s2 | 1.05x | 1.35x slower | 1.05x | 1.22x | 23/40 |
+| uniform20 | 1.10x | 1.42x slower | 1.08x slower | 1.38x | 22/40 |
+| rmat22 | 1.06x | 1.16x slower | 1.01x slower | 1.42x | 19/40 |
+
+1080 timed runs, every one valid, four allocations, one binary.
+
+**Only mesh20 and mesh22 win every allocation on every source, and only they
+grow monotonically with node count.** They are the map. The next three never
+regress, but are weaker and do not clear their own control floors everywhere;
+the last three change sign between allocations. None of those six is
+established, and the honest reason is that this sweep cannot separate a 1.1x
+effect from a 1.15x control floor at eight paired runs.
+
+It is not a default. At two nodes four graphs regress, one of them by 1.42x on
+2 of 12.
+
+`PER_GRAPH_WIDTH_RULE` is now `{'mesh20': 'weight', 'mesh22': 'weight'}`. It
+named road-ny, alone, because 7.6d measured road-ny at 2.73x on 4/4 sources and
+put mesh20 and mesh22 at 1.01x and 1.05x — inside that campaign's resolution,
+and so excluded as noise. At a deployable process layout road-ny is the weakest
+consistent win in the table and the two mesh graphs are the entire result. Both
+of the map's original decisions were wrong, and they were wrong for the same
+reason: **the 7.6d table was a property of the process layout, not of the
+graphs.**
+
+### What is still not known
+
+Every number here is compute time at eight processes of fifteen. At eight nodes
+setup is 1.085 s against a compute median of 0.216 s, so a growing share of
+these runs is process launch and graph reading — and these graphs are small for
+sixteen nodes, about a thousand vertices per worker on mesh20. The rule's
+margin grows with node count on the mesh graphs, which is the interesting part,
+but whether that survives a problem sized for the allocation is untested.

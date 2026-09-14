@@ -29,23 +29,41 @@ VARIANTS = {
                 '--bucket-policy', 'fixed', '--idle-flush', 'off'],
 }
 
-# Step 7.6d measured the two width rules on all nine graphs at one node with
-# 120 workers (job 22061958). `weight` is not a default -- it costs 1.4x on
-# rmat22, 1.7x on youtube, 2.4x on rmat20 and 2.9x on rmat20-s2, which are
-# exactly the graphs whose adaptive coarsening reaches bucket scale 7-10 on
-# its own and therefore does not need it. It is worth 2.73x on road-ny, on
-# 4/4 held-out sources, which is one of the three graphs stuck at scale 1.
-# So it is a per-case setting, named here by graph rather than derived, and
-# applied only to configs that ask for it (`per_graph_width`). Two things
-# keep it honest: the flag lands in `command` on every row, and the width the
-# run actually bucketed with is parsed back as `bucket_width`.
+# The `weight` width rule is a per-case setting, and the case is the mesh.
 #
-# CAVEAT, and it is the reason this map has one entry rather than three: the
-# measurement is one allocation. The same over-width on rmat22 reads 0.98x at
-# 128 workers over eight nodes and 1.4x slower at 120 workers on one, so the
-# sign of this effect is known to move with worker density. mesh20 and mesh22
-# are left out because at 1.01x and 1.05x they are inside that uncertainty.
-PER_GRAPH_WIDTH_RULE = {'road-ny': 'weight'}
+# Jobs 22063138, 22069453, 22069454 and 22069455 ran it at one, two, eight and
+# sixteen nodes, all at eight processes of fifteen, 1080 timed runs, all valid.
+# Paired speedups against the shipped `logv` rule with the clamp frozen, and
+# the count of paired runs the rule won out of forty:
+#
+#   mesh20        1.20x  1.47x  1.56x  1.93x   40/40
+#   mesh22        1.24x  1.39x  1.53x  1.67x   40/40
+#   youtube       1.24x  1.08x  1.31x  1.25x   34/40
+#   rmat20        1.15x  1.13x  1.06x  1.59x   34/40
+#   rmat20-s2     1.25x  0.99x  1.35x  1.46x   32/40
+#   road-ny       1.05x  1.09x  1.16x  1.18x   28/40
+#   uniform20-s2  1.05x  0.74x  1.05x  1.22x   23/40
+#   uniform20     1.10x  0.70x  0.93x  1.38x   22/40
+#   rmat22        1.06x  0.86x  0.99x  1.42x   19/40
+#
+# Only mesh20 and mesh22 win every allocation on every source, and only they
+# grow monotonically with node count. They are the map. The next three never
+# regress but are weaker and do not clear their own control floors everywhere,
+# and the last three change sign between allocations, so none of the six is
+# established.
+#
+# It is emphatically not a default: at two nodes, four graphs regress, one of
+# them by 1.42x on 2 of 12. And it is not the map this file had first. 7.6d
+# measured road-ny at 2.73x and named it alone, on a table taken at one process
+# of 120 workers; at a deployable layout road-ny is the weakest consistent win
+# here and mesh20 and mesh22 -- excluded then as noise at 1.01x and 1.05x --
+# are the whole result. The 7.6d table was a property of the process layout.
+#
+# Applied only to configs that ask for it (`per_graph_width`), never to an arm
+# that already names a width or a rule, so no width A/B can be contaminated.
+# The flag lands in `command` on every row and `bucket_width` parses back what
+# the run actually bucketed with. `--per-graph-width off` disables the map.
+PER_GRAPH_WIDTH_RULE = {'mesh20': 'weight', 'mesh22': 'weight'}
 
 
 # Every loss of progress the step 7.5 campaign recorded, with the allocation
