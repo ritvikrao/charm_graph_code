@@ -188,12 +188,50 @@ int window_follow = 0;
 // old behaviour was to give up after 30 s and print the partial distances with
 // the same banner and the same exit status as a converged run.
 double timeout_seconds = 0.0;
-// --bucket-width <w>: distance units per histogram bucket. The width is
-// otherwise derived from |V| alone -- log V for the random-graph modes, sqrt V
-// for the mesh -- which is exactly what H1 of step 6 puts in question: a rule
-// that reads nothing about the distances the graph actually produces. 0 keeps
-// the derived rule, so this is inert unless passed.
+// --bucket-width <w>: distance units per histogram bucket, replacing whichever
+// rule --bucket-width-rule selects. 0 keeps the derived rule, so this is inert
+// unless passed. It is what makes H1 of step 6 an A/B rather than a rebuild.
 double bucket_width_override = 0.0;
+// --bucket-width-rule logv|weight. Which rule derives the width when
+// --bucket-width does not replace it wholesale.
+//
+// logv is what every measurement before this was taken with: log(V) for the
+// file and random-graph modes, sqrt(V) for the generated mesh. It reads
+// nothing about the distances being bucketed, and 7.6b priced that. The
+// histogram spans 2048 * width, so a graph is representable only while the
+// derived width exceeds max_distance / 2048, and the three campaign graphs
+// that fail that test -- road-ny by 50x, mesh22 by 16x, mesh20 by 9x -- are
+// exactly the three where pinning the width was worth anything. See
+// design/step76-controller.md.
+//
+// weight spans the histogram over 2048 maximum-weight edges instead: the width
+// is the heaviest edge in the graph, which is a distance, and is already
+// reduced at build time. It is sufficient whenever the deepest branch of the
+// shortest-path tree averages at most max_weight * 2048 / depth per hop, which
+// holds with a factor of four to spare on every graph measured here. It is a
+// rule and not a bound -- no cheap bound on the distance range is available:
+// max_sum, the one global the solver already computed, is the sum of every
+// vertex's heaviest out-edge and so is three orders of magnitude too loose to
+// divide by 2048. This flag is what measures the rule against the old one.
+enum { WIDTH_RULE_LOGV = 0, WIDTH_RULE_WEIGHT = 1 };
+int bucket_width_rule = WIDTH_RULE_WEIGHT;
+// --clamp-freeze on|off. Whether the clamp threshold moves when buckets merge.
+//
+// off is the shipped behaviour: coarsen_buckets raises bucket_limit alongside
+// bucket_scale, so an update clamped at creation is not clamped at retirement
+// and its decrement lands in an ordinary bucket while its increment sits on
+// 2047. That is the one thing that breaks the merge identity
+// floor(floor(x/s)/k) == floor(x/(s*k)), and --coarsen-clamped exists only to
+// stop merging before it can happen -- which is why a run that once reaches
+// the clamp bucket never coarsens again.
+//
+// on freezes the threshold in distance space and leaves bucket 2047 out of the
+// merge, making it an overflow slot rather than an index: increment and
+// decrement both land there for the life of the run, and conservation holds
+// for every bucket. The price is that coarsening no longer extends the
+// representable range, which is tolerable only because the width rule above
+// means the range should not need extending. The two are one repair.
+bool clamp_freeze = true;
 // --round-delay <ms>: wait this long between the end of one controller round
 // and the start of the next. The cycle is otherwise back-to-back -- every chare
 // calls contribute_histogram() at the end of current_thresholds() -- so the
@@ -422,6 +460,9 @@ private:
   double setup_time = -1.0;  // start_time -> solve start: input + build
   double stats_time = -1.0;  // solve end -> total: the statistics reduction
   double total_time = -1.0;
+  // The heaviest edge in the graph, reduced at build time. The bucket width
+  // is derived from it, so a run that reports one reports the other.
+  cost graph_max_weight = 0;
   long max_index;
   int threshold_change_counter;
   int previous_threshold;
@@ -629,6 +670,36 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg.rfind("--bucket-width-rule", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--bucket-width-rule=", 0) == 0)
+          value = arg.substr(20);
+        else if (arg == "--bucket-width-rule" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "logv")
+          bucket_width_rule = WIDTH_RULE_LOGV;
+        else if (value == "weight")
+          bucket_width_rule = WIDTH_RULE_WEIGHT;
+        else {
+          ckout << "--bucket-width-rule must be logv or weight" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg.rfind("--clamp-freeze", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--clamp-freeze=", 0) == 0)
+          value = arg.substr(15);
+        else if (arg == "--clamp-freeze" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "off")
+          clamp_freeze = false;
+        else if (value == "on")
+          clamp_freeze = true;
+        else {
+          ckout << "--clamp-freeze must be off or on" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg.rfind("--window-follow", 0) == 0) {
         std::string value;
         if (arg.rfind("--window-follow=", 0) == 0)
@@ -711,6 +782,8 @@ public:
             << "[--bucket-policy fixed|adaptive] [--bucket-target <buckets>] "
             << "[--two-tier-per-pe <updates>] [--two-tier-absolute <updates>] "
             << "[--coarsen-clamped block|allow|strict] "
+            << "[--bucket-width-rule logv|weight] "
+            << "[--clamp-freeze off|on] "
             << "[--window-follow off|on] "
             << "[--idle-flush off|on|starved] "
             << "[--combine off|hold] "
@@ -1053,23 +1126,40 @@ public:
   void rmat_edges_distributed() { arr.build_rmat_csr(); }
 
   /**
-   * Start algorithm from source vertex
+   * Every chare holds its partition, and the reduction that says so now
+   * carries the heaviest edge in the graph. Seed the bucket width from it.
    */
-  void begin(cost max_sum) {
-    // ready to begin algorithm
-    shared.max_path_value(max_sum);
-    // Reached once every chare holds its partition, in every mode, so this is
-    // the one boundary that means the same thing everywhere: the solver could
-    // start now. MODE_UNIFORM and MODE_MESH generate rather than read, so for
-    // them input and build are the same phase and read_time is that phase;
-    // the guard that used to sit here left modes 3 and 4 unassigned.
+  void begin(cost max_edge_weight) {
+    graph_max_weight = max_edge_weight;
+#ifdef INFO_PRINTS
+    ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
+#endif
+    // The seed has to reach every chare before any update is created, and it
+    // cannot ride the SharedInfo broadcast above: that is a group proxy and
+    // start_algo goes to an array element, and Charm++ orders neither against
+    // the other. So it is a real barrier -- one broadcast and one empty
+    // reduction, against a setup phase measured in seconds.
+    if (bucket_width_rule == WIDTH_RULE_WEIGHT && bucket_width_override <= 0.0)
+      arr.seed_bucket_width(max_edge_weight);
+    else
+      start_source();
+  }
+
+  /** Every chare is binning at the seeded width. */
+  void width_seeded() { start_source(); }
+
+  /** Start algorithm from source vertex. */
+  void start_source() {
+    // Reached once every chare holds its partition and the width it will
+    // bucket with, in every mode, so this is the one boundary that means the
+    // same thing everywhere: the solver could start now. MODE_UNIFORM and
+    // MODE_MESH generate rather than read, so for them input and build are the
+    // same phase and read_time is that phase; the guard that used to sit here
+    // left modes 3 and 4 unassigned.
     setup_time = CkWallTimer() - start_time;
     if (generate_mode == MODE_UNIFORM || generate_mode == MODE_MESH ||
         generate_mode == MODE_RMAT)
       read_time = setup_time; // generated, so there is no separable input
-#ifdef INFO_PRINTS
-    ckout << "The sum of the maximum out-edges is " << max_sum << endl;
-#endif
     Update new_edge;
     new_edge.dest_vertex = start_vertex;
     new_edge.distance = 0;
@@ -1114,10 +1204,17 @@ public:
       return *reason = COARSEN_TWO_TIER, 1;
     if (histogram_sum <= 0)
       return *reason = COARSEN_EMPTY, 1;
-    if (coarsen_clamp_policy != CLAMP_ALLOW && clamped > 0)
-      return *reason = COARSEN_CLAMP_LIVE, 1;
-    if (coarsen_clamp_policy == CLAMP_STRICT && clamp_ever_live)
-      return *reason = COARSEN_CLAMP_SEEN, 1;
+    // With the clamp threshold frozen the merge is exact for every bucket,
+    // including 2047, which coarsen_buckets leaves alone. There is then
+    // nothing for these guards to protect and they are what stops a run that
+    // has touched the clamp bucket from ever coarsening again, so a frozen
+    // threshold retires them rather than leaving them to cost rounds.
+    if (!clamp_freeze) {
+      if (coarsen_clamp_policy != CLAMP_ALLOW && clamped > 0)
+        return *reason = COARSEN_CLAMP_LIVE, 1;
+      if (coarsen_clamp_policy == CLAMP_STRICT && clamp_ever_live)
+        return *reason = COARSEN_CLAMP_SEEN, 1;
+    }
     const double lo_mass = 0.05 * histogram_sum, hi_mass = 0.95 * histogram_sum;
     long mass = 0;
     int lo = -1, hi = -1;
@@ -1613,6 +1710,17 @@ public:
           << max_above_window << endl;
     ckout << "Bucket scale: " << bucket_scale << " (" << coarsenings
           << " coarsenings)" << endl;
+    // The width is what the histogram's 2048 buckets span, and until 7.6d no
+    // run said what it was -- which is why a rule derived from |V| could bucket
+    // distances for a whole campaign without anyone reading it.
+    ckout << "Bucket width: "
+          << (bucket_width_override > 0.0
+                  ? bucket_width_override
+                  : (bucket_width_rule == WIDTH_RULE_WEIGHT
+                         ? std::max(log((double)V), (double)graph_max_weight)
+                         : (generate_mode == MODE_MESH ? sqrt((double)V)
+                                                       : log((double)V))))
+          << ", heaviest edge: " << graph_max_weight << endl;
     ckout << "Updates noted: " << msg_stats[STAT_NOTED] << endl;
     ckout << "Distance changes: " << msg_stats[STAT_DISTANCE_CHANGES]
           << ", per vertex: " << msg_stats[STAT_DISTANCE_CHANGES] * 1.0 / V
@@ -1754,7 +1862,6 @@ void fast_exit(void *obj, double time) {
  */
 class SharedInfo : public CBase_SharedInfo {
 public:
-  cost max_path;
   int event_id;
 
   SharedInfo() {
@@ -1769,8 +1876,6 @@ public:
     }
 #endif
   }
-
-  void max_path_value(cost max_path_val) { max_path = max_path_val; }
 };
 
 /**
@@ -2029,7 +2134,7 @@ public:
           << num_vertices << " vertices" << endl;
 #endif
     long side_length = mesh_side_length(V);
-    cost max_edges_sum = 0;
+    cost heaviest_edge = 0;
     std::vector<Edge> adjacency; // one scratch buffer, reused for every vertex
     local_graph.begin(num_vertices, 4 * num_vertices);
     for (long i = 0; i < num_vertices; i++) {
@@ -2037,11 +2142,9 @@ public:
       // See graphlib/generators.h: identical adjacency for any PE count.
       gen_mesh_vertex(this_vertex, side_length, S, adjacency);
       actual_edges += adjacency.size();
-      cost largest_outedge = 0;
       for (size_t j = 0; j < adjacency.size(); j++)
-        if (adjacency[j].distance > largest_outedge)
-          largest_outedge = adjacency[j].distance;
-      max_edges_sum += largest_outedge;
+        if (adjacency[j].distance > heaviest_edge)
+          heaviest_edge = adjacency[j].distance;
       check_mesh_degree(this_vertex, side_length, adjacency.size());
       local_graph.append(adjacency);
     }
@@ -2051,7 +2154,7 @@ public:
           << endl;
 #endif
     CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
-    contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
+    contribute(sizeof(cost), &heaviest_edge, CkReduction::max_long, cb);
   }
 
   void generate_local_graph(long _num_vertices, long _num_edges,
@@ -2064,7 +2167,7 @@ public:
           << _num_vertices << " vertices" << endl;
 #endif
     initialize_data(partition, dividers);
-    cost max_edges_sum = 0;
+    cost heaviest_edge = 0;
     std::vector<Edge> adjacency; // one scratch buffer, reused for every vertex
     local_graph.begin(num_vertices, average_degree * num_vertices);
     for (long i = 0; i < num_vertices; i++) {
@@ -2076,17 +2179,15 @@ public:
         // so the graph does not change with PE count. See graphlib/generators.h.
         gen_random_vertex(i + start_vertex, V, average_degree, S, adjacency);
         actual_edges += adjacency.size();
-        cost largest_outedge = 0;
         for (size_t j = 0; j < adjacency.size(); j++)
-          if (adjacency[j].distance > largest_outedge)
-            largest_outedge = adjacency[j].distance;
-        max_edges_sum += largest_outedge;
+          if (adjacency[j].distance > heaviest_edge)
+            heaviest_edge = adjacency[j].distance;
       }
       local_graph.append(adjacency);
     }
     local_graph.finish();
     CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
-    contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
+    contribute(sizeof(cost), &heaviest_edge, CkReduction::max_long, cb);
   }
 
   /**
@@ -2172,19 +2273,37 @@ public:
   }
 
   /**
-   * The reduction every graph-construction path ends in: the sum over local
-   * vertices of the heaviest out-edge, which Main turns into lmax. Edges are
-   * sorted by weight within a row, so the heaviest is the last.
+   * The reduction every graph-construction path ends in: the heaviest edge
+   * weight in the graph. Edges are sorted by weight within a row, so the
+   * heaviest out-edge of a vertex is the last one.
+   *
+   * This used to be the sum of those out-edges, which Main stored in
+   * SharedInfo::max_path and nothing ever read -- the reduction was a build
+   * barrier carrying a dead value, and the comment claiming it became lmax was
+   * wrong; lmax is numeric_limits<cost>::max(). The barrier is still needed and
+   * still here, but it now carries the one distance-scale quantity the width
+   * rule needs, at no extra collective and no extra pass over the rows.
    */
   void contribute_largest_outedges() {
-    cost max_edges_sum = 0;
+    cost heaviest_edge = 0;
     for (long i = 0; i < num_vertices; i++) {
       long degree = local_graph.degree(i);
-      if (degree > 0)
-        max_edges_sum += local_graph.edges(i)[degree - 1].distance;
+      if (degree > 0 && local_graph.edges(i)[degree - 1].distance > heaviest_edge)
+        heaviest_edge = local_graph.edges(i)[degree - 1].distance;
     }
     CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
-    contribute(sizeof(cost), &max_edges_sum, CkReduction::sum_long, cb);
+    contribute(sizeof(cost), &heaviest_edge, CkReduction::max_long, cb);
+  }
+
+  /**
+   * --bucket-width-rule weight: bucket by distance rather than by |V|. The
+   * width is the heaviest edge in the graph, so the histogram spans 2048 of
+   * them; log(V) stays as a floor, for unit-weight inputs where 2048 hops of
+   * span would leave the buckets too coarse to order anything.
+   */
+  void seed_bucket_width(cost max_edge_weight) {
+    set_bucket_width(std::max(log((double)V), (double)max_edge_weight));
+    contribute(CkCallback(CkReductionTarget(Main, width_seeded), mainProxy));
   }
 
   void get_graph(LongEdge *edges, long E, long *partition, int dividers) {
@@ -2422,7 +2541,11 @@ public:
     // and this says so when it matters rather than leaving a run to hang:
     // a run that prints this and then stalls at first_nonzero = 2047 / k has
     // told the whole story.
-    if (histogram[HISTO_BUCKET_COUNT - 1] != 0 && !clamp_coarsen_warned) {
+    // ... unless the threshold is frozen, in which case the clamp bucket is
+    // an overflow slot at a fixed distance rather than an index, merged_top
+    // below leaves it out of the merge, and there is nothing to warn about.
+    if (!clamp_freeze && histogram[HISTO_BUCKET_COUNT - 1] != 0 &&
+        !clamp_coarsen_warned) {
       clamp_coarsen_warned = true;
       ckout << endl
             << "COARSEN_CLAMPED pe=" << CkMyPe() << " k=" << k
@@ -2432,7 +2555,9 @@ public:
             << ": merged buckets while updates were charged to the clamp "
                "bucket, whose real index the merge cannot know." << endl;
     }
-    for (int i = 1; i < HISTO_BUCKET_COUNT; i++) {
+    const int merged_top = clamp_freeze ? HISTO_BUCKET_COUNT - 1
+                                       : HISTO_BUCKET_COUNT;
+    for (int i = 1; i < merged_top; i++) {
       const int j = i / k;
       histogram[j] += histogram[i];
       histogram[i] = 0;
@@ -2451,8 +2576,9 @@ public:
       }
     }
     bucket_scale *= k;
-    bucket_limit = (double)HISTO_BUCKET_COUNT * bucket_scale;
-    tram->coarsenBuckets(k);
+    if (!clamp_freeze)
+      bucket_limit = (double)HISTO_BUCKET_COUNT * bucket_scale;
+    tram->coarsenBuckets(k, clamp_freeze);
   }
 
   void generate_updates(long local_index, bool bfs) {

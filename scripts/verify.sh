@@ -234,6 +234,16 @@ PROGRESS_CONFIGS=(
   "10000 0 1 0 2 0.999 0.005 4|--bucket-policy fixed --bucket-width 0.001"
   "10000 0 1 0 2 0.999 0.005 4|--bucket-policy adaptive --bucket-width 0.001"
   "10000 0 1 0 2 0.999 0.005 4|--bucket-policy fixed --bucket-width 0.001 --round-delay 2"
+  # The clamp fixture. A 200x200 mesh at width 8 clamps at distance 16384
+  # against a range near 24000, so the clamp bucket goes live while the band is
+  # still wide enough to coarsen. With --coarsen-clamped allow the guard is out
+  # of the way, so this is the merge itself under test: unfrozen it strands the
+  # clamped counts at 2047/k, the window pins there and the run hangs until the
+  # timeout, three times out of three. Frozen, bucket 2047 is an overflow slot
+  # that no merge touches, increment and decrement both land on it, and the
+  # same run converges in about 0.05 s. This is the one configuration in the
+  # gate that fails if --clamp-freeze stops working, so it names it.
+  "40000 0 1 0 2 0.999 0.005 4|--bucket-policy adaptive --bucket-width 8 --coarsen-clamped allow --clamp-freeze on"
 )
 progress_run=0
 for entry in "${PROGRESS_CONFIGS[@]}"; do

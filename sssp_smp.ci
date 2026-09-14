@@ -23,6 +23,8 @@ mainmodule sssp_smp
   readonly int two_tier_per_pe;
   readonly long two_tier_absolute;
   readonly int coarsen_clamp_policy;
+  readonly int bucket_width_rule;
+  readonly bool clamp_freeze;
   readonly int window_follow;
   readonly int combine_mode;
   readonly bool batch_fold;
@@ -37,7 +39,8 @@ mainmodule sssp_smp
   mainchare Main
   {
     entry Main(CkArgMsg* m);
-    entry [reductiontarget] void begin(cost max_sum); //wait for all chares to receive graph partition, register qd callback here (callback to done method), start algorithm
+    entry [reductiontarget] void begin(cost max_edge_weight); //every chare holds its partition and the graph's heaviest edge is known: seed the bucket width, then start
+    entry [reductiontarget] void width_seeded(); //every chare is binning at the seeded width
     entry void rmat_edges_distributed(); // quiescence: every generated edge has reached its owner
     entry [reductiontarget, expedited] void reduce_histogram(long histo_values[N], int histo_length);
     entry [reductiontarget] void done(long msg_stats[N], int N); //bcast to chares to print results and end program
@@ -58,6 +61,7 @@ mainmodule sssp_smp
     entry void build_rmat_csr(); // all edges have arrived; build the rows
     entry void load_gapbs_graph(std::string path, long partition[dividers], int dividers); // read this PE's rows straight out of a .sg/.wsg file
     entry void start_papi();
+    entry void seed_bucket_width(cost max_edge_weight); // --bucket-width-rule weight: bucket by distance, not by |V|
     entry void start_algo(Update new_vertex_and_distance);
     entry void process_heap();
     entry void process_update(Update new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares
@@ -73,7 +77,6 @@ mainmodule sssp_smp
   group SharedInfo
   {
     entry SharedInfo();
-    entry void max_path_value(cost max_path_val);
   };
 
 };
