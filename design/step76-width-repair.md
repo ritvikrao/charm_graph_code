@@ -320,3 +320,50 @@ all here, and the campaign has to be re-run. It does mean the table 7.6d
 demoted the rule on was taken at one process of 120 workers, which the item-3
 deployment campaign then measured at 7x to 20x off the best layout, and that
 none of its numbers should be quoted without that written next to them.
+
+## The one-node re-take, complete: every 7.6d regression is gone
+
+Job 22063138, 324 of 324 valid, all nine graphs, one node, 120 workers, eight
+processes of fifteen. Paired medians against `logv-frozen`, with the count of
+paired runs won, and 7.6d's figure for the same graph at the same node and
+worker count with those workers in **one** process:
+
+| graph | `weight` | won | `control` (floor) | 7.6d at rpn 1 | won |
+|---|---:|---:|---:|---:|---:|
+| rmat20-s2 | 1.25x | 10/12 | 1.04x | **2.9x slower** | 0/4 |
+| youtube | 1.24x | 11/12 | 1.05x | **1.7x slower** | 1/4 |
+| mesh22 | 1.24x | 12/12 | 1.01x slower | 1.05x | 2/4 |
+| mesh20 | 1.20x | 12/12 | 1.01x slower | 1.01x | 1/4 |
+| rmat20 | 1.15x | 10/12 | 1.02x slower | **2.4x slower** | 0/4 |
+| uniform20 | 1.10x | 11/12 | 1.01x slower | 1.18x slower | 1/4 |
+| rmat22 | 1.06x | 8/12 | 1.03x slower | **1.4x slower** | 1/4 |
+| uniform20-s2 | 1.05x | 9/12 | 1.03x slower | 1.08x slower | 2/4 |
+| road-ny | 1.05x | 7/12 | 1.02x | **2.73x** | 4/4 |
+
+**Not one graph regresses, and the four regressions 7.6d recorded -- 2.9x, 2.4x,
+1.7x and 1.4x -- are all gone.** Six of the nine clear the control floor
+comfortably; rmat22, uniform20-s2 and road-ny sit at it and are ties. The
+ordering has also inverted: road-ny, which 7.6d measured as the rule's one
+unambiguous win at 2.73x on 4/4 sources, is now its *weakest* result, and
+mesh20 and mesh22, which 7.6d put at 1.01x and 1.05x and this note therefore
+excluded from the per-graph map as noise, are 1.20x and 1.24x on 12 of 12.
+
+The mechanism is not mysterious. road-ny's `logv-frozen` baseline is 0.204 s
+here against about 2.5 s in 7.6d: the layout repair took twelve times off the
+baseline, and the width rule's headroom went with it. What 7.6d was measuring
+on road-ny was mostly the cost of running 120 workers in one process.
+
+### What this does to the per-graph map
+
+`PER_GRAPH_WIDTH_RULE = {'road-ny': 'weight'}` was justified by 2.73x on 4/4
+sources, and at the deployment geometry that is 1.05x on 7 of 12 -- a tie. The
+map names the one graph with the least to gain, and excludes the two with the
+most, for reasons this data reverses. **It is left in place unchanged until the
+two-, eight- and sixteen-node jobs report.** The rule this step exists to teach
+is that a default must not move on one allocation, and that applies to
+withdrawing one as much as to setting one: the two-node fragment already has
+`weight` at 1.28x slower on uniform20 on 0 of 12, so "weight everywhere" is not
+established either.
+
+What *is* established is that the 7.6d table cannot be read as a property of
+the graphs. It was a property of the process layout.
