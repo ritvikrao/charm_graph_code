@@ -40,7 +40,7 @@ make -C "$APP" -B sssp_smp
   sha256sum "$ROOT/bin/acic_progress" "$ROOT/bin/acic_shm" "$APP/sssp_smp.cpp"
 } | tee "$ROOT/bin/deployment-manifest.txt"
 
-sbatch --nodes=1 --time=02:00:00 --job-name=acic-deploy \
+sbatch --nodes=1 --time=00:45:00 --job-name=acic-deploy \
   --output="$ROOT/logs/deploy-%j.out" \
   "$APP/benchmarks/compare.sbatch" "$ROOT" \
   --mode deployment --graphs mesh22,rmat22,road-ny \

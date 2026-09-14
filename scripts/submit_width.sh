@@ -53,16 +53,22 @@ cp "$APP/sssp_smp" "$ROOT/bin/acic_width"
 # reps fall from 3 to 2 above two nodes so that the larger allocations finish
 # inside the same wall clock; sources and arms are identical throughout, so
 # every cell is still a paired median over at least eight runs.
+# Walltime is sized from the campaign, not rounded up to the queue maximum.
+# Job 22063138 -- one node, three arms, nine graphs, three repeats, 351 runs --
+# finished in 12 minutes against a 2:00:00 request. Asking for ten times what a
+# job needs keeps it out of every backfill window it would otherwise fit, and
+# the jsonl is written incrementally, so a limit that turns out too tight costs
+# the tail of a campaign rather than all of it.
 submit() {
-  local nodes=$1 reps=$2
-  sbatch --nodes="$nodes" --time=02:00:00 --job-name="acic-width-${nodes}n" \
+  local nodes=$1 reps=$2 time=${3:-01:00:00}
+  sbatch --nodes="$nodes" --time="$time" --job-name="acic-width-${nodes}n" \
     --output="$ROOT/logs/width-${nodes}n-%j.out" \
     "$APP/benchmarks/compare.sbatch" "$ROOT" \
     --mode width --workers 120 --acic-rpn 8 \
     --arms "$ARMS" \
     --sources 4 --reps "$reps" --timeout 120
 }
-submit 1 3
-submit 2 3
-submit 8 2
-submit 16 2
+submit 1 3 00:30:00
+submit 2 3 00:45:00
+submit 8 2 01:00:00
+submit 16 2 01:00:00
