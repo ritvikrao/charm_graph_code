@@ -29,6 +29,24 @@ VARIANTS = {
                 '--bucket-policy', 'fixed', '--idle-flush', 'off'],
 }
 
+# Step 7.6d measured the two width rules on all nine graphs at one node with
+# 120 workers (job 22061958). `weight` is not a default -- it costs 1.4x on
+# rmat22, 1.7x on youtube, 2.4x on rmat20 and 2.9x on rmat20-s2, which are
+# exactly the graphs whose adaptive coarsening reaches bucket scale 7-10 on
+# its own and therefore does not need it. It is worth 2.73x on road-ny, on
+# 4/4 held-out sources, which is one of the three graphs stuck at scale 1.
+# So it is a per-case setting, named here by graph rather than derived, and
+# applied only to configs that ask for it (`per_graph_width`). Two things
+# keep it honest: the flag lands in `command` on every row, and the width the
+# run actually bucketed with is parsed back as `bucket_width`.
+#
+# CAVEAT, and it is the reason this map has one entry rather than three: the
+# measurement is one allocation. The same over-width on rmat22 reads 0.98x at
+# 128 workers over eight nodes and 1.4x slower at 120 workers on one, so the
+# sign of this effect is known to move with worker density. mesh20 and mesh22
+# are left out because at 1.01x and 1.05x they are inside that uncertainty.
+PER_GRAPH_WIDTH_RULE = {'road-ny': 'weight'}
+
 
 # Every loss of progress the step 7.5 campaign recorded, with the allocation
 # and the policy that produced it. Each is replayed on two binaries: `acic`,
@@ -76,6 +94,7 @@ class Campaign:
     def run(self, graph, source, config, expected, phase, rep=0, extra=None):
         engine = config['engine']
         workers = self.args.workers
+        per_graph_rule = None
         binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
@@ -92,10 +111,18 @@ class Campaign:
             # parsed. The core past the worker region is still left free for
             # the OS -- the pemap is unchanged -- so these runs are exactly
             # comparable with the recorded ones.
+            flags = list(VARIANTS.get(config['name'], config.get('flags', []))) + list(extra or [])
+            # A config that already states a width or a rule keeps it: an arm
+            # of the width A/B must mean what its name says on every graph.
+            if (config.get('per_graph_width') and self.args.per_graph_width == 'on'
+                    and not any(f.startswith('--bucket-width') for f in flags)):
+                rule = PER_GRAPH_WIDTH_RULE.get(graph)
+                if rule:
+                    flags += ['--bucket-width-rule', rule]
+                    per_graph_rule = rule
             args = [str(binary), '0', str(path), '1', str(source), '4', *pp,
                     '--result-digest', '--timeout', str(self.args.timeout),
-                    *VARIANTS.get(config['name'], config.get('flags', [])),
-                    *(extra or []), '+ppn', str(workers), '+pemap', f'0-{workers-1}',
+                    *flags, '+ppn', str(workers), '+pemap', f'0-{workers-1}',
                     '+lci_ndevices', '4']
             launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
                       '--ntasks-per-node=1', '--cpu-bind=none']
@@ -131,7 +158,8 @@ class Campaign:
                       selection_job=self.args.selection_job,
                       config=config, index=self.count,
                       binary_sha256=self.binary_hashes[str(binary)],
-                      hosts=os.environ.get('SLURM_JOB_NODELIST'), command=cmd)
+                      hosts=os.environ.get('SLURM_JOB_NODELIST'), command=cmd,
+                      per_graph_width_rule=per_graph_rule)
         begin = time.monotonic()
         with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               text=True, env=env, start_new_session=True) as process:
@@ -268,7 +296,16 @@ class Campaign:
                     r['seconds'] for r in samples[json.dumps(c, sort_keys=True)]))
                 selected.append(dict(config, name='tuned-fixed' if engine == 'acic' else engine,
                                      **({'flags': config['flags']} if engine == 'acic' else {})))
-            selected += [dict(engine='acic', name=n) for n in ['current', 'control', 'old-fixed', 'open']]
+            # `current` and `control` are the shipped adaptive configuration
+            # and its resolution floor -- the pair that stands for "ACIC as we
+            # would run it" in the comparison tables -- so they, and not the
+            # historical `old-fixed`/`open` arms, carry the per-graph width
+            # rule. The tuned-fixed arm already selects its own width on the
+            # training sources, and an explicit --bucket-width makes the rule
+            # inert anyway.
+            selected += [dict(engine='acic', name=n, per_graph_width=True)
+                         for n in ['current', 'control']]
+            selected += [dict(engine='acic', name=n) for n in ['old-fixed', 'open']]
             (self.root/'logs'/(self.tag+'-'+graph+'-selected.json')).write_text(json.dumps(selected, indent=2)+'\n')
             for rep in range(self.args.reps):
                 rows = held_out[:]
@@ -731,13 +768,24 @@ class Campaign:
             dict(engine=engine, name='logv-frozen',
                  flags=['--bucket-width-rule', 'logv', '--clamp-freeze', 'on']),
             dict(engine=engine, name='weight-unfrozen',
-                 flags=['--clamp-freeze', 'off']),
-            # The new defaults, and the same thing again: the difference
-            # between them is what this allocation can resolve, and no arm
-            # closer than that is a result.
-            dict(engine=engine, name='weight'),
+                 flags=['--bucket-width-rule', 'weight', '--clamp-freeze', 'off']),
+            dict(engine=engine, name='weight',
+                 flags=['--bucket-width-rule', 'weight', '--clamp-freeze', 'on']),
+            # The shipped default, unflagged, run twice under two names: the
+            # difference between `control` and its explicit twin is what this
+            # allocation can resolve, and no arm closer than that is a result.
+            # In 22061958 the default was `weight`, so `control` twinned that
+            # arm; 3977158 moved the default to logv + freeze, so it now
+            # twins `logv-frozen`. Every other arm here states its own flags
+            # precisely so that the default may move again without silently
+            # renaming a result.
             dict(engine=engine, name='control'),
         ]
+        if self.args.arms:
+            keep = self.args.arms.split(',')
+            configs = [c for c in configs if c['name'] in keep]
+            if len(configs) != len(keep):
+                raise ValueError(f'unknown arm in --arms {self.args.arms}')
         for graph in self.args.graphs.split(','):
             refs = self.references(graph)
             for c in configs:
@@ -859,6 +907,9 @@ if __name__ == '__main__':
     parser.add_argument('--sources', type=int, default=8)
     parser.add_argument('--reps', type=int, default=2)
     parser.add_argument('--timeout', type=int, default=120)
+    parser.add_argument('--per-graph-width', choices=['on', 'off'], default='on',
+                        help='apply PER_GRAPH_WIDTH_RULE to configs that ask for it')
+    parser.add_argument('--arms', help='comma-separated config names to keep, for modes that name their arms')
     args = parser.parse_args()
     campaign = Campaign(args)
     getattr(campaign, args.mode)()

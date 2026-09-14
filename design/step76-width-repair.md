@@ -218,3 +218,44 @@ answer. Nothing here is measured above one node.
 edge alongside the phase timers, so a run in the record says what it bucketed
 with -- which nothing did before, and which is how a width derived from |V|
 could bucket distances for a whole campaign without anyone reading the number.
+
+## Taking the one gain that is unambiguous: road-ny, by name
+
+The rule is not a default, but on road-ny it is worth 2.73x on 4/4 held-out
+sources, and it is already a flag. So `benchmarks/run.py` carries a one-entry
+map, `PER_GRAPH_WIDTH_RULE = {'road-ny': 'weight'}`, applied only to configs
+that ask for it by setting `per_graph_width`. In `benchmark()` that is
+`current` and `control` -- the shipped adaptive configuration and its
+resolution floor, the pair that stands for ACIC as we would run it in the
+comparison tables. The historical `old-fixed` and `open` arms are left alone
+because changing them would change what an already-recorded arm means, and the
+tuned-fixed arm already selects a width on the training sources, which makes
+the rule inert anyway (`bucket_width_override > 0` skips it).
+
+Named by graph, not derived. The derivation is the thing 7.6d refuted: there is
+no cheap sound bound, `max_sum` is three orders too loose, and the one property
+that does predict which graphs want it -- whether adaptive coarsening is
+blocked at scale 1 -- is a runtime fact the rule cannot read at setup. A map
+with a graph's name in it is honest about being a per-case tuning, and the
+research claim this campaign is heading for (item 4) is *about* per-case tuned
+references, so it needs one.
+
+Two things keep it from going silent. The flag lands in `command` on every row,
+and `bucket_width` parses back the width the run actually bucketed with, so no
+row is ambiguous about which rule produced it. `--per-graph-width off` disables
+the map for a campaign that wants an untuned baseline.
+
+**Only road-ny is in the map.** mesh20 and mesh22 are the other two graphs
+stuck at bucket scale 1, and the rule was built for them, but at 1.01x and
+1.05x they are inside the campaign's own resolution. Putting them in would be
+reading a tuning out of noise.
+
+### One bug the default flip created, fixed here
+
+Two arms of `--mode width` named `weight` and `weight-unfrozen` carried no
+`--bucket-width-rule` flag: they inherited it from the binary default, which at
+the time was `weight`. Commit 3977158 moved that default to `logv`, which would
+have silently turned both into duplicates of the `logv` arms on the next run of
+that mode. Every arm now states its own flags. `control` still carries none, by
+design -- it *is* the default, so its meaning moves when the default moves, and
+it now twins `logv-frozen` where in 22061958 it twinned `weight`.
