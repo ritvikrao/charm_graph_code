@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Paired, independently checked SSSP comparisons inside a Slurm allocation."""
 import argparse
+from collections import defaultdict
 import csv
 import gzip
 import hashlib
@@ -98,7 +99,9 @@ class Campaign:
         self.tag = f'{args.mode}-{self.nodes}n-{args.workers}w-{self.job}'
         self.records = self.root / 'logs' / (self.tag + '.jsonl')
         self.raw = self.root / 'logs' / (self.tag + '.log.gz')
-        self.env = dict(os.environ, PMI_MAX_KVS_ENTRIES='1000',
+        # 1000 KVS entries was enough for Delta's one-rank-per-node pilot; the
+        # 7.6f1 layouts reach 16 ranks per node on 16 nodes.
+        self.env = dict(os.environ, PMI_MAX_KVS_ENTRIES='100000',
                         FI_CXI_RX_MATCH_MODE='hybrid', NO_AFFINITY='1',
                         OMP_PROC_BIND='close', OMP_PLACES='cores')
         self.count = 0
@@ -113,7 +116,9 @@ class Campaign:
 
     def run(self, graph, source, config, expected, phase, rep=0, extra=None):
         engine = config['engine']
-        workers = self.args.workers
+        # A layout that cannot split --workers evenly (7.6f1's 16 x 7) states
+        # its own per-node total; the record keeps the allocation's budget.
+        workers = config.get('workers', self.args.workers)
         per_graph_rule = None
         binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
@@ -154,18 +159,23 @@ class Campaign:
                 launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
                           '--ntasks-per-node', str(ranks), '-c', str(128//ranks), '--cpu-bind=none']
         elif engine == 'gluon':
-            launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
-                      '--ntasks-per-node=1', '-c', str(workers+1), '--cpu-bind=cores']
+            # `threads`/`cpus`, when a config states them, are per rank.
+            ranks = config.get('rpn', 1)
+            threads = config.get('threads', workers)
+            launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
+                      '--ntasks-per-node', str(ranks), '-c', str(config.get('cpus', threads+1)),
+                      '--cpu-bind=cores']
             args = [str(binary), str(path.with_suffix('.gr')), '-symmetricGraph',
-                    '-exec='+config['model'], '-startNode='+str(source), '-t='+str(workers),
+                    '-exec='+config['model'], '-startNode='+str(source), '-t='+str(threads),
                     '-runs=1', '-maxIterations=2147483647', '-delta='+str(config['delta']),
                     '-partition='+config['partition']]
         else:
             ranks = config.get('rpn', 1)
-            threads = workers // ranks
+            threads = config.get('threads', workers // ranks)
             env['OMP_NUM_THREADS'] = str(threads)
             launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
-                      '--ntasks-per-node', str(ranks), '-c', str(threads), '--cpu-bind=cores']
+                      '--ntasks-per-node', str(ranks), '-c', str(config.get('cpus', threads)),
+                      '--cpu-bind=cores']
             args = [str(binary), str(path), str(source), str(config['delta'])]
             if engine == 'riken':
                 args += [str(config['denominator']), str(config.get('presolve', 0))]
@@ -173,7 +183,7 @@ class Campaign:
                 raise ValueError('GAPBS is a single-node baseline')
         cmd = [*launch, '--unbuffered', '--kill-on-bad-exit=1', *args]
         self.count += 1
-        record = dict(job=self.job, nodes=self.nodes, workers=workers,
+        record = dict(job=self.job, nodes=self.nodes, workers=self.args.workers,
                       graph=graph, source=source, phase=phase, rep=rep,
                       selection_job=self.args.selection_job,
                       config=config, index=self.count,
@@ -974,6 +984,162 @@ class Campaign:
                     for c in order:
                         self.run(graph, int(row['source']), c, row, 'policy', rep)
 
+    def external_candidates(self, graph):
+        """7.6f1 search space: every system picks its own process layout.
+
+        One rule sizes every layout, ACIC's included: a process gets its
+        128/rpn-core stride and runs one fewer thread than that, so each
+        process leaves a core to the OS (or, for Gluon, to its communication
+        thread). That is the 8 x 15 layout ACIC has measured since step 7.5.
+        ACIC layouts keep a process inside one 16-core NUMA domain; the
+        baselines may span domains if that is what they prefer.
+
+        Returns (layout candidates, parameter candidates) per arm. The layout
+        candidates run the arm's default parameters; the parameter candidates
+        are built for a chosen layout by `tune(layout)`.
+        """
+        meta = dict(re.findall(r'(\w+)=(\d+)', (self.root/'graphs'/(graph+'.meta')).read_text()))
+        denominator = int(meta['riken_denominator'])
+        deltas = sorted({max(1, denominator // k) for k in [64, 16, 4, 1]})
+        mid = max(1, denominator // 16)
+        stride = lambda rpn: 128 // rpn
+        layouts = lambda arg: [int(x) for x in arg.split(',')]
+        arms = {}
+
+        def acic_layout(rpn):
+            return dict(rpn=rpn, workers=rpn*(stride(rpn)-1))
+        arms['adaptive'] = ([dict(engine='acic', name=f'adaptive-r{r}', per_graph_width=True, **acic_layout(r))
+                             for r in layouts(self.args.acic_layouts)], None)
+        fixed = [c for c in self.configs(graph) if c['engine'] == 'acic']
+        arms['tuned-fixed'] = (
+            [dict(fixed[0], name=f'{fixed[0]["name"]}-r{r}', **acic_layout(r)) for r in layouts(self.args.acic_layouts)],
+            lambda layout: [dict(c, name=f'{c["name"]}-r{layout["rpn"]}', rpn=layout['rpn'], workers=layout['workers'])
+                            for c in fixed])
+        # RIKEN's binary32 distances are exact only below 2^24 (riken_driver.cpp).
+        if max(int(r['max_distance']) for r in self.references(graph)) < 16777216:
+            def riken(rpn, delta):
+                return dict(engine='riken', name=f'riken-r{rpn}-d{delta}', rpn=rpn, threads=stride(rpn)-1,
+                            cpus=stride(rpn), delta=delta, denominator=denominator, presolve=0)
+            arms['riken'] = ([riken(r, mid) for r in layouts(self.args.riken_layouts)],
+                             lambda layout: [riken(layout['rpn'], d) for d in deltas])
+        partitions = ['oec'] if self.nodes == 1 else ['oec', 'cvc']
+        gluon_deltas = sorted({0, mid, denominator})
+
+        def gluon(model, rpn, partition, delta):
+            return dict(engine='gluon', name=f'gluon-{model.lower()}-r{rpn}-{partition}-d{delta}', model=model,
+                        rpn=rpn, threads=stride(rpn)-1, cpus=stride(rpn), partition=partition, delta=delta)
+        for model in ['Async', 'Sync']:
+            arms['gluon-'+model.lower()] = (
+                [gluon(model, r, p, mid) for r in layouts(self.args.gluon_layouts) for p in partitions],
+                lambda layout, model=model: [gluon(model, layout['rpn'], layout['partition'], d) for d in gluon_deltas])
+        if self.nodes == 1:
+            def gap(threads, delta):
+                return dict(engine='gap', name=f'gap-t{threads}-d{delta}', threads=threads, cpus=threads, delta=delta)
+            arms['gap'] = ([gap(t, mid) for t in layouts(self.args.gap_threads)],
+                           lambda layout: [gap(layout['threads'], d) for d in deltas])
+        keep = self.args.external_arms.split(',')
+        return {arm: v for arm, v in arms.items() if arm in keep}
+
+    def external(self):
+        """7.6f1: ACIC against RIKEN, Gluon and GAPBS, each at its own layout.
+
+        Step 7.5 compared the systems at one geometry chosen for ACIC, and the
+        geometry turned out to matter more than any policy (7.6c: 7-20x). Here
+        each system tunes its own, on equal nodes, with the same two-stage
+        search:
+
+        1. layout: the arm's default parameters (ACIC adaptive or its first
+           fixed candidate, mid delta for the baselines) at every candidate
+           layout, on the first tuning source (layouts differ by integer
+           factors, 7.6c, so one source separates them);
+        2. parameters: at the chosen layout, the arm's parameter grid on both
+           tuning sources (ACIC fixed: flush x width; RIKEN, GAPBS: four
+           deltas; Gluon: three priorities, Async and Sync separately).
+
+        This is a coordinate search, not an oracle over the joint space, and
+        it gives every system the same budget shape. The chosen configurations
+        then run on the held-out sources in random order with `control`, the
+        chosen adaptive configuration under another name, as the floor.
+        A system with no valid candidate is recorded and left out of the test
+        phase: a baseline that cannot run a case is a result, not a crash.
+        """
+        rng = random.Random(20260916 + int(self.job))
+
+        def geomean(runs):
+            return statistics.geometric_mean(r['seconds'] for r in runs)
+
+        for graph in self.args.graphs.split(','):
+            refs = self.references(graph)
+            tune = [x for x in refs if x['role'] == 'tune']
+            test = [x for x in refs if x['role'] == 'test'][:self.args.sources]
+            arms = self.external_candidates(graph)
+            # One discarded warmup per system, so a cold page cache is not
+            # charged to whichever candidate happens to run first.
+            for engine in sorted({c['engine'] for layouts, _ in arms.values() for c in layouts}):
+                c = next(c for layouts, _ in arms.values() for c in layouts if c['engine'] == engine)
+                self.run(graph, int(tune[0]['source']), c, tune[0], 'external-warmup')
+            samples = defaultdict(list)
+
+            def measure(candidates, rows, stage):
+                # A candidate already run on a row (the chosen layout's default
+                # parameters) is not run on it again.
+                order = [(row, c) for row in rows for c in candidates
+                         if int(row['source']) not in {r['source'] for r in samples[c['name']]}]
+                rng.shuffle(order)
+                for row, c in order:
+                    samples[c['name']].append(self.run(graph, int(row['source']), c, row, 'external-'+stage))
+
+            layout_candidates = [c for layouts, _ in arms.values() for c in layouts]
+            measure(layout_candidates, tune[:1], 'layout')
+            selected, record = {}, {}
+            for arm, (layouts, grid) in arms.items():
+                valid = [c for c in layouts if all(r['valid'] for r in samples[c['name']])]
+                if not valid:
+                    record[arm] = dict(selected=None, reason='no valid layout')
+                    continue
+                layout = min(valid, key=lambda c: geomean(samples[c['name']]))
+                selected[arm] = layout
+                record[arm] = dict(layout=layout['name'])
+            parameter_candidates = {arm: arms[arm][1](selected[arm]) for arm in selected if arms[arm][1]}
+            measure([c for cs in parameter_candidates.values() for c in cs], tune, 'parameters')
+            for arm, candidates in parameter_candidates.items():
+                valid = [c for c in candidates if all(r['valid'] for r in samples[c['name']])]
+                if valid:
+                    selected[arm] = min(valid, key=lambda c: geomean(samples[c['name']]))
+                else:
+                    record[arm] = dict(record[arm], reason='no valid parameters at the chosen layout')
+                    del selected[arm]
+            test_arms = [dict(c, name=arm, chosen=c['name']) for arm, c in selected.items()]
+            if 'adaptive' in selected:
+                test_arms.append(dict(selected['adaptive'], name='control', chosen=selected['adaptive']['name']))
+            for arm, c in selected.items():
+                record[arm] = dict(record[arm], selected=c['name'])
+            record['candidates'] = {name: dict(valid=all(r['valid'] for r in runs),
+                                               seconds=[r.get('seconds') for r in runs],
+                                               outcomes=[r['outcome'] for r in runs])
+                                    for name, runs in samples.items()}
+            (self.root/'logs'/f'{self.tag}-{graph}-selected.json').write_text(
+                json.dumps(dict(arms=test_arms, search=record), indent=2)+'\n')
+            for rep in range(self.args.reps):
+                rows = test[:]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = test_arms[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        self.run(graph, int(row['source']), c, row, 'external', rep)
+
+    def external_smoke(self):
+        """Every system at every candidate layout once, mid parameters, first
+        tuning source. Raises on the first invalid run: this is the gate that
+        the Anvil builds, launchers and digests agree before timing anything."""
+        for graph in self.args.graphs.split(','):
+            row = [x for x in self.references(graph) if x['role'] == 'tune'][0]
+            for arm, (layouts, _) in self.external_candidates(graph).items():
+                for c in layouts:
+                    if not self.run(graph, int(row['source']), c, row, 'external-smoke')['valid']:
+                        raise RuntimeError(f'{arm} failed at {c["name"]} on {graph}')
+
     def progress(self):
         """Replay the recorded losses of progress on both binaries.
 
@@ -1072,7 +1238,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width', 'policy'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width', 'policy', 'external', 'external_smoke'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')
@@ -1087,6 +1253,15 @@ if __name__ == '__main__':
                         help='--mode policy: graphs whose tuning sources choose the global fixed setting')
     parser.add_argument('--acic-rpn', type=int, default=1,
                         help='ACIC processes per node; --workers is the per-node total, split among them')
+    # 7.6f1 layout candidates, ranks per node except GAPBS (threads, one node).
+    parser.add_argument('--acic-layouts', default='8,16')
+    parser.add_argument('--riken-layouts', default='4,8,16')
+    parser.add_argument('--gluon-layouts', default='1,8')
+    parser.add_argument('--gap-threads', default='16,64,127')
+    # tuned-fixed is 7.6f2's question, and Gluon-Sync trailed Async in every
+    # 7.5 cell; both remain available by name.
+    parser.add_argument('--external-arms', default='adaptive,riken,gluon-async,gap',
+                        help='of adaptive, tuned-fixed, riken, gluon-async, gluon-sync, gap')
     args = parser.parse_args()
     campaign = Campaign(args)
     getattr(campaign, args.mode)()

@@ -326,3 +326,49 @@ match the SHA-256 in `design/step75-data/graphs.json`, so the recorded
 reference digests apply unchanged. Anvil's messaging path has been seen to
 slow ~100x for minutes at a time independent of configuration; interleave
 arms and read paired medians, never single runs.
+
+## External re-take on Anvil (step 7.6f1)
+
+`scripts/anvil/build_baselines.sh` builds RIKEN, GAPBS and Gluon at the
+revisions above, with the same adapters and flags, into
+`$ACIC_BENCH_DEPS/bin`. Every system uses ACIC's toolchain there: GCC 11.2
+and OpenMPI 4.0.6 (UCX, `OMPI_MCA_pml=ucx`, launched through `srun` with
+PMI2). Anvil has no LLVM or fmt module, so the script builds LLVMSupport 19.1.7
+(RTTI on) and fmt 10.2.1 from release tarballs whose hashes it records.
+`scripts/anvil/prepare_gluon.sbatch` writes the `.gr` copies.
+
+`--mode external` lets each system choose its own layout on equal nodes,
+using one sizing rule: a process gets its 128/rpn-core stride and runs one
+fewer thread, which is ACIC's 8 x 15.
+
+| System | Layout candidates | Parameters, at the chosen layout |
+|---|---|---|
+| ACIC adaptive | 8 x 15, 16 x 7 (`--acic-layouts`) | none |
+| RIKEN | 4, 8, 16 ranks/node (`--riken-layouts`) | four deltas |
+| Gluon-Async | 1, 8 ranks/node x {oec, cvc} beyond one node | priority {0, d/16, d} |
+| GAPBS (one node) | 16, 64, 127 threads (`--gap-threads`) | four deltas |
+
+`tuned-fixed` (7.6f2's question) and Gluon-Sync (behind Async in every 7.5
+cell) are available through `--external-arms`, off by default. ACIC processes
+stay inside a 16-core NUMA domain; the baselines may span domains. The search
+has two stages per system: every layout at default parameters (mid delta for
+the baselines) on the first tuning source, then the parameter grid at the
+winning layout on both. It is a coordinate search with the same shape for
+every system, not an oracle. The chosen configurations then run on the
+held-out sources in random order, with `control` (the chosen adaptive
+configuration again) as the floor: about 40 launches per graph, 53 on one node.
+A system with no valid candidate is recorded in `*-selected.json` and left
+out, as RIKEN is on road-usa, whose distances exceed its exact binary32 range.
+`--mode external_smoke` runs every layout once and stops at the first invalid
+digest.
+
+```sh
+sbatch -N 1 --time=01:30:00 scripts/anvil/compare.sbatch CAMPAIGN --mode external \
+    --workers 120 --timeout 180 --sources 4 --reps 1 \
+    --graphs mesh24,rmat25,road-usa,orkut
+report_arms.py CAMPAIGN/logs OUT --pattern 'external-*.jsonl' --phase external \
+    --baseline adaptive --control control
+```
+
+In `arms.md` an external arm's ratio is adaptive time / system time, so a value
+above 1 means the external system is faster.
