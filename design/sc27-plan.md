@@ -237,7 +237,8 @@ to identify exposed delay; apparent idleness alone does not identify a bottlenec
 Steps 1–7 are completed SSSP development. **The 7.5 comparison pilot is
 complete; 7.6a–7.6c are closed, 7.6d is settled as a per-case mesh rule and 7.6e
 is measured and rejected; **item (1), progress repair, is reopened** by a
-deadlock in the shipped default (see below); the admission × delivery study that Gate A turns on has
+deadlock in the shipped default — its worst consequence is repaired and its
+cause is still open (7.6g); the admission × delivery study that Gate A turns on has
 not started**; steps 8–12 are
 conditional and no longer a sequential refactor queue. Research gates produce
 decision reports; implementation gates require correctness and appropriate
@@ -259,8 +260,10 @@ one- and two-node validation; PageRank uses a tolerance-based gate.
 | **7.6c — complete** | Deployment variables separated one at a time: process count, affinity, transport endpoints, packet pool, starvation policy | [Deployment](step76-deployment.md). **Process count dominates by 7–20×**; the LCI shared-memory backend is worse, not better; the UCX registration-cache warning explains nothing. One node only | complete at one node |
 | **7.6d — closed** | Initial bucket width: `log(V)` versus the heaviest edge, with the clamp threshold frozen so conservation holds for every bucket | [Width repair](step76-width-repair.md). Settled on **two independent campaigns**, 1/2/8/16 nodes at eight processes of fifteen: it is a **mesh rule**, not a default. mesh20 and mesh22 win every paired run at every allocation (83/84 in the replication) with the margin growing with scale; every other graph regresses somewhere. `PER_GRAPH_WIDTH_RULE = {mesh20, mesh22}` | complete |
 | **7.6e — measured, rejected** | Raise the clamp during a run so a graph whose distances exceed `2048 × width` is not scheduled from a single overflow bucket; creation-time flag keeps the histogram conserved | [Range](step76-range.md). The diagnosis stands — the three stuck graphs are out of range, not blocked on coarsening — but **the repair fails at scale on exactly those graphs**: 35 of 36 runs hang on mesh20/mesh22 at 8 and 16 nodes, road-ny is slower where it survives, and the arm is a no-op elsewhere. Stays in the tree defaulted off. The deferral guard it shipped with never fires | does not ship |
-| **7.6g — open, blocks Gate A** | Repair the deadlock in the shipped default, starting with an instrument that says what a PE *holds* rather than what it *created* | [Default deadlock](step76-default-deadlock.md). Five baseline runs at one node froze with every counter bit-identical for two minutes; globally `live=5973, clamped=5969, occupied=1` — all but four live updates in the overflow slot, which `clamp_freeze` excludes from admission. Not a range-arm defect (`bucket_limit=2048` throughout). The per-PE stall fields are a distributed ledger and cannot locate the stuck work; **the obvious `--bucket-width 1` fixture completes rather than hanging**, because with all mass in the overflow slot the band test refuses to coarsen | reopens item (1) |
-| **7.6f — not started** | Re-take the 7.5 external comparison at a deployable process geometry, then admission × delivery policies against one global fixed setting and per-case tuned references | **Gate A:** no unexplained stalls (7.6g is currently an unexplained stall); adaptive benefit over a frozen global fixed setting, proximity to per-case tuning, credible external runtime and resource results | 2–3 wk, one bounded optimization cycle |
+| **7.6g — half repaired, blocks Gate A** | The shipped default deadlocks. Repair the admission rule that cannot reach stranded work, and find the drain failure underneath it | [Default deadlock](step76-default-deadlock.md). **Symptom repaired:** the 7.6a rescue is guarded on an empty window, so four in-window updates blocked a rescue 5,969 stranded updates needed; `--stall-rescue` (default 32) now guards it on `stall_rounds` instead, and the gate fails on any firing so it cannot mask what is underneath. **Cause open:** four updates sat at their own admission threshold unprocessed. The window pins at exactly `floor((bucket_limit-1)/bucket_scale)` in all seven stalls, and `above_window == clamped` exactly, so every live update is real — a drain failure, not an accounting error | jobs 22093288/22093373 |
+| **7.6h — not started, do before 7.6f** | Report the hang rate and the resolution floor beside every speedup, per allocation, in `benchmarks/report.py` and the campaign tables | The two failures of campaign design that hid all of this: a median over valid runs scores "stops sometimes" as a clean win, and the `control` floor grows from ~1.00× at one node to 1.16×–1.28× at sixteen. Small, and it is the instrument 7.6f's results depend on | ~1 day |
+| **7.6f1 — not started** | Re-take the 7.5 external comparison at a deployable process geometry, with **every system allowed to tune its layout** — `configs()` needs an ACIC rpn axis chosen on training sources, the way RIKEN's rank count already is | The 7.5 pilot tuned RIKEN's ranks and left ACIC at one process per node, which 7.6c then measured at 7–20× — so that comparison measured the layout, not the systems. Not a result until this is re-taken | 1 wk |
+| **7.6f2 — not started** | Item 4, the research claim: admission × delivery policies against one global fixed setting **and** per-case tuned references | **Gate A:** no unexplained stalls (7.6g is currently one); adaptive benefit over a frozen global fixed setting, proximity to per-case tuning, credible external runtime and resource results. Stopping rule from step 7.5 still applies: **stop after one or two supported optimizations** | 2–3 wk |
 | **8 — conditional** | Minimal generic payload interface/type erasure only when a second algorithm requires it | SSSP results identical on one/two nodes; no unexplained runtime regression | up to 1 wk |
 | **9 — split** | Fix PE/chare identity when introducing new mappings. Overdecomposition/hash placement/migration only if profiling justifies them | Correct on **all supported mappings**, not just K=1; performance benefit required for extra scheduling machinery | budget after diagnosis |
 | **10 — with second kernel** | Extract `AcicController` around observed shared signals, actions, and progress contracts; may precede step 8 | SSSP validation and performance retained; second use exercises shared controller | ~1 wk |
@@ -481,6 +484,14 @@ with larger problems and higher worker occupancy. Audit the starvation gate's
 durations, and reduction latency. Whole-graph edge balance alone does not
 establish balanced active work.
 
+One question is already waiting on that allocation: rmat20 reads 1.59× and
+1.55× for the `weight` width rule at sixteen nodes in two independent
+campaigns, against resolution floors of 1.14× and 1.22×, while regressing at
+two nodes in both. It is the only candidate for a third entry in
+`PER_GRAPH_WIDTH_RULE` beyond mesh20 and mesh22, and more repeats at sixteen
+nodes cannot settle it — the floor there is too close to the effect. Carry it
+as an arm on the first campaign above sixteen nodes rather than as its own.
+
 After Gate A, target 32–64 nodes, then 128–512 only where allocations and the
 measured regime justify it. Produce strong and weak scaling; retain efficient
 single-node comparisons. Start portability with one additional architecture or
@@ -502,8 +513,10 @@ experiment dates.
 | Sep 13, completed | 7.5 comparison pilot: matched inputs, RIKEN/GAPBS/Gluon, 1–16 nodes, occupancy/layout and logging checks | [Performance map and failure ledger](step75-comparisons.md); correctness gate still open |
 | Sep 13–14, completed | 7.6a–7.6c: progress repair and bounded diagnostics; controller robustness with geometry frozen; deployment variables separated one at a time | [Progress](step76-progress.md), [controller](step76-controller.md), [deployment](step76-deployment.md). Process count dominates by 7–20×, which reopens every earlier comparison |
 | Sep 14–15, completed | 7.6d re-take and the 7.6e range arm, at 1/2/8/16 nodes, eight processes of fifteen, two campaigns | The width rule is a per-case mesh rule and ships as one; raising the clamp mid-run is rejected — it hangs on the graphs it was built for. The campaign also surfaced a deadlock in the default |
-| Sep 15 | 7.6g: reproduce and repair the default deadlock, before any comparison claims "no unexplained stalls" | Whether item (1) closes for real |
-| Sep 15–Oct 18 | 7.6f: re-take the 7.5 external comparison at a deployable geometry with every system allowed to tune its layout, then admission × delivery; one bounded optimization cycle | **Gate A:** adaptivity and external competitiveness; proceed, narrow, or revisit the mechanism |
+| Sep 15 | 7.6g: the default deadlock. Symptom repaired (progress-guarded rescue, gate fails on any firing); cause still open, reproducer jobs in flight | Whether item (1) closes for real, or only its worst consequence |
+| Sep 16 | 7.6h: hang rate and resolution floor in every campaign table | The instrument 7.6f's numbers depend on; a day, and it is what hid 7.6g |
+| Sep 16–23 | 7.6f1: external re-take with every system tuning its own layout | Whether the 7.5 comparison survives a fair geometry. Not a result until then |
+| Sep 23–Oct 18 | 7.6f2: admission × delivery policies against one global fixed setting and per-case tuned references; one bounded optimization cycle, then stop | **Gate A:** adaptivity and external competitiveness; proceed, narrow, or revisit the mechanism |
 | Oct 19–Nov 15 | Minimal controller extraction and BFS transfer; optional necessary payload work | **Gate B:** shared adaptive benefit transfers, or restrict the paper's scope |
 | Nov 16–Dec 13 | PageRank if needed for the claim; otherwise strengthen SSSP/BFS evaluation | Freeze algorithm scope; do not add BC/k-core by default |
 | Dec–Feb | Scaling, real graphs, selected baselines, ablations, one portability slice, conditional GPU comparison | **Gate C, Feb 15:** evidence sufficient for the chosen claim; no arbitrary 256-node requirement |
