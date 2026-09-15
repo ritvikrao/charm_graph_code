@@ -44,7 +44,20 @@
 #
 set -uo pipefail
 
+# Every test of a run's output below is `grep -q ... <<< "$out"`, never
+# `echo "$out" | grep -q ...`. Under pipefail the pipeline form is wrong whenever
+# the output is larger than a pipe buffer: grep -q exits at its first match,
+# echo dies of SIGPIPE, and pipefail reports the pipeline as failed -- so a
+# match reads as no match. A stalled fixture writes ~200 KB, which is exactly
+# the case the stall checks exist for: on Anvil the pipeline form missed 7 of 7
+# STALL_RESCUE lines that the here-string caught, and the gate went green on a
+# fixture that had stalled. Found in 7.6g; see design/step76-default-deadlock.md.
 cd "$(dirname "$0")/.."
+# Every run below is one process started without a launcher. Inside a Slurm
+# allocation LCT otherwise falls through to its `file` PMI backend, which reads
+# SLURM_NTASKS and waits forever for ranks that will never start -- on Anvil,
+# in a job with --ntasks-per-node=8, the first configuration sat at 0% CPU.
+export LCT_PMI_BACKEND="${LCT_PMI_BACKEND:-local}"
 GOLDEN="scripts/golden_digests.txt"
 PE_FLAG="${SSSP_PE_FLAG:-+ppn}"
 read -r -a EXTRA_ARGS <<< "${SSSP_EXTRA_ARGS:-}"
@@ -113,7 +126,7 @@ for cfg in "${CONFIGS[@]}"; do
           "$PE_FLAG" "$PPN" 2>&1)
   status=$?
   digest=$(echo "$out" | grep -m1 "^VERIFY parallel digest" | sed 's/^VERIFY parallel digest //')
-  if [ $status -ne 0 ] || ! echo "$out" | grep -q "^VERIFY PASS"; then
+  if [ $status -ne 0 ] || ! grep -q "^VERIFY PASS" <<< "$out"; then
     echo "FAIL (vs serial Dijkstra): $cfg"
     echo "$out" | tail -5 | sed 's/^/    /'
     failures=$((failures + 1))
@@ -139,7 +152,7 @@ for cfg in "${CONFIGS[@]}"; do
   # cannot hold more updates than exist. A run that says otherwise has computed
   # every threshold from a number that means nothing, and the way that shows up
   # in the field is a run that never finishes.
-  if echo "$out" | grep -qE "^CONSERVATION VIOLATED|^COARSEN_CLAMPED"; then
+  if grep -qE "^CONSERVATION VIOLATED|^COARSEN_CLAMPED" <<< "$out"; then
     echo "FAIL (conservation): $cfg"
     echo "$out" | grep -m1 -A2 -E "^CONSERVATION VIOLATED|^COARSEN_CLAMPED" | sed 's/^/    /'
     failures=$((failures + 1))
@@ -195,7 +208,7 @@ for cfg in "${DIAG_CONFIGS[@]}"; do
           "$PE_FLAG" "$PPN" 2>&1)
   digest=$(echo "$out" | grep -m1 "^VERIFY parallel digest" | sed 's/^VERIFY parallel digest //')
   want=$(grep -m1 -F "$key | " "$GOLDEN" | sed 's/^.* | //')
-  if ! echo "$out" | grep -q "^VERIFY PASS" || [ "$digest" != "$want" ]; then
+  if ! grep -q "^VERIFY PASS" <<< "$out" || [ "$digest" != "$want" ]; then
     echo "FAIL (sssp_smp_diag): $cfg"
     echo "    diag:   $digest"
     echo "    golden: $want"
@@ -256,6 +269,30 @@ PROGRESS_CONFIGS=(
   # digest. A PASS here is all three.
   "40000 0 1 0 2 0.999 0.005 4|--bucket-policy adaptive --bucket-width 1 --range-extend on"
 )
+# The queue-order fixture, 7.6g. At bucket scale 1 the slice [2047, 2048) widths
+# is flagged as overflow and keeps bucket 2047 for life; an update admitted to
+# the heap from it while the threshold was 2047 stays on top once a coarsening
+# drops the threshold, and process_heap() stops there with admissible work
+# behind it. The window then pins at floor(2047 / scale) -- the shipped
+# default's deadlock. A 300x300 mesh at width 16 with the two-tier limit pinned
+# low coarsens just before crossing the clamp.
+#
+# It is NOT deterministic, so it is repeated, and the count is sized from a
+# measurement rather than a guess. With --pq-overflow-last off, run one at a
+# time on an Anvil node: source 12345 needed a rescue in 6 of 20 runs and
+# source 777 in 3 of 20 (144/480 and 128/480 with 24 running at once). Sixteen
+# of the first and four of the second miss a regression with probability about
+# 0.7^16 * 0.85^4 = 0.002. The first version ran twelve over three sources,
+# estimated its miss rate from the concurrent numbers, and passed once with the
+# repair off -- which at the sequential rate it would do about one time in
+# nine. With it on: 0 stalls in 180 concurrent runs. Any STALL_RESCUE fails the
+# gate below, so a regression fails in 32 rounds, not at the timeout.
+for rep in $(seq 1 16); do
+  PROGRESS_CONFIGS+=("90000 0 1 12345 2 0.999 0.005 4|--bucket-policy adaptive --bucket-width 16 --two-tier-absolute 1600 --clamp-freeze on")
+done
+for rep in 1 2 3 4; do
+  PROGRESS_CONFIGS+=("90000 0 1 777 2 0.999 0.005 4|--bucket-policy adaptive --bucket-width 12 --two-tier-absolute 1600 --clamp-freeze on")
+done
 progress_run=0
 for entry in "${PROGRESS_CONFIGS[@]}"; do
   cfg="${entry%%|*}"
@@ -287,7 +324,7 @@ for entry in "${PROGRESS_CONFIGS[@]}"; do
           --verify --timeout 60 ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
           "${fixture_args[@]}" "$PE_FLAG" "$PPN" 2>&1)
   status=$?
-  if [ $status -ne 0 ] || ! echo "$out" | grep -q "^VERIFY PASS"; then
+  if [ $status -ne 0 ] || ! grep -q "^VERIFY PASS" <<< "$out"; then
     echo "FAIL (progress fixture): $cfg ${entry#*|}"
     echo "$out" | grep -m3 "^PROGRESS_STALL .* main" | sed 's/^/    /'
     echo "$out" | tail -3 | sed 's/^/    /'
@@ -299,7 +336,7 @@ for entry in "${PROGRESS_CONFIGS[@]}"; do
   # then passes, so without failing on it here a fixture that deadlocks would
   # go green and the defect underneath would stop being visible. The rescue is
   # for production runs; needing it in the gate is a regression.
-  if echo "$out" | grep -qE "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED|^STALL_RESCUE"; then
+  if grep -qE "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED|^STALL_RESCUE" <<< "$out"; then
     echo "FAIL (progress fixture reported a stall): $cfg ${entry#*|}"
     echo "$out" | grep -m2 -E "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED|^STALL_RESCUE" | sed 's/^/    /'
     failures=$((failures + 1))

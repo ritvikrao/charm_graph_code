@@ -16,6 +16,8 @@ import struct
 import subprocess
 import time
 
+from outcomes import classify
+
 KEYS = ('h1', 'h2', 'reachable', 'distance_sum')
 VARIANTS = {
     'current': [],
@@ -207,6 +209,25 @@ class Campaign:
             record['valid'] = record['valid'] and math.isfinite(record['seconds']) and record['seconds'] > 0
         else:
             record['valid'] = False
+        # 7.6h: what kind of failure, not only whether. A run that stopped is a
+        # different result from one that answered wrongly or crashed, and a
+        # cell's hang count is reported beside its speedup (outcomes.py). The
+        # solver prints TIMEOUT from fast_exit() and PROGRESS_STALL while it is
+        # stuck; the harness kill is -999. A rescued run finishes and is valid,
+        # but it would have hung, so the rescue count is kept on every row.
+        if engine.startswith('acic'):
+            record['progress_stall_lines'] = len(re.findall(r'^PROGRESS_STALL \d+ main', output, re.M))
+            record['hung'] = (record['returncode'] == -999 or
+                              bool(re.search(r'^TIMEOUT', output, re.M)) or
+                              (not record['valid'] and record['progress_stall_lines'] > 0))
+            for field, regex in {'stall_rescues': r'^Stall rescues: (\d+)',
+                                 'skew_top_arrivals': r'^Skewed top-bucket arrivals: (\d+)'}.items():
+                value = re.search(regex, output, re.M)
+                if value:
+                    record[field] = int(value[1])
+        else:
+            record['hung'] = record['returncode'] == -999
+        record['outcome'] = classify(record)
         for field, regex in {
             # -1 from any of these means the mode did not measure that phase,
             # not that it took no time. setup + compute + stats == total.
@@ -242,7 +263,8 @@ class Campaign:
         with self.records.open('a') as f:
             f.write(json.dumps(record) + '\n')
         print(f'{self.tag} #{self.count} {phase} {graph} src={source} {config} '
-              f'valid={record["valid"]} seconds={record.get("seconds")}', flush=True)
+              f'valid={record["valid"]} outcome={record["outcome"]} '
+              f'seconds={record.get("seconds")}', flush=True)
         if not record['valid']:
             print(output[-6000:], flush=True)
         return record
@@ -832,6 +854,111 @@ class Campaign:
                     for c in order:
                         self.run(graph, int(row['source']), c, row, 'width', rep)
 
+    def policy(self):
+        """7.6f2: admission x delivery, against a global and a per-case fixed setting.
+
+        The research claim is that feedback steering both work admission and
+        delivery beats what a fixed configuration can do. That needs three
+        comparisons, and a campaign that runs only one of them can be read as
+        supporting the claim when it does not:
+
+        * the 2 x 2 matrix, each axis fixed or adaptive, so a benefit can be
+          assigned to admission, to delivery, or to the two together.
+          Admission adaptive is `--bucket-policy adaptive` (the controller
+          coarsens its buckets); fixed keeps the initial width. Delivery
+          adaptive is the shipped flush policy plus the starvation-gated idle
+          flush; fixed is a flush every round and no idle flush, which is what
+          26 of the 30 step 7.5 tuned-fixed selections chose. Every matrix arm
+          takes its width from the shipped rule and the per-graph map, so the
+          matrix differs only in the two axes;
+        * `global-fixed`, one fixed configuration chosen on the development
+          graphs' tuning sources only, and then frozen for every graph -- the
+          "good default" the adaptive method has to beat;
+        * `tuned-fixed`, the best fixed configuration per graph, chosen on that
+          graph's tuning sources -- the reference the adaptive method should
+          stay near, and cannot be expected to beat.
+
+        `control` is `adaptive` under another name: the resolution floor, per
+        allocation (outcomes.py). Failures do not stop the campaign -- a hang
+        rate is a result here, and report_arms.py puts it beside every ratio.
+        Timed runs use the held-out test sources; the tuning sources only
+        choose. Results on the development graphs are in-sample for
+        `global-fixed` and are marked so by the report's graph list, not here.
+        """
+        rng = random.Random(20260915 + int(self.job))
+        rpn = dict(rpn=self.args.acic_rpn)
+        delivery_fixed = ['--flush-policy', 'fixed', '--flush-interval', '1', '--idle-flush', 'off']
+        admission_fixed = ['--bucket-policy', 'fixed']
+        matrix = [
+            dict(engine='acic', name='adaptive', per_graph_width=True, **rpn),
+            dict(engine='acic', name='control', per_graph_width=True, **rpn),
+            dict(engine='acic', name='adapt-admission', per_graph_width=True, flags=delivery_fixed, **rpn),
+            dict(engine='acic', name='adapt-delivery', per_graph_width=True, flags=admission_fixed, **rpn),
+            dict(engine='acic', name='fixed-both', per_graph_width=True, flags=admission_fixed + delivery_fixed, **rpn),
+        ]
+        graphs = self.args.graphs.split(',')
+        dev = self.args.dev_graphs.split(',')
+        # Global candidates must mean the same thing on every graph, so widths
+        # are rules rather than numbers: road-ny's heaviest edge is 37x mesh's.
+        global_candidates = [
+            dict(engine='acic', name=f'global-{rule}-i{interval}', **rpn,
+                 flags=['--flush-policy', 'fixed', '--flush-interval', str(interval),
+                        '--bucket-policy', 'fixed', '--idle-flush', 'off',
+                        '--bucket-width-rule', rule])
+            for rule in ['logv', 'weight'] for interval in [1, 5]]
+
+        def choose(candidates, samples, label):
+            valid = [c for c in candidates if samples[c['name']] and
+                     all(r['valid'] for r in samples[c['name']])]
+            record = {c['name']: dict(valid=c in valid,
+                                      seconds=[r.get('seconds') for r in samples[c['name']]])
+                      for c in candidates}
+            if not valid:
+                raise RuntimeError(f'no valid candidate for {label}: {record}')
+            best = min(valid, key=lambda c: statistics.geometric_mean(
+                r['seconds'] for r in samples[c['name']]))
+            return best, record
+
+        # Global fixed: chosen once for this allocation, on development graphs.
+        samples = {c['name']: [] for c in global_candidates}
+        for graph in dev:
+            for row in [x for x in self.references(graph) if x['role'] == 'tune']:
+                order = global_candidates[:]
+                rng.shuffle(order)
+                for c in order:
+                    samples[c['name']].append(self.run(graph, int(row['source']), c, row, 'policy-global-tune'))
+        best, record = choose(global_candidates, samples, 'global-fixed')
+        global_fixed = dict(best, name='global-fixed', chosen=best['name'])
+        (self.root/'logs'/f'{self.tag}-global-selected.json').write_text(
+            json.dumps(dict(dev_graphs=dev, selected=global_fixed, candidates=record), indent=2)+'\n')
+
+        for graph in graphs:
+            refs = self.references(graph)
+            tune = [x for x in refs if x['role'] == 'tune']
+            test = [x for x in refs if x['role'] == 'test'][:self.args.sources]
+            # Per-case fixed: the step 7.5 search space, on this graph's tuning
+            # sources, with the geometry this campaign runs at.
+            candidates = [dict(c, **rpn) for c in self.configs(graph) if c['engine'] == 'acic']
+            samples = {c['name']: [] for c in candidates}
+            for row in tune:
+                order = candidates[:]
+                rng.shuffle(order)
+                for c in order:
+                    samples[c['name']].append(self.run(graph, int(row['source']), c, row, 'policy-tune'))
+            best, record = choose(candidates, samples, f'tuned-fixed on {graph}')
+            tuned = dict(best, name='tuned-fixed', chosen=best['name'])
+            arms = matrix + [global_fixed, tuned]
+            (self.root/'logs'/f'{self.tag}-{graph}-selected.json').write_text(
+                json.dumps(dict(arms=arms, tuned_candidates=record), indent=2)+'\n')
+            for rep in range(self.args.reps):
+                rows = test[:]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = arms[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        self.run(graph, int(row['source']), c, row, 'policy', rep)
+
     def progress(self):
         """Replay the recorded losses of progress on both binaries.
 
@@ -930,7 +1057,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width', 'policy'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')
@@ -941,6 +1068,8 @@ if __name__ == '__main__':
     parser.add_argument('--per-graph-width', choices=['on', 'off'], default='on',
                         help='apply PER_GRAPH_WIDTH_RULE to configs that ask for it')
     parser.add_argument('--arms', help='comma-separated config names to keep, for modes that name their arms')
+    parser.add_argument('--dev-graphs', default='mesh20,rmat20,uniform20',
+                        help='--mode policy: graphs whose tuning sources choose the global fixed setting')
     parser.add_argument('--acic-rpn', type=int, default=1,
                         help='ACIC processes per node; --workers is the per-node total, split among them')
     args = parser.parse_args()

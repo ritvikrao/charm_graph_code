@@ -26,6 +26,8 @@ mainmodule sssp_smp
   readonly int bucket_width_rule;
   readonly bool clamp_freeze;
   readonly bool range_extend;
+  readonly bool skew_defer;
+  readonly bool pq_overflow_last;
   readonly int window_follow;
   readonly int combine_mode;
   readonly bool batch_fold;

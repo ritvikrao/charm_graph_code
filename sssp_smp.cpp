@@ -265,6 +265,32 @@ bool clamp_freeze = true;
 // measured it losing 2.9x, and the order of those two steps was the mistake.
 // This ships as a flag with a campaign arm behind it.
 bool range_extend = false;
+// --skew-defer off|on. 7.6g. At bucket scale 1, index HISTO_BUCKET_COUNT - 1 is
+// two things at once: the overflow slot, and the top real bucket, holding
+// distances in [2047, 2048) widths. charge_new_update() flags both at creation,
+// so a creator never disagrees with itself about it. A receiver that has not
+// yet applied a coarsening its creator already has does: the creator, at scale
+// k, charges such an update to 2047 / k and leaves it unflagged, and the
+// receiver, still at scale 1, computes 2047 -- the one index coarsen_buckets()
+// leaves out of the merge. The update is then either parked in pq_hold[2047],
+// where no threshold below 2047 ever releases it, or rejected against
+// histogram[2047], leaving +1 at the creator's 2047 / k that no retirement will
+// take away. Either way the window pins at floor(2047 / scale), which is where
+// every recorded stall pinned.
+//
+// An unflagged update this PE would charge to 2047 can only have been created
+// under a different scale, so it is counted (skew_top_arrivals) always, and
+// with this on it waits one broadcast in the same deferral created_beyond_my_
+// clamp() uses. Off reproduces the shipped behaviour exactly.
+//
+// Not the cause of the 7.6g deadlock, and never observed. It was the first
+// explanation tested, because it predicts the same pin; but skew_top_arrivals
+// was 0 in every one of 160 mesh20/mesh22 runs at 8 x 15 and in every
+// single-process sweep, including all the runs that hung. The deadlock was
+// queue order (--pq-overflow-last). The counter stays because it is one
+// comparison on a path that already computes the bucket, and it is the receipt
+// that the race it describes is not happening; the flag stays off.
+bool skew_defer = false;
 // The overflow slot must hold this share of the live population before the
 // clamp is raised. It is the one tuned number in the rule: a single freak edge
 // should not cost every bucket half its resolution, and a graph that is
@@ -327,6 +353,7 @@ enum {
   STAT_GRAPH_BYTES,
   STAT_ABSORBED,      // updates folded away at the source by --combine
   STAT_FOLDED,        // updates folded away in a delivered batch, --batch-fold
+  STAT_SKEW_TOP,      // unflagged arrivals charged to the overflow index, 7.6g
   STAT_INSTRUCTIONS,  // PAPI builds only
   STAT_BATCH_ITEMS,   // ACIC_DIAG builds only, from here down
   STAT_BATCH_ABSORBABLE,
@@ -367,9 +394,35 @@ const int stat_count = STAT_INSTRUCTIONS;
 
 void start_reductions(void *obj, double time) { arr.contribute_histogram(0); }
 
+// --pq-overflow-last off|on. 7.6g's second candidate. process_heap() stops at
+// the first queue top whose bucket is above the heap threshold, which is only
+// correct if bucket never decreases along the queue's order. Ordered by
+// distance alone it can: at bucket scale 1, charge_new_update() flags the
+// in-range slice [2047, 2048) widths as overflow, so such an update keeps
+// bucket 2047 for life, while an update created after a coarsening by k with a
+// slightly larger distance gets floor(2047 / k). If the flagged one was admitted
+// to the queue while the threshold was 2047 and the threshold then fell with the
+// coarsening, it sits on top, above the threshold, and every admissible update
+// behind it waits -- at exactly floor(2047 / scale), where the stalls pinned.
+// on sorts every flagged update after every unflagged one, which makes bucket
+// monotone along the queue again. Read once at startup, so the heap's order is
+// fixed for the life of the run.
+//
+// Default on. On Anvil, mesh22 at the recorded configuration (8 x 15, logv,
+// frozen clamp, rescue disabled) hung 12 of 80 runs with it off and 0 of 80
+// with it on, every digest correct, and was not slower where both finished
+// (on faster in 49 of 68 pairs, median 1.02x). Every stall off pinned the window
+// at floor(2047 / scale) with a bucket-2047 update on top of some PE's queue
+// and admissible updates behind it. See design/step76-default-deadlock.md.
+bool pq_overflow_last = true;
+
 struct ComparePairs {
   bool operator()(const Update &lhs, const Update &rhs) const {
-    // Compare the second integers of the pairs
+    if (pq_overflow_last) {
+      const bool l = update_overflowed(lhs), r = update_overflowed(rhs);
+      if (l != r)
+        return l; // an overflowed update has lower priority than any other
+    }
     return lhs.distance > rhs.distance; // '>' for min heap, '<' for max heap
   }
 };
@@ -781,6 +834,36 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg.rfind("--pq-overflow-last", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--pq-overflow-last=", 0) == 0)
+          value = arg.substr(19);
+        else if (arg == "--pq-overflow-last" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "off")
+          pq_overflow_last = false;
+        else if (value == "on")
+          pq_overflow_last = true;
+        else {
+          ckout << "--pq-overflow-last must be off or on" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg.rfind("--skew-defer", 0) == 0) {
+        std::string value;
+        if (arg.rfind("--skew-defer=", 0) == 0)
+          value = arg.substr(13);
+        else if (arg == "--skew-defer" && i + 1 < m->argc)
+          value = m->argv[++i];
+        if (value == "off")
+          skew_defer = false;
+        else if (value == "on")
+          skew_defer = true;
+        else {
+          ckout << "--skew-defer must be off or on" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg.rfind("--window-follow", 0) == 0) {
         std::string value;
         if (arg.rfind("--window-follow=", 0) == 0)
@@ -866,6 +949,7 @@ public:
             << "[--bucket-width-rule logv|weight] "
             << "[--clamp-freeze off|on] "
             << "[--range-extend off|on] "
+            << "[--skew-defer off|on] [--pq-overflow-last off|on] "
             << "[--window-follow off|on] "
             << "[--idle-flush off|on|starved] "
             << "[--combine off|hold] "
@@ -1912,6 +1996,11 @@ public:
     // rescuing?" is answerable from the summary of any run rather than only
     // from a log that happens to contain the STALL_RESCUE line.
     ckout << "Stall rescues: " << stall_rescues << endl;
+    // 7.6g. Nonzero means some PE was handed an update by a creator a
+    // coarsening ahead of it, at the one index the merge skips. With
+    // --skew-defer off each one strands a count at floor(2047 / scale).
+    ckout << "Skewed top-bucket arrivals: " << msg_stats[STAT_SKEW_TOP]
+          << " (skew-defer " << (skew_defer ? "on" : "off") << ")" << endl;
     // A round in this count admitted everything, because the work had moved
     // past the right edge of the reduced window and nothing the controller
     // could see said where it went. The maximum is how far behind the window
@@ -2176,7 +2265,12 @@ private:
   std::vector<Update> deferred_updates;
   long deferred_peak = 0;
   long deferred_total = 0;
-  long bfs_created = 0;           // bfs created messages
+  // Unflagged arrivals this PE would charge to the overflow index: see
+  // --skew-defer. Counted on every pass through process_update(), so an update
+  // still skewed when a drain re-offers it is counted again -- which cannot
+  // happen at a skew of one broadcast, and would say so if it did.
+  long skew_top_arrivals = 0;
+  long bfs_created = 0;          // bfs created messages
   long bfs_processed = 0;         // bfs processed messages
   int updates_noted = 0; // updates that have either updated a vertex value, or
                          // are confirmed to not be an improvement
@@ -2789,6 +2883,20 @@ public:
            (double)u.distance * bucket_multiplier >= bucket_limit;
   }
 
+  /**
+   * True when this PE would charge an unflagged update to the overflow index,
+   * which its creator by construction did not: charge_new_update() flags
+   * everything it sends to HISTO_BUCKET_COUNT - 1. So the creator was at a
+   * different scale or clamp. created_beyond_my_clamp() is the clamp half of
+   * this and a subset of it; the half it misses is the one that reaches the
+   * shipped default, a receiver still at scale 1 handed an update from a
+   * creator that has already coarsened. See --skew-defer.
+   */
+  bool charged_top_by_skew(const Update &u) {
+    return !update_overflowed(u) &&
+           get_histo_bucket(u.distance) == HISTO_BUCKET_COUNT - 1;
+  }
+
   /** Hold an update until this PE has the clamp its creator had. */
   void defer_until_extended(const Update &u) {
     deferred_updates.push_back(u);
@@ -2928,9 +3036,12 @@ public:
    * Takes a distance update and immediately adds it to the local heap/pq
    */
   inline void process_update(Update new_vertex_and_distance) {
-    if (created_beyond_my_clamp(new_vertex_and_distance)) {
-      defer_until_extended(new_vertex_and_distance);
-      return;
+    if (charged_top_by_skew(new_vertex_and_distance)) {
+      skew_top_arrivals++;
+      if (skew_defer || created_beyond_my_clamp(new_vertex_and_distance)) {
+        defer_until_extended(new_vertex_and_distance);
+        return;
+      }
     }
     long dest_vertex = update_vertex(new_vertex_and_distance);
     long local_index = dest_vertex - start_vertex;
@@ -3151,6 +3262,23 @@ public:
     // heap_threshold, or held_admissible > 0, is holding work it is allowed
     // to run and is not running it -- that, and only that, is a drain failure.
     const int pq_top_bucket = pq.empty() ? -1 : bucket_of(pq.top());
+    // pq_admissible counts queued updates at or below the threshold, wherever
+    // they sit in the heap; if it is positive while pq_top_bucket is above the
+    // threshold, process_heap() is stopping at a top that hides runnable work
+    // (see --pq-overflow-last). pq_overflowed counts flagged updates queued.
+    // A copy is walked, so this is O(n log n) -- stall reports only.
+    long pq_admissible = 0, pq_overflowed = 0;
+    {
+      auto copy = pq;
+      while (!copy.empty()) {
+        const Update &u = copy.top();
+        if (bucket_of(u) <= heap_threshold)
+          pq_admissible++;
+        if (update_overflowed(u))
+          pq_overflowed++;
+        copy.pop();
+      }
+    }
     long long held = 0, admitted = 0, buffered = 0;
     tram->pendingItems(&held, &admitted, &buffered);
     ckout << "PROGRESS_STALL " << tag << " pe=" << CkMyPe()
@@ -3166,6 +3294,8 @@ public:
           << " created_clamped=" << histogram[HISTO_BUCKET_COUNT - 1]
           << " pq=" << (long)pq.size() << " pq_hold=" << pq_hold_items
           << " pq_top_bucket=" << pq_top_bucket
+          << " pq_admissible=" << pq_admissible
+          << " pq_overflowed=" << pq_overflowed
           << " held_lowest=" << hold_lowest
           << " held_highest=" << hold_highest
           << " held_admissible=" << holds_admissible
@@ -3180,6 +3310,14 @@ public:
           << " deferred=" << (long)deferred_updates.size()
           << " deferred_peak=" << deferred_peak
           << " deferred_total=" << deferred_total
+          << " skew_top_arrivals=" << skew_top_arrivals
+          // This PE's own copy of the two 7.6g flags. Both were first added as
+          // plain globals, parsed in Main and so set only in process 0: at 8 x
+          // 15 the "on" arm was on for 15 PEs of 120. They are readonlies now,
+          // and a stall line says what the PE that stalled was running.
+          << " skew_defer=" << skew_defer
+          << " pq_overflow_last=" << pq_overflow_last
+          << " pq_hold_top=" << (long)pq_hold[HISTO_BUCKET_COUNT - 1].size()
           << " bucket_limit=" << bucket_limit << endl;
   }
 
@@ -3312,6 +3450,7 @@ public:
         (long)(local_graph.bytes() + sizeof(cost) * (size_t)num_vertices);
     msg_stats[STAT_ABSORBED] = absorbed_updates;
     msg_stats[STAT_FOLDED] = folded_updates;
+    msg_stats[STAT_SKEW_TOP] = skew_top_arrivals;
 #ifdef PAPI
     msg_stats[STAT_INSTRUCTIONS] = values[0];
 #endif

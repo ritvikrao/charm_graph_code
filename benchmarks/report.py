@@ -10,6 +10,8 @@ from pathlib import Path
 import random
 import statistics
 
+from outcomes import Floors, counts, outcome_text, ratio_text
+
 
 def geometric(values):
     return math.exp(statistics.mean(math.log(x) for x in values))
@@ -98,8 +100,16 @@ if __name__ == '__main__':
     (args.output/'failed-test-runs.json').write_text(json.dumps(
         [r for runs in failures.values() for r in runs], indent=2)+'\n')
     names = ['current', 'old-fixed', 'tuned-fixed', 'open', 'riken', 'gap']
-    table = ['| Nodes | Workers/node | Graph | Sources | ACIC current (s) | Old fixed (s) | Tuned fixed (s) | Relaxed admission (s) | RIKEN (s) | GAPBS (s) | RIKEN / ACIC [95% CI] |',
-             '|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---|']
+    # 7.6h: the floor beside every speedup, per allocation. `control` is
+    # `current` under another name, so its paired ratio is what this allocation
+    # can resolve; the allocation's floor is its worst graph's.
+    floors = Floors()
+    for (nodes, workers, graph), values in cells.items():
+        result = paired(values.get('control', {}), values.get('current', {}))
+        if result:
+            floors.add((nodes, workers), graph, dict(median=result[0]))
+    table = ['| Nodes | Workers/node | Graph | Sources | ACIC current (s) | Old fixed (s) | Tuned fixed (s) | Relaxed admission (s) | RIKEN (s) | GAPBS (s) | RIKEN / ACIC [95% CI] | Floor: graph / allocation |',
+             '|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---|---|']
     controls = ['| Nodes | Workers/node | Graph | Duplicate / current [95% CI] | Tuned fixed / current [95% CI] | Old fixed / current |',
                 '|---:|---:|---|---|---|---:|']
     rows = []
@@ -109,15 +119,25 @@ if __name__ == '__main__':
         source_count = max((len(v) for v in values.values()), default=0)
         def timing(name):
             failed = failures.get((nodes, workers, graph, name), [])
-            return f'FAIL ({len(failed)}/16)' if failed else (f'{estimates[name]:.4f}' if name in estimates else '—')
+            if not failed:
+                return f'{estimates[name]:.4f}' if name in estimates else '—'
+            # Which failure it was, not only that there was one: a hang is a
+            # progress defect and a wrong answer is a correctness defect.
+            attempted = [r for r in records if r['phase'] == 'test' and r['nodes'] == nodes and
+                         r['workers'] == workers and r['graph'] == graph and r['config']['name'] == name]
+            return f'FAIL {outcome_text(counts(attempted))}'
         def ratio(name):
             result = paired(values.get(name, {}), current)
             return '—' if result is None else f'{result[0]:.2f} [{result[1]:.2f}, {result[2]:.2f}]'
+        own, alloc = floors.graph((nodes, workers), graph), floors.allocation((nodes, workers))
+        floor = f'{ratio_text(own)} / {ratio_text(alloc)}' if own else '—'
         table.append(f'| {nodes} | {workers} | {graph} | {source_count} | ' +
                      ' | '.join(timing(n) for n in names) +
-                     f' | {ratio("riken")} |')
+                     f' | {ratio("riken")} | {floor} |')
         controls.append(f'| {nodes} | {workers} | {graph} | {ratio("control")} | {ratio("tuned-fixed")} | {ratio("old-fixed")} |')
         row = dict(nodes=nodes, workers=workers, graph=graph, sources=source_count,
+                   graph_floor=floors.graph((nodes, workers), graph),
+                   allocation_floor=floors.allocation((nodes, workers)),
                    failed_variants=','.join(n for n in names if (nodes, workers, graph, n) in failures), **estimates)
         for name in ['riken', 'gap', 'control', 'tuned-fixed', 'old-fixed', 'open']:
             result = paired(values.get(name, {}), current)

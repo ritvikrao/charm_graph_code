@@ -1,4 +1,4 @@
-# The shipped default deadlocks, and item (1) is not closed
+# The shipped default deadlocked: queue order, found and repaired
 
 Item (1) of the stopping rules is progress repair, with the rule attached that
 *a watchdog that forces an exit is not a repair*. It was closed earlier in
@@ -230,3 +230,134 @@ instrumented binary **without** the rescue, over the campaign's four sources at
 eight processes of fifteen, so that the hang still happens and is fully
 described when it does. The rescue must not be staged into those runs or they
 measure nothing.
+
+## The cause: process_heap() stops at a top that hides runnable work
+
+*2026-09-15, on Anvil. Resolved; the repair is `--pq-overflow-last`, default on.*
+
+The drain failure was not in the histogram, the thresholds or the transport. It
+was the priority queue's order.
+
+`process_heap()` pops from a heap ordered by distance and **stops at the first
+top whose bucket is above the heap threshold**. That is correct only if bucket
+never decreases along the heap's order. It can:
+
+- At bucket scale 1, index 2047 is both the top real bucket and the overflow
+  slot. `charge_new_update()` flags everything it sends there, including the
+  in-range slice `[2047, 2048)` widths, so such an update keeps bucket 2047 for
+  life however the scale later moves.
+- While the frontier is near the top of the range, the threshold is 2047 and
+  one of those flagged updates is admitted to a PE's heap.
+- A coarsening by `k` divides the threshold to `floor(2047 / k)`. The flagged
+  update stays on top of that heap -- its distance is smaller than anything
+  created since -- at bucket 2047, above the threshold.
+- Every update that PE is later handed with a slightly larger distance, charged
+  to `floor(2047 / k)` and so admissible, goes into the heap *behind* it.
+  `process_heap()` looks at the top, sees 2047, and stops.
+
+The window then sits at `floor(2047 / scale)` with a handful of admissible
+updates that nothing will ever pop, and everything else in the overflow slot
+where no threshold the window can compute will reach. That is the recorded
+state exactly, including the one detail nothing else explained: every stall in
+22071815 pinned at `floor((bucket_limit - 1) / bucket_scale)`.
+
+The repair sorts every flagged update after every unflagged one
+(`ComparePairs`, under `--pq-overflow-last on`). Bucket is then monotone along
+the heap again, and the `break` is correct. It changes nothing but the order in
+which a PE pops what it already holds, and only where flagged and unflagged
+updates share a heap.
+
+### Evidence
+
+**Instrument.** Every per-PE stall line now carries `pq_admissible` (queued
+updates at or below the threshold, wherever they are in the heap) and
+`pq_overflowed`, besides `pq_top_bucket`. A PE with `pq_top_bucket` above its
+threshold and `pq_admissible > 0` is a PE whose heap hides runnable work.
+
+**Minimized reproducer, one process.** A 300x300 mesh (`90000 0 1 <src> 2`) at
+width 12 or 16 with `--two-tier-absolute 1600`, 4 PEs, `--stall-rescue 0`. Found
+by sweeping mesh size, width, two-tier limit and source on one Anvil node; the
+three configurations that stalled were then repeated 60 times per arm, 24 runs
+at a time:
+
+| configuration | stalled, off | stalled, on |
+|---|---:|---:|
+| width 16, source 12345 | 14 / 60 | 0 / 60 |
+| width 12, source 777 | 15 / 60 | 0 / 60 |
+| width 16, source 0 | 9 / 60 | 0 / 60 |
+
+Every one of the 38 stalls pinned at `floor(2047 / scale)` -- 1023, 682, 511,
+341, 292, 255, 227, 186, 170, 157, 146, 136, 127, 120, 113 across scales 2 to
+18 -- with `window_sum` equal to the `pq_admissible` of PEs whose
+`pq_top_bucket` was 2047. Every stall also failed verification against serial
+Dijkstra; every run with the repair on passed.
+
+**The recorded configuration.** mesh22, four test sources, eight processes of
+fifteen on one node, `--bucket-width-rule logv --clamp-freeze on --stall-rescue
+0 --timeout 45`, both arms interleaved per (source, rep), four one-node jobs
+(20743825-28, binary `acic_g3` sha256 `e9e2265c...`, `scripts/repro_stall.sh`):
+
+| `--pq-overflow-last` | runs | hung | digest matches reference |
+|---|---:|---:|---:|
+| off | 80 | **12** | 68 |
+| on | 80 | **0** | **80** |
+
+A 15% hang rate at the shipped default, on a second machine, in the same state
+as Delta's. Where both arms finished the repair was not slower: faster in 49 of
+68 pairs, median off/on 1.02x (no floor was measured in these jobs, so read
+that as "no regression", not as a speedup). mesh20 did not hang in 80 runs of
+either arm on Anvil: on this machine its early rounds never hold more than the
+two-tier limit, so it crosses the clamp without ever coarsening, and the
+mechanism needs a coarsening.
+
+### The first explanation was wrong, and was tested before it was believed
+
+The first candidate was scale skew between PEs: a receiver still at scale 1
+charging an unflagged update from an already-coarsened creator to index 2047,
+the one index the merge skips. It predicts the same pin. It is built as
+`--skew-defer` with an unconditional counter, `skew_top_arrivals`, and **the
+counter was 0 in all 160 mesh20/mesh22 runs** (jobs 20743700-03), including the
+14 that hung, and in every single-process sweep. The flag stays, off, with the
+counter as the receipt that the race is not happening.
+
+### Two instrument bugs found on the way, both of which would have hidden this
+
+1. **The new flags were not readonlies.** Both were first added as plain
+   globals parsed in `Main`, which sets them only in process 0. At 8 x 15 the
+   "on" arm was on for 15 PEs of 120; jobs 20743768-71 recorded 2 hangs in 21
+   "on" runs, and the stall lines named PEs 78-95 with flagged updates on top
+   and admissible ones behind -- impossible with the comparator active. They
+   are now declared in `sssp_smp.ci`, and each PE's own copy is printed on its
+   stall line. The skew counter was unaffected (it does not depend on the
+   flag), which is why its zero stands.
+
+2. **`scripts/verify.sh` could not see a stall.** Its checks were
+   `echo "$out" | grep -q PATTERN` under `set -o pipefail`. A stalled fixture
+   writes ~200 KB; `grep -q` exits at its first match, `echo` dies of SIGPIPE,
+   and pipefail reports the pipeline as failed -- a match read as no match. On
+   Anvil the pipeline form missed 7 of 7 `STALL_RESCUE` lines that a here-string
+   caught, and the gate passed twice with the repair off. **So the claim above,
+   that the gate fails on `STALL_RESCUE`, was not true for any fixture whose
+   output exceeded a pipe buffer** -- which is the case the check exists for.
+   Every output test is now `grep -q ... <<< "$out"`. The earlier fixtures still
+   pass under the corrected checks.
+
+### The gate fixture, and how strong it is
+
+The reproducer is intermittent, so the fixture is repeated and sized from a
+measurement: 16 runs of source 12345 and 4 of source 777, both with the rescue
+at its default, so a regression fails in 32 rounds. Run one at a time those
+needed a rescue in 6-11 of 20 and 3-4 of 20 runs with the repair off, which puts
+the chance the gate misses a regression near 0.2%. With the corrected checks,
+`SSSP_EXTRA_ARGS="--pq-overflow-last off" scripts/verify.sh` fails 9 fixture
+runs of 20; with the default it passes.
+
+### What this closes
+
+Item (1) is closed for the stall that reopened it: the cause is identified, the
+repair is a change of admission order and not a watchdog, the rescue does not
+fire in the gate, and the 15% hang rate at the recorded configuration goes to 0
+of 80. The progress-guarded rescue stays as a production guard, loud and
+counted. What remains open is only what was never closed: other graphs, more
+nodes, other scales -- which is what 7.6h's hang column in every campaign table
+now watches for.

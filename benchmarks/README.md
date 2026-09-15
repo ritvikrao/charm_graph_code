@@ -265,3 +265,64 @@ After all jobs finish, `archive.py CAMPAIGN OUTPUT` exports compact provenance
 and hashes the full scratch logs. `render_report.py OUTPUT REPORT.md` refreshes
 the generated tables in the decision report. Graphs, executable snapshots,
 and full raw solver logs remain on scratch rather than entering Git.
+
+## Failures and resolution floors (step 7.6h)
+
+A median over valid runs scores "stops sometimes" as a clean win, and a
+`control` arm's ratio against its twin -- the resolution floor -- was ~1.00x at
+one node and 1.16x-1.28x at sixteen. So no ratio in any table is printed
+without both.
+
+`outcomes.py` classifies every record as `ok`, `hang`, `wrong` or `crash`, and
+counts rescued runs separately (a rescued run finished, but would have hung).
+Records written since 7.6h carry `hung`, `outcome`, `stall_rescues` and
+`skew_top_arrivals` from the solver's own output; older ones are classified by
+the harness kill (-999) or by a compute time that reached their `--timeout`.
+
+`report.py` splits every `FAIL` by kind and adds a *graph / allocation* floor
+column to the primary table. `report_arms.py` renders any campaign made of
+named arms:
+
+```sh
+report_arms.py CAMPAIGN/logs OUT --pattern 'policy-*.jsonl' --phase policy \
+    --baseline adaptive --control control
+report_arms.py CAMPAIGN/logs OUT --pattern 'width-*.jsonl' --phase width \
+    --baseline logv-frozen --control control
+```
+
+Every cell is a paired median (baseline time / arm time, above 1 favours the
+arm) with its win count and outcome counts, judged against floors measured in
+*that* allocation: unmarked clears the allocation floor (worst graph); `~`
+clears only the graph's own; `·` is within the floor; `†` means the cell or its
+baseline did not always finish, so the ratio is over survivors and is not a
+speedup. `arms.md` ends with a failure-rate table by arm and allocation;
+`arms.csv` has every number.
+
+## Admission x delivery (step 7.6f2)
+
+`--mode policy --workers 120 --acic-rpn 8` runs, per allocation:
+
+* `global-fixed`: four fixed candidates (width rule `logv|weight` x flush
+  interval `1|5`, no coarsening, no idle flush), chosen once on the tuning
+  sources of `--dev-graphs` (default `mesh20,rmat20,uniform20`) and frozen;
+* `tuned-fixed`: the step 7.5 fixed search space, chosen per graph on that
+  graph's own tuning sources;
+* the 2 x 2 matrix, every arm on the shipped width rule and per-graph map:
+  `adaptive` (shipped), `adapt-admission` (coarsening on, flush every round, no
+  idle flush), `adapt-delivery` (no coarsening, shipped flush policy),
+  `fixed-both`; and `control`, `adaptive` under another name.
+
+All seven run in random order on each held-out (source, rep). Failures are
+recorded and the campaign continues. Results on the development graphs are
+in-sample for `global-fixed`.
+
+## Anvil
+
+Anvil CPU nodes have Delta's shape (128 cores, eight 16-core NUMA domains), so
+the 8 x 15 layout is unchanged; `scripts/anvil/compare.sbatch` and
+`scripts/anvil/repro_stall.sbatch` carry the differences (account, modules,
+`SLURM_MPI_TYPE=pmi2`). All nine prepared graphs were regenerated there and
+match the SHA-256 in `design/step75-data/graphs.json`, so the recorded
+reference digests apply unchanged. Anvil's messaging path has been seen to
+slow ~100x for minutes at a time independent of configuration; interleave
+arms and read paired medians, never single runs.
