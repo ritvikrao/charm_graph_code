@@ -529,6 +529,15 @@ private:
   // as the reduction allows, so a fixed period would bury the log.
   long stall_rounds = 0;
   long stall_report_at = 256;
+  long stall_rescues = 0;
+  // Consecutive no-progress reductions before the controller admits every
+  // bucket to break a stall the window cannot describe; 0 disables it. The
+  // stall report fires at 256, so this is deliberately far earlier: a global
+  // standstill with live work outstanding is already pathological. Not 1,
+  // because updates in flight are created but not yet retired, so a run under
+  // heavy buffering can legitimately hold both counters still for a few
+  // rounds.
+  long stall_rescue_rounds = 32;
   int stall_reports = 0;
   // Rounds whose reduced window held no live update while work was still
   // outstanding, i.e. the frontier had moved past the window's right edge and
@@ -702,6 +711,14 @@ public:
           return;
         }
         two_tier_absolute = std::stol(m->argv[++i]);
+      } else if (arg == "--stall-rescue") {
+        if (i + 1 >= m->argc) {
+          ckout << "--stall-rescue needs a number of rounds (0 disables)"
+                << endl;
+          CkExit(1);
+          return;
+        }
+        stall_rescue_rounds = std::stol(m->argv[++i]);
       } else if (arg.rfind("--coarsen-clamped", 0) == 0) {
         std::string value;
         if (arg.rfind("--coarsen-clamped=", 0) == 0)
@@ -1569,11 +1586,57 @@ public:
     // the same situation seen through an accounting error -- and that is the
     // case that used to deadlock, since the percentile scan cannot reach a
     // negative target and leaves both thresholds at the window's own origin.
+    bool rescued = false;
     if (histogram_sum <= 0) {
       heap_threshold = HISTO_BUCKET_COUNT - 1;
       tram_threshold = HISTO_BUCKET_COUNT - 1;
       bfs_threshold = HISTO_BUCKET_COUNT - 1;
+    } else if (stall_rescue_rounds > 0 && stall_rounds >= stall_rescue_rounds &&
+               above_window > 0 && live_updates > 0) {
+      // The rescue above asks whether the window is empty. That is the wrong
+      // question, and job 22071815 is what it costs: five baseline runs at one
+      // node froze with 5,969 of 5,973 live updates in the overflow slot and
+      // the remaining FOUR inside the window. histogram_sum was 4, so the
+      // emptiness guard did not fire, and no threshold computed inside a
+      // 256-wide window anchored below the overflow slot can reach it. Four
+      // updates blocked a rescue that 5,969 updates needed, and the run stood
+      // still -- created, processed, live and both thresholds bit-identical --
+      // for the rest of its wall clock.
+      //
+      // So the guard is progress, not emptiness. stall_rounds counts
+      // consecutive reductions in which no update was created or retired
+      // anywhere; with work above the window that the controller cannot aim a
+      // threshold at, admitting everything is the one move that must make
+      // progress, exactly as in the empty-window case: every live update is
+      // then below both thresholds and every PE can retire what it holds.
+      //
+      // This is not a watchdog and it does not force an exit -- it changes
+      // admission so that stranded work becomes reachable and the run
+      // continues to a correct answer. But it is still a repair of the
+      // symptom: whatever left four admissible updates unprocessed at their
+      // own threshold is not fixed by this, so every firing is counted,
+      // printed, and failed by the gate rather than quietly saving a run.
+      heap_threshold = HISTO_BUCKET_COUNT - 1;
+      tram_threshold = HISTO_BUCKET_COUNT - 1;
+      bfs_threshold = HISTO_BUCKET_COUNT - 1;
+      rescued = true;
+      stall_rescues++;
+      stall_rounds = 0;
+      // Leading endl for the same reason COARSEN_CLAMPED has one: without it
+      // the line is appended to whatever was printed last and the gate's
+      // ^STALL_RESCUE match never fires, which is exactly what happened the
+      // first time this was tested.
+      ckout << endl
+            << "STALL_RESCUE rounds=" << stall_rescue_rounds
+            << " live=" << live_updates << " window_sum=" << histogram_sum
+            << " above_window=" << above_window << " clamped=" << clamped
+            << " first_nonzero=" << first_nonzero
+            << " occupied=" << occupied
+            << " bucket_scale=" << bucket_scale
+            << ": admitted every bucket to break a stall the window could not"
+               " describe." << endl;
     }
+    (void)rescued;
     if (heap_threshold != previous_threshold) {
       previous_threshold = heap_threshold;
       threshold_change_counter++;
@@ -1844,6 +1907,11 @@ public:
     ckout << "Number of threshold changes: " << threshold_change_counter
           << endl;
     ckout << "Number of reductions: " << reduction_counts << endl;
+    // Every firing is a run that would otherwise have hung. Printed
+    // unconditionally, including the zero, so that "did this run need
+    // rescuing?" is answerable from the summary of any run rather than only
+    // from a log that happens to contain the STALL_RESCUE line.
+    ckout << "Stall rescues: " << stall_rescues << endl;
     // A round in this count admitted everything, because the work had moved
     // past the right edge of the reduced window and nothing the controller
     // could see said where it went. The maximum is how far behind the window

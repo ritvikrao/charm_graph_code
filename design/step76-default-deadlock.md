@@ -144,3 +144,89 @@ was scored valid, and validity was doing more work than it looked like. A
 campaign that reports only medians over valid runs cannot distinguish "this
 configuration is fine" from "this configuration stops sometimes and we did not
 draw one". The hang rate belongs in the table beside the speedup.
+
+## The repair: guard the rescue on progress, not on emptiness
+
+There is already a rescue for this shape of failure, added in 7.6a. When the
+reduced window sums to zero the controller admits every bucket, on the
+reasoning that whatever is left must be past the window's right edge where no
+threshold computed inside the window can reach it:
+
+```cpp
+if (histogram_sum <= 0) {
+  heap_threshold = tram_threshold = bfs_threshold = HISTO_BUCKET_COUNT - 1;
+}
+```
+
+It does not fire in these stalls, and the global line says exactly why:
+
+```
+live=5973  window_sum=4  above_window=5969  clamped=5969  first_nonzero=511
+```
+
+`histogram_sum` is 4, not 0. **Four updates inside the window blocked a rescue
+that 5,969 updates needed.** The situation the rescue exists for is present in
+full -- work is stranded above the window, and no threshold the window can
+express will reach it -- but the guard asks whether the window is *empty*
+rather than whether it is *getting anywhere*.
+
+Note also that `above_window` equals `clamped` exactly, in every stall. All
+5,969 stranded updates are in the overflow slot, and none of them is a phantom:
+the histogram's total is `created - processed` by construction, so every one of
+the 5,973 is a real live update. This is not an accounting failure.
+
+The repair changes the guard to progress. `stall_rounds` already counts
+consecutive reductions in which no update was created or retired anywhere --
+the comment on it already says "that is a stall, not convergence, and nothing
+will restart it" -- so the second rescue fires on that count, with work above
+the window outstanding:
+
+```cpp
+} else if (stall_rescue_rounds > 0 && stall_rounds >= stall_rescue_rounds &&
+           above_window > 0 && live_updates > 0) {
+```
+
+`--stall-rescue N`, default 32, 0 disables. Deliberately far earlier than the
+stall report's 256, and deliberately not 1: updates in flight are created but
+not yet retired, so a run under heavy buffering can legitimately hold both
+counters still for a few rounds.
+
+### Why this is a repair and not a watchdog
+
+The rule attached to item (1) is that a watchdog forcing an exit is not a
+repair, and this does not force an exit. It changes admission so that stranded
+work becomes reachable, and the run continues to a correct answer by the same
+argument the empty-window rescue already rests on: with every bucket admitted,
+every live update is below both thresholds, every PE can retire what it holds,
+and `updates_processed` has to rise.
+
+But it repairs the symptom, not the cause. Whatever left four admissible
+updates unprocessed at their own threshold is untouched by it. So every firing
+is made loud rather than quiet:
+
+- `STALL_RESCUE` is printed with the full state that provoked it;
+- `Stall rescues: N` is in every run's summary, including the zero, so the
+  question "did this run need rescuing?" is answerable from any run;
+- **`scripts/verify.sh` fails on `STALL_RESCUE`**, alongside `PROGRESS_STALL`,
+  `CONSERVATION VIOLATED` and `COARSEN_CLAMPED`. The rescue is for production
+  runs; a fixture that needs it is a regression, and without this the gate
+  would go green on a deadlock the rescue happened to save.
+
+Verified by forcing it: at `--stall-rescue 1` on the coarsening fixture it
+fires twice and the run still passes against serial Dijkstra; at the default 32
+it does not fire at all. The first version printed without a leading newline,
+so the counter incremented while the gate's `^STALL_RESCUE` match found
+nothing -- a rescue that reports itself into the middle of another line is a
+rescue the gate cannot see, which is the failure mode this whole section is
+about.
+
+### What is still open
+
+The drain failure itself. Four updates sat at their own admission threshold and
+were not processed, and nothing in the report as it stood could say where they
+were. That is what the new `pq_top_bucket` / `held_lowest` / `held_admissible`
+fields are for, and jobs 22093288 (mesh22) and 22093373 (mesh20) run the
+instrumented binary **without** the rescue, over the campaign's four sources at
+eight processes of fifteen, so that the hang still happens and is fully
+described when it does. The rescue must not be staged into those runs or they
+measure nothing.

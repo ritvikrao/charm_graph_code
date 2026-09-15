@@ -295,9 +295,13 @@ for entry in "${PROGRESS_CONFIGS[@]}"; do
   fi
   # A run that finishes but reported a stall on the way is still a regression:
   # it means the controller lost the frontier and only the rescue got it back.
-  if echo "$out" | grep -qE "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED"; then
+  # STALL_RESCUE is in this list deliberately. It restores progress and the run
+  # then passes, so without failing on it here a fixture that deadlocks would
+  # go green and the defect underneath would stop being visible. The rescue is
+  # for production runs; needing it in the gate is a regression.
+  if echo "$out" | grep -qE "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED|^STALL_RESCUE"; then
     echo "FAIL (progress fixture reported a stall): $cfg ${entry#*|}"
-    echo "$out" | grep -m2 -E "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED" | sed 's/^/    /'
+    echo "$out" | grep -m2 -E "^PROGRESS_STALL|^CONSERVATION VIOLATED|^COARSEN_CLAMPED|^STALL_RESCUE" | sed 's/^/    /'
     failures=$((failures + 1))
   fi
 done
