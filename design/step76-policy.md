@@ -1,9 +1,9 @@
 # Step 7.6f2 — admission × delivery, first wave (Anvil)
 
 *2026-09-15. Item 4 of the 7.5 next work, and the research claim Gate A turns
-on. One allocation per node count; an independent replication at 1/2/8 nodes
-and a first 16-node allocation are queued (jobs 20744731-34). Nothing below is
-established until it repeats there.*
+on. First wave at 1/2/8 nodes, then an independent replication at 1/2/8 and a
+first 16-node allocation (jobs 20744731-34); what survived the replication is
+in [the section at the end](#replication-what-survives-a-second-allocation).*
 
 ## What was run
 
@@ -189,3 +189,87 @@ Full tables with outcome counts: `report_arms.py` over
    independently; only if that beats the product should the claim say co-design.
 4. One bounded optimization, if the replication agrees: the coarsening rule on
    uniform graphs at low node counts, where both fixed-width arms win.
+
+## Replication: what survives a second allocation
+
+Jobs 20744731 (1 node), 20744732 (2), 20744733 (8) and 20744734 (16), the same
+binary and harness, each allocation re-selecting its own `global-fixed` and
+`tuned-fixed`. **2,544 more runs, none hung, wrong, crashed or rescued** --
+4,056 across the seven allocations.
+
+**The floor moved more than any policy claim here can afford to ignore.** The
+replication's allocation floors are 1.24x, 1.28x and 1.26x at 1, 2 and 8 nodes,
+against 1.09x, 1.09x and 1.15x in the first wave; 16 nodes reads 1.12x. The same
+node count on the same machine gave floors a factor apart, so no cell below
+1.3x is read as a result from one allocation, and the verdict that matters is
+agreement between the two.
+
+Of the cells that cleared their allocation floor in either wave, **44 cleared
+it in both with the same sign and 7 changed sign.** Five of the seven are
+`global-fixed` at one node, and they have a cause rather than a coin flip: the
+replication chose `logv`, interval 1, where the first wave chose `weight`,
+interval 1. On two tuning sources of three development graphs the global
+selection is not stable at one node, so `global-fixed` there is two different
+configurations and not one result. The other two flips are within 1.3x.
+
+Paired medians, first wave → replication, and the new 16-node allocation;
+`/x` is the arm x times slower than `adaptive`:
+
+| effect | 1 node | 2 nodes | 8 nodes | 16 nodes |
+|---|---|---|---|---|
+| fixed delivery, road-ny (`adapt-admission`) | /1.41 → /1.50 | /2.54 → /2.40 | /20.4 → /21.3 | /34.2 |
+| fixed delivery, mesh22 | /1.07 → /1.05 | /1.19 → /1.66 | /2.89 → /3.31 | /4.74 |
+| fixed delivery, mesh20 | /1.04 → /1.28 | /1.49 → /1.43 | /3.44 → /2.98 | /5.75 |
+| no coarsening, rmat20 (`adapt-delivery`) | /1.12 → /1.06 | /1.24 → /1.17 | /1.38 → /1.38 | /1.71 |
+| no coarsening, rmat20-s2 | /1.14 → /1.11 | /1.25 → /1.31 | /1.24 → /1.46 | /1.55 |
+| no coarsening, youtube | /1.28 → /1.13 | /1.57 → /1.35 | /1.85 → /1.83 | /1.83 |
+| no coarsening, uniform20 | 1.24 → 1.54 | /1.05 → /1.08 | /1.38 → /1.43 | /1.65 |
+| `tuned-fixed`, mesh22 | /1.01 → /1.29 | /1.34 → /1.46 | /3.93 → /3.76 | /7.18 |
+| `tuned-fixed`, road-ny | 1.50 → 1.17 | /1.05 → /1.31 | /2.33 → /2.47 | /3.55 |
+| `tuned-fixed`, uniform20 | 1.24 → 1.59 | 1.15 → 1.11 | 1.08 → 1.00 | /1.12 |
+| `tuned-fixed`, rmat22 | /1.13 → /1.08 | /1.11 → /1.08 | 1.13 → 1.05 | 1.22 |
+
+### What is now supported, at these input sizes
+
+1. **Adaptive delivery is the large effect on high-diameter graphs, and it
+   grows monotonically with node count** in both waves: road-ny 1.4-1.5x at one
+   node to 34x at sixteen; the meshes to 4.7-5.8x. Admission is not what makes
+   road-ny fast.
+2. **Adaptive admission (coarsening) pays on the scale-free graphs, and also
+   grows with node count**: rmat20 and rmat20-s2 1.1x to 1.6-1.7x, youtube
+   1.1-1.3x to 1.8x.
+3. **On uniform graphs coarsening costs time at one node (1.24x, 1.54x) and
+   pays from eight nodes up (1.4x-1.8x)**, in both waves. This is the one clean
+   sign change with scale, and the bounded-optimization candidate the first wave
+   named is therefore narrower than it looked: it would buy something at one
+   node and must not cost what coarsening buys at eight.
+4. **Per-case tuning beats adaptive only at small node counts on uniform graphs
+   and at 8-16 nodes on rmat22**, by 1.05x-1.59x; on the meshes and road-ny
+   from two nodes up it trails by 1.3x-7x. Gate A's proximity target (within 10%
+   geometrically, 20% per case) fails on uniform20 at one node in both waves
+   and is met or beaten nearly everywhere else from two nodes.
+5. **The axes still compose close to multiplicatively.** At sixteen nodes:
+   mesh22 4.74x and 1.78x against 7.09x for both fixed; rmat20 1.22x and 1.71x
+   against 2.05x; youtube 1.29x and 1.83x against 3.13x (the one cell above the
+   product). Two adaptive mechanisms that each earn their keep on a different
+   graph class is supported. A co-design interaction is not yet shown; point 3
+   of Next stands.
+
+### What is not
+
+- `global-fixed` at one node, for the selection reason above.
+- Anything about scale in the sense the paper means. Sixteen nodes solve these
+  graphs in 0.17-0.42 s, slower than one node does. The growth in points 1-3 is
+  growth in a regime where communication and control dominate, which is exactly
+  where adaptive delivery should matter most; whether it survives once there is
+  enough work per PE is the question larger inputs have to answer.
+
+### Next, revised
+
+1. Larger inputs, so that 8-16 node allocations do real work per PE; the growth
+   in points 1-3 is the thing to re-test there.
+2. The co-design interaction test.
+3. Stabilize or widen the global selection (more tuning sources or graphs)
+   before quoting `global-fixed` at one node.
+4. The bounded optimization, if taken: coarsening on uniform graphs at low node
+   counts, with the eight- and sixteen-node cost as the constraint.
