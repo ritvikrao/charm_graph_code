@@ -16,8 +16,19 @@ on all nine graphs. Every result before 7.6c is superseded, not merged.
 Since then: 7.6a–c closed, 7.6d settled as a mesh-only rule, 7.6e rejected, the
 default deadlock found and repaired (7.6g), hang rate and resolution floor in
 every table (7.6h), and two waves of the admission × delivery study (7.6f2).
-The larger-input wave is queued. The external re-take (7.6f1) has not started,
-and Gate A cannot close without it. Rationale and protocol are in
+**Checkpoints 1 and 2 read negative (09-15).** On large inputs the benefit is
+not co-designed, adaptation loses to a fixed width on road-usa by 8–10×, and no
+graph but mesh26 gets faster past two nodes ([below](#76f2-so-far)). The
+external re-take at fair layouts ([7.6f1](step76-external.md)) then found:
+
+- one-node GAPBS faster than ACIC on every graph: 2–21× against ACIC on one
+  node, 1.1–21× against ACIC on two;
+- RIKEN 6–10× faster on rmat25 and orkut, and 18–21× slower on mesh24;
+- ACIC 3–10× faster than Gluon-Async on mesh24 and road-usa, 1.25–2.6× on
+  orkut, and split with it on rmat25.
+
+That meets this plan's "stop the SC27 plan" condition ([outcome
+reading](#gate-a-checkpoints)); the decision is pending. Rationale and protocol are in
 [post-step7-review.md](post-step7-review.md).
 
 ## Context
@@ -110,8 +121,8 @@ identical results on one and two nodes; PageRank uses a tolerance gate.
 | 7.6e | Raise the clamp mid-run for out-of-range graphs | [Range](step76-range.md): 35/36 hang on the meshes at 8–16 nodes; off by default | rejected |
 | 7.6g | The default deadlocks | [Deadlock](step76-default-deadlock.md): a flagged heap top hides admissible updates after coarsening; `--pq-overflow-last` (default on) takes mesh22 from 12/80 hangs to 0/80. Skew hypothesis refuted; `verify.sh` stall checks and readonly flags fixed; gate fixture fails without the repair | closed |
 | 7.6h | Hang rate and resolution floor beside every speedup | `outcomes.py` (ok/hung/wrong/crashed, rescues counted, per-allocation floors), `report_arms.py`, `report.py` | complete |
-| **7.6f1** | External re-take, every system tuning its own layout (`configs()` needs an ACIC ranks-per-node axis) | Required for Gate A | **not started** |
-| **7.6f2** | Admission × delivery vs `global-fixed` and per-graph `tuned-fixed` | [Policy](step76-policy.md), below. Stopping rule: one or two supported optimizations | **large-input wave queued** |
+| **7.6f1** | External re-take, every system tuning its own layout (`configs()` needs an ACIC ranks-per-node axis) | [External](step76-external.md): GAPBS (1 node) faster everywhere (1.1–21×); RIKEN 6–10× faster on scale-free, 18–21× slower on mesh24; ACIC beats Gluon-Async 3–10× on high-diameter | **complete (1–2 nodes): external systems well ahead** |
+| **7.6f2** | Admission × delivery vs `global-fixed` and per-graph `tuned-fixed` | [Policy](step76-policy.md), below. Stopping rule: one or two supported optimizations | **checkpoint 1 read: negative** |
 | 8 | Generic payload interface, only when a second algorithm needs it | SSSP identical on 1–2 nodes | conditional |
 | 9 | PE/chare identity for new mappings; overdecomposition only if profiling justifies it | Correct on all supported mappings | conditional |
 | 10 | Extract `AcicController` around observed shared signals | SSSP retained; second kernel uses it | with step 11 |
@@ -134,13 +145,46 @@ allocation cannot resolve a cell below about 1.3×. Supported at these sizes:
   8–16 nodes (1.05–1.59×).
 - The two axes compose about multiplicatively, so co-design is **not** shown.
 
-Caveat: every input is sub-second, and 16 nodes is slower than one. The
-larger-input wave (jobs 20747230–32, 2/8/16 nodes) runs mesh24, mesh26, rmat25,
-rmat26 (67M vertices, 2.1B edges), uniform25, road-usa and orkut with a new
-`local-delivery` arm: adaptive admission plus delivery's actions on local state
-only. Two-node sizing: compute 0.7–6.3 s, comparable to setup on the RMAT,
-uniform and orkut graphs; single runs showed fixed delivery tying adaptive on
-road-usa and beating it on mesh26, not yet a result.
+Those inputs were all sub-second. **Large inputs** (jobs 20747230–32; mesh24,
+mesh26, rmat25, rmat26 with 67M vertices and 2.1B edges, uniform25, road-usa,
+orkut; 845 runs, no failures; 8 and 16 nodes cancelled once they had answered
+the checkpoint; [detail](step76-policy.md#large-inputs-checkpoint-1)):
+
+| Question | Answer |
+|---|---|
+| Survives real work? | Partly. Delivery grows on mesh24 (1.4× to 17× at 16 nodes) and mesh26 (5× at 8); fixed delivery is 1.25× *faster* on road-usa; coarsening does nothing on rmat25/26 at 2 nodes |
+| Co-design? | **No.** `local-delivery` ties `adaptive` on mesh24, mesh26 and road-usa at every node count |
+| Worth adapting? | **No, as configured.** Beats `global-fixed` 2.5–6.9× on meshes at 8–16 nodes, loses road-usa 7.6–10×, misses the `tuned-fixed` target on road-usa, mesh26 and uniform25 |
+| Scales? | **No.** Only mesh26 speeds up (2× from 2 to 8 nodes); road-usa is 6.3 s at 2 nodes and 53 s at 8 |
+
+The road-usa loss is the initial width: adaptive arms bucket at 17 against a
+heaviest-edge width for the fixed winners. Delivered updates rise from 2.3B at
+2 nodes to 38.6B at 8, against 1.0B for `tuned-fixed`. `PER_GRAPH_WIDTH_RULE`
+is keyed by name, so mesh24/26 missed the mesh `weight` rule too; that defect
+qualifies the large-mesh rows. Whether `adaptive` at a heaviest-edge width
+closes road-usa is cheap to test but waits on 7.6f1.
+
+### 7.6f1 result
+
+Jobs 20750616/17 (1 and 2 nodes, 136 runs, no failures, ~225 SU). Each system
+chose its own layout; one toolchain for all (`scripts/anvil/build_baselines.sh`,
+`run.py --mode external`). Median solve seconds:
+
+| graph | ACIC 1n / 2n | GAPBS 1n | RIKEN 1n / 2n | Gluon-Async 1n / 2n |
+|---|---|---|---|---|
+| mesh24 | 1.37 / 0.84 | **0.19** | 26.4 / 17.1 | 4.39 / 3.98 |
+| orkut | 0.67 / 0.65 | 0.16 | **0.10 / 0.065** | 0.87 / 1.55 |
+| rmat25 | 2.09 / 1.36 | 1.19 | **0.33 / 0.20** | 1.55 / 2.11 |
+| road-usa | 3.51 / 3.87 | **0.17** | n/a (binary32) | 27.4 / 37.7 |
+
+Every cell is 4/4 pairs on one side, far above the 1.04–1.06× floors.
+
+- **RIKEN's layout search:** RIKEN chose 16 ranks per node, the largest
+  offered, so its times are an upper bound.
+- **Width map:** ACIC ran mesh24 and road-usa at the `log(V)` width, but
+  `tuned-fixed` would not change a row's direction.
+- **Scale:** these inputs fit on one node, and ACIC has not shown it scales
+  past two nodes on them.
 
 ## Gate A checkpoints
 
@@ -301,8 +345,8 @@ Provisional, from 2026-09-13, assuming early-April submission.
 | Window | Work | Decision |
 |---|---|---|
 | Sep 13–15, done | 7.5 pilot; 7.6a–e, g, h | Geometry confound; width is a mesh rule; range rejected; deadlock repaired; outcome reporting |
-| Sep 15–, running | 7.6f2 large-input wave | **Checkpoint 1** |
-| Next | 7.6f1: external re-take, fair layouts | Whether ACIC is competitive at all |
+| Sep 15, done | 7.6f2 large-input wave | **Checkpoint 1:** negative on co-design, worth, scaling |
+| Sep 15, done | 7.6f1: external re-take, fair layouts, 1–2 nodes | **Checkpoint 2 input:** external systems well ahead; stop condition met, decision pending |
 | by Oct 18 | 7.6f2 replication as needed; at most one bounded optimization | **Gate A:** proceed, narrow, or stop |
 | Oct 19–Nov 15 | Controller extraction and BFS transfer | **Gate B:** transfer, or SSSP-only scope |
 | Nov 16–Dec 13 | PageRank only if the claim needs it; else strengthen SSSP/BFS | Freeze algorithm scope |

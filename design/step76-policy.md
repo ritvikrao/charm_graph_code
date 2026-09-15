@@ -273,3 +273,93 @@ Paired medians, first wave → replication, and the new 16-node allocation;
    before quoting `global-fixed` at one node.
 4. The bounded optimization, if taken: coarsening on uniform graphs at low node
    counts, with the eight- and sixteen-node cost as the constraint.
+
+## Large inputs: checkpoint 1
+
+Jobs 20747230 (2 nodes, complete), 20747231 (8 nodes, cancelled after mesh24,
+orkut, road-usa and 6 of 8 mesh26 pairs) and 20747232 (16 nodes, cancelled
+after mesh24, orkut and 3 road-usa pairs), same binary and harness, plus the
+`local-delivery` arm. The later jobs were stopped once they had answered the
+checkpoint, to save allocation. **845 timed runs, none hung, wrong, crashed or
+rescued.** Floors: 1.08x, 1.09x, 1.05x. Report: `report_arms.py ... --pattern
+'policy-*-2074723[0-2].jsonl'`, in `campaign/report-policy-large`.
+
+**Adaptive median solve time (s)**, and the best fixed arm beside it:
+
+| graph | 2 nodes | 8 nodes | 16 nodes | best fixed (arm, nodes) |
+|---|---|---|---|---|
+| mesh24 | 1.16 | 1.13 | 1.36 | 1.24 (`tuned-fixed`, 2) |
+| mesh26 | 5.88 | 2.93 | — | 3.46 (`tuned-fixed`, 2) |
+| road-usa | 6.33 | 53.0 | 54.0 | 3.48 (`tuned-fixed`, 2) |
+| orkut | 0.60 | 0.63 | 0.64 | 0.63 (`global-fixed`, 2) |
+| rmat25 / rmat26 / uniform25 | 1.42 / 2.45 / 1.24 | — | — | 1.40 / 2.33 / 1.02 (2) |
+
+The inputs are big enough on the meshes and road-usa: compute is 2-40x setup
+(setup 0.5-2.4 s). They are not on orkut and are marginal on RMAT/uniform at
+two nodes, so those rows say little about scale.
+
+**Paired medians** (`adaptive` time / arm time; `/x` = arm x times slower):
+
+| effect | 2 nodes | 8 nodes | 16 nodes |
+|---|---|---|---|
+| fixed delivery (`adapt-admission`), mesh24 | /1.40 | /7.37 | /17.0 |
+| fixed delivery, mesh26 | 1.55 | /5.01 | — |
+| fixed delivery, road-usa | 1.25 | 1.28 | /1.43 (3 pairs) |
+| no coarsening (`adapt-delivery`), rmat25 / rmat26 | 1.03 / 1.05 (floor) | — | — |
+| no coarsening, orkut | /1.04 (floor) | /1.25 | /1.23 |
+| `local-delivery`, mesh24 / mesh26 / road-usa | 1.01 / /1.09 / 1.06 | /1.02 / 1.00 / 1.03 (floor) | 1.01 / — / /1.13 |
+| `global-fixed`, mesh24 / mesh26 | /1.44 / 1.53 | /2.47 / /5.49 | /6.91 |
+| `global-fixed`, road-usa | 1.20 | **10.3** | **7.64** |
+| `tuned-fixed`, mesh26 / road-usa / uniform25 | 1.69 / 1.86 / 1.22 | /1.95 / **10.2** / — | — / **8.89** / — |
+
+### The four questions
+
+1. **Does the benefit survive real work?** Partly. Adaptive delivery grows
+   with node count on mesh24 (1.4x to 17x) and mesh26 (a loss at two nodes, 5x
+   at eight). It does not help road-usa, where fixed delivery is 1.25-1.28x
+   faster at 2 and 8 nodes. Coarsening does nothing on rmat25/26 at two nodes,
+   and eight nodes was not reached.
+2. **Is it co-design?** **No.** `local-delivery`, which takes delivery's
+   actions without the global signal, ties `adaptive` on mesh24, mesh26 and
+   road-usa at every node count. The two mechanisms are independent.
+3. **Is adapting worth it?** **No, as configured.** Adaptive beats one fixed
+   setting on the meshes at 8-16 nodes (2.5-6.9x), but loses road-usa by 7.6-10x
+   and mesh26 and uniform25 at two nodes. It fails the "within 20% of
+   `tuned-fixed`" target on road-usa, mesh26 and uniform25.
+4. **Does it scale?** **No.** Only mesh26 speeds up (2.0x from 2 to 8 nodes).
+   mesh24 and orkut are flat, and road-usa is 8.4x slower at eight nodes than
+   at two. The fastest measured time for road-usa is `tuned-fixed` on two nodes.
+
+### Why road-usa fails: the initial width, not the controller
+
+Every adaptive arm buckets road-usa at width 17 and mesh26 at 18, the
+`log(V)`-derived default. The winning fixed arms use 368,855-524,288 on
+road-usa, at or above the heaviest edge. Coarsening does not recover the
+difference (7.6e rejected raising the clamp mid-run). Median delivered updates
+on road-usa:
+
+| arm | width | 2 nodes | 8 nodes |
+|---|---|---|---|
+| `adaptive` | 17 | 2.3 B | 38.6 B |
+| `adapt-admission` (fixed delivery) | 17 | 1.4 B | 9.5 B |
+| `tuned-fixed` | 524,288 | 0.44 B | 1.0 B |
+
+The work of a narrow window grows 17x from two nodes to eight, and adaptive
+delivery sends it faster (766M TRAM messages at eight nodes, against 6M for
+`tuned-fixed`). That is the scaling failure.
+
+**Harness defect found.** `PER_GRAPH_WIDTH_RULE` names mesh20 and mesh22, so
+mesh24 and mesh26 did not get the `weight` rule 7.6d established for meshes.
+Both large meshes therefore ran every matrix arm at a `log(V)` width. The
+large-mesh rows compare policies at a width 7.6d showed is wrong for meshes.
+The road-usa rows are unaffected, since road-ny was never in the map.
+
+### Reading
+
+By the plan's own rule, a negative on questions 1 or 3 means narrow the claim
+or run 7.6f1, not another tuning cycle. The claim that survives is adaptive
+delivery for high-diameter synthetic meshes at scale, as a mechanism
+independent of admission. The open, cheap question is whether `adaptive` with
+a heaviest-edge width closes the road-usa gap. It is recorded here and not
+run, because the external comparison decides whether any of this is worth
+pursuing.
