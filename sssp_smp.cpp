@@ -3047,8 +3047,27 @@ public:
   void report_progress_state(int tag) {
     long pq_hold_items = 0, live = 0;
     int lowest = -1, highest = -1;
+    // created_*: derived from histogram[], which is a DISTRIBUTED LEDGER --
+    // incremented by the PE that creates an update, decremented by the PE that
+    // retires it. histogram[b] > 0 here means this PE created something in
+    // bucket b that nobody has retired, and it is most likely sitting on a
+    // different PE. These fields say nothing about what this PE can run, and
+    // reading them as though they did is what made the first pass at 7.6g
+    // reach two wrong conclusions; see design/step76-default-deadlock.md.
+    // Per-PE live is legitimately negative when a PE retires more than it
+    // created. Only the `main` line, which sums across PEs, is an inventory.
+    int hold_lowest = -1, hold_highest = -1;
+    long holds_admissible = 0;
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++) {
-      pq_hold_items += (long)pq_hold[i].size();
+      const long held_here = (long)pq_hold[i].size();
+      pq_hold_items += held_here;
+      if (held_here > 0) {
+        if (hold_lowest < 0)
+          hold_lowest = i;
+        hold_highest = i;
+        if (i <= heap_threshold)
+          holds_admissible += held_here;
+      }
       live += histogram[i];
       if (histogram[i] > 0) {
         if (lowest < 0)
@@ -3056,16 +3075,32 @@ public:
         highest = i;
       }
     }
+    // held_*: what this PE PHYSICALLY HOLDS and could be asked to run, which
+    // is the question the per-PE line exists to answer. pq is a heap ordered
+    // by distance, not by bucket, so its runnable head is found by asking
+    // bucket_of() of the top rather than by scanning; pq_top_bucket of -1
+    // means the queue is empty. A stalled PE with pq_top_bucket <= its own
+    // heap_threshold, or held_admissible > 0, is holding work it is allowed
+    // to run and is not running it -- that, and only that, is a drain failure.
+    const int pq_top_bucket = pq.empty() ? -1 : bucket_of(pq.top());
     long long held = 0, admitted = 0, buffered = 0;
     tram->pendingItems(&held, &admitted, &buffered);
     ckout << "PROGRESS_STALL " << tag << " pe=" << CkMyPe()
           << " created=" << updates_created_locally
           << " processed=" << updates_processed_locally
-          << " noted=" << updates_noted << " live=" << live
-          << " lowest_live_bucket=" << lowest
-          << " highest_live_bucket=" << highest
-          << " clamped=" << histogram[HISTO_BUCKET_COUNT - 1]
+          << " noted=" << updates_noted
+          // Renamed from live/lowest_live_bucket/highest_live_bucket/clamped.
+          // The old names read as an inventory of this PE and are not one; the
+          // created_ prefix is the whole warning.
+          << " created_live=" << live
+          << " created_lowest=" << lowest
+          << " created_highest=" << highest
+          << " created_clamped=" << histogram[HISTO_BUCKET_COUNT - 1]
           << " pq=" << (long)pq.size() << " pq_hold=" << pq_hold_items
+          << " pq_top_bucket=" << pq_top_bucket
+          << " held_lowest=" << hold_lowest
+          << " held_highest=" << hold_highest
+          << " held_admissible=" << holds_admissible
           << " tram_held=" << held << " tram_admitted=" << admitted
           << " tram_buffered=" << buffered
           << " heap_threshold=" << heap_threshold

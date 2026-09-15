@@ -54,38 +54,72 @@ What 7.6e recorded as *ordering is lost* is therefore too mild. The terminal
 case is not a slow run. It is a run that stops, and it happens in the shipped
 default.
 
-## The part that is not solid, and must not be guessed
+## One diagnosis attempted here was wrong, and the reason matters
 
-The obvious explanation is that the work is stranded above the admission
-threshold. It is not, and the logs say so plainly. Taking every per-PE stall
-report and asking whether that PE's lowest live bucket is at or below its own
-heap threshold:
+The first version of this note claimed the stall was not threshold starvation,
+on the grounds that most PEs in a stall report a `lowest_live_bucket` at or
+below their own `heap_threshold` -- work they are already allowed to run -- and
+that some report live work with every queue empty, which looked like phantom
+counts pinning the window. Both readings are wrong, and they are wrong for the
+same reason.
 
-| | 1 node | 8 nodes |
-|---|---|---|
-| PE has no live work | 8,315 | 68,103 |
-| live work **at or below** threshold, i.e. admissible | 3,386 | 73,537 |
-| live work above threshold, waiting | 269 | 8,544 |
+`report_progress_state` derives `live`, `lowest_live_bucket` and
+`highest_live_bucket` from this PE's `histogram[]` array. That array is not an
+inventory of this PE's work. The histogram is a distributed ledger: it is
+incremented by the PE that **creates** an update and decremented by the PE that
+**retires** it, which is the property commit `1a46a9e` established and which
+makes re-binning impossible. So a PE's `histogram[b] > 0` means *this PE
+created an update in bucket b that nobody has retired yet*, and that update is
+almost certainly sitting on some other PE. It follows that:
 
-The common case in a stall is a PE holding work it is already allowed to run.
-Summing over those PEs at eight nodes: **11.6M updates in `pq`**, the ready
-queue, and 9.9M in `pq_hold`, with `tram_admitted=0` and `tram_buffered=0`.
+- `lowest_live_bucket <= heap_threshold` says nothing about whether this PE
+  holds runnable work, so the 73,537 "admissible" lines are not evidence of a
+  drain failure;
+- a PE with live counts and empty queues is the **normal** case, not a phantom
+  -- it created updates that are now elsewhere;
+- per-PE `live` may legitimately be negative, which is why `live=-26` appears
+  and is not in itself a conservation violation.
 
-So the last step fails, not the admission step. Work is ready, permitted, and
-in the queue, and the queue is not drained. Whether that is a chare that has
-returned from `process_heap` and is waiting on a re-trigger that no longer
-comes, a termination-detection interaction, or a genuine lost message, this
-data cannot say, and there is no honest way to narrow it from log archaeology.
+Only the `main` line, which sums the histogram across PEs, carries the meaning
+those per-PE fields look like they carry. Everything below is taken from it.
+
+What the global line does say, for a one-node baseline stall:
+
+```
+live=5973  clamped=5969  first_nonzero=511  heap_threshold=511  occupied=1
+```
+
+5,969 of 5,973 live updates are above the window, in the overflow slot. Four
+are in-window at bucket 511, with the threshold at 511. The run is therefore
+within four updates of having nothing admissible at all, and the 5,969 in the
+overflow slot cannot be admitted, because under `clamp_freeze` index 2047 is
+the excluded overflow slot and the window is anchored at 511.
+
+That is a coherent account of *why nothing can drain*, and it needs no claim
+about where work physically sits. What it does not yet explain is why the last
+four updates do not retire and end the run, and the per-PE fields cannot be
+used to find out. **The instrument that would answer it does not exist yet**:
+there is no per-PE report of what this PE physically holds, by bucket, as
+distinct from what it has created. Adding one is the first step of 7.6g.
 
 ## What would settle it
 
-A reproducer, not another campaign. The fixture wanted is the one
-`scripts/verify.sh` already almost has: a mesh binned at a width narrow enough
-that the frontier passes the clamp, run to the stall, with the drain path
-instrumented -- what the chare was last told, what it did with `pq`, and
-whether a trigger arrived. The condition is cheap to force (`--bucket-width 1`
-on a 200x200 mesh puts every distance past the clamp) and reproduced five times
-in 253 runs at one node without being forced at all.
+A reproducer and a real instrument, not another campaign.
+
+The instrument first, because without it the next campaign produces the same
+unreadable logs: `report_progress_state` must report what this PE *holds* --
+`pq` and `pq_hold` contents summarised by bucket, and the lowest bucket in
+which it holds anything -- separately from what it has *created*, which is what
+`histogram[]` gives. The two are currently printed side by side with names that
+invite exactly the confusion above.
+
+The reproducer is harder than it first looked. `--bucket-width 1` on a 200x200
+mesh puts every distance past the clamp but **does not reproduce the stall**:
+it completes, with 0 coarsenings, because with all mass in the overflow slot
+the band test refuses to merge (`COARSEN_BAND_NARROW`). The stalled runs had
+`bucket_scale` at 3, 4, 10, 12 and 13, so they coarsened repeatedly *and then*
+ran past the clamp. The fixture has to produce both, in that order, which the
+single forced width does not.
 
 Note what this does and does not disturb. It does not touch the width result:
 the `weight` arm did not hang once in this campaign at any allocation, and
