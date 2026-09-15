@@ -260,3 +260,92 @@ so the overflow slot takes essentially the whole run and the rule has to raise
 the clamp a dozen times to recover an ordering. Three things are on test and
 each has already failed once -- the creation-time flag, the arrivals trigger,
 and keeping the overflow index out of the rescale. A PASS is all three.
+
+## Measured: the extension fails at scale, on exactly the graphs it was for
+
+Jobs 22071815-18, one binary (`457ddc10`), four arms
+(`logv-frozen,logv-range,weight,control`), eight processes of fifteen per node,
+four sources, at one, two, eight and sixteen nodes. Three of the four jobs hit
+their walltime: the walltimes in `submit_width.sh` were sized from a
+three-arm campaign and this one ran four, which is a third more work. The
+eight-node job finished; one node covered five graphs, two nodes eight, and
+eight and sixteen nodes all nine. No conclusion below rests on a graph that
+only one allocation reached.
+
+`logv-range` against `logv-frozen`, paired by (graph, source, rep), with hangs
+counted separately:
+
+| graph | 1 node | 2 node | 8 node | 16 node |
+|---|---|---|---|---|
+| mesh20 | 1.21x 8/11, 2 hung | 1.23x 5/8, 5 hung | **all 9 hung** | **all 9 hung** |
+| mesh22 | 1.23x slower, 1 hung | 1.16x slower, 3 hung | 8 of 9 hung | **all 9 hung** |
+| road-ny | - | 1.19x 5/5, 4 hung | 1.12x slower 1/9 | 1.21x slower 0/9 |
+| rmat20 | 1.04x | 1.09x slower | 1.07x | 1.04x slower |
+| rmat20-s2 | - | 1.04x slower | 1.08x slower | 1.02x slower |
+| rmat22 | 1.05x | 1.01x slower | 1.04x | 1.01x slower |
+| uniform20 | 1.06x slower | 1.05x | 1.01x slower | 1.05x |
+| uniform20-s2 | - | 1.00x | 1.09x | 1.01x |
+| youtube | - | - | 1.07x slower | - |
+
+Read the bottom six rows first. Those are the graphs the local sweep showed
+extend zero times, and the arm is a no-op on them to within the resolution
+floor, which is what it should be. The arm is doing nothing where it is not
+needed, so the plumbing is right.
+
+Then read the top three. mesh20 and mesh22 are the graphs 7.6e was built for
+and the arm hangs on them at every allocation, totally at eight and sixteen
+nodes: 35 of 36 runs. road-ny, the third stuck graph, hangs four times at two
+nodes and where it survives at eight and sixteen it is 1.12x and 1.21x
+*slower*, winning 1 of 18 paired runs.
+
+The two cells that look like wins are not. mesh20 reads 1.21x at one node and
+1.23x at two -- out of cells that also hung twice and five times. The ratio is
+over the runs that finished, and the runs that finished are the ones that
+extended least. That is selection, not a speedup, and quoting it would be the
+same error as quoting a mean over the survivors of a crash.
+
+**The verdict is that `--range-extend` does not ship.** It stays in the tree,
+defaulted off, with this note attached, because the diagnosis it rests on --
+the three graphs are out of range, not blocked on coarsening -- is still the
+right diagnosis and still needs a repair. What is now known is that raising the
+clamp mid-run is not that repair, and the local sweep that said otherwise (8
+PEs, one process, every digest matching, updates cut 2-3x) measured a
+configuration with no broadcast skew worth the name. A single-process sweep
+cannot qualify a change whose whole risk is that two chares disagree.
+
+## The deferral guard never fires
+
+The fix in `c07dc22` for the broadcast/point-to-point race -- detect an update
+created beyond my clamp, hold it, drain after the rescale -- is dead code in
+practice. Across 11,970 stall reports at one node and 150,184 at eight, every
+one reads `deferred=0`, `deferred_peak=0`, `deferred_total=0`.
+
+The guard asks one question:
+
+```cpp
+bool created_beyond_my_clamp(const Update &u) {
+  return !update_overflowed(u) &&
+         (double)u.distance * bucket_multiplier >= bucket_limit;
+}
+```
+
+which is about `bucket_limit` alone. But `coarsen_buckets(k, extend)` moves two
+things, not one:
+
+```cpp
+bucket_scale *= k;                 // always
+if (!clamp_freeze)      bucket_limit = HISTO_BUCKET_COUNT * bucket_scale;
+else if (extend)        bucket_limit *= k;
+```
+
+So an extend is a coarsen *and* a clamp raise, and two chares that disagree can
+disagree about the scale as well as the limit. Ordinary coarsening survives
+scale skew because of the merge identity -- a lagging chare's decrement at
+`b/s` migrates to `b/(s*k)` when it catches up, exactly where the leading
+chare's increment went. Whether that identity still covers the pair
+(scale moved, limit moved) is the question this guard never asks, and the
+measurement cannot answer it either way, because the guard it would have to be
+compared against never ran.
+
+That is the honest state: the race was fixed against a hypothesis, the
+hypothesis was not tested, and the arm fails for a reason that is still open.

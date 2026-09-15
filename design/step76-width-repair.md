@@ -498,3 +498,64 @@ these runs is process launch and graph reading — and these graphs are small fo
 sixteen nodes, about a thousand vertices per worker on mesh20. The rule's
 margin grows with node count on the mesh graphs, which is the interesting part,
 but whether that survives a problem sized for the allocation is untested.
+
+## A fourth allocation set, taken for another purpose, replicates the map
+
+Jobs 22071815-18 were the 7.6e range campaign, which carried `logv-frozen`,
+`weight` and `control` alongside the arm under test. That makes the width
+comparison an independent replication on a separate binary and separate nodes,
+and it was not taken to confirm anything about width.
+
+`weight` against `logv-frozen`, paired:
+
+| graph | 1 node | 2 node | 8 node | 16 node | won |
+|---|---|---|---|---|---|
+| **mesh20** | 1.45x 13/13 | 1.47x 13/13 | 1.54x 9/9 | 1.75x 9/9 | **44/44** |
+| **mesh22** | 1.43x 8/8 | 1.40x 13/13 | 1.55x 9/9 | 1.74x 8/9 | **39/40** |
+| rmat20 | 1.11x 13/13 | 1.03x sl 5/13 | 1.30x 7/9 | 1.55x 8/9 | 33/44 |
+| rmat22 | 1.09x 10/13 | 1.08x sl 4/13 | 1.11x 7/9 | 1.44x 7/9 | 28/44 |
+| road-ny | - | 1.19x 7/9 | 1.07x 7/9 | 1.13x 7/9 | 21/27 |
+| uniform20 | 1.04x 10/13 | 1.14x sl 3/13 | 1.10x 7/9 | 1.26x 6/9 | 26/44 |
+| uniform20-s2 | - | 1.15x sl 1/13 | 1.16x 7/9 | 1.05x 5/9 | 13/31 |
+| rmat20-s2 | - | 1.05x sl 5/13 | 1.18x 8/9 | 1.02x 5/9 | 18/31 |
+
+The map holds. mesh20 and mesh22 win every paired run at every allocation but
+one, the margin again grows with node count, and every other graph again
+regresses somewhere. Two campaigns, two binaries, two sets of nodes, same
+answer: it is a mesh rule.
+
+The margins are larger here than in 22062931-34 / 22069453-55 (mesh20 1.45x
+against 1.20x at one node) and that difference is not interpreted. Different
+nodes, and this campaign is noisier throughout -- see below.
+
+## The resolution floor grows with node count, which limits what 16 nodes says
+
+`control` is `logv-frozen` unflagged, so its paired ratio against
+`logv-frozen` is pure measurement noise, and it is not constant:
+
+| | 1 node | 2 node | 8 node | 16 node |
+|---|---|---|---|---|
+| prior campaign, worst graph | 1.04x | 1.12x | 1.10x | 1.16x |
+| this campaign, worst graph | 1.05x | 1.18x | 1.09x | **1.28x** |
+
+At one node a 1.05x reading is at the floor. At sixteen the floor is somewhere
+between 1.16x and 1.28x depending on the campaign, and several 16-node numbers
+that have been quoted from the four-allocation table sit close to it: rmat22
+1.42x against a floor near 1.2x is a much weaker statement than mesh20 1.93x
+against the same floor, and uniform20 1.38x and uniform20-s2 1.22x are weaker
+still. This does not change the conclusion -- those graphs were already
+excluded for regressing at two or eight nodes -- but the 16-node column should
+not be read as though its cells were as sharp as the one-node column's. They
+are the least sharp cells in the table, not the most.
+
+The one thing the 16-node column does support on its own is rmat20, which now
+reads 1.59x and 1.55x in two independent campaigns against floors of 1.14x and
+1.22x, while regressing at two nodes in both. That is the only candidate for a
+third entry in the map, and settling it needs an allocation above sixteen
+nodes, not more repeats at sixteen.
+
+## And one thing the campaign found that is not about width
+
+Five baseline runs at one node did not finish. See
+`design/step76-default-deadlock.md`: the shipped default can stop, the width
+rule is untouched by it, and it reopens item (1).

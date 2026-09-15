@@ -59,8 +59,18 @@ cp "$APP/sssp_smp" "$ROOT/bin/acic_width"
 # job needs keeps it out of every backfill window it would otherwise fit, and
 # the jsonl is written incrementally, so a limit that turns out too tight costs
 # the tail of a campaign rather than all of it.
+# Walltime is sized per arm, not per job. Jobs 22071815-18 ran four arms against
+# times written for three and three of the four hit the wall, losing four graphs
+# at one node and one at two. A run that hangs costs the full --timeout (120 s),
+# so a campaign's budget is set by how many hangs it can absorb, not by the
+# median: the base below is per arm and already carries that slack.
+ARM_COUNT=$(awk -F, '{print NF}' <<<"$ARMS")
 submit() {
-  local nodes=$1 reps=$2 time=${3:-01:00:00}
+  local nodes=$1 reps=$2 per_arm_min=$3
+  local total=$(( per_arm_min * ARM_COUNT ))
+  local time
+  time=$(printf '%02d:%02d:00' $(( total / 60 )) $(( total % 60 )))
+  echo "submitting ${nodes}n: $ARM_COUNT arms x ${per_arm_min} min = $time"
   sbatch --nodes="$nodes" --time="$time" --job-name="acic-width-${nodes}n" \
     --output="$ROOT/logs/width-${nodes}n-%j.out" \
     "$APP/benchmarks/compare.sbatch" "$ROOT" \
@@ -68,7 +78,7 @@ submit() {
     --arms "$ARMS" \
     --sources 4 --reps "$reps" --timeout 120
 }
-submit 1 3 00:30:00
-submit 2 3 00:45:00
-submit 8 2 01:00:00
-submit 16 2 01:00:00
+submit 1 3 15
+submit 2 3 20
+submit 8 2 25
+submit 16 2 25
