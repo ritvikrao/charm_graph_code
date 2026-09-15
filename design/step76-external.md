@@ -73,6 +73,11 @@ the plan's 1.3x rule.
    the 7.6f2 `tuned-fixed` times on these graphs do not change any row's
    direction: road-usa `tuned-fixed` 3.48 s at 2 nodes still trails GAPBS 21x.
 
+[7.6i](step76-traces.md) traces rmat25 at two nodes and says where the loss to
+RIKEN comes from: not latency, imbalance or idle time, but 318 ns of hardware
+time per graph edge against RIKEN's 49, two thirds of it spent before an update
+is sent.
+
 Two qualifications, neither of which changes a row's direction:
 
 - **Width map.** ACIC ran mesh24 and road-usa at the `log(V)` width because of

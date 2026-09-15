@@ -372,3 +372,33 @@ report_arms.py CAMPAIGN/logs OUT --pattern 'external-*.jsonl' --phase external \
 
 In `arms.md` an external arm's ratio is adaptive time / system time, so a value
 above 1 means the external system is faster.
+
+## Projections traces (step 7.6i)
+
+`make sssp_smp_projections` relinks the solver with `-tracemode projections`;
+only the link changes, so the traced binary runs the same objects as the timed
+one. Stage it as `CAMPAIGN/bin/acic_prj`. The solver calls `traceBegin()` when
+compute starts and `traceEnd()` when it ends, so `+traceoff` restricts the logs
+to the solve, and `+traceroot` keeps them on scratch -- 240 PEs of rmat25
+write about 370 MB.
+
+```sh
+make sssp_smp_projections && cp sssp_smp_projections CAMPAIGN/bin/acic_prj
+sbatch -N 2 scripts/anvil/trace_projections.sbatch CAMPAIGN rmat25 23077392 8
+```
+
+The job runs the same source untraced and traced in one allocation (U T U T U)
+so tracing overhead is visible, and then reports both traces. Anvil has no Java
+for the Projections GUI, so `projections_report.py` reads the text logs: time
+per entry method (exclusive of nested calls), idle, pack/unpack and the
+remainder outside any entry method; the spread across PEs and processes; a
+utilization timeline; and message counts with send-to-execute latency by
+locality. Each Reconverse process starts its own clock, so per-process offsets
+are estimated from the smallest delay in each direction before latencies are
+reported; treat a cross-process median as hold-and-flush delay, not as network
+time.
+
+```sh
+projections_report.py CAMPAIGN/traces/RUN/traceA/acic_prj \
+    --pes-per-process 15 --processes-per-node 8 --jobs 64
+```

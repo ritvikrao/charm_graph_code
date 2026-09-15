@@ -123,6 +123,7 @@ identical results on one and two nodes; PageRank uses a tolerance gate.
 | 7.6h | Hang rate and resolution floor beside every speedup | `outcomes.py` (ok/hung/wrong/crashed, rescues counted, per-allocation floors), `report_arms.py`, `report.py` | complete |
 | **7.6f1** | External re-take, every system tuning its own layout (`configs()` needs an ACIC ranks-per-node axis) | [External](step76-external.md): GAPBS (1 node) faster everywhere (1.1–21×); RIKEN 6–10× faster on scale-free, 18–21× slower on mesh24; ACIC beats Gluon-Async 3–10× on high-diameter | **complete (1–2 nodes): external systems well ahead** |
 | **7.6f2** | Admission × delivery vs `global-fixed` and per-graph `tuned-fixed` | [Policy](step76-policy.md), below. Stopping rule: one or two supported optimizations | **checkpoint 1 read: negative** |
+| 7.6i | Why 7.6f1 lost: Projections traces of rmat25 at 2 nodes | [Traces](step76-traces.md): 67–69% in `process_heap`, idle 10–14% (ramp and drain), TRAM paths 14–15%, balanced to 1.03×. 318 ns per graph edge against RIKEN's 49 and GAPBS's 145; 98.8% of delivered updates rejected | complete |
 | 8 | Generic payload interface, only when a second algorithm needs it | SSSP identical on 1–2 nodes | conditional |
 | 9 | PE/chare identity for new mappings; overdecomposition only if profiling justifies it | Correct on all supported mappings | conditional |
 | 10 | Extract `AcicController` around observed shared signals | SSSP retained; second kernel uses it | with step 11 |
@@ -347,6 +348,7 @@ Provisional, from 2026-09-13, assuming early-April submission.
 | Sep 13–15, done | 7.5 pilot; 7.6a–e, g, h | Geometry confound; width is a mesh rule; range rejected; deadlock repaired; outcome reporting |
 | Sep 15, done | 7.6f2 large-input wave | **Checkpoint 1:** negative on co-design, worth, scaling |
 | Sep 15, done | 7.6f1: external re-take, fair layouts, 1–2 nodes | **Checkpoint 2 input:** external systems well ahead; stop condition met, decision pending |
+| Sep 15, done | 7.6i: traces of the losing configuration | Per-update pipeline cost, not communication or imbalance: narrowing would have to attack the update rate itself |
 | by Oct 18 | 7.6f2 replication as needed; at most one bounded optimization | **Gate A:** proceed, narrow, or stop |
 | Oct 19–Nov 15 | Controller extraction and BFS transfer | **Gate B:** transfer, or SSSP-only scope |
 | Nov 16–Dec 13 | PageRank only if the claim needs it; else strengthen SSSP/BFS | Freeze algorithm scope |
