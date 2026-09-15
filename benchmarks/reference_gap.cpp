@@ -5,7 +5,12 @@
 #include <queue>
 #include <set>
 int main(int argc,char **argv) try {
-  if(argc!=3) throw std::runtime_error("usage: reference_gap graph.wsg source_count");
+  // A third argument "any-range" drops the binary32 guard below. The guard is
+  // for the RIKEN comparison, whose float weights cannot represent larger
+  // integer distances; ACIC-only campaigns on continental road graphs exceed it.
+  if(argc!=3&&!(argc==4&&std::string(argv[3])=="any-range"))
+    throw std::runtime_error("usage: reference_gap graph.wsg source_count [any-range]");
+  const bool guard=argc==3;
   char a0[]="reference",a1[]="-f";char *args[]={a0,a1,argv[1]};
   CLApp cli(3,args,"independent reference"); if(!cli.ParseArgs()) return 1;
   WeightedBuilder builder(cli);WGraph g=builder.MakeGraph();
@@ -27,7 +32,7 @@ int main(int argc,char **argv) try {
     bench::Digest digest;int64_t maximum=0,arcs=0;
     for(int64_t v=0;v<g.num_nodes();++v){digest.add(v,dist[v]);if(dist[v]!=bench::inf){maximum=std::max(maximum,dist[v]);arcs+=g.out_degree(v);}}
     // RIKEN's binary32 arithmetic must represent every final integer distance.
-    if(maximum>=16777216) throw std::runtime_error("distance exceeds binary32 exact integer range; exclude from exact RIKEN comparison");
+    if(guard&&maximum>=16777216) throw std::runtime_error("distance exceeds binary32 exact integer range; exclude from exact RIKEN comparison");
     std::cout<<source<<'\t'<<(index<2?"tune":"test")<<'\t'<<digest.h1<<'\t'<<digest.h2<<'\t'
       <<digest.reachable<<'\t'<<digest.distance_sum<<'\t'<<maximum<<'\t'<<arcs<<'\n';
   }

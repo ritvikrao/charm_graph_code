@@ -878,6 +878,10 @@ class Campaign:
           graph's tuning sources -- the reference the adaptive method should
           stay near, and cannot be expected to beat.
 
+        `local-delivery` (added after the first two waves) keeps adaptive
+        admission and takes the delivery policy's actions ungated by the
+        controller's global starvation signal: the interaction test.
+
         `control` is `adaptive` under another name: the resolution floor, per
         allocation (outcomes.py). Failures do not stop the campaign -- a hang
         rate is a result here, and report_arms.py puts it beside every ratio.
@@ -895,6 +899,17 @@ class Campaign:
             dict(engine='acic', name='adapt-admission', per_graph_width=True, flags=delivery_fixed, **rpn),
             dict(engine='acic', name='adapt-delivery', per_graph_width=True, flags=admission_fixed, **rpn),
             dict(engine='acic', name='fixed-both', per_graph_width=True, flags=admission_fixed + delivery_fixed, **rpn),
+            # The co-design test. The shipped delivery policy takes the same two
+            # actions -- flush destinations with no full send since last round,
+            # and flush on idle -- but only when the controller's global
+            # histogram says the run is starved. This arm takes them on local
+            # state alone, with admission unchanged. If it matches `adaptive`,
+            # the shared signal is not what delivery gains from, and the claim
+            # is two mechanisms rather than one co-designed feedback loop. The
+            # first two waves could not ask this: the 2 x 2 above has no arm
+            # with adaptive delivery that ignores the global signal.
+            dict(engine='acic', name='local-delivery', per_graph_width=True,
+                 flags=['--flush-policy', 'stale', '--idle-flush', 'on'], **rpn),
         ]
         graphs = self.args.graphs.split(',')
         dev = self.args.dev_graphs.split(',')
