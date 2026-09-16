@@ -402,3 +402,27 @@ time.
 projections_report.py CAMPAIGN/traces/RUN/traceA/acic_prj \
     --pes-per-process 15 --processes-per-node 8 --jobs 64
 ```
+
+## Per-edge cost: counters and interleaved A/Bs (step 7.6j)
+
+```bash
+module load papi/6.0.0.1
+make sssp_smp                    # WIRE=compact is the default; WIRE=wide for the old layout
+make sssp_smp_papi               # acic_prof.h: counters and cycle sampling
+cp sssp_smp sssp_smp_papi /anvil/scratch/$USER/acic/campaign/bin/   # rename as the scripts expect
+
+# Profile (LIBPFM_FORCE_PMU is set inside; papi/6.0.0.1 predates Zen 3)
+EXTRA="--bufsize 6144 --send-filter-bits 17" RUNS="warmup plain sampled plain" \
+  sbatch -N 2 scripts/anvil/papi_profile.sbatch $ROOT rmat25 23077392 8 BASE PROFBIN
+
+# Interleaved variants; FLAGS use commas, NAME=VALUE tokens become environment
+VARIANTS="a=acic b=acic_j:--bufsize,6144,--send-filter-bits,17" ROUNDS=3 \
+  sbatch -N 2 scripts/anvil/ab_compare.sbatch $ROOT rmat25 23077392 8
+WORKERS=112 ... ab_compare.sbatch $ROOT mesh24 14369093 16   # 16 x 7 layouts
+```
+
+Counters make this runtime switch context ten times as often and solve two to
+three times slower: use a profile for where cycles go, never for how long a run
+takes. `benchmarks/lci_stats_report.py` reads the per-thread `LCI_STATS` lines
+of an instrumented `libreconverse.so` preloaded with `LD_PRELOAD` (the binaries
+use `DT_RPATH`, so `LD_LIBRARY_PATH` cannot substitute it).

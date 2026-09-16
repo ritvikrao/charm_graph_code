@@ -5,6 +5,7 @@
 // that whole module into every translation unit that touches a graph type.
 #include "charm++.h"
 #include "pup.h"
+#include <cstdint>
 
 typedef long cost;
 
@@ -60,6 +61,36 @@ inline long update_vertex(const Update &u) {
 }
 inline bool update_overflowed(const Update &u) {
 	return (u.dest_vertex & UPDATE_OVERFLOW_BIT) != 0;
+}
+
+// The update as htram carries it when built with HTRAM_COMPACT_WIRE: 8 bytes
+// instead of 16 plus a 4-byte destination padded to 24. The overflow flag
+// moves from bit 62 of the vertex to bit 31, so vertex ids must be below 2^31
+// and distances below 2^32 -- every input here is under 2^27 vertices and a
+// largest distance of 5.5e7 (road-usa). A tentative distance can in principle
+// exceed its final value by any amount, so the check is made on every item
+// rather than once on the graph, and a value that does not fit stops the run:
+// truncating it would deliver a distance shorter than the path it describes.
+struct WireUpdate {
+	uint32_t vertex;   // bit 31: UPDATE_OVERFLOW_BIT
+	uint32_t distance;
+};
+inline WireUpdate wire_pack(const Update &u) {
+	const unsigned long v = (unsigned long)update_vertex(u);
+	if (__builtin_expect((v >> 31) | ((unsigned long)u.distance >> 32), 0))
+		CkAbort("compact wire: vertex %ld or distance %ld does not fit in 31/32 bits",
+		        update_vertex(u), (long)u.distance);
+	WireUpdate w;
+	w.vertex = (uint32_t)v | (update_overflowed(u) ? 0x80000000u : 0u);
+	w.distance = (uint32_t)u.distance;
+	return w;
+}
+inline Update wire_unpack(const WireUpdate &w) {
+	Update u;
+	u.dest_vertex = (long)(w.vertex & 0x7fffffffu) |
+	                ((w.vertex >> 31) ? UPDATE_OVERFLOW_BIT : 0L);
+	u.distance = (long)w.distance;
+	return u;
 }
 
 class LongEdge

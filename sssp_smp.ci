@@ -31,6 +31,7 @@ mainmodule sssp_smp
   readonly int window_follow;
   readonly int combine_mode;
   readonly bool batch_fold;
+  readonly int send_filter_bits;
   readonly int partition_jitter_percent;
   readonly double timeout_seconds;
   readonly double reduction_delay;

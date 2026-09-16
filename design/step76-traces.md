@@ -115,5 +115,10 @@ counters (the `sssp_smp_papi` build, whose PAPI path is still Cray-only) or a
 run with the insert replaced by a counting stub, which gives up correctness for
 a ceiling.
 
+**Correction (7.6j).** "Not communication" was wrong. Projections charged the
+time a PE spent spinning inside LCI's send retry loop to the entry method that
+sent, so it read as `process_heap` work; [7.6j](step76-perf.md) measured that
+spin at 45% of PE time and found the solve bound by bytes on the wire.
+
 Traces, reports and run output: `campaign/traces/rmat25-2n-8x15-20751377`
 (`traceA-report.md`, `traceB-report.md`). About 20 SU.

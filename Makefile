@@ -14,7 +14,14 @@ CHARMCFLAGS = $(OPTS) -g -O3
 
 # Flags required by any file that includes htram_group.h for the GRAPH/SSSP
 # variant. These must match what libhtram_group_graph.a was compiled with.
-GRAPH_FLAGS = -DGRAPH -DBUCKETS_BY_DEST -DHTRAM_GRAPH_TYPES_HEADER=\"$(CURDIR)/weighted_node_struct.h\"
+# WIRE=compact (the default) carries 8-byte updates and recomputes the
+# destination PE on arrival (HTRAM_COMPACT_WIRE, step 7.6j); WIRE=wide is the
+# 24-byte layout every run before 7.6j used.
+# The library and the client must agree, so the flag reaches both.
+WIRE ?= compact
+WIRE_FLAGS_compact = -DHTRAM_COMPACT_WIRE
+WIRE_FLAGS = $(WIRE_FLAGS_$(WIRE))
+GRAPH_FLAGS = -DGRAPH -DBUCKETS_BY_DEST $(WIRE_FLAGS) -DHTRAM_GRAPH_TYPES_HEADER=\"$(CURDIR)/weighted_node_struct.h\"
 SSSP_FLAGS  = $(CHARMCFLAGS) -DTRAM_SMP -DGROUPBY $(GRAPH_FLAGS) -I$(CURDIR) -I$(HTRAM_DIR)
 
 BINARY = sssp_smp sssp_smp_diag sssp_smp_projections sssp_smp_papi
@@ -25,7 +32,7 @@ all: sssp_smp
 run_sssp_smp: sssp_smp
 	./sssp_smp 10000 160000 100 1 1 0.999 0.005 +p8 +ppn 8 ++local
 
-SSSP_SRC = sssp_smp.cpp sssp_smp.ci weighted_node_struct.h \
+SSSP_SRC = sssp_smp.cpp sssp_smp.ci weighted_node_struct.h acic_prof.h \
            $(wildcard graphlib/*.h) $(wildcard graphlib/*.C)
 
 sssp_smp: $(SSSP_SRC) $(HTRAM_DIR)/libhtram_group_graph.a
@@ -42,9 +49,14 @@ sssp_smp_diag: $(SSSP_SRC) $(HTRAM_DIR)/libhtram_group_graph.a
 	$(CHARMC_SMP) $(SSSP_FLAGS) sssp_smp.ci
 	$(CHARMC_SMP) $(SSSP_FLAGS) $(HTRAM_DIR)/libhtram_group_graph.a -language charm++ -o $@ sssp_smp.cpp -std=c++1z -DACIC_DIAG -DVCOUNT
 
+# Hardware-counter profile (acic_prof.h). PAPI_HOME comes from the papi module
+# (Anvil: module load papi/6.0.0.1); the default is Frontier's Cray PAPI.
+# DWARF 4 because the system addr2line (binutils 2.30) cannot read GCC 11's
+# default DWARF 5 inline records.
+PAPI_HOME ?= /opt/cray/pe/papi/7.0.1.2
 sssp_smp_papi: $(SSSP_SRC) $(HTRAM_DIR)/libhtram_group_graph.a
 	$(CHARMC_SMP) $(SSSP_FLAGS) sssp_smp.ci
-	$(CHARMC_SMP) $(SSSP_FLAGS) $(HTRAM_DIR)/libhtram_group_graph.a -language charm++ -o $@ sssp_smp.cpp -std=c++1z -DPAPI -I/opt/cray/pe/papi/7.0.1.2/include -L/opt/cray/pe/papi/7.0.1.2/lib -lpapi
+	$(CHARMC_SMP) $(SSSP_FLAGS) $(HTRAM_DIR)/libhtram_group_graph.a -language charm++ -o $@ sssp_smp.cpp -std=c++1z -gdwarf-4 -DPAPI -I$(PAPI_HOME)/include -L$(PAPI_HOME)/lib -Wl,-rpath,$(PAPI_HOME)/lib -lpapi -lrt
 
 sssp_smp_projections: $(SSSP_SRC) $(HTRAM_DIR)/libhtram_group_graph.a
 	$(CHARMC_SMP) $(SSSP_FLAGS) sssp_smp.ci
@@ -67,7 +79,7 @@ tools: graph_digest graph_convert
 $(HTRAM_DIR)/libhtram_group_graph.a:
 	$(MAKE) -C $(HTRAM_DIR) libhtram_group_graph.a \
 	    GRAPH_INCLUDE=$(CURDIR) \
-	    CHARMC_SMP="$(CHARMC_SMP)" OPTS="$(OPTS)"
+	    CHARMC_SMP="$(CHARMC_SMP)" OPTS="$(OPTS)" HTRAM_EXTRA="$(WIRE_FLAGS)"
 
 clean:
 	rm -f *.o *.decl.h *.def.h $(BINARY) graph_digest graph_convert charmrun* *.stamp

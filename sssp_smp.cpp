@@ -2,9 +2,8 @@
 #include "htram_group.h"
 #include "sssp_smp.decl.h"
 #include "graphlib/graphlib.h"
-// #define PAPI
 #ifdef PAPI
-#include <papi.h>
+#include "acic_prof.h"
 #endif
 #include <algorithm>
 #include <cmath>
@@ -113,6 +112,14 @@ int combine_mode = COMBINE_OFF;
 // 9.9% at 2^20 -- and the plan requires its contribution to be reported
 // separately from the source hold's.
 bool batch_fold = false;
+// --send-filter-bits N (0 = off). 7.6j. Each PE remembers, in a direct-mapped
+// table of 2^N entries, the last distance it created an update with for a
+// vertex, and drops a new update to that vertex that is no shorter. The one it
+// remembers is still on its way and will be retired at the destination, so the
+// dropped one could only have been rejected there -- 98.8% of arrivals were --
+// and dropping it before it is charged keeps the histogram exact. A collision
+// only overwrites the entry, which costs a missed drop, never a wrong one.
+int send_filter_bits = 0;
 // --idle-flush off|on|starved. The per-chare [whenidle] callback drains the
 // heap; with this on, a PE that finds nothing admissible left also flushes
 // every destination still holding admitted updates. An idle PE cannot add to
@@ -325,11 +332,13 @@ int partition_jitter_percent = 20;
 // design/scale-free-diagnosis.md lists what each file holds.
 std::string diag_prefix;
 // tram constants
-// Aggregation buffer size in items, settable with --bufsize. htram used to
-// accept this and then ignore it, so changing the buffer size meant editing
-// BUFSIZE in htram_group.h and rebuilding both libraries; the default here is
-// BUFSIZE so the out-of-the-box configuration is unchanged.
-int buffer_size = BUFSIZE;
+// Aggregation buffer size in items, settable with --bufsize (at most htram's
+// BUFSIZE). The best size depends on the graph class (step 7.6j, compact
+// items, two nodes): rmat25 was fastest at 6144 (1.3x over 2048) while mesh24
+// and road-usa were 2x slower there and fastest at 1024 (1.2x and 1.4x over
+// 2048). 2048 is the one size that regressed neither class against the
+// pre-7.6j build, so it stays the default until the size is chosen per run.
+int buffer_size = 2048;
 double flush_timer = 0.01; // milliseconds
 bool enable_buffer_flushing =
     false; // true = buffer flushes at interval specified by flush_timer
@@ -354,6 +363,7 @@ enum {
   STAT_ABSORBED,      // updates folded away at the source by --combine
   STAT_FOLDED,        // updates folded away in a delivered batch, --batch-fold
   STAT_SKEW_TOP,      // unflagged arrivals charged to the overflow index, 7.6g
+  STAT_SEND_FILTERED, // updates dropped by --send-filter-bits, 7.6j
   STAT_INSTRUCTIONS,  // PAPI builds only
   STAT_BATCH_ITEMS,   // ACIC_DIAG builds only, from here down
   STAT_BATCH_ABSORBABLE,
@@ -416,14 +426,22 @@ void start_reductions(void *obj, double time) { arr.contribute_histogram(0); }
 // and admissible updates behind it. See design/step76-default-deadlock.md.
 bool pq_overflow_last = true;
 
+// The order is "flagged after unflagged, then by distance" when
+// pq_overflow_last is on, and "by distance" when it is off. Both are one
+// unsigned comparison of a key that puts the overflow flag above every
+// distance bit: distances are non-negative, so they fit below bit 63. This is
+// the same strict order the two-branch comparison defined, so the heap makes
+// the same moves; it only stops paying for the branches on every sift step.
+// The mask is taken from the readonly when the heap is built, which is after
+// the readonlies have arrived.
 struct ComparePairs {
+  unsigned long flag_mask = pq_overflow_last ? ~0UL : 0UL;
+  unsigned long key(const Update &u) const {
+    return (unsigned long)u.distance |
+           (((unsigned long)u.dest_vertex << 1) & (1UL << 63) & flag_mask);
+  }
   bool operator()(const Update &lhs, const Update &rhs) const {
-    if (pq_overflow_last) {
-      const bool l = update_overflowed(lhs), r = update_overflowed(rhs);
-      if (l != r)
-        return l; // an overflowed update has lower priority than any other
-    }
-    return lhs.distance > rhs.distance; // '>' for min heap, '<' for max heap
+    return key(lhs) > key(rhs); // '>' for min heap
   }
 };
 
@@ -903,6 +921,15 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg.rfind("--send-filter-bits=", 0) == 0) {
+        send_filter_bits = std::stoi(arg.substr(19));
+      } else if (arg == "--send-filter-bits") {
+        if (i + 1 >= m->argc) {
+          ckout << "--send-filter-bits needs a number of bits" << endl;
+          CkExit(1);
+          return;
+        }
+        send_filter_bits = std::stoi(m->argv[++i]);
       } else if (arg.rfind("--batch-fold", 0) == 0) {
         std::string value;
         if (arg.rfind("--batch-fold=", 0) == 0)
@@ -952,6 +979,7 @@ public:
             << "[--skew-defer off|on] [--pq-overflow-last off|on] "
             << "[--window-follow off|on] "
             << "[--idle-flush off|on|starved] "
+            << "[--send-filter-bits <n>] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
             << "[--partition-jitter <percent>] [--diag <prefix>]" << endl
@@ -1982,6 +2010,9 @@ public:
     // Absorbed updates were created and then folded into a better one before
     // they left their source, so they are in neither count above. Rejected
     // plus absorbed is the redundant work a run did, wherever it was caught.
+    ckout << "Send-filtered updates: " << msg_stats[STAT_SEND_FILTERED]
+          << ", normalized to |E|: "
+          << msg_stats[STAT_SEND_FILTERED] * 1.0 / msg_stats[STAT_EDGES] << endl;
     ckout << "Absorbed updates: " << msg_stats[STAT_ABSORBED]
           << ", normalized to |E|: "
           << (double)msg_stats[STAT_ABSORBED] / msg_stats[STAT_EDGES] << endl;
@@ -2169,15 +2200,6 @@ public:
 
   SharedInfo() {
     event_id = traceRegisterUserEvent("Contrib reduction");
-#ifdef PAPI
-    if (CkNodeFirst(CkMyNode()) == CkMyPe()) {
-      int retval = PAPI_library_init(PAPI_VER_CURRENT);
-      if (retval != PAPI_VER_CURRENT) {
-        fprintf(stderr, "PAPI library init error!\n");
-        CkExit(1);
-      }
-    }
-#endif
   }
 };
 
@@ -2194,6 +2216,16 @@ private:
   long num_vertices = 0; // number of vertices assigned to this pe
   VertexRng flush_rng = VertexRng(0, 0); // per-chare flush cadence draw
   long updates_created_locally = 0;   // number of update messages sent
+  // 8 bytes, so twice the entries fit the same cache footprint: 20 bits of
+  // 16-byte entries filtered half of rmat25's edges and still lost to 16 bits
+  // on cache misses. A vertex or distance too wide for 32 bits is not cached.
+  struct SentEntry {
+    uint32_t vertex = 0xffffffffu;
+    uint32_t distance = 0;
+  };
+  std::vector<SentEntry> sent_cache; // --send-filter-bits
+  int sent_cache_shift = 64;
+  long send_filtered = 0;
   long updates_processed_locally = 0; // number of update messages received
   long *partition_index;   // defines boundaries of indices for each pe
   long wasted_updates = 0; // number of updates that don't have the final answer
@@ -2256,6 +2288,11 @@ private:
   // is the integer quotient of the original index, which is what keeps a merge
   // exact; a multiplier divided by the scale would round differently.
   int bucket_scale = 1;
+  // ceil(2^64 / bucket_scale), so that the quotient of any 32-bit index by the
+  // scale is one multiply (Lemire, Kaser and Kurz 2019) instead of an integer
+  // division, which the counters put at a quarter of all cycles. Exact for
+  // every index below 2^32; set with bucket_scale, and unused while it is 1.
+  unsigned long bucket_scale_inverse = 0;
   double bucket_limit = HISTO_BUCKET_COUNT; // original index that clamps
   std::vector<Update> *pq_hold; // hold for heap messages
   long clamped_created_locally = 0; // updates ever charged to the overflow slot
@@ -2275,6 +2312,12 @@ private:
   int updates_noted = 0; // updates that have either updated a vertex value, or
                          // are confirmed to not be an improvement
   int *dest_table; // destination table for faster pe calculation
+  // get_dest_proc_fast() runs for every update created. M is a readonly, so
+  // `vertex / M` and `V / M` were two 64-bit integer divisions per call; M is
+  // a power of two, so the first is a shift and the second a constant.
+  int dest_table_shift = 0;
+  long dest_table_last = 0; // V / M - 1
+  int my_pe = -1;           // CkMyPe(), which is a call into the runtime
   int current_phase = 0;
   long actual_edges = 0; // when graph is generated, here's how many edges
                          // actually got generated
@@ -2282,9 +2325,6 @@ private:
   long *info_array;
   long distance_changes = 0;
   long updates_in_tram = 0;
-#ifdef PAPI
-  int eventset;
-#endif
 
 public:
   /**
@@ -2308,10 +2348,10 @@ public:
   int get_dest_proc_fast(long vertex) {
     // look up x/M and 1+x/M
     int xm_pe, xm_plus_one_pe;
-    long dest_table_index = vertex / M;
+    long dest_table_index = vertex >> dest_table_shift;
     // if this points to the end of dest_table
-    if (dest_table_index >= (V / M) - 1) {
-      xm_pe = dest_table[(V / M) - 1];
+    if (dest_table_index >= dest_table_last) {
+      xm_pe = dest_table[dest_table_last];
       int dest_proc = xm_pe;
       for (int j = xm_pe; j < N; j++) {
         // find first partition that begins at a higher edge count;
@@ -2356,17 +2396,6 @@ public:
     if (combine_mode == COMBINE_HOLD)
       tram->enableCombining(&hold_ops, this);
     shared_local = shared.ckLocalBranch();
-#ifdef PAPI
-    eventset = PAPI_NULL;
-    int result = PAPI_create_eventset(&eventset);
-    if (result != PAPI_OK) {
-      printf("Error PAPI create eventset: %s\n", PAPI_strerror(result));
-    }
-    result = PAPI_add_event(eventset, PAPI_TOT_INS);
-    if (result != PAPI_OK) {
-      printf("Error PAPI add_event %s\n", PAPI_strerror(result));
-    }
-#endif
   }
 
   bool idle_triggered() {
@@ -2406,6 +2435,14 @@ public:
     // floor division here overruns the allocation by one int whenever V is not
     // a multiple of M. That corrupted the heap and showed up much later as an
     // intermittent SIGBUS inside an unrelated operator new.
+    if (send_filter_bits > 0) {
+      sent_cache.assign(1UL << send_filter_bits, SentEntry());
+      sent_cache_shift = 64 - send_filter_bits;
+    }
+    CkAssert(M > 0 && (M & (M - 1)) == 0);
+    dest_table_shift = __builtin_ctz(M);
+    dest_table_last = V / M - 1;
+    my_pe = CkMyPe();
     dest_table = new int[(V + M - 1) / M];
     for (int i = 0, j = 0; i < V; j++, i = j * M) {
       dest_table[j] = get_dest_proc(i);
@@ -2630,10 +2667,7 @@ public:
 
   void start_papi() {
 #ifdef PAPI
-    int result = PAPI_start(eventset);
-    if (result != PAPI_OK) {
-      printf("Error PAPI start: %s\n", PAPI_strerror(result));
-    }
+    acic_prof::start(CkMyPe(), CkMyPe() == CkNodeFirst(CkMyNode()));
 #endif
     traceBegin();
   }
@@ -2672,7 +2706,14 @@ public:
       self->fold_batch(new_vertex_and_distances, count);
       return;
     }
+    // distances[] is read at random by vertex; start the reads a few items
+    // ahead of the one being applied.
+    const int ahead = 8;
     for (int i = 0; i < count; i++) {
+      if (i + ahead < count)
+        __builtin_prefetch(
+            &self->distances[update_vertex(new_vertex_and_distances[i + ahead]) -
+                             self->start_vertex]);
       self->process_update(new_vertex_and_distances[i]);
     }
     // self->process_heap();
@@ -2839,7 +2880,12 @@ public:
     // raises it, so the pre-scale index passes INT_MAX before the scale cap
     // does. The quotient is under 2048 by construction either way.
     long result = (long)bucket;
-    return (int)(bucket_scale == 1 ? result : result / bucket_scale);
+    if (bucket_scale == 1)
+      return (int)result;
+    if ((unsigned long)result <= 0xffffffffUL)
+      return (int)(((unsigned __int128)bucket_scale_inverse *
+                    (unsigned long)result) >> 64);
+    return (int)(result / bucket_scale);
   }
 
   /**
@@ -2975,6 +3021,7 @@ public:
       }
     }
     bucket_scale *= k;
+    bucket_scale_inverse = ~0UL / (unsigned long)bucket_scale + 1;
     if (!clamp_freeze)
       bucket_limit = (double)HISTO_BUCKET_COUNT * bucket_scale;
     else if (extend)
@@ -2996,6 +3043,27 @@ public:
       Update new_update;
       new_update.dest_vertex = adjacency[i].end;
       new_update.distance = source_distance + adjacency[i].distance;
+      if (sent_cache_shift < 64) {
+        // The table is read at random; the targets a few edges on are
+        // already known, so start those reads now.
+        if (i + 8 < degree)
+          __builtin_prefetch(&sent_cache[((unsigned long)adjacency[i + 8].end *
+                                          0x9E3779B97F4A7C15UL) >>
+                                         sent_cache_shift]);
+        SentEntry &e = sent_cache[((unsigned long)new_update.dest_vertex *
+                                   0x9E3779B97F4A7C15UL) >>
+                                  sent_cache_shift];
+        const unsigned long v = (unsigned long)new_update.dest_vertex;
+        const unsigned long d = (unsigned long)new_update.distance;
+        if (e.vertex == v && e.distance <= d) {
+          send_filtered++;
+          continue;
+        }
+        if (((v | d) >> 32) == 0) {
+          e.vertex = (uint32_t)v;
+          e.distance = (uint32_t)d;
+        }
+      }
       // we are going to send this, so add to the histogram and the send update
       // count
       int neighbor_bucket = charge_new_update(&new_update);
@@ -3007,24 +3075,24 @@ public:
       // Bucket 0 means "send now"; a bucket above the threshold hands the
       // item to the library's own per-destination hold, to be released when
       // changeThreshold() admits that bucket.
+      // The destination is looked up once here and handed to the library,
+      // which would otherwise look it up again through get_dest_proc.
+      const int dest_pe = get_dest_proc_fast(update_vertex(new_update));
 #ifndef ALL_TO_TRAM_HOLD
       if ((neighbor_bucket > tram_threshold) && !bfs) {
-        tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);
+        tram->sendItemPrioDeferredDest(new_update, neighbor_bucket, dest_pe);
       } else {
 #ifndef LOCAL_TO_TRAM
-        // get_dest_proc_fast is a table lookup, but it used to run on this
-        // path even when LOCAL_TO_TRAM made its result unreachable -- once per
-        // outgoing edge, for nothing.
-        if (get_dest_proc_fast(update_vertex(new_update)) == CkMyPe())
+        if (dest_pe == my_pe)
           process_update(new_update);
         else
-          tram->sendItemPrioDeferredDest(new_update, 0);
+          tram->sendItemPrioDeferredDest(new_update, 0, dest_pe);
 #else
-        tram->sendItemPrioDeferredDest(new_update, 0);
+        tram->sendItemPrioDeferredDest(new_update, 0, dest_pe);
 #endif
       }
 #else
-      tram->sendItemPrioDeferredDest(new_update, neighbor_bucket);
+      tram->sendItemPrioDeferredDest(new_update, neighbor_bucket, dest_pe);
       if (neighbor_bucket <= tram_threshold)
         updates_in_tram++;
 #endif
@@ -3036,7 +3104,12 @@ public:
    * Takes a distance update and immediately adds it to the local heap/pq
    */
   inline void process_update(Update new_vertex_and_distance) {
-    if (charged_top_by_skew(new_vertex_and_distance)) {
+    // charged_top_by_skew() and bucket_of(), with the bucket computed once.
+    const bool overflowed = update_overflowed(new_vertex_and_distance);
+    const int distance_bucket =
+        overflowed ? HISTO_BUCKET_COUNT - 1
+                   : get_histo_bucket(new_vertex_and_distance.distance);
+    if (!overflowed && distance_bucket == HISTO_BUCKET_COUNT - 1) {
       skew_top_arrivals++;
       if (skew_defer || created_beyond_my_clamp(new_vertex_and_distance)) {
         defer_until_extended(new_vertex_and_distance);
@@ -3046,7 +3119,7 @@ public:
     long dest_vertex = update_vertex(new_vertex_and_distance);
     long local_index = dest_vertex - start_vertex;
     cost this_cost = new_vertex_and_distance.distance;
-    int this_bucket = bucket_of(new_vertex_and_distance);
+    int this_bucket = distance_bucket;
 #ifdef ACIC_DIAG
     arrivals_per_vertex[local_index]++;
     const int deg_class = degree_class(local_graph.degree(local_index));
@@ -3425,13 +3498,7 @@ public:
   void print_distances() {
     traceEnd();
 #ifdef PAPI
-    long long values[1] = {(long long)0};
-    int result = PAPI_stop(eventset, values);
-    if (result != PAPI_OK) {
-      printf("Error PAPI stop %s\n", PAPI_strerror(result));
-    }
-    // ckout << "PE " << CkMyPe() << " total instructions: " << values[0] <<
-    // endl;
+    const long long instructions = acic_prof::stop(CkMyPe());
 #endif
     std::vector<long> msg_stats(stat_count, 0);
     msg_stats[STAT_WASTED] = wasted_updates;
@@ -3451,8 +3518,9 @@ public:
     msg_stats[STAT_ABSORBED] = absorbed_updates;
     msg_stats[STAT_FOLDED] = folded_updates;
     msg_stats[STAT_SKEW_TOP] = skew_top_arrivals;
+    msg_stats[STAT_SEND_FILTERED] = send_filtered;
 #ifdef PAPI
-    msg_stats[STAT_INSTRUCTIONS] = values[0];
+    msg_stats[STAT_INSTRUCTIONS] = instructions;
 #endif
 #ifdef ACIC_DIAG
     msg_stats[STAT_BATCH_ITEMS] = batch_items;
