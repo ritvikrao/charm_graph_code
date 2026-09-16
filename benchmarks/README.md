@@ -426,3 +426,41 @@ three times slower: use a profile for where cycles go, never for how long a run
 takes. `benchmarks/lci_stats_report.py` reads the per-thread `LCI_STATS` lines
 of an instrumented `libreconverse.so` preloaded with `LD_PRELOAD` (the binaries
 use `DT_RPATH`, so `LD_LIBRARY_PATH` cannot substitute it).
+
+## Buffer size, shared memory and the 7.6n re-take (steps 7.6k-n)
+
+Solver defaults since 7.6k ([design/step76-klm.md](../design/step76-klm.md)):
+
+- `--bufsize-policy acceptance`: the run starts at 256 items per unit of
+  average degree (within `--bufsize-range`, default 512:6144), and the
+  controller moves the size when the share of arrivals that improve a
+  distance puts it 2x away (`--bufsize-acc-items`, default 288). An explicit
+  `--bufsize N` without a policy still means a fixed size.
+- `--send-filter auto`: the 7.6j filter at 17 bits, on while the buffer size
+  is at least 2048. `--send-filter-bits N` keeps it on for the whole run, and
+  `--send-filter-bits 0` or `--send-filter off` turns it off.
+
+ACIC runs from 7.6l on use a Charm++ tree built with `--enable-shmem`:
+
+```sh
+cd ~/charm_reconverse
+./build charm++ reconverse-linux-x86_64 mpicxx --with-production --enable-shmem --suffix=v0916-shm -j16
+```
+
+`build` repoints `~/charm_reconverse/{bin,lib,include}` at the tree it just
+built; point them back if other binaries rely on them.
+`scripts/anvil/build_variant.sh NAME TREE [make variables]` builds one ACIC
+binary into `CAMPAIGN/bin/NAME` from private copies of this tree and htram,
+so variants for `ab_compare.sbatch` do not overwrite each other, and records
+it in `CAMPAIGN/bin/variants-manifest.txt`. Flags reach htram's compile only
+through `CHARMC_SMP` (for example `CHARMC_SMP="TREE/bin/charmc -flto=8"`),
+not `OPTS`.
+
+7.6n reused the 7.6f1 command unchanged; only `bin/acic` changed (the
+7.6f2 binary is kept as `bin/acic_7.6f2`):
+
+```sh
+report_arms.py CAMPAIGN/logs CAMPAIGN/report-external-76n \
+    --pattern 'external-*-2077061[25].jsonl' --phase external \
+    --baseline adaptive --control control
+```

@@ -1,7 +1,7 @@
 # ACIC → SC27: research and engineering plan
 
 *Drafted 2026-09-10; revised after step 7 (09-13), compacted with the Gate A
-checkpoints (09-15), and re-evaluated after 7.6j (09-16). `htram_group.*`
+checkpoints (09-15), re-evaluated after 7.6j and updated with 7.6k–n (09-16). `htram_group.*`
 references are in github.com/UIUC-PPL/htram.*
 
 ## Status
@@ -49,10 +49,24 @@ order is now:
 3. **Then a bounded scaling comparison** against RIKEN and Gluon-Async
    (7.6o), which becomes the Gate A evidence.
 
+**7.6k–n (09-16): the entry condition is missed, and the stop decision is
+open again.** Shared memory between processes, a controller-chosen buffer
+size and a cheaper destination lookup made ACIC 1.3–2.8× faster than in
+7.6f1 on every graph and node count, and ACIC now beats Gluon-Async
+everywhere. But RIKEN is still 2.8× faster on rmat25 and 3.5× on orkut at two
+nodes, against the roughly 2× the [entry
+condition](#scaling-entry-condition) asks for, and one-node GAPBS is still
+faster on every graph. The rmat25 gap narrows from one node to two (4.3× to
+2.8×), which is the direction the scaling argument needs; the orkut gap
+widens (2.4× to 3.5×). Options: stop as the plan says; spend one more bounded
+step on orkut's buffer size and a profile of the shared-memory build; or run
+a small 7.6o on rmat25 alone to test whether the narrowing continues.
+
 Checkpoint 1's "co-design: no" still stands for admission and delivery
-thresholds. A controller-chosen buffer size (7.6k) is a new, direct test of
-the same claim: one feedback loop steering the library's buffering by graph
-class.
+thresholds. A controller-chosen buffer size (7.6k) was a new, direct test of
+the same claim. It found the right regime on all four graphs, but from the
+graph's degree; the algorithm's feedback never had to correct it, so it does
+not show co-design either.
 
 ## Context
 
@@ -150,11 +164,11 @@ identical results on one and two nodes; PageRank uses a tolerance gate.
 | **7.6f2** | Admission × delivery vs `global-fixed` and per-graph `tuned-fixed` | [Policy](step76-policy.md), below. Stopping rule: one or two supported optimizations | **checkpoint 1 read: negative** |
 | 7.6i | Why 7.6f1 lost: Projections traces of rmat25 at 2 nodes | [Traces](step76-traces.md): 67–69% in `process_heap`, idle 10–14% (ramp and drain), TRAM paths 14–15%, balanced to 1.03×. 318 ns per graph edge against RIKEN's 49 and GAPBS's 145; 98.8% of delivered updates rejected | complete |
 | 7.6j | Per-edge cost: counters, then the send path | [Perf](step76-perf.md): bound by bytes on the wire, not CPU (45% of PE time spinning in LCI sends). Compact 8-byte items, larger buffers, a sender-side dominance filter and prefetch: rmat25 300 → 121 ns/edge (2.5×), orkut 2.9×; high-diameter graphs want a 1024-item buffer size (1.2–1.4×) and lose 2× at 6144 | complete |
-| **7.6k** | Buffer size chosen by the controller, from the signals it already has (starved rounds, delivered/created ratio, histogram spread); send filter re-tested at small buffer sizes | Matches the best fixed buffer size per class (6144 on rmat25/orkut, 1024 on mesh24/road-usa) within the floor, with no class regressing against the 2048 default. Compare against per-class `tuned-fixed`, so the result is also a co-design test | next |
-| **7.6l** | Charm++ `--enable-shmem` build of the Reconverse tree | Same-node sends through shared memory; check pool exhaustion (`++ipcpoolsize`) and that the fallback to the network works. Same-allocation A/B on all four graphs; digests identical | next |
-| **7.6m** | Next CPU hot spots on rmat25 (edge scan with filter lookup 15%, TRAM insert 14%, scheduler 13%, apply 12%, network progress 11%), then the send spin via LCI's backlog | Each change measured by interleaved A/B, kept only above the floor; re-profile after 7.6l, since shared memory moves the progress and spin shares | next |
-| 7.6n | Re-take 7.6f1 at 1–2 nodes with the 7.6k–m build | Replaces the stale ACIC column; decides whether the scaling entry condition holds | after 7.6k–m |
-| 7.6o | Bounded scaling comparison, ACIC vs RIKEN and Gluon-Async, 2/8/16 nodes, rmat26/27 and mesh26 plus road-usa | Communication share per system at each node count; **Gate A** evidence | only after 7.6n passes |
+| 7.6k | Buffer size chosen by the controller; send filter by regime | [KLM](step76-klm.md): starts at 256 items per unit of average degree, corrected by the share of arrivals that improve a distance; filter on only at 2048+ items. Now the default. Within the floor of the best fixed size on rmat25 and mesh24, 1.53× faster than it on road-usa (512 items), 1.13× behind it on orkut (degree puts orkut at 6144, it wants 2048). A regime rule; the feedback correction was never needed | complete |
+| 7.6l | Charm++ `--enable-shmem` build of the Reconverse tree | [KLM](step76-klm.md#76l-shared-memory-between-processes): rmat25 1.34× with a much tighter spread, road-usa 1.06×, mesh24 1.00×; pool size irrelevant. The build now used for ACIC runs | complete |
+| 7.6m | Next CPU hot spots, then the send spin | [KLM](step76-klm.md#76m-cpu): a one-load destination lookup (1.27× on rmat25) kept; write-prefetch, LTO, `-march=znver3` and LCI backlog sends rejected. rmat25 at 110 ns per edge with the best fixed setting, 116 with the defaults | complete |
+| **7.6n** | Re-take 7.6f1 at 1–2 nodes with the 7.6k–m build | [External](step76-external.md#76n-re-take-after-76k-m): ACIC 1.3–2.8× faster than in 7.6f1 everywhere and ahead of Gluon-Async everywhere; RIKEN still 2.8× (rmat25) and 3.5× (orkut) ahead at 2 nodes; GAPBS (1 node) still ahead on every graph | **complete: scaling entry condition missed** |
+| 7.6o | Bounded scaling comparison, ACIC vs RIKEN and Gluon-Async, 2/8/16 nodes, rmat26/27 and mesh26 plus road-usa | Communication share per system at each node count; **Gate A** evidence | not started: its entry condition was missed; decision pending |
 | 8 | Generic payload interface, only when a second algorithm needs it | SSSP identical on 1–2 nodes | conditional |
 | 9 | PE/chare identity for new mappings; overdecomposition only if profiling justifies it | Correct on all supported mappings | conditional |
 | 10 | Extract `AcicController` around observed shared signals | SSSP retained; second kernel uses it | with step 11 |
@@ -217,7 +231,8 @@ Every cell is 4/4 pairs on one side, far above the 1.04–1.06× floors.
   `tuned-fixed` would not change a row's direction.
 - **Scale:** these inputs fit on one node, and ACIC has not shown it scales
   past two nodes on them.
-- **Stale since 7.6j:** the ACIC column predates compact items, the send
+- **Superseded by 7.6n** for ACIC ([re-take](step76-external.md#76n-re-take-after-76k-m)).
+  The ACIC column predates compact items, the send
   filter and the buffer-size finding. On rmat25 at two nodes ACIC is now
   0.53 s (2.6× RIKEN's 0.20 s), and on orkut 0.22 s (3.4× RIKEN's 0.065 s).
   Those two numbers come from a different allocation than the table, so they
@@ -408,9 +423,9 @@ Provisional, from 2026-09-13, assuming early-April submission.
 | Sep 15, done | 7.6f1: external re-take, fair layouts, 1–2 nodes | **Checkpoint 2 input:** external systems well ahead; stop condition met, decision pending |
 | Sep 15, done | 7.6i: traces of the losing configuration | Per-update pipeline cost, not communication or imbalance: narrowing would have to attack the update rate itself |
 | Sep 16, done | 7.6j: per-edge cost | Communication volume was the bound after all; rmat25 within 2.5× of RIKEN per edge, below GAPBS; buffer size must follow graph class; stop decision deferred |
-| Sep 17–Oct 2 | 7.6k controller-chosen buffer size; 7.6l `--enable-shmem`; 7.6m hot spots (two-node A/Bs only) | Per-edge gap and graph-class balance |
-| Oct 3–9 | 7.6n: re-take 7.6f1 at 1–2 nodes | **Scaling entry condition** met or missed |
-| Oct 10–18 | 7.6o: bounded scaling comparison, 2/8/16 nodes | **Gate A:** proceed, narrow, or stop |
+| Sep 16, done | 7.6k controller-chosen buffer size; 7.6l `--enable-shmem`; 7.6m hot spots (two-node A/Bs only) | rmat25 110–116 ns per edge; buffer size follows the graph regime, not the best size within it (orkut) |
+| Sep 16, done | 7.6n: re-take 7.6f1 at 1–2 nodes | **Scaling entry condition missed** (RIKEN 2.8×/3.5× ahead on rmat25/orkut); stop decision open |
+| by Oct 18 | 7.6o only if the decision is to continue | **Gate A:** proceed, narrow, or stop |
 | Oct 19–Nov 15 | Controller extraction and BFS transfer | **Gate B:** transfer, or SSSP-only scope |
 | Nov 16–Dec 13 | PageRank only if the claim needs it; else strengthen SSSP/BFS | Freeze algorithm scope |
 | Dec–Feb | Scaling, real graphs, baselines, ablations, one portability slice | **Gate C, Feb 15:** evidence sufficient for the chosen claim |

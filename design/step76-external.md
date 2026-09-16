@@ -112,3 +112,67 @@ Not run, and what it would take to reopen the question:
 `report_arms.py`'s header prints one process count per allocation, taken from
 the last record; in this mode layouts differ per system, so ignore it. Report:
 `campaign/report-external/arms.md`.
+
+## 7.6n: re-take after 7.6k-m
+
+*2026-09-16. Jobs 20770612 (1 node) and 20770615 (2 nodes), the same
+command, graphs, sources and search as above. Only ACIC's binary changed:
+`bin/acic` is now `a6ef533d...`, built on the pulled Reconverse tree with
+Charm++ `--enable-shmem`, the destination-lookup table, and the 7.6k
+defaults (buffer size from the controller, send filter by regime); see
+[step76-klm.md](step76-klm.md). The 7.6f2 binary is kept as
+`bin/acic_7.6f2`. The baselines' binaries are unchanged (same hashes).*
+
+- **Outcome.** 342 runs. The only failures are the 8 runs of one RIKEN
+  candidate, 16 ranks per node at delta 1024 on orkut, which crashed the
+  same way in 7.6f1 and which the search drops. No hangs, no wrong digests.
+- **Cost.** 34 and 36 minutes, about 225 SU.
+- **Layouts.** ACIC chose 16 x 7 everywhere except orkut at 2 nodes (8 x 15).
+  RIKEN again chose 16 ranks per node, the largest offered.
+- **Floors.** Wider than 7.6f1's: 1.27x at 1 node, where ACIC's rmat25 runs
+  are bimodal (the same configuration and source ran in 0.85 s and 1.32 s),
+  and 1.11x at 2 nodes. The 1-node rmat25 cells are therefore not resolved.
+
+Median solve seconds over the four held-out sources; 7.6f1's ACIC time in
+parentheses. Ratios are paired medians (`campaign/report-external-76n`),
+above 1 meaning the external system is faster.
+
+| graph | nodes | ACIC (7.6f1) | GAPBS | RIKEN | Gluon-Async | ACIC/GAPBS | ACIC/RIKEN | ACIC/Gluon |
+|---|---|---|---|---|---|---|---|---|
+| mesh24 | 1 | 0.67 (1.37) | 0.19 | 26.5 | 4.49 | **3.4** | 1/37.7 | 1/7.2 |
+| mesh24 | 2 | 0.66 (0.84) | — | 17.7 | 3.73 | — | 1/27.2 | 1/6.1 |
+| orkut | 1 | 0.26 (0.67) | 0.16 | 0.106 | 0.85 | **1.7** | **2.4** | 1/3.1 |
+| orkut | 2 | 0.23 (0.65) | — | 0.066 | 1.46 | — | **3.5** | 1/6.4 |
+| rmat25 | 1 | 1.40 (2.09); control 0.92 | 1.16 | 0.32 | 1.79 | 1.2 · | **4.3** | 1/1.2 · |
+| rmat25 | 2 | 0.64 (1.36) | — | 0.21 | 1.96 | — | **2.8** | 1/3.0 |
+| road-usa | 1 | 1.86 (3.51) | 0.15 | n/a | 26.0 | **11.7** | — | 1/14.6 |
+| road-usa | 2 | 1.57 (3.87) | — | n/a | 38.6 | — | — | 1/24.2 |
+
+`·`: within the allocation floor.
+
+What changed against 7.6f1:
+
+1. **ACIC is 1.3-2.8x faster on every graph and node count**, and now beats
+   Gluon-Async everywhere it was measured, including rmat25 at 2 nodes (3x,
+   where 7.6f1 split). Every pair fell on ACIC's side except the unresolved
+   1-node rmat25 cell.
+2. **The RIKEN gap on scale-free graphs halved but is still 2.4-4.3x.**
+   rmat25 went from 6.9x to 2.8x at 2 nodes, orkut from 9.7x to 3.5x. On
+   rmat25 the gap narrows from 1 to 2 nodes (4.3x -> 2.8x), where 7.6f1's
+   widened; on orkut it still widens (2.4x -> 3.5x).
+3. **GAPBS on one node is still ahead of ACIC on every graph**, by 1.2x
+   (rmat25, within the floor) to 12x (road-usa).
+
+### Scaling entry condition
+
+The [SC27 plan](sc27-plan.md#scaling-entry-condition) asks for three things
+before any run above two nodes:
+
+| condition | result | met? |
+|---|---|---|
+| ACIC within about 2x of RIKEN per graph edge on rmat25 and orkut | 2.8x and 3.5x at 2 nodes, on equal nodes; rmat25 is 136 ns per edge on ACIC's 224 workers against RIKEN's 49 | **no** |
+| no regression on mesh24 or road-usa against 7.6f1 | 1.3-2.5x faster | yes |
+| a profile of ACIC's communication share | not taken on the shared-memory build | no |
+
+The condition is missed. The plan says to stop if it is still missed after
+7.6k-m; that decision is open ([plan](sc27-plan.md#status)).

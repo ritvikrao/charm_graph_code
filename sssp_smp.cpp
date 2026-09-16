@@ -120,6 +120,15 @@ bool batch_fold = false;
 // and dropping it before it is charged keeps the histogram exact. A collision
 // only overwrites the entry, which costs a missed drop, never a wrong one.
 int send_filter_bits = 0;
+// --send-filter auto (step 7.6k, the default): the filter at 17 bits, on only
+// while the
+// buffer size says the input is in the redundant, scale-free regime (at least
+// SEND_FILTER_MIN_BUFFER items; see --bufsize-policy). It is a loss where most
+// arrivals improve a distance: road-usa 0.79x at 1024 items. An explicit
+// --send-filter-bits N keeps it on for the whole run instead (0: off).
+bool send_filter_auto = true;
+const int SEND_FILTER_AUTO_BITS = 17;
+const int SEND_FILTER_MIN_BUFFER = 2048;
 // --idle-flush off|on|starved. The per-chare [whenidle] callback drains the
 // heap; with this on, a PE that finds nothing admissible left also flushes
 // every destination still holding admitted updates. An idle PE cannot add to
@@ -337,8 +346,56 @@ std::string diag_prefix;
 // items, two nodes): rmat25 was fastest at 6144 (1.3x over 2048) while mesh24
 // and road-usa were 2x slower there and fastest at 1024 (1.2x and 1.4x over
 // 2048). 2048 is the one size that regressed neither class against the
-// pre-7.6j build, so it stays the default until the size is chosen per run.
+// pre-7.6j build. Under --bufsize-policy fixed it is the size for the whole
+// run; under acceptance it is only the size the run starts with.
 int buffer_size = 2048;
+// --bufsize-policy fixed|acceptance (step 7.6k; acceptance is the default
+// from 7.6k on, and an explicit --bufsize without a policy means fixed, as it
+// did before). acceptance lets the
+// controller choose the size from the share of arriving updates that improve
+// a distance. That share separates the graph classes by 5-10x and hardly
+// moves with the buffer size itself (mesh24 0.28 at 1024, 2048 and 6144;
+// road-usa 0.43; rmat25 0.05; orkut 0.03), so steering by it cannot chase its
+// own tail. A high share means long improvement chains, where every item held
+// back in a buffer delays the next link and multiplies work (mesh24 created
+// 4.7x more updates at 6144 than at 1024). A low share means most arrivals
+// are redundant, the delay costs little, and fewer, larger sends pay.
+// The size is --bufsize-acc-items / share, clamped to --bufsize-range: 288
+// puts mesh24 at about 1024 and rmat25 at about 5700, the two measured optima.
+//
+// The share cannot pick the size a run starts with. On rmat25 at two nodes
+// the first round that has seen enough updates to judge arrives after 40% of
+// all the run's updates were created, so a run that starts at 2048 does its
+// ramp at 2048 whatever the policy says later (1.38x slower than a fixed
+// 6144, job 20767814). The starting size is therefore 256 items per unit of
+// average degree, which the solver knows before the first edge moves:
+// scale-free inputs have high degree and low acceptance, high-diameter inputs
+// low degree and high acceptance, so the two estimates agree on every graph
+// measured, and the share only corrects the start.
+// The ceiling is 6144 because 8192 was slower than 6144 on rmat25 (7.6j).
+enum { BUFSIZE_FIXED = 0, BUFSIZE_ACCEPTANCE = 1 };
+int bufsize_policy = BUFSIZE_ACCEPTANCE;
+double bufsize_acc_items = 288.0;
+int bufsize_min = 512;
+int bufsize_max = 6144;
+
+// Multiples of 256 items within --bufsize-range, so nearby estimates name the
+// same size and every PE computes the same one.
+static int quantize_buffer_size(double want) {
+  int items = (int)std::min(want, (double)bufsize_max);
+  items = std::max(256, (items + 128) / 256 * 256);
+  return std::max(bufsize_min, std::min(bufsize_max, items));
+}
+
+// The size every PE starts the solve with.
+static int initial_buffer_size() {
+  if (bufsize_policy != BUFSIZE_ACCEPTANCE)
+    return buffer_size;
+  // The exact ratio: average_degree is truncated, which reads a mesh's 3.99
+  // as 3.
+  return quantize_buffer_size(256.0 * (double)num_global_edges /
+                              (double)std::max(V, 1L));
+}
 double flush_timer = 0.01; // milliseconds
 bool enable_buffer_flushing =
     false; // true = buffer flushes at interval specified by flush_timer
@@ -558,6 +615,8 @@ struct RoundRecord {
   long updates_noted;
   long distance_changes;
   long done_vertices;
+  // Items per aggregation buffer the chares ran this round with.
+  int buffer_size;
 };
 
 class Main : public CBase_Main {
@@ -638,6 +697,14 @@ private:
   // lands. Monotone, so the answer cannot flap.
   bool clamp_ever_live = false;
   long previous_distance_changes = 0;
+  // --bufsize-policy acceptance: the size the chares were last told, the
+  // counters at the start of the sample being gathered, the smoothed share,
+  // and how often the size changed.
+  int current_buffer_size = 0;
+  long acc_noted_mark = 0;
+  long acc_changes_mark = 0;
+  double smoothed_acceptance = -1.0;
+  int buffer_size_changes = 0;
   double tram_percentile = 0.01;
   double heap_percentile = 0.01;
 #ifdef PRINT_HISTO
@@ -657,6 +724,7 @@ public:
     // Separate option flags from the positional arguments so flags may appear
     // anywhere on the command line.
     std::vector<std::string> args;
+    bool bufsize_given = false, bufsize_policy_given = false;
     for (int i = 1; i < m->argc; i++) {
       if (m->argv[i] == NULL)
         continue;
@@ -674,7 +742,43 @@ public:
           return;
         }
         timeout_seconds = std::stod(m->argv[++i]);
+      } else if (arg == "--bufsize-policy" || arg.rfind("--bufsize-policy=", 0) == 0) {
+        bufsize_policy_given = true;
+        std::string value;
+        if (arg == "--bufsize-policy") {
+          if (i + 1 < m->argc)
+            value = m->argv[++i];
+        } else
+          value = arg.substr(17);
+        if (value == "fixed")
+          bufsize_policy = BUFSIZE_FIXED;
+        else if (value == "acceptance")
+          bufsize_policy = BUFSIZE_ACCEPTANCE;
+        else {
+          ckout << "--bufsize-policy must be fixed or acceptance" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg == "--bufsize-acc-items") {
+        if (i + 1 >= m->argc) {
+          ckout << "--bufsize-acc-items needs a value in items" << endl;
+          CkExit(1);
+          return;
+        }
+        bufsize_acc_items = std::stod(m->argv[++i]);
+      } else if (arg == "--bufsize-range") {
+        // MIN:MAX in items
+        const std::string value = (i + 1 < m->argc) ? m->argv[++i] : "";
+        const size_t colon = value.find(':');
+        if (colon == std::string::npos) {
+          ckout << "--bufsize-range needs MIN:MAX in items" << endl;
+          CkExit(1);
+          return;
+        }
+        bufsize_min = std::stoi(value.substr(0, colon));
+        bufsize_max = std::stoi(value.substr(colon + 1));
       } else if (arg.rfind("--bufsize=", 0) == 0) {
+        bufsize_given = true;
         buffer_size = std::stoi(arg.substr(10));
       } else if (arg == "--bufsize") {
         if (i + 1 >= m->argc) {
@@ -682,6 +786,7 @@ public:
           CkExit(1);
           return;
         }
+        bufsize_given = true;
         buffer_size = std::stoi(m->argv[++i]);
       } else if (arg.rfind("--bucket-width=", 0) == 0) {
         bucket_width_override = std::stod(arg.substr(15));
@@ -921,8 +1026,27 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg == "--send-filter" || arg.rfind("--send-filter=", 0) == 0) {
+        std::string value;
+        if (arg == "--send-filter") {
+          if (i + 1 < m->argc)
+            value = m->argv[++i];
+        } else
+          value = arg.substr(14);
+        if (value == "auto")
+          send_filter_auto = true;
+        else if (value == "off") {
+          send_filter_auto = false;
+          send_filter_bits = 0;
+        } else {
+          ckout << "--send-filter must be auto or off "
+                << "(--send-filter-bits N keeps it on)" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg.rfind("--send-filter-bits=", 0) == 0) {
         send_filter_bits = std::stoi(arg.substr(19));
+        send_filter_auto = false;
       } else if (arg == "--send-filter-bits") {
         if (i + 1 >= m->argc) {
           ckout << "--send-filter-bits needs a number of bits" << endl;
@@ -930,6 +1054,7 @@ public:
           return;
         }
         send_filter_bits = std::stoi(m->argv[++i]);
+        send_filter_auto = false;
       } else if (arg.rfind("--batch-fold", 0) == 0) {
         std::string value;
         if (arg.rfind("--batch-fold=", 0) == 0)
@@ -967,6 +1092,8 @@ public:
             << "<mode 0=csv,1=uniform,2=mesh,3=rmat,4=gapbs> "
             << "<tram percentile> <heap percentile> "
             << "[--verify] [--result-digest] [--timeout <seconds>] [--bufsize <items>]" << endl
+            << "       [--bufsize-policy fixed|acceptance] [--bufsize-acc-items <items>] "
+            << "[--bufsize-range <min>:<max>]" << endl
             << "       [--bucket-width <distance units>] "
             << "[--round-delay <ms>] [--flush-interval <rounds>] "
             << "[--flush-policy fixed|stale|adaptive] "
@@ -979,7 +1106,7 @@ public:
             << "[--skew-defer off|on] [--pq-overflow-last off|on] "
             << "[--window-follow off|on] "
             << "[--idle-flush off|on|starved] "
-            << "[--send-filter-bits <n>] "
+            << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
             << "[--partition-jitter <percent>] [--diag <prefix>]" << endl
@@ -1046,6 +1173,16 @@ public:
       CkExit(1);
       return;
     }
+    if (bufsize_given && !bufsize_policy_given)
+      bufsize_policy = BUFSIZE_FIXED;
+    if (bufsize_min <= 0 || bufsize_min > bufsize_max || bufsize_max > BUFSIZE ||
+        bufsize_acc_items <= 0) {
+      ckout << "--bufsize-range must satisfy 1 <= min <= max <= " << BUFSIZE
+            << ", and --bufsize-acc-items must be positive" << endl;
+      CkExit(1);
+      return;
+    }
+    current_buffer_size = buffer_size;
     V = atol(args[0].c_str());          // number of vertices
     std::string file_name = args[1];    // file name or edge count
     S = atoi(args[2].c_str());          // randomization seed
@@ -1380,6 +1517,8 @@ public:
     CcdCallFnAfter(start_reductions, (void *)this, reduction_delay);
     if (timeout_seconds > 0.0)
       CcdCallFnAfter(fast_exit, (void *)this, timeout_seconds * 1000.0);
+    // The chares set the same size when they built their partitions.
+    current_buffer_size = initial_buffer_size();
     compute_begin = CkWallTimer();
 #ifdef INFO_PRINTS
     ckout << "Beginning at time: " << compute_begin << endl;
@@ -1492,6 +1631,44 @@ public:
     arr.report_progress_state(stall_reports);
   }
 
+  /**
+   * --bufsize-policy acceptance. Returns the new buffer size to broadcast, or
+   * 0 for no change. A sample closes once enough updates have been noted to
+   * give a share worth acting on; the shares are smoothed across samples, and
+   * the size moves only when the target differs by 2x or more. The start
+   * already comes from the degree, so the share is there to correct a wrong
+   * start, not to tune a right one: the first samples of a scale-free ramp
+   * read 0.08 and would otherwise halve a size that is correct.
+   */
+  // `updates_seen` counts what the send filter dropped as well as what
+  // arrived: a filtered update is a rejection made early, and leaving it out
+  // reads a filtered mesh as accepting nearly everything (mesh20: 0.99).
+  int choose_buffer_size(long updates_seen, long distance_changes) {
+    if (bufsize_policy != BUFSIZE_ACCEPTANCE)
+      return 0;
+    const long noted = updates_seen - acc_noted_mark;
+    const long min_sample = std::max(100000L, 64L * (long)N);
+    if (noted < min_sample)
+      return 0;
+    const double share =
+        (double)(distance_changes - acc_changes_mark) / (double)noted;
+    acc_noted_mark = updates_seen;
+    acc_changes_mark = distance_changes;
+    smoothed_acceptance = (smoothed_acceptance < 0)
+                              ? share
+                              : 0.5 * smoothed_acceptance + 0.5 * share;
+    const double want =
+        bufsize_acc_items / std::max(smoothed_acceptance, 1e-6);
+    const int target = quantize_buffer_size(want);
+    if (target >= 2 * current_buffer_size ||
+        2 * target <= current_buffer_size) {
+      current_buffer_size = target;
+      buffer_size_changes++;
+      return target;
+    }
+    return 0;
+  }
+
   void record_round(double now, long histogram_sum, int first_nonzero,
                     int occupied, int span, int heap_threshold,
                     int tram_threshold, int two_tier, int starved,
@@ -1522,6 +1699,7 @@ public:
     r.updates_noted = updates_noted;
     r.distance_changes = distance_changes;
     r.done_vertices = done_vertices;
+    r.buffer_size = current_buffer_size;
     rounds.push_back(r);
   }
 
@@ -1544,6 +1722,7 @@ public:
     long distance_changes = histo_values[histo_reduction_width + 6];
     long clamped = histo_values[histo_reduction_width + 7];
     const long clamped_created = histo_values[histo_reduction_width + 8];
+    const long send_filtered = histo_values[histo_reduction_width + 9];
     const long clamped_arrivals = clamped_created - last_clamped_created;
     last_clamped_created = clamped_created;
     int heap_threshold = 0;
@@ -1868,8 +2047,11 @@ public:
     // expected to fill, so waiting for it to is pure latency. The count is the
     // reduced window rather than every bucket, which is the population the
     // controller is acting on anyway.
+    const int new_buffer_size =
+        choose_buffer_size(updates_noted + send_filtered, distance_changes);
     const long streams = (long)N * (long)CkNumNodes();
-    const int starved = (histogram_sum < streams * (long)buffer_size) ? 1 : 0;
+    const int starved =
+        (histogram_sum < streams * (long)current_buffer_size) ? 1 : 0;
     if (stall_rounds >= stall_report_at) {
       report_stall(histogram_sum, occupied, span, clamped, live_updates,
                    above_window, updates_created, updates_processed,
@@ -1887,7 +2069,7 @@ public:
     last_first_nonzero = first_nonzero;
     arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
                            first_nonzero - 1, current_phase, starved, coarsen,
-                           extend ? 1 : 0);
+                           extend ? 1 : 0, new_buffer_size);
 
     // start next reduction round
     // CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
@@ -1909,7 +2091,7 @@ public:
            "heap_threshold,tram_threshold,two_tier,starved,bucket_scale,"
            "coarsen_reason,coarsen_k,"
            "updates_created,updates_processed,updates_noted,distance_changes,"
-           "done_vertices,clamped,clamped_arrivals\n";
+           "done_vertices,clamped,clamped_arrivals,buffer_size\n";
     for (size_t i = 0; i < rounds.size(); i++) {
       const RoundRecord &r = rounds[i];
       out << i << ',' << r.t << ',' << r.histogram_sum << ','
@@ -1920,7 +2102,7 @@ public:
           << ',' << r.updates_created << ',' << r.updates_processed << ','
           << r.updates_noted << ',' << r.distance_changes << ','
           << r.done_vertices << ',' << r.clamped << ','
-          << r.clamped_arrivals << '\n';
+          << r.clamped_arrivals << ',' << r.buffer_size << '\n';
     }
     ckout << "DIAG wrote " << rounds.size() << " rounds to "
           << rounds_path.c_str() << endl;
@@ -2041,6 +2223,14 @@ public:
     ckout << "Rounds with the frontier outside the window: "
           << rounds_window_empty << ", most updates outside it: "
           << max_above_window << endl;
+    if (bufsize_policy == BUFSIZE_ACCEPTANCE)
+      ckout << "Buffer size: acceptance policy, started at "
+            << initial_buffer_size() << ", final " << current_buffer_size
+            << " items after " << buffer_size_changes
+            << " changes, last smoothed acceptance " << smoothed_acceptance
+            << endl;
+    else
+      ckout << "Buffer size: fixed, " << buffer_size << " items" << endl;
     ckout << "Bucket scale: " << bucket_scale << " (" << coarsenings
           << " coarsenings, " << range_extensions << " range extensions)"
           << endl;
@@ -2225,6 +2415,9 @@ private:
   };
   std::vector<SentEntry> sent_cache; // --send-filter-bits
   int sent_cache_shift = 64;
+  // Whether generate_updates() consults the table now: always under
+  // --send-filter-bits, per regime under --send-filter auto.
+  bool send_filter_on = false;
   long send_filtered = 0;
   long updates_processed_locally = 0; // number of update messages received
   long *partition_index;   // defines boundaries of indices for each pe
@@ -2317,6 +2510,13 @@ private:
   // a power of two, so the first is a shift and the second a constant.
   int dest_table_shift = 0;
   long dest_table_last = 0; // V / M - 1
+  // dest_uniform[j] is the PE owning every vertex in [j * M, (j + 1) * M], or
+  // -1 if that range crosses a partition boundary (or is the table's tail).
+  // Partitions are contiguous and in PE order, so dest_table[j] ==
+  // dest_table[j + 1] proves the whole range is one PE's. At most N of the
+  // V / M ranges fail that, so nearly every lookup is a single load: no
+  // partition_index scan and no data-dependent branch (step 7.6m).
+  int *dest_uniform = nullptr;
   int my_pe = -1;           // CkMyPe(), which is a call into the runtime
   int current_phase = 0;
   long actual_edges = 0; // when graph is generated, here's how many edges
@@ -2346,9 +2546,12 @@ public:
   }
 
   int get_dest_proc_fast(long vertex) {
+    const long dest_table_index = vertex >> dest_table_shift;
+    const int uniform = dest_uniform[dest_table_index];
+    if (__builtin_expect(uniform >= 0, 1))
+      return uniform;
     // look up x/M and 1+x/M
     int xm_pe, xm_plus_one_pe;
-    long dest_table_index = vertex >> dest_table_shift;
     // if this points to the end of dest_table
     if (dest_table_index >= dest_table_last) {
       xm_pe = dest_table[dest_table_last];
@@ -2395,6 +2598,11 @@ public:
                               get_dest_proc_local_caller, nullptr, this);
     if (combine_mode == COMBINE_HOLD)
       tram->enableCombining(&hold_ops, this);
+    // --bufsize-policy acceptance starts from the graph's degree (Main's
+    // start_source() records the same value). Nothing is buffered yet, and
+    // the readonlies it reads were fixed before any chare ran. Not in
+    // initialize_data(): under mode 1 that can run before this does.
+    tram->setBufferSize(initial_buffer_size());
     shared_local = shared.ckLocalBranch();
   }
 
@@ -2435,9 +2643,13 @@ public:
     // floor division here overruns the allocation by one int whenever V is not
     // a multiple of M. That corrupted the heap and showed up much later as an
     // intermittent SIGBUS inside an unrelated operator new.
-    if (send_filter_bits > 0) {
-      sent_cache.assign(1UL << send_filter_bits, SentEntry());
-      sent_cache_shift = 64 - send_filter_bits;
+    if (send_filter_bits > 0 || send_filter_auto) {
+      const int bits =
+          send_filter_bits > 0 ? send_filter_bits : SEND_FILTER_AUTO_BITS;
+      sent_cache.assign(1UL << bits, SentEntry());
+      sent_cache_shift = 64 - bits;
+      send_filter_on = send_filter_bits > 0 ||
+                       initial_buffer_size() >= SEND_FILTER_MIN_BUFFER;
     }
     CkAssert(M > 0 && (M & (M - 1)) == 0);
     dest_table_shift = __builtin_ctz(M);
@@ -2447,6 +2659,12 @@ public:
     for (int i = 0, j = 0; i < V; j++, i = j * M) {
       dest_table[j] = get_dest_proc(i);
     }
+    const long dest_table_size = (V + M - 1) / M;
+    dest_uniform = new int[dest_table_size];
+    for (long j = 0; j < dest_table_size; j++)
+      dest_uniform[j] = (j < dest_table_last && dest_table[j] == dest_table[j + 1])
+                            ? dest_table[j]
+                            : -1;
     distances = new cost[num_vertices];
     for (long i = 0; i < num_vertices; i++)
       distances[i] = lmax;
@@ -2463,7 +2681,7 @@ public:
     pq_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
       pq_hold[i].reserve(4096);
-    info_array = new long[histo_reduction_width + 9];
+    info_array = new long[histo_reduction_width + 10];
     set_bucket_width(log(V));
     CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
   }
@@ -3043,7 +3261,7 @@ public:
       Update new_update;
       new_update.dest_vertex = adjacency[i].end;
       new_update.distance = source_distance + adjacency[i].distance;
-      if (sent_cache_shift < 64) {
+      if (send_filter_on) {
         // The table is read at random; the targets a few edges on are
         // already known, so start those reads now.
         if (i + 8 < degree)
@@ -3280,7 +3498,8 @@ public:
     // round-over-round difference is the only thing that says whether the
     // range is still too small.
     info_array[histo_reduction_width + 8] = clamped_created_locally;
-    contribute((histo_reduction_width + 9) * sizeof(long), info_array,
+    info_array[histo_reduction_width + 9] = send_filtered;
+    contribute((histo_reduction_width + 10) * sizeof(long), info_array,
                CkReduction::sum_long, cb);
   }
 
@@ -3409,7 +3628,15 @@ public:
    */
   void current_thresholds(int _heap_threshold, int _tram_threshold,
                           int _bfs_threshold, int behind_first_nonzero,
-                          int phase, int starved, int coarsen, int extend) {
+                          int phase, int starved, int coarsen, int extend,
+                          int buffer_size_now) {
+    // Before the threshold change below, which releases held items against a
+    // level that is a multiple of the buffer size.
+    if (buffer_size_now > 0) {
+      tram->setBufferSize(buffer_size_now);
+      if (send_filter_auto && send_filter_bits == 0)
+        send_filter_on = buffer_size_now >= SEND_FILTER_MIN_BUFFER;
+    }
     if (coarsen > 1)
       coarsen_buckets(coarsen, extend != 0);
     // This PE now has whatever clamp the broadcast carried, so anything held
