@@ -460,7 +460,7 @@ optimized during the primary campaign.
    survives, narrow the claim before extracting a controller around BFS.
 
 Step 7.5's comparison deliverable is complete. Its general correctness gate
-and **Gate A remain open**. Steps 8–12 stay conditional; neither a framework
+and **Gate A remain open**. Steps 9–13 (then 8–12) stay conditional; neither a framework
 refactor nor more combining experiments addresses the findings above.
 
 ## Reproduction and storage

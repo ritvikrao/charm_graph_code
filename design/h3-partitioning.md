@@ -97,7 +97,7 @@ generates between controller rounds, and it is the subject of
 - **The overdecomposition half of the plan's H3 is untestable today and should
   be marked so.** It needs more chares than PEs, and `thisIndex` and `CkMyPe()`
   are used interchangeably throughout `sssp_smp.cpp` — correct only under
-  one-chare-per-PE round-robin placement. That is step 9's `Locator` work. What
+  one-chare-per-PE round-robin placement. That is step 10's `Locator` work. What
   can be said now is that the *motivation* offered for it — scattering hubs to
   fix imbalance — is not supported, so if it pays it will be for the other
   reason the plan gives: more schedulable work overlapping the `[whenidle]`

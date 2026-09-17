@@ -1,7 +1,7 @@
 # ACIC → SC27: research and engineering plan
 
 *Drafted 2026-09-10; revised after step 7 (09-13), compacted with the Gate A
-checkpoints (09-15), re-evaluated after 7.6j and updated with 7.6k–n (09-16). `htram_group.*`
+checkpoints (09-15), re-evaluated after 7.6j, updated with 7.6k–o and step 8 added (09-16). `htram_group.*`
 references are in github.com/UIUC-PPL/htram.*
 
 ## Status
@@ -61,6 +61,21 @@ faster on every graph. The rmat25 gap narrows from one node to two (4.3× to
 widens (2.4× to 3.5×). Options: stop as the plan says; spend one more bounded
 step on orkut's buffer size and a profile of the shared-memory build; or run
 a small 7.6o on rmat25 alone to test whether the narrowing continues.
+
+**7.6o (09-16): scaling runs the wrong way; step 8 added instead of
+stopping.** At 8 nodes ACIC is *slower* than at 2 (rmat25 0.64 → 0.80 s,
+orkut 0.23 → 0.32 s) while RIKEN gets 1.6–3× faster, so RIKEN's lead grows
+to 11.7× and 7.5× ([7.6o](step76-external.md#76o-scaling-comparison)). All
+three systems spend about half their time communicating at 8 nodes, so the
+scaling premise holds; what fails is ACIC's work per edge, which grows 3.8×
+from 2 to 8 nodes (1.2 → 4.6 delivered updates per edge on rmat25), with 34×
+the idle flushes and less than half the controller rounds. RIKEN's work was
+not counted, but its design prunes it (light/heavy phases, shared settled
+bitmaps). The 16-node run was not
+submitted. [Step 8](step8-scaling.md) attributes that growth and targets it
+(buffering by fan-out, a controller whose cost does not grow with PEs,
+light/heavy pruning, runtime overhead) before 7.6o is re-taken as 8g, with
+its own stop rule.
 
 Checkpoint 1's "co-design: no" still stands for admission and delivery
 thresholds. A controller-chosen buffer size (7.6k) was a new, direct test of
@@ -168,12 +183,13 @@ identical results on one and two nodes; PageRank uses a tolerance gate.
 | 7.6l | Charm++ `--enable-shmem` build of the Reconverse tree | [KLM](step76-klm.md#76l-shared-memory-between-processes): rmat25 1.34× with a much tighter spread, road-usa 1.06×, mesh24 1.00×; pool size irrelevant. The build now used for ACIC runs | complete |
 | 7.6m | Next CPU hot spots, then the send spin | [KLM](step76-klm.md#76m-cpu): a one-load destination lookup (1.27× on rmat25) kept; write-prefetch, LTO, `-march=znver3` and LCI backlog sends rejected. rmat25 at 110 ns per edge with the best fixed setting, 116 with the defaults | complete |
 | **7.6n** | Re-take 7.6f1 at 1–2 nodes with the 7.6k–m build | [External](step76-external.md#76n-re-take-after-76k-m): ACIC 1.3–2.8× faster than in 7.6f1 everywhere and ahead of Gluon-Async everywhere; RIKEN still 2.8× (rmat25) and 3.5× (orkut) ahead at 2 nodes; GAPBS (1 node) still ahead on every graph | **complete: scaling entry condition missed** |
-| 7.6o | Bounded scaling comparison, ACIC vs RIKEN and Gluon-Async, 2/8/16 nodes, rmat26/27 and mesh26 plus road-usa | Communication share per system at each node count; **Gate A** evidence | not started: its entry condition was missed; decision pending |
-| 8 | Generic payload interface, only when a second algorithm needs it | SSSP identical on 1–2 nodes | conditional |
-| 9 | PE/chare identity for new mappings; overdecomposition only if profiling justifies it | Correct on all supported mappings | conditional |
-| 10 | Extract `AcicController` around observed shared signals | SSSP retained; second kernel uses it | with step 11 |
-| 11 | BFS transfer (CC only for a specific hypothesis) | **Gate B:** frozen constants; compare with direction-optimizing BFS | after Gate A |
-| 12 | PageRank residual engine, only for a claim beyond traversal | Matched damping, dangling nodes, tolerance | conditional |
+| **7.6o** | Bounded scaling comparison, scale-free graphs first (rmat25–27, orkut), ACIC vs RIKEN and Gluon-Async, with per-system communication shares | [External](step76-external.md#76o-scaling-comparison): at 8 nodes ACIC slower than at 2, RIKEN 1.6–3× faster; RIKEN lead 2.8→11.7× (rmat25), 3.5→7.5× (orkut), 2.9→5.6× (rmat26), 2.5→4.1× (rmat27); ACIC speeds up only on rmat26/27 (1.07×, 1.44×). ACIC work per edge 3.8× the 2-node value. About half of every system's time is communication | **2 and 8 nodes: negative**; 16 nodes and high-diameter graphs not run; completed by 8g |
+| **8** | Make ACIC scale past two nodes: attribute the work growth (8a), buffering by fan-out (8b), controller cost independent of PEs (8c), light/heavy pruning (8d), time outside the solver's work (8e), per-edge CPU if still needed (8f), re-take at 2/8/16 nodes (8g) | [Step 8](step8-scaling.md). Entry to 8g: ACIC faster at 8 nodes than at 2, RIKEN lead ≤ 3× at 8 nodes on rmat25 and orkut. Stop rule: RIKEN > 5× at 8 nodes after 8b–8d | **next** |
+| 9 | Generic payload interface, only when a second algorithm needs it | SSSP identical on 1–2 nodes | conditional |
+| 10 | PE/chare identity for new mappings; overdecomposition only if profiling justifies it | Correct on all supported mappings | conditional |
+| 11 | Extract `AcicController` around observed shared signals | SSSP retained; second kernel uses it | with step 12 |
+| 12 | BFS transfer (CC only for a specific hypothesis) | **Gate B:** frozen constants; compare with direction-optimizing BFS | after Gate A |
+| 13 | PageRank residual engine, only for a claim beyond traversal | Matched damping, dangling nodes, tolerance | conditional |
 
 ### 7.6f2 so far
 
@@ -256,6 +272,12 @@ The 7.6o comparison then measures the same shares for RIKEN at 2/8/16 nodes.
 ACIC can win only where RIKEN's communication cost outgrows its per-edge
 advantage.
 
+7.6o ran anyway, on the user's decision, and answered the share question:
+RIKEN spends 46–62% of its 8-node solve in MPI, but its work per edge does
+not grow with node count and ACIC's does. For 8g, [step 8's entry
+condition](step8-scaling.md#entry-condition-for-8g-and-gate-a) replaces this
+one.
+
 ## Gate A checkpoints
 
 Decide at fixed points, before more optimization. Cells count only if clean (no
@@ -279,7 +301,8 @@ tuning cycle: narrow the claim, or run 7.6f1 before anything else.
 
 **Checkpoint 2, Gate A (by Oct 18).** 7.6f1 read negative at 1–2 nodes; after
 7.6j, Gate A requires 7.6n and, if the [entry
-condition](#scaling-entry-condition) holds, 7.6o. Proceed if ACIC is faster
+condition](#scaling-entry-condition) holds, 7.6o. 7.6o read negative at
+8 nodes; Gate A is now read on step 8's re-take (8g). Proceed if ACIC is faster
 than RIKEN or Gluon-Async at 8–16 nodes on at least one graph class at a fair
 layout, and its advantage grows with node count. Stop if 7.6n misses the entry
 condition after 7.6k–m, or if 7.6o shows RIKEN's lead holding at 16 nodes on
@@ -425,7 +448,9 @@ Provisional, from 2026-09-13, assuming early-April submission.
 | Sep 16, done | 7.6j: per-edge cost | Communication volume was the bound after all; rmat25 within 2.5× of RIKEN per edge, below GAPBS; buffer size must follow graph class; stop decision deferred |
 | Sep 16, done | 7.6k controller-chosen buffer size; 7.6l `--enable-shmem`; 7.6m hot spots (two-node A/Bs only) | rmat25 110–116 ns per edge; buffer size follows the graph regime, not the best size within it (orkut) |
 | Sep 16, done | 7.6n: re-take 7.6f1 at 1–2 nodes | **Scaling entry condition missed** (RIKEN 2.8×/3.5× ahead on rmat25/orkut); stop decision open |
-| by Oct 18 | 7.6o only if the decision is to continue | **Gate A:** proceed, narrow, or stop |
+| Sep 16, done | 7.6o at 2 and 8 nodes, scale-free graphs, with communication shares | RIKEN's lead grows with nodes (rmat25 2.8× → 11.7×); ACIC's work per edge grows 3.8×; step 8 added |
+| Sep 17–Oct 11 | Step 8a–8f at 8 nodes (A/Bs only) | Attribution first; stop rule if RIKEN > 5× at 8 nodes after 8b–8d |
+| by Oct 18 | 8g: re-take at 2/8/16 nodes, scale-free and high-diameter | **Gate A:** proceed, narrow (high-diameter only), or stop |
 | Oct 19–Nov 15 | Controller extraction and BFS transfer | **Gate B:** transfer, or SSSP-only scope |
 | Nov 16–Dec 13 | PageRank only if the claim needs it; else strengthen SSSP/BFS | Freeze algorithm scope |
 | Dec–Feb | Scaling, real graphs, baselines, ablations, one portability slice | **Gate C, Feb 15:** evidence sufficient for the chosen claim |

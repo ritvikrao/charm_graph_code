@@ -464,3 +464,37 @@ report_arms.py CAMPAIGN/logs CAMPAIGN/report-external-76n \
     --pattern 'external-*-2077061[25].jsonl' --phase external \
     --baseline adaptive --control control
 ```
+
+## Scaling and communication shares (7.6o, step 8)
+
+rmat27 (134M vertices, 4.2B edges, about 86 GB to prepare) is built on
+request, with its Galois copy:
+
+```sh
+OMP_NUM_THREADS=64 sbatch scripts/anvil/prepare_large.sbatch CAMPAIGN rmat27
+```
+
+`THEN_COMM_SHARE=N` makes `compare.sbatch` follow an external run with
+`run.py --mode comm_share` in the same allocation. That mode reruns ACIC's
+and RIKEN's chosen configurations on N test sources, plain and timed,
+interleaved. The timed builds are:
+
+- `bin/acic_comm`, built with `-DACIC_COMM_SHARE` in `CHARMC_SMP`. It prints
+  `COMM_SHARE ... compute_share= send_share= other_share=`.
+- `bin/riken_sssp_mpit`, the RIKEN driver with `MPI_Pcontrol` marks around
+  the solve, run under `LD_PRELOAD=bin/mpi_share.so`
+  (`benchmarks/mpi_share.c`). It prints `MPI_SHARE ... share=`.
+
+Gluon's `Sync_SSSP_0` and `Timer_0` statistics are parsed from every run.
+The 7.6o commands:
+
+```sh
+THEN_COMM_SHARE=2 sbatch -N 2 --time=01:45:00 scripts/anvil/compare.sbatch CAMPAIGN \
+    --mode external --workers 120 --timeout 300 --sources 4 --reps 1 --graphs rmat26,rmat27
+THEN_COMM_SHARE=2 sbatch -N 8 --time=01:45:00 scripts/anvil/compare.sbatch CAMPAIGN \
+    --mode external --workers 120 --timeout 300 --sources 4 --reps 1 --graphs orkut,rmat25,rmat26,rmat27
+report_scaling.py CAMPAIGN/logs 20770612 20770615 20776355 20776356 20776357
+```
+
+`--mode comm_share --selection-job JOB` reuses another allocation's choices
+at the same node count; that is how the 1-node debug smoke test ran.

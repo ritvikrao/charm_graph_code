@@ -14,6 +14,9 @@
 #   sbatch -N 1 --time=01:30:00 scripts/anvil/compare.sbatch \
 #       /anvil/scratch/$USER/acic/campaign --mode external --workers 120 --timeout 180 \
 #       --sources 4 --reps 1 --graphs mesh24,rmat25,road-usa,orkut
+#
+# THEN_COMM_SHARE=N (7.6o) follows an external run with `--mode comm_share`
+# in the same allocation, on N test sources per graph.
 #SBATCH --account=asc050025
 #SBATCH --partition=wholenode
 #SBATCH --nodes=1
@@ -31,7 +34,10 @@ export SLURM_MPI_TYPE=pmi2
 export OMPI_MCA_pml=ucx
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 printf 'job=%s hosts=%s\n' "$SLURM_JOB_ID" "$SLURM_JOB_NODELIST"
-sha256sum "$1/bin/acic" $(ls "$1"/bin/{riken_sssp,gap_sssp,gluon_sssp} 2>/dev/null)
+sha256sum "$1/bin/acic" $(ls "$1"/bin/{riken_sssp,gap_sssp,gluon_sssp,acic_comm,riken_sssp_mpit,mpi_share.so} 2>/dev/null)
 cat "$1/bin/policy-manifest.txt" "$1/bin/baselines-manifest.txt" 2>/dev/null || true
 lscpu | grep -E '^CPU\(s\)|NUMA node|Model name'
 python3 -u "$APP/benchmarks/run.py" "$@"
+if [ -n "${THEN_COMM_SHARE:-}" ]; then
+  python3 -u "$APP/benchmarks/run.py" "$@" --mode comm_share --sources "$THEN_COMM_SHARE"
+fi

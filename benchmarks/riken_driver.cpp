@@ -58,7 +58,10 @@ int main(int argc,char **argv) {
         presolver.presolve_sssp(presolve_iterations,pred,dist);preprocessing=MPI_Wtime()-preprocessing;
       }
       MPI_Barrier(mpi.comm_2d);double start=MPI_Wtime();
+      // Marks the solve for a preloaded mpi_share.so (7.6o); a no-op otherwise.
+      MPI_Pcontrol(1);
       solver.run_sssp(source,pred,dist);
+      MPI_Pcontrol(0);
       double seconds=MPI_Wtime()-start,max_seconds=0;
       MPI_Reduce(&seconds,&max_seconds,1,MPI_DOUBLE,MPI_MAX,0,mpi.comm_2d);
       bench::Digest local;

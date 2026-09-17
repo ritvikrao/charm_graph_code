@@ -107,7 +107,8 @@ class Campaign:
         self.count = 0
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
-            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'riken_sssp', 'gap_sssp', 'gluon_sssp']:
+            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'riken_sssp',
+                             'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -120,7 +121,7 @@ class Campaign:
         # its own per-node total; the record keeps the allocation's budget.
         workers = config.get('workers', self.args.workers)
         per_graph_rule = None
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'riken': 'riken_sssp', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -177,7 +178,10 @@ class Campaign:
                       '--ntasks-per-node', str(ranks), '-c', str(config.get('cpus', threads)),
                       '--cpu-bind=cores']
             args = [str(binary), str(path), str(source), str(config['delta'])]
-            if engine == 'riken':
+            if engine == 'riken-mpit':
+                # Preloaded into the solver only: srun itself is not an MPI program.
+                args = ['env', f'LD_PRELOAD={self.root/"bin"/"mpi_share.so"}', *args]
+            if engine.startswith('riken'):
                 args += [str(config['denominator']), str(config.get('presolve', 0))]
             elif self.nodes != 1:
                 raise ValueError('GAPBS is a single-node baseline')
@@ -264,6 +268,14 @@ class Campaign:
             'tram_messages': r'^TRAM messages: (\d+)',
             'construction_seconds': r'construction_seconds=([\d.eE+-]+)',
             'presolve_seconds': r'presolve_seconds=([\d.eE+-]+)',
+            # 7.6o communication shares: acic-comm, riken-mpit, and every
+            # Gluon run (its own sync timer, max over hosts, in ms).
+            'comm_compute_share': r'^COMM_SHARE .*\bcompute_share=([\d.eE+-]+)',
+            'comm_send_share': r'^COMM_SHARE .*\bsend_share=([\d.eE+-]+)',
+            'comm_other_share': r'^COMM_SHARE .*\bother_share=([\d.eE+-]+)',
+            'mpi_share': r'^MPI_SHARE .*\bshare=([\d.eE+-]+)',
+            'gluon_sync_ms': r'^STAT, 0, Gluon, Sync_SSSP_0, HMAX, (\d+)',
+            'gluon_timer_ms': r'^STAT, 0, SSSP, Timer_0, HMAX, (\d+)',
         }.items():
             value = re.search(regex, output, re.M)
             if value:
@@ -1129,6 +1141,37 @@ class Campaign:
                     for c in order:
                         self.run(graph, int(row['source']), c, row, 'external', rep)
 
+    def comm_share(self):
+        """7.6o: where each system's solve time goes, at this node count.
+
+        Runs after `--mode external` in the same allocation and reads its
+        choices (`external-...-<job>-<graph>-selected.json`). ACIC's and
+        RIKEN's chosen configurations run on the first test sources twice
+        each, once plain and once on the timing build (`acic_comm`,
+        `riken_sssp_mpit` + `mpi_share.so`), interleaved, so what the timers
+        cost is measured beside what they report. Gluon needs no extra run:
+        its own sync timer is parsed from every external run.
+        """
+        rng = random.Random(20260917 + int(self.job))
+        selected_tag = f'external-{self.nodes}n-{self.args.workers}w-{self.args.selection_job or self.job}'
+        timed = {'adaptive': 'acic-comm', 'riken': 'riken-mpit'}
+        for graph in self.args.graphs.split(','):
+            path = self.root/'logs'/f'{selected_tag}-{graph}-selected.json'
+            if not path.exists():
+                print(f'comm_share: no external selection for {graph}; skipped', flush=True)
+                continue
+            chosen = {c['name']: c for c in json.loads(path.read_text())['arms']}
+            arms = []
+            for arm, engine in timed.items():
+                if arm in chosen:
+                    base = dict(chosen[arm])
+                    arms += [dict(base, name=arm), dict(base, name=arm+'-timed', engine=engine)]
+            test = [x for x in self.references(graph) if x['role'] == 'test'][:self.args.sources]
+            order = [(row, c) for row in test for c in arms]
+            rng.shuffle(order)
+            for row, c in order:
+                self.run(graph, int(row['source']), c, row, 'comm-share')
+
     def external_smoke(self):
         """Every system at every candidate layout once, mid parameters, first
         tuning source. Raises on the first invalid run: this is the gate that
@@ -1238,7 +1281,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width', 'policy', 'external', 'external_smoke'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width', 'policy', 'external', 'external_smoke', 'comm_share'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')

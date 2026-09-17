@@ -10,7 +10,11 @@
 # reads. road-usa runs its reference with any-range: its distances may exceed
 # the binary32 range that guard exists for, and this set is ACIC-only.
 #
-#   sbatch scripts/anvil/prepare_large.sbatch /anvil/scratch/$USER/acic/campaign
+#   sbatch scripts/anvil/prepare_large.sbatch /anvil/scratch/$USER/acic/campaign [names]
+#
+# names (comma-separated) defaults to the 7.6f2 set. rmat27 (7.6o) is not in
+# it: 4.2B edges, about twice rmat26's 43 GB peak, and it also writes the
+# Galois .gr copy for the Gluon arm here rather than in prepare_gluon.sbatch.
 #SBATCH --account=asc050025
 #SBATCH --partition=wholenode
 #SBATCH --nodes=1
@@ -21,13 +25,14 @@
 #SBATCH --job-name=acic-large-inputs
 set -uo pipefail
 ulimit -c 0
-module load gcc/11.2.0 >/dev/null 2>&1
+module load gcc/11.2.0 python/3.9.5 >/dev/null 2>&1
 CAMPAIGN=${1:?campaign directory}
 BIN=$CAMPAIGN/bin
 DATA=$CAMPAIGN/graphs
 DEPS=${ACIC_BENCH_DEPS:-$(dirname "$CAMPAIGN")/deps}
+APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 mkdir -p "$DATA"
-export OMP_NUM_THREADS=16
+export OMP_NUM_THREADS=${OMP_NUM_THREADS:-16}
 
 generate() {
   local name=$1 mode=$2 vertices=$3 seed=$4
@@ -48,6 +53,7 @@ prepare_one() {
     mesh26)    generate mesh26 2 67108864 1 ;;
     rmat25)    generate rmat25 3 33554432 1 ;;
     rmat26)    generate rmat26 3 67108864 1 ;;
+    rmat27)    generate rmat27 3 134217728 1 ;;
     uniform25) generate uniform25 1 33554432 1 ;;
     road-usa)
       [ -s "$DATA/road-usa.meta" ] || gzip -dc "$DEPS/USA-road-d.USA.gr.gz" |
@@ -60,15 +66,20 @@ prepare_one() {
   esac || { echo "PREPARE FAILED $name"; return 1; }
   if [ "$name" = road-usa ]; then reference "$name" any-range; else reference "$name"; fi ||
     { echo "REFERENCE FAILED $name"; return 1; }
+  if [ "$name" = rmat27 ] && [ ! -e "$DATA/$name.gr.done" ]; then
+    python3 "$APP/benchmarks/to_galois.py" "$DATA/$name.wsg" && touch "$DATA/$name.gr.done" ||
+      { echo "CONVERSION FAILED $name"; return 1; }
+  fi
   echo "PREPARED $name $(date -Is)"
 }
 export -f generate reference prepare_one
-export BIN DATA DEPS
-names="mesh24 mesh26 rmat25 rmat26 uniform25 road-usa orkut"
+export BIN DATA DEPS APP
+names=$(echo "${2:-mesh24,mesh26,rmat25,rmat26,uniform25,road-usa,orkut}" | tr , " ")
 # All seven at once: the largest (rmat26) peaks near 50 GB, well inside 257 GB.
 # Serial rmat22 took 25 s to generate and 21 s for references (login node);
 # rmat26 is 16x that, ~20 min, so 75 min covers contention. Reruns resume.
 printf '%s\n' $names | xargs -P 7 -I{} bash -c 'prepare_one {}'
-( cd "$DATA" && for n in $names; do [ -s "$n.wsg" ] && sha256sum "$n.wsg"; done ) > "$DATA/sha256-large.txt"
+( cd "$DATA" && for n in $names; do [ -s "$n.wsg" ] && sha256sum "$n.wsg"; done ) >> "$DATA/sha256-large.txt"
+sort -u -k2,2 -o "$DATA/sha256-large.txt" "$DATA/sha256-large.txt"
 for n in $names; do printf '%-10s %s' "$n" "$(cat "$DATA/$n.meta" 2>/dev/null)"; grep -h 'Maximum resident' "$DATA/$n.prepare.log" 2>/dev/null; done
 printf 'LARGE INPUTS COMPLETE\n'

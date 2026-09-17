@@ -304,5 +304,5 @@ redundancy is essentially zero, and even at 0.5 it is 1.32x, not 2-3x.
 
 Carrying the destination alongside the held item would cost 50% more memory per
 held item (`itemT` is 24 bytes against `datatype`'s 16) to save 0.32 lookups per
-item. That is a bad trade on its own, and step 9's `dest_slot` item field is the
+item. That is a bad trade on its own, and step 10's `dest_slot` item field is the
 right fix for it anyway. Deliberately left alone.

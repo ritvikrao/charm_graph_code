@@ -32,7 +32,7 @@ of what combining is for:
 
 **`CombiningHold`** (`htram/htram_combine.h`) is written against a byte-oriented
 `HoldOps` (`item_size`, `key`, `combine`, `on_absorb`), as the plan's strategy
-section requires, so step 8's type erasure lifts it unchanged. One hold per
+section requires, so step 9's type erasure lifts it unchanged. One hold per
 destination: an open-addressed power-of-two table with an 8-bit tag per slot,
 a stable entry pool, and per-bucket reference lists with **lazy decrease-key**.
 An improving fold moves the entry and pushes a new stamped reference; the old

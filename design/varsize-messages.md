@@ -33,7 +33,7 @@ fixed `itemT buffer[BUFSIZE]` declared in the C++ class. Same for `HTramLocalMes
 `HTramNodeMessage`.
 
 All three are now genuine varsize messages with `char buffer[]` payloads (byte-oriented,
-because step 8's `HTramCore` is) viewed through typed `items()` accessors. Allocation goes
+because step 9's `HTramCore` is) viewed through typed `items()` accessors. Allocation goes
 through `newHTramMessage(capacity)` / `newHTramNodeMessage(capacity, noffsets)`, and every
 send goes through `HTram::trim()`, which sets the envelope size and accounts for the bytes.
 

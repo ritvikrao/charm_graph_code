@@ -5,6 +5,39 @@
 #ifdef PAPI
 #include "acic_prof.h"
 #endif
+#ifdef ACIC_COMM_SHARE
+#include <x86intrin.h>
+// Step 7.6o: how a PE's solve splits into the solver's own work and
+// everything else (sends, network progress, the scheduler, waiting). Work is
+// the time inside process_heap() and the TRAM delivery callback, less the
+// htram sends made from inside them; one rdtsc pair per call, so cheap next
+// to the per-item cost. Build with -DACIC_COMM_SHARE in CHARMC_SMP, so htram
+// counts its sends too.
+namespace comm_share {
+thread_local unsigned long work_tsc = 0, work_send_tsc = 0;
+thread_local int depth = 0;
+struct Work {
+  unsigned long t0, s0;
+  Work() {
+    if (depth++ == 0) {
+      t0 = __rdtsc();
+      s0 = htram_send_tsc;
+    }
+  }
+  ~Work() {
+    if (--depth == 0) {
+      work_tsc += __rdtsc() - t0;
+      work_send_tsc += htram_send_tsc - s0;
+    }
+  }
+};
+thread_local unsigned long window_tsc0 = 0;
+thread_local double window_s0 = 0;
+} // namespace comm_share
+#define COMM_SHARE_WORK comm_share::Work comm_share_work_;
+#else
+#define COMM_SHARE_WORK
+#endif
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -448,10 +481,16 @@ enum {
   // PEs. Coarsening moves items across the threshold, so this is the check
   // that it moved the counters with them.
   STAT_ADMITTED_DRIFT = STAT_HISTO_LIVE + HISTO_BUCKET_COUNT,
+  // ACIC_COMM_SHARE builds only: TSC ticks summed over PEs.
+  STAT_WORK_TSC,      // inside process_heap() or the delivery callback
+  STAT_WORK_SEND_TSC, // of which htram sends
+  STAT_SEND_TSC,      // every htram send in the window
+  STAT_WINDOW_TSC,    // each PE's window, start_papi() to print_distances()
+  STAT_WINDOW_US,     // the same windows in microseconds, to convert ticks
   STAT_END
 };
 
-#ifdef ACIC_DIAG
+#if defined(ACIC_DIAG) || defined(ACIC_COMM_SHARE)
 const int stat_count = STAT_END;
 #elif defined(PAPI)
 const int stat_count = STAT_INSTRUCTIONS + 1;
@@ -2195,6 +2234,24 @@ public:
     ckout << "Send-filtered updates: " << msg_stats[STAT_SEND_FILTERED]
           << ", normalized to |E|: "
           << msg_stats[STAT_SEND_FILTERED] * 1.0 / msg_stats[STAT_EDGES] << endl;
+#ifdef ACIC_COMM_SHARE
+    {
+      const double s_per_tick =
+          1e-6 * msg_stats[STAT_WINDOW_US] / std::max(1L, msg_stats[STAT_WINDOW_TSC]);
+      const double pe_seconds = compute_time * CkNumPes();
+      const double work = msg_stats[STAT_WORK_TSC] * s_per_tick;
+      const double work_send = msg_stats[STAT_WORK_SEND_TSC] * s_per_tick;
+      const double send = msg_stats[STAT_SEND_TSC] * s_per_tick;
+      ckout << "COMM_SHARE pes=" << CkNumPes() << " solve_seconds=" << compute_time
+            << " pe_seconds=" << pe_seconds << " work_seconds=" << work
+            << " work_send_seconds=" << work_send << " send_seconds=" << send
+            << " window_pe_seconds=" << 1e-6 * msg_stats[STAT_WINDOW_US]
+            << " compute_share=" << (work - work_send) / pe_seconds
+            << " send_share=" << send / pe_seconds
+            << " other_share=" << 1.0 - (work - work_send + send) / pe_seconds
+            << endl;
+    }
+#endif
     ckout << "Absorbed updates: " << msg_stats[STAT_ABSORBED]
           << ", normalized to |E|: "
           << (double)msg_stats[STAT_ABSORBED] / msg_stats[STAT_EDGES] << endl;
@@ -2887,6 +2944,12 @@ public:
 #ifdef PAPI
     acic_prof::start(CkMyPe(), CkMyPe() == CkNodeFirst(CkMyNode()));
 #endif
+#ifdef ACIC_COMM_SHARE
+    comm_share::work_tsc = comm_share::work_send_tsc = 0;
+    htram_send_tsc = 0;
+    comm_share::window_s0 = CkWallTimer();
+    comm_share::window_tsc0 = __rdtsc();
+#endif
     traceBegin();
   }
 
@@ -2916,6 +2979,7 @@ public:
                                     int count) {
     // ckout << "PE " << CkMyPe() << " receiving " << count << " updates" <<
     // endl;
+    COMM_SHARE_WORK
     SsspChares *self = (SsspChares *)p;
 #ifdef ACIC_DIAG
     self->count_batch_duplicates(new_vertex_and_distances, count);
@@ -3400,6 +3464,7 @@ public:
    * returns true (runs when pe is idle)
    */
   void process_heap() {
+    COMM_SHARE_WORK
     heap_yielded = false;
 #ifdef PQ_HOLD_ONLY
     for (int i = 0; i <= heap_threshold; i++) // iterate to heap threshold
@@ -3728,6 +3793,14 @@ public:
     const long long instructions = acic_prof::stop(CkMyPe());
 #endif
     std::vector<long> msg_stats(stat_count, 0);
+#ifdef ACIC_COMM_SHARE
+    msg_stats[STAT_WINDOW_TSC] = (long)(__rdtsc() - comm_share::window_tsc0);
+    msg_stats[STAT_WINDOW_US] =
+        (long)(1e6 * (CkWallTimer() - comm_share::window_s0));
+    msg_stats[STAT_WORK_TSC] = (long)comm_share::work_tsc;
+    msg_stats[STAT_WORK_SEND_TSC] = (long)comm_share::work_send_tsc;
+    msg_stats[STAT_SEND_TSC] = (long)htram_send_tsc;
+#endif
     msg_stats[STAT_WASTED] = wasted_updates;
     msg_stats[STAT_REJECTED] = rejected_updates;
     for (int i = 0; i < HISTO_BUCKET_COUNT + 1; i++) {

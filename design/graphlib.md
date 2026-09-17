@@ -268,7 +268,7 @@ it is a change to the convergence logic and belongs with the tail work in step 7
   hypothesis H1 in step 6 — the bucket width having no resolution on a small-diameter
   graph — and changing it before it is measured would destroy the measurement.
 - **The `thisIndex` / `CkMyPe()` conflation in `initialize_data`** is untouched; it is
-  step 9's.
+  step 10's.
 - **Reading the offsets array for the partition happens on PE 0**, so it costs
   8·(V+1) bytes there — 1.6 GB at 200M vertices. Fine at the sizes this step targets, and
   the fix (a distributed scan) is small when it is needed.

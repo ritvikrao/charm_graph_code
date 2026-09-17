@@ -13,7 +13,7 @@ text below preserves the pre-experiment review; use the updated
 
 ## Recommendation
 
-**Insert a short SSSP comparison and adaptivity study before steps 8–12.** Start
+**Insert a short SSSP comparison and adaptivity study before steps 9–13 (numbered 8–12 when written).** Start
 external comparisons now, use them to choose at most one or two further
 optimizations, then generalize the mechanism that survives. A large framework
 refactor does not resolve the current research uncertainty.

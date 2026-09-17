@@ -176,3 +176,71 @@ before any run above two nodes:
 
 The condition is missed. The plan says to stop if it is still missed after
 7.6k-m; that decision is open ([plan](sc27-plan.md#status)).
+
+## 7.6o: scaling comparison
+
+*Run although the entry condition above was missed, to test whether the
+rmat25 gap keeps narrowing with node count. Scope: the scale-free graphs.
+rmat27 (134M vertices, 4.2B edges) was prepared for it
+(`prepare_large.sbatch ... rmat27`). Same search as 7.6n, timeout 300 s,
+followed in the same allocation by `run.py --mode comm_share`.*
+
+Jobs: 20776357 (8 nodes: orkut, rmat25, rmat26, rmat27, 28 min) and 20776356
+(2 nodes: rmat26, rmat27, 33 min). The 2-node rows for orkut and rmat25 are
+7.6n's. The 16-node job was not submitted.
+
+The two jobs had 277 valid runs and 11 failures. Every failure was
+riken-r16-d1024, the setting that also crashed in 7.6f1 and 7.6n; the search
+chose other settings. Median solve (`report_scaling.py`), with "lead"
+meaning the paired median of ACIC time over the baseline's:
+
+| graph | nodes | ACIC | RIKEN | Gluon-Async | RIKEN lead | Gluon-Async vs ACIC |
+|---|---:|---:|---:|---:|---:|---:|
+| orkut | 2 | 0.230 s | 0.066 s | 1.45 s | 3.5x | ACIC 6.4x faster |
+| orkut | 8 | 0.315 s | 0.041 s | 1.78 s | 7.5x | ACIC 6.0x faster |
+| rmat25 | 2 | 0.637 s | 0.206 s | 1.96 s | 2.8x | ACIC 3.0x faster |
+| rmat25 | 8 | 0.802 s | 0.069 s | 1.77 s | 11.7x | ACIC 2.2x faster |
+| rmat26 | 2 | 1.13 s | 0.389 s | 2.79 s | 2.9x | ACIC 2.5x faster |
+| rmat26 | 8 | 1.06 s | 0.179 s | 2.25 s | 5.6x | ACIC 2.2x faster |
+| rmat27 | 2 | 2.02 s | 0.805 s | 5.79 s | 2.5x | ACIC 2.9x faster |
+| rmat27 | 8 | 1.40 s | 0.343 s | 2.58 s | 4.1x | ACIC 1.8x faster |
+
+Where the 8-node time goes (two sources per graph; each timed build beside
+its plain twin cost 0.84-1.08x, which is within the floor):
+
+| graph | ACIC own work | ACIC htram sends | ACIC everything else | RIKEN inside MPI | Gluon sync / solve |
+|---|---:|---:|---:|---:|---:|
+| orkut | 35% | 4% | 60% | 62% | 55% |
+| rmat25 | 45% | 5% | 50% | 46% | 63% |
+| rmat26 | 49% | 4% | 47% | 53% | 62% |
+| rmat27 | 52% | 4% | 44% | 47% | 50% |
+
+At 2 nodes (20776356) the same shares were: rmat26, ACIC's own work 66%,
+everything else 30%, RIKEN inside MPI 22%; rmat27, 76%, 21% and 19%. Gluon's
+sync share was 35% and 29%. In a 1-node smoke test (20776355), ACIC's
+everything-else share was 19% on rmat25 and 42% on orkut, and RIKEN's MPI
+share was 17-20%. At 2 nodes in 7.6n, Gluon's sync share was 42% on rmat25
+and 19% on orkut.
+
+What this says:
+
+- **The trend reversed.** On rmat25 and orkut ACIC is slower at 8 nodes
+  than at 2, and RIKEN is 1.6-3x faster, so its lead grows past the 1-node
+  gap (rmat25 4.3x at 1 node, 2.8x at 2, 11.7x at 8). On the larger graphs
+  ACIC does speed up (rmat26 1.07x, rmat27 1.44x from 2 to 8 nodes), but
+  RIKEN speeds up 2.2-2.3x, so the lead still grows (2.9x to 5.6x, 2.5x to
+  4.1x).
+- **Communication is half of every system's time at 8 nodes**, as the
+  scaling argument assumed. It is not where ACIC loses.
+- **ACIC's work per edge grows with PEs.** On rmat25 it delivers 4.6 updates
+  per graph edge at 8 nodes against 1.2 at 2. Distance changes per vertex
+  rise from 1.9 to 4.5. Idle flushes rise 34x, messages 7.2x, and the solve
+  completes 61 controller rounds against 129 (medians). orkut goes from 1.7 to 5.2
+  updates per edge, rmat26 from 1.1 to 2.1, rmat27 from 1.0 to 1.8; the
+  controller rounds fall from 242 to 71 and from 316 to 113.
+- **ACIC still beats Gluon-Async** at 8 nodes on every graph, by 1.8-6x.
+
+This fails the plan's Gate A reading for scale-free graphs. Instead of
+stopping, [step 8](step8-scaling.md) attributes and attacks the work growth,
+then re-takes this comparison at 2/8/16 nodes with the high-diameter graphs
+(8g).
