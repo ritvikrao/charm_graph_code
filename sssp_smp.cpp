@@ -207,6 +207,10 @@ long lazy_cut = LAZY_AUTO;
 // dropped rather than sent -- so fewer, wider rounds pay: rmat25 at 8 nodes
 // went 0.81 s (0.005) -> 0.47 s (0.5) -> 0.42 s (0.95), job 20820559.
 double lazy_heap_percentile = 0.95;
+// --lazy-growth G: token range j is (L G^j, L G^(j+1)] (default 2). A larger G
+// means fewer tokens per vertex -- fewer queue operations -- and a coarser
+// deferral of the heavier edges (step 8f).
+int lazy_growth = 2;
 // --control reduction|node (step 8c). reduction: each round is a Charm++
 // reduction to Main and an array broadcast back, as always. Both travel in
 // the PEs' own queues, which Reconverse polls only when the node queue --
@@ -229,6 +233,17 @@ double control_interval_ms = 0.25;
 CProxy_ControlNode controlProxy;
 class Main;
 Main *main_instance = nullptr;
+// --warm-links on|off (step 8e). Before the solve, every PE sends one small
+// message to a PE of every other process and the solve starts at quiescence.
+// ACIC reads its partition locally, so without this the first message
+// between two processes is sent inside the timed solve: at 8 nodes rmat25's
+// first round took 13.7 ms with 30 updates in flight, and orkut's first five
+// rounds 2-6 ms each with almost none, against 0.1-0.2 ms for an idle round
+// later on. The baselines' setup already exchanges data all-to-all. Off by
+// default: it shortened the first round (11.8 -> 5.3 ms on rmat25 at 8 nodes)
+// but not the solve, rmat25 0.250 -> 0.235 s and orkut 0.156 -> 0.169 s,
+// within the noise (job 20823450).
+bool warm_links_on = false;
 static bool lazy_active() {
   return lazy_cut > 0 || lazy_cut == LAZY_ON ||
          (lazy_cut == LAZY_AUTO && num_global_edges >= 8L * V);
@@ -1217,6 +1232,22 @@ public:
           return;
         }
         control_interval_ms = std::stod(m->argv[++i]);
+      } else if (arg == "--warm-links") {
+        const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
+        if (value == "on" || value == "off")
+          warm_links_on = value == "on";
+        else {
+          ckout << "--warm-links must be on or off" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg == "--lazy-growth") {
+        if (i + 1 >= m->argc || std::stoi(m->argv[i + 1]) < 2) {
+          ckout << "--lazy-growth needs an integer of at least 2" << endl;
+          CkExit(1);
+          return;
+        }
+        lazy_growth = std::stoi(m->argv[++i]);
       } else if (arg == "--lazy-heap") {
         if (i + 1 >= m->argc) {
           ckout << "--lazy-heap needs a percentile" << endl;
@@ -1688,7 +1719,14 @@ public:
   void width_seeded() { start_source(); }
 
   /** Start algorithm from source vertex. */
+  bool links_warmed = false;
   void start_source() {
+    if (warm_links_on && !links_warmed) {
+      links_warmed = true;
+      arr.warm_links();
+      CkStartQD(CkCallback(CkIndex_Main::start_source(), mainProxy));
+      return;
+    }
     // Reached once every chare holds its partition and the width it will
     // bucket with, in every mode, so this is the one boundary that means the
     // same thing everywhere: the solver could start now. MODE_UNIFORM and
@@ -3734,7 +3772,7 @@ public:
     Update t;
     t.dest_vertex = (start_vertex + local_index) | UPDATE_TOKEN_BIT |
                     ((long)level << UPDATE_TOKEN_LEVEL_SHIFT);
-    t.distance = d + (light_cut << level);
+    t.distance = d + range_low(level);
     const int bucket = charge_new_update(&t);
     histogram[bucket]++;
     updates_created_locally++;
@@ -3745,12 +3783,24 @@ public:
       pq.push(t);
   }
 
+  // The lower end of token range `level`: L * G^level, saturating well above
+  // any edge weight so the last range always reaches the end of the row.
+  cost range_low(int level) const {
+    cost lo = light_cut;
+    for (int j = 0; j < level; j++) {
+      if (lo > (cost)1 << 40)
+        return lo;
+      lo *= lazy_growth;
+    }
+    return lo;
+  }
+
   // An admitted token: relax its range if its vertex has not moved since, and
   // leave the next range's token. The caller retires it from the histogram.
   void release_token(const Update &t) {
     const long local_index = update_vertex(t) - start_vertex;
     const int level = update_token_level(t);
-    const cost lo = light_cut << level;
+    const cost lo = range_low(level);
     const cost d = t.distance - lo;
     if (distances[local_index] != d) {
       tokens_stale++;
@@ -3758,7 +3808,10 @@ public:
     }
     const long degree = local_graph.degree(local_index);
     const long begin = edges_up_to(local_index, lo);
-    const long end = level >= 30 ? degree : edges_up_to(local_index, 2 * lo);
+    // Five bits hold the level; the last range reaches the end of the row.
+    const long end = (level >= 30 || range_low(level + 1) > ((cost)1 << 40))
+                         ? degree
+                         : edges_up_to(local_index, range_low(level + 1));
     relax_edges(local_index, begin, end, false);
     if (end < degree)
       queue_token(local_index, d, level + 1);
@@ -3923,6 +3976,14 @@ public:
    * this is not an entry method
    * returns true (runs when pe is idle)
    */
+  // --warm-links: one message to a PE of every other process.
+  void warm_links() {
+    for (int q = 0; q < CkNumNodes(); q++)
+      if (q != CkMyNode())
+        thisProxy[CkNodeFirst(q) + CkMyRank() % CkNodeSize(q)].warm_ping();
+  }
+  void warm_ping() {}
+
   bool heap_queued = false; // --control node: a process_heap message is pending
   void process_heap() {
     heap_queued = false;

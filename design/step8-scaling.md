@@ -611,6 +611,50 @@ settled would skip almost nothing. The settled-hub filter planned for 8d
 was written but never built, and was taken out. RIKEN's bitmap works
 because its buckets are narrow and its phases synchronous.
 
+## What else was tried for orkut at 8 nodes, and 8f (2026-09-18)
+
+**The idle share.** The communication-share build now also times the
+scheduler's idle intervals, less the solver work its idle callback did
+(`idle_share`; job 20822844). At 8 nodes with the current defaults:
+
+| | own work | sends | idle | other runtime |
+|---|---:|---:|---:|---:|
+| orkut | 14–18% | 5–6% | **50–61%** | about 20% |
+| rmat25 | 50–56% | 6% | 21–29% | about 15% |
+
+So orkut at 8 nodes mostly waits. Three explanations were tested, and all
+three failed:
+
+- **Flushing on age, on busy PEs** (`--busy-flush-age`, built and reverted;
+  job 20823299). The idea was that busy PEs hold partial buffers the idle
+  PEs are waiting for. It is 2–4× slower. At 8 nodes a buffer holds only
+  13–18 items by the time its oldest has waited 10–100 µs, so messages go
+  from 2–3 M to 11–85 M.
+- **Warming the links before the solve** (`--warm-links`, now off by
+  default; job 20823450). ACIC's setup exchanges nothing between processes,
+  so the first messages meet cold connections inside the timed solve. The
+  warm-up shortens rmat25's first round from 11.8 to 5.3 ms, but not the
+  solve: 0.250 → 0.235 s on rmat25, 0.156 → 0.169 s on orkut.
+- **Fewer processes per node** (jobs 20821055–56), for fewer and fuller
+  streams. 4 per node: orkut 0.54 s. 2 per node: rmat25 4.7 s.
+
+**8f, the solver's own work.** It is over half the time only on rmat25 at
+8 nodes. Queue operations (`process_heap`, `__adjust_heap`) are about 20%
+of its cycles, and lazy relaxation adds about 4.4 tokens per vertex.
+`--lazy-growth G` widens the token ranges to (L G^j, L G^(j+1)] (jobs
+20823532–33):
+
+| | G = 2 | G = 4 | G = 8 |
+|---|---:|---:|---:|
+| rmat25, 8 nodes | **0.237 s** | 0.295 s | 0.308 s |
+| orkut, 8 nodes | **0.146 s** | 0.156 s | 0.199 s |
+| rmat25, 2 nodes | 0.549 s | **0.506 s** | 0.510 s |
+| orkut, 2 nodes | 0.155 s | 0.134 s | **0.129 s** |
+
+Fewer tokens help at 2 nodes, where the queue is deep. The finer deferral
+wins at 8, so the default stays at 2. A faster queue (a 4-ary or bucketed
+heap) is worth at most the 20%, so it is left for step 9.
+
 ## Entry condition for 8g, and Gate A
 
 8g runs above 8 nodes only if, at 8 nodes in one allocation:
