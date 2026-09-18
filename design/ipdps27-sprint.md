@@ -322,6 +322,52 @@ Reading, one allocation:
 - **uniform25 runs better with lazy relaxation off**, which led to change 2.
 - Nothing hung, crashed or answered wrongly in 1,008 ablation runs.
 
+**High-diameter at 8 nodes** (job 20826392, Morton inputs, floor 1.03×):
+
+| arm | mesh24-z | mesh26-z | road-usa-z | road-usa-w4-z |
+|---|---|---|---|---|
+| `ws24` | **/17.6** | **/12.6** | **/21.0** | **/18.5** |
+| `ws24-wide` | **/18.6** | **/12.4** | **/18.9** | **/19.3** |
+| `no-idle-flush` | **/3.60** | **/2.05** | **/2.59** | **/3.06** |
+| `buffer-2048` | **/1.69** | **/1.16** | **/2.55** | **/2.57** |
+| `no-idle-interval` | **/1.08** | **/1.06** | **/1.15** | **/1.05** |
+| `fixed-cadence` | /1.02 ~ | **1.07** | 1.00 · | /1.01 ~ |
+| `no-coarsen` | /1.01 ~ | /1.01 · | 1.01 · | 1.01 ~ |
+| `buffer-no-feedback` | **/1.04** | 1.02 · | /1.01 · | /1.02 ~ |
+| `global-fixed` | **/4.11** | **/2.40** | **/6.35** | **/6.05** |
+| `tuned-fixed` | **/2.70** | **/1.09** | **/3.35** | **/3.03** |
+
+At 8 nodes the post-2024 mechanisms are worth 12–21× on high-diameter
+graphs, and the default beats per-graph tuned fixed settings by 1.09–3.35×.
+**Caveat on C3:** every fixed candidate so far had the idle flush off, and
+the idle flush alone is worth 2–3.6× here. So "adaptive beats tuned fixed"
+may only mean "idle flush beats no idle flush". The runtime feedback that
+is left -- buffer-size correction, coarsening, adaptive cadence -- is
+within 1.07× of off at 8 nodes. The test that decides C3 is running (jobs
+20827705/06): fixed candidates with an ungated idle flush, and one-axis arms
+that remove only the controller's gate (`idle-ungated`, and
+`local-delivery`, 7.6f2's co-design arm).
+
+**C3 test, 2 nodes** (job 20827705, frozen build `acic_ipdps2`, floor
+1.02×). Fixed search space now includes an ungated idle flush (`-idle`
+arms); `idle-ungated` and `local-delivery` remove only the controller's gate.
+
+| arm | mesh24-z | road-usa-z | road-usa-w4-z | orkut | rmat25 |
+|---|---|---|---|---|---|
+| `tuned-fixed-idle` (chosen per graph) | **1.07** | 1.02 · | **/1.03** | 1.02 ~ | **/1.03** |
+| `global-fixed-idle` (chose idle off) | **/1.12** | **/1.68** | **/1.73** | **/1.05** | **/1.95** |
+| `idle-ungated` | **/1.14** | **/1.06** | **/1.05** | **1.07** | 1.00 · |
+| `local-delivery` | /1.01 · | 1.01 · | **1.02** | 1.01 ~ | 1.02 ~ |
+
+Tuned choices: every graph picked idle flush on, with buffers of 512 (roads,
+mesh) or 6144 (scale-free). So at 2 nodes: **the defaults match per-graph
+tuned fixed settings (within ±7%) without any tuning, and beat the best
+single fixed setting by 1.05–1.95×.** The feedback itself -- the
+controller's gate on delivery, buffer correction, coarsening -- adds
+nothing measurable; local-delivery ties, as in 7.6f2. The defensible C3 is
+"no per-graph tuning needed", from regime rules plus an idle flush, not
+"feedback beats tuning" and not co-design. 8 nodes: job 20827706.
+
 ### Change 2: lazy relaxation only on skewed degree distributions
 
 On uniform25 lazy relaxation leaves traffic unchanged (1.07 × 10^9 updates,
