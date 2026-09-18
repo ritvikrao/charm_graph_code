@@ -1041,7 +1041,12 @@ class Campaign:
         ws24 = ['--flush-policy', 'fixed', '--flush-interval', '5', '--bucket-policy', 'fixed',
                 '--idle-flush', 'off', '--bufsize', '2048', '--send-filter', 'off',
                 '--lazy-heavy', 'off', '--skip-empty', 'off']
-        fixed_all = ['--bucket-policy', 'fixed', '--idle-flush', 'off']
+        # --fixed-idle on,off adds an ungated idle flush (with the regime's
+        # interval) to the fixed search space; the first allocations searched
+        # `off` only, which left tuned-fixed without the mechanism that the
+        # 8-node high-diameter ablation found worth 2-3.6x (job 20826392).
+        idle_options = self.args.fixed_idle.split(',')
+        suffix = '' if idle_options == ['off'] else '-idle'
 
         def arms_for(graph):
             g = regime(graph)
@@ -1057,7 +1062,12 @@ class Campaign:
                     # the regime leaves it off; keep the filter as it was.
                     dict(b, name='buffer-2048', flags=['--bufsize', '2048']
                          + ([] if g['filter'] else ['--send-filter', 'off'])),
-                    dict(b, name='buffer-no-feedback', flags=['--bufsize', str(g['buffer'])])]
+                    dict(b, name='buffer-no-feedback', flags=['--bufsize', str(g['buffer'])]),
+                    # The controller's starvation gate on the idle flush and
+                    # the stale-destination flush, removed: both actions taken
+                    # on local state alone (7.6f2's co-design test).
+                    dict(b, name='idle-ungated', flags=['--idle-flush', 'on']),
+                    dict(b, name='local-delivery', flags=['--flush-policy', 'stale', '--idle-flush', 'on'])]
             if g['scale_free']:
                 arms += [dict(b, name='no-lazy', flags=['--lazy-heavy', 'off', '--skip-empty', 'on']),
                          dict(b, name='no-skip-empty', flags=['--skip-empty', 'off'])]
@@ -1073,11 +1083,12 @@ class Campaign:
 
         def fixed_candidates(graph, widths, buffers):
             b = base(graph)
-            return [dict(b, name=f'fixed-i{i}-{w}-b{s}', per_graph_width=False,
-                         flags=['--flush-policy', 'fixed', '--flush-interval', str(i)] + fixed_all
+            return [dict(b, name=f'fixed-i{i}-{w}-b{s}' + ('' if idle == 'off' else '-idle'), per_graph_width=False,
+                         flags=['--flush-policy', 'fixed', '--flush-interval', str(i), '--bucket-policy', 'fixed',
+                                '--idle-flush', idle]
                          + (['--bucket-width-rule', w] if w in ('logv', 'weight') else ['--bucket-width', w])
                          + ['--bufsize', str(s)])
-                    for i in [1, 5] for w in widths for s in buffers]
+                    for i in [1, 5] for w in widths for s in buffers for idle in idle_options]
 
         def choose(candidates, samples, label):
             valid = [c for c in candidates if samples[c['name']] and all(r['valid'] for r in samples[c['name']])]
@@ -1126,14 +1137,16 @@ class Campaign:
             first, _ = choose(stage1, samples, f'tuned-fixed stage 1 on {graph}')
             i = first['flags'][first['flags'].index('--flush-interval')+1]
             w = first['name'].split('-')[2]
+            idle = first['flags'][first['flags'].index('--idle-flush')+1]
             stage2 = [c for c in fixed_candidates(graph, [w], [512, 1024, 2048, 6144])
-                      if c['name'].startswith(f'fixed-i{i}-') and c['name'] != first['name']]
+                      if c['name'].startswith(f'fixed-i{i}-') and c['name'] != first['name']
+                      and c['flags'][c['flags'].index('--idle-flush')+1] == idle]
             samples = search(graph, stage2, 'ablation-tune', samples)
             tuned, record = choose(stage1 + stage2, samples, f'tuned-fixed on {graph}')
             b = base(graph)
             arms = arms_for(graph) + [
-                dict(b, name='global-fixed', per_graph_width=False, flags=global_flags, chosen=best['name']),
-                dict(tuned, name='tuned-fixed', chosen=tuned['name'])]
+                dict(b, name='global-fixed' + suffix, per_graph_width=False, flags=global_flags, chosen=best['name']),
+                dict(tuned, name='tuned-fixed' + suffix, chosen=tuned['name'])]
             (self.root/'logs'/f'{self.tag}-{graph}-selected.json').write_text(
                 json.dumps(dict(regime=g, arms=arms, tuned_candidates=record), indent=2)+'\n')
             for rep in range(self.args.reps):
@@ -1454,6 +1467,8 @@ if __name__ == '__main__':
     # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
     # fair-baseline re-take extends the grid downward.
     parser.add_argument('--delta-divisors', default='64,16,4,1')
+    parser.add_argument('--fixed-idle', default='off',
+                        help="--mode ablation: idle-flush settings in the fixed search space, 'off' or 'off,on'")
     parser.add_argument('--ablation-binary', default='acic_ipdps',
                         help='--mode ablation: campaign/bin name of the binary under test (NAME_wide for ws24-wide)')
     parser.add_argument('--acic-rpn-map', help='--mode ablation: graph:rpn,... (default --acic-rpn)')
