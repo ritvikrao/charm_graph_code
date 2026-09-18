@@ -16,7 +16,7 @@ allocation floor. Cells from one allocation are marked as such.
 | C1 | On sparse, high-diameter graphs, ACIC solves weighted SSSP faster than distributed Δ-stepping (RIKEN) and asynchronous bulk-communication SSSP (Gluon-Async) on equal CPU nodes | **supported, one allocation per node count** | 8g, 8 nodes: 19× (mesh24) and 53× (mesh26) ahead of RIKEN; 8.1×, 7.4× and 79× ahead of Gluon-Async on mesh24, mesh26, road-usa. 2 nodes: 37× and 9.8× on mesh24 | E3: RIKEN and Gluon re-taken on wider grids (RIKEN's search chose its grid's edge); a second allocation; road-usa-w4 so RIKEN has a real road cell |
 | C2 | The gain comes from specific mechanisms added since the workshop paper, each with a causal time-to-solution effect | **open** | Step 7–8 A/Bs on the build of their day, one mechanism at a time, mostly at 2 nodes; never all on one binary | E1 (ablation on one binary, 2 and 8 nodes, two allocations) |
 | C3 | The runtime feedback (adaptation) matters: it beats a strong fixed configuration | **open, and was negative on the old build** | 7.6f2: adaptive lost road-usa to tuned fixed admission by 7.6–10×; co-design not shown; 7.6k's buffer-size feedback never acted | E1's `global-fixed`, `tuned-fixed`, `buffer-no-feedback` and `no-coarsen` arms. If they tie with `current`, the title drops "adaptive" |
-| C4 | ACIC scales from 2 to 8 nodes | **scale-free yes, high-diameter no** | 8g: rmat25 1.4×, orkut 1.09×, rmat26 2.0×, rmat27 2.3× faster at 8 nodes; mesh24 0.44 → 0.41 s, road-usa 1.36 → 1.33 s (flat) | E2 (diagnosis of the flat high-diameter curve); only claimed where measured |
+| C4 | ACIC scales from 2 to 8 nodes | **scale-free yes; high-diameter only with a locality-preserving order** | 8g: rmat25 1.4×, orkut 1.09×, rmat26 2.0×, rmat27 2.3× faster at 8 nodes; native mesh24 0.44 → 0.41 s, road-usa 1.36 → 1.33 s (flat). E2: re-work across PE boundaries is the cause; with Morton order road-usa-z goes 1.50 → 0.88 s from 2 to 8 nodes (one allocation) | E1 and E3 on the `-z` inputs (second allocation); only claimed where measured |
 | C5 | ACIC is competitive on scale-free graphs | **not supported against RIKEN** | RIKEN ahead 1.9–3.7× at 8 nodes (8g), the lead growing 2 → 8 nodes on RMAT; ACIC ahead of Gluon-Async 2.3–17× | Reported as a loss, with 8a's work-growth attribution. Not chased (sprint rule) |
 | C6 | Relative to a strong one-node code | **not supported** | 7.6n: one-node GAPBS faster than ACIC on every graph (road-usa 0.15 s vs ACIC 1.33 s at 8 nodes; mesh24 0.19 vs 0.41 s) | Reported prominently. E2 decides whether any part of it is recoverable; the paper states the COST-style ratio |
 | C7 | All reported distances are correct | **supported for every timed run; independent check in progress** | Every 8g run matched its reference digest (table in §4). The references come from ACIC's repository C++ | E4 (independent validator: raw downloads or numpy generators, scipy Dijkstra) |
@@ -98,7 +98,9 @@ compares the full digest row and the arc count. Small graphs, all sources run:
 | graph | result |
 |---|---|
 | mesh20, rmat20, rmat20-s2, uniform20, road-ny | PASS (every test source; arc counts equal) |
-| road-usa, road-usa-w4, orkut, mesh24, mesh26, uniform25, rmat25 | jobs 20826213, 20826232 (pending) |
+| road-usa, road-usa-w4, orkut, mesh24, mesh26, uniform25 | PASS, four test sources each (jobs 20826213, 20826232) |
+| rmat25 | running (job 20826213) |
+| `-z` relabelings | distance sums and maxima equal the native graph's for all six sources (reorder_graph.py) |
 
 rmat26 and rmat27 exceed scipy's int32 index range; they share rmat25's
 generator path, and every system agrees on their digests.
@@ -111,7 +113,9 @@ generator path, and every system agrees on their digests.
 | mesh20 (generator) | 4,190,208 | 0 | 0 | 0 | 2,093,054 of 2,095,104 |
 | rmat20 (generator) | 16,776,045 | 0 (dropped) | 691,030 | 15,316,313 | 383,962 of 384,351 |
 | uniform20 (generator) | 16,764,135 | 9 | 0 | 16,763,878 | 124 of 124 |
-| road-usa, orkut | pending (E4) | | | | |
+| road-usa (DIMACS) | 58,333,344 | 0 | 624,720 | 0 | 0 |
+| orkut (SNAP, each edge listed once) | 117,185,083 | 0 | 0 | all | — |
+| mesh24 (generator) | 67,092,480 | 0 | 0 | 0 | 33,512,461 of 33,546,240 |
 
 So: every input is used as an **undirected** graph with the **minimum** weight
 of any parallel or opposite arcs; the generators' weights are a hash of the
@@ -156,8 +160,9 @@ mechanism off, on `acic_ipdps`, at 8g's per-graph layout:
 | `global-fixed` | every runtime-adaptive choice fixed; one setting from {flush 1, 5} × {logv, weight width} × {1024, 2048} chosen on the development graphs mesh20, rmat20, uniform20 | "a good fixed default" |
 | `tuned-fixed` | the same space per graph plus a tuned width and buffer sizes 512–6144, chosen on the graph's own tuning sources | "best fixed per graph" |
 
-Graphs: mesh24, mesh26 (8 nodes), road-usa, road-usa-w4, rmat25, orkut,
-uniform25. Nodes 2 and 8; four held-out sources × 2 repetitions per
+Graphs: the Morton-ordered high-diameter inputs (E2) mesh24-z, road-usa-z,
+road-usa-w4-z and mesh26-z (8 nodes), and rmat25, orkut, uniform25. Jobs
+20826260/61 (scale-free, 2 and 8 nodes) and 20826391/92 (high-diameter). Nodes 2 and 8; four held-out sources × 2 repetitions per
 allocation; two allocations per node count (the second may drop arms that
 were within the floor on every graph). Reading rules as in 7.6h: a cell counts
 only if clean and above the allocation floor, or the same sign in both
@@ -196,6 +201,62 @@ nodes), which predicts rising per-round latency with node count but not a
 fixed round count. At most one change comes out of this, under the sprint's
 two-change limit, with a paired A/B against 8g in two allocations.
 
+**E2 result (09-18): the cause is the partition, not the rounds.** H-HD
+is refuted. Controller rounds *fall* with node count, and the work grows.
+
+| | nodes | solve (s) | distance changes per vertex | rounds | Σ PE work (s) | compute share |
+|---|---:|---:|---:|---:|---:|---:|
+| mesh24 | 1 | 0.46–0.87 | 9.1 | 1802 | 22–28 | 0.29–0.42 |
+| mesh24 | 2 | 0.57–0.62 | 15.8 | 858 | 43 | 0.31–0.33 |
+| mesh24 | 8 | 0.41–0.44 | 56.7 | 746 | 145 | 0.36–0.40 |
+| road-usa | 1 | 1.58–1.64 | 8.6 | 6282 | 34–38 | 0.19–0.20 |
+| road-usa | 2 | 1.75–1.77 | 14.5 | 4444 | 61–63 | 0.15–0.16 |
+| road-usa | 8 | 1.53–1.54 | 38.3 | 1803 | 135–140 | 0.10 |
+
+(jobs 20826233/34/37; diag build for changes and rounds, `acic_8g_comm` for
+work and shares.) Dijkstra needs one distance change per vertex. The
+re-relaxation grows with PE count, about as fast as the PEs are added, so
+per-PE work and the solve time stay flat. ACIC gives each PE a contiguous
+range of vertex IDs, and the fraction of edges that cross PEs is:
+
+| ordering | 112 PEs | 224 PEs | 896 PEs |
+|---|---:|---:|---:|
+| mesh24 row-major (native) | 1.4% | 2.7% | 10.9% |
+| mesh24 Morton | 0.34% | 0.49% | 1.0% |
+| road-usa DIMACS (native) | 62% | 62% | 63% |
+| road-usa Morton on DIMACS coordinates | 0.20% | 0.29% | 0.63% |
+
+road-usa's native order is effectively a random partition for ACIC. A
+distance that arrives late across a PE boundary re-relaxes everything the
+receiving PE derived from the worse one, and at 896 PEs a row-major strip
+is 4.6 rows thick. This is H-HD2 in a stronger form: the cost is re-work,
+not only latency.
+
+**Change 1: locality-preserving vertex order (input, not solver).**
+`benchmarks/reorder_graph.py` writes `GRAPH-z`: the same graph relabeled in
+Morton order of grid position (meshes) or DIMACS coordinates (roads), with
+reference rows for the same physical sources (distance sums checked equal).
+One allocation per node count, four runs each, graphs in blocks (jobs
+20826370/71):
+
+| | nodes | native → Morton (median s) | changes per vertex | rounds |
+|---|---:|---|---|---|
+| road-usa | 2 | 1.68 → 1.50 (1.12×) | 14.6 → 8.6 | 3855 → 3528 |
+| mesh24 | 2 | 0.51 → 0.55 (0.93×) | 16.3 → 4.1 | 729 → 1631 |
+| road-usa | 8 | 1.54 → 0.88 (**1.75×**) | 40.6 → 14.7 | 2034 → 1562 |
+| mesh26 | 8 | 2.42 → 1.28 (**1.9×**) | 37.6 → 7.6 | 1501 → 1348 |
+| mesh24 | 8 | 0.405 → 0.37 (1.1×) | 56.3 → 5.5 | 655 → 1028 |
+
+Re-work falls 3–10× everywhere. Time follows on the larger graphs at 8
+nodes, and road-usa-z now speeds up 1.7× from 2 to 8 nodes where native
+road-usa was flat. mesh24 turns round-bound (rounds double at 2 nodes), so
+its gain is small or negative. Because it is an input relabeling, every
+system gets the same `-z` file (E3), and the paper reports native and
+Morton orders side by side. It uses coordinates, which roads and meshes
+have and scale-free graphs do not; the claim is limited accordingly.
+Second-allocation confirmation comes from E1 and E3, which run on the `-z`
+inputs.
+
 The rmat27 2-node regression (2.02 → 2.48 s, likely G = 2) is noted but not
 pursued: it is a scale-free cell and the sprint does not chase RIKEN there.
 
@@ -206,8 +267,11 @@ offered) on every graph and the smallest delta offered (d16) on every RMAT
 graph and mesh26. A fair-layout claim needs an interior optimum. Re-take
 RIKEN with `--riken-layouts 8,16,32,64` and `--delta-divisors
 256,128,64,16,4,1`, and Gluon-Async with its current grid, at 2 and 8 nodes
-on mesh24, mesh26, road-usa-w4 (RIKEN can represent it), rmat25, orkut and
-uniform25, in a second allocation from E1's. ACIC's `current` runs in the same
+in a second allocation from E1's. Jobs 20826372/73 (rmat25, orkut,
+uniform25, rmat26, rmat27 at 2 and 8 nodes) and 20826393/94 (mesh24,
+mesh24-z, road-usa-w4, road-usa-w4-z, road-usa-z, and mesh26-z at 8
+nodes: native and Morton orders for every system). One-node GAPBS against
+ACIC on every paper graph, native and Morton: job 20826395. ACIC's `current` runs in the same
 allocation as the pairing arm. GAPBS on one node on every graph that fits.
 
 ### E4: independent validation
