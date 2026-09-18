@@ -477,6 +477,83 @@ Readings:
   110 ms of 401. So 8c's other half (accounting for rounds in flight) is
   not pursued, and the time goes to 8e.
 
+## 8e results: time outside the solver's own work (2026-09-18)
+
+**Where the time went.** With lazy relaxation on, the communication-share
+build (`acic_comm8`; jobs 20820912–13) put the solver's own work at 8 nodes
+at 33–38% of PE time on rmat25 and 17% on orkut, against 67–72% and 40% at
+2 nodes. Work is balanced: the busiest PE processes 1.1–1.3× the median.
+The PAPI sampling profile (`acic_papi8`, `papi_profile.sbatch`, jobs
+20820957–58) shows where the rest goes on rmat25 at 8 nodes:
+
+| function | share of cycles |
+|---|---:|
+| `HTram::flushIdle` | 20% |
+| `HTram::flushDest` | 18% |
+| `HTram::changeThreshold` | 4.5% |
+| `HTram::coarsenBuckets` | 2.9% |
+| all of the solver's own functions | about 16% |
+
+`flushDest`, `tflush`, `insertBucketsByDest`, `changeThreshold`'s recount,
+`coarsenBuckets` and the `ADD_FILLERS` padding each walked a destination's
+hold one bucket at a time, empty or not. That is up to 2048 queues per
+destination per flush, for 128 destinations at 8 nodes.
+
+**Fix 1: the hold bitmap** (htram `5d10533`). One bit per (destination,
+bucket) marks a hold queue that has items, and every one of those loops now
+visits only the set bits. The verify gate passes. Jobs 20821010–11:
+
+| | old | lazy, no bitmap | lazy + bitmap |
+|---|---:|---:|---:|
+| rmat25, 8 nodes | 0.867 s | 0.398 s | **0.244 s** |
+| rmat25, 2 nodes | 0.652 s | 0.623 s | 0.540 s |
+| orkut, 8 nodes | 0.317 s | 0.192 s | 0.197 s |
+| orkut, 2 nodes | 0.240 s | 0.197 s | 0.152 s |
+
+On rmat25 at 8 nodes `flushDest` falls to 1.6% of cycles and the solver's
+own work leads the profile (job 20821031).
+
+**The side effect.** The bitmap made road-usa at 2 nodes 2× slower:
+1.73 s against 3.48 s, with 31 M idle flushes against 7.4 M (job
+20821099). The same source without the bitmap (`acic_8c`) ran 1.93 s, and
+with idle flushing off 1.88 s. So the slow drain had been pacing the idle
+flush: an idle PE flushes every destination that holds anything, on every
+scheduler pass.
+
+**Fix 2: an idle-flush interval.** `--idle-flush-interval`
+(`HTram::setIdleFlushInterval`) sets the least time between two idle
+flushes of a PE that sent something. Jobs 20821256–57, medians of three:
+
+| | old | 0 µs | 10 µs | 30 µs | 100 µs | idle flush off |
+|---|---:|---:|---:|---:|---:|---:|
+| rmat25, 8 nodes (lazy) | 0.777 | 0.266 | 0.220 | **0.212** | 0.259 | 0.253 |
+| orkut, 8 nodes (lazy) | 0.339 | 0.247 | 0.217 | **0.202** | 0.217 | 0.249 |
+| road-usa, 2 nodes | 1.680 | 3.332 | 2.833 | 1.588 | **1.476** | 1.917 |
+| mesh24, 2 nodes | 0.579 | 0.559 | 0.552 | 0.547 | **0.441** | 0.459 |
+
+The default, `auto`, is 30 µs at average degree ≥ 8 and 100 µs below, the
+same regime line as `--lazy-heavy auto`, which is now the default too.
+Against the 7.6k–n build (`campaign/bin/acic`) these defaults are:
+
+- rmat25 at 8 nodes: 3.7× faster;
+- orkut at 8 nodes: 1.7× faster;
+- mesh24 at 2 nodes: 1.3× faster;
+- road-usa at 2 nodes: 1.1× faster.
+
+**What is left, for orkut at 8 nodes** (profile job 20821030):
+
+- 58% of cycles are the scheduler and network progress: Reconverse's
+  shared-memory poll (`CmiPopIpcBlock`, 14%), LCI progress (9%), the
+  scheduler loop and its queue dequeue. The PEs are waiting.
+- Each PE has about 200 K updates to do.
+- Its buffers to 64 destination processes fill at about 19 K items/s each,
+  so every message leaves by idle or stale flush, about 70 items at a time.
+- The solve advances in flush waves, and orkut is slower at 8 nodes than at
+  2 (0.20 against 0.15 s).
+- Fewer processes per node, which means fewer and fuller streams, are worse:
+  4 per node 0.54 s, 2 per node 1.05 s (jobs 20821055–56). That is left
+  to 8b.
+
 ## Entry condition for 8g, and Gate A
 
 8g runs above 8 nodes only if, at 8 nodes in one allocation:

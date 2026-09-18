@@ -29,7 +29,7 @@ SOURCE=${3:?source}
 RPN=${4:-8}
 BASE=${5:-acic}
 PROF=${6:-acic_papi}
-WORKERS=120
+WORKERS=${WORKERS:-120}  # per node; 112 for 16 x 7
 module load gcc/11.2.0 openmpi/4.0.6 libfabric/1.12.0 numactl/2.0.14 hwloc/1.11.13 python/3.9.5 papi/6.0.0.1 >/dev/null 2>&1
 export SLURM_MPI_TYPE=pmi2 PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid \
        NO_AFFINITY=1 OMP_PROC_BIND=close OMP_PLACES=cores

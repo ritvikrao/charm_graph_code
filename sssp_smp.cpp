@@ -184,7 +184,10 @@ bool send_filter_auto = true;
 // the solve was 2.1x slower (job 20820633). The token lives only in the local
 // queue; it never reaches htram.
 enum { LAZY_OFF = 0, LAZY_ON = -1, LAZY_AUTO = -2 };
-long lazy_cut = LAZY_OFF;
+// auto is the default from step 8e: at 8 nodes rmat25 0.78 -> 0.21 s and
+// orkut 0.34 -> 0.20 s with the hold bitmap and the idle-flush interval, and
+// it never turns on for the high-diameter graphs.
+long lazy_cut = LAZY_AUTO;
 // --lazy-heap P: the heap percentile while --lazy-heavy is active, in place of
 // the positional one. Tokens make running ahead cheap -- a stale range is
 // dropped rather than sent -- so fewer, wider rounds pay: rmat25 at 8 nodes
@@ -235,6 +238,20 @@ enum { IDLE_FLUSH_OFF = 0, IDLE_FLUSH_ON = 1, IDLE_FLUSH_STARVED = 2 };
 // 1.12-1.16x slower on the uniform graph, where it doubles the message count
 // by turning full buffers into partial ones. See design/step7-idle-flush.md.
 int idle_flush_policy = IDLE_FLUSH_STARVED;
+// --idle-flush-interval auto|<us> (step 8e): at least this long between two
+// idle flushes of a PE that sent something; 0 lets every idle scheduler pass
+// flush, as before. See HTram::setIdleFlushInterval. Once the hold bitmap
+// made a flush cheap, idle PEs flushed 4x as often and road-usa at 2 nodes
+// ran 2x slower (1.73 -> 3.48 s, job 20821099). auto (-1, the default) is
+// 30 us at average degree 8 or more and 100 us below, the best of 0/10/30/100
+// for each class (job 20821256-57): rmat25 at 8 nodes 0.212 s at 30 against
+// 0.259 at 100; mesh24 0.441 s at 100 against 0.547 at 30.
+double idle_flush_interval_us = -1.0;
+static double idle_flush_interval_seconds() {
+  if (idle_flush_interval_us >= 0.0)
+    return idle_flush_interval_us * 1e-6;
+  return num_global_edges >= 8L * V ? 30e-6 : 100e-6;
+}
 // --bucket-policy fixed|adaptive, --bucket-target <buckets>. The histogram's
 // bucket width is set once from |V| (log V, or sqrt V for the mesh) or by
 // --bucket-width. Step 7.3's rerun of step 6's width sweep, on top of the 7.1
@@ -1124,6 +1141,14 @@ public:
           return;
         }
         bucket_target = std::stoi(m->argv[++i]);
+      } else if (arg == "--idle-flush-interval") {
+        if (i + 1 >= m->argc) {
+          ckout << "--idle-flush-interval needs microseconds" << endl;
+          CkExit(1);
+          return;
+        }
+        const std::string value = m->argv[++i];
+        idle_flush_interval_us = value == "auto" ? -1.0 : std::stod(value);
       } else if (arg.rfind("--idle-flush", 0) == 0) {
         std::string value;
         if (arg.rfind("--idle-flush=", 0) == 0)
@@ -2930,6 +2955,7 @@ public:
     // the readonlies it reads were fixed before any chare ran. Not in
     // initialize_data(): under mode 1 that can run before this does.
     tram->setBufferSize(initial_buffer_size());
+    tram->setIdleFlushInterval(idle_flush_interval_seconds());
     shared_local = shared.ckLocalBranch();
     control_local = controlProxy.ckLocalBranch();
   }
