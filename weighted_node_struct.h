@@ -56,8 +56,20 @@ class Update{
 // is 2^62; -1, which fold_batch uses as a tombstone, is not a taggable value
 // and stays distinguishable from any tagged vertex.
 static const long UPDATE_OVERFLOW_BIT = 1L << 62;
+// --lazy-heavy (step 8d): a queue entry that stands for a range of a vertex's
+// heavier edges rather than an update to it. Bit 61 marks it and bits 56-60
+// hold the range. Tokens stay in the owning PE's queue and never reach htram.
+static const long UPDATE_TOKEN_BIT = 1L << 61;
+static const int UPDATE_TOKEN_LEVEL_SHIFT = 56;
+static const long UPDATE_TOKEN_MASK = UPDATE_TOKEN_BIT | (31L << UPDATE_TOKEN_LEVEL_SHIFT);
 inline long update_vertex(const Update &u) {
-	return u.dest_vertex & ~UPDATE_OVERFLOW_BIT;
+	return u.dest_vertex & ~(UPDATE_OVERFLOW_BIT | UPDATE_TOKEN_MASK);
+}
+inline bool update_is_token(const Update &u) {
+	return (u.dest_vertex & UPDATE_TOKEN_BIT) != 0;
+}
+inline int update_token_level(const Update &u) {
+	return (int)((u.dest_vertex >> UPDATE_TOKEN_LEVEL_SHIFT) & 31);
 }
 inline bool update_overflowed(const Update &u) {
 	return (u.dest_vertex & UPDATE_OVERFLOW_BIT) != 0;

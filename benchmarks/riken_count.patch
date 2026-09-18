@@ -1,0 +1,45 @@
+diff -ru a/src/sssp/sssp.hpp b/src/sssp/sssp.hpp
+--- a/src/sssp/sssp.hpp	2023-01-23 02:22:43.000000000 -0500
++++ b/src/sssp/sssp.hpp	2026-09-18 10:49:57.350211786 -0400
+@@ -26,6 +26,8 @@
+ #include "mpi_comm.hpp"
+ #include "fjmpi_comm.hpp"
+ #include "bottom_up_comm.hpp"
++// step 8a: relaxations sent, per thread (padded), summed after the solve.
++static int64_t g_relax_sent[256 * 8];
+ #include "sssp_state.hpp"
+ #include "utils.hpp"
+ #include "low_level_func.h"
+@@ -1620,6 +1622,7 @@
+ 		}
+ 		pk.data.t[pk.length++] = tgt & ((uint32_t(1) << lgl) - 1);
+ 		pk.data.t[pk.length++] = castFloatToUInt32(tgt_weight);
++		g_relax_sent[omp_get_thread_num() * 8]++;
+ 		//printf("rank%d sends %u,%f (length=%d) to row%d \n", mpi.rank_2d, uint32_t(tgt & ((uint32_t(1) << lgl) - 1)), tgt_weight, pk.length, dest);
+ 	}
+ 
+@@ -1630,6 +1633,7 @@
+ 		assert(!(src & int64_t(1) << 63));
+ 		if( end == start )
+ 		   return;
++		g_relax_sent[omp_get_thread_num() * 8] += end - start;
+ 
+ 		int64_t header;
+ 		if( is_presolve_mode_  )
+@@ -3717,9 +3721,16 @@
+ #endif
+ 
+ 
++	for (int i = 0; i < 256; i++) g_relax_sent[i * 8] = 0;
+ 	execute_sssp_run(root);
+ 
+ 	finalize_sssp_run(root);
++	{
++		int64_t mine = 0, all = 0;
++		for (int i = 0; i < 256; i++) mine += g_relax_sent[i * 8];
++		MPI_Reduce(&mine, &all, 1, MPI_INT64_T, MPI_SUM, 0, MPI_COMM_WORLD);
++		if (mpi.isMaster()) printf("RELAX_SENT total=%lld\n", (long long)all);
++	}
+ 
+ #if VERBOSE_MODE
+ 	if(mpi.isMaster()) print_with_prefix("Time of SSSP: %f ms", (MPI_Wtime() - start_time) * 1000.0);

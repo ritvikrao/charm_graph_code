@@ -81,6 +81,8 @@ cost lmax;           // long maximum
 // Degrees and arrival counts are binned by floor(log2(x)) + 1, with 0 in its
 // own bin. 32 covers any count a long can hold that a run could produce.
 #define DEGREE_CLASSES 32
+// Expansion lead over the frontier, binned the same way (step 8a).
+#define LEAD_CLASSES 12
 int histo_reduction_width = HISTO_BUCKET_COUNT / 8;
 double reduction_delay =
     0.1;                   // each histogram reduction happens at this interval
@@ -160,6 +162,21 @@ int send_filter_bits = 0;
 // arrivals improve a distance: road-usa 0.79x at 1024 items. An explicit
 // --send-filter-bits N keeps it on for the whole run instead (0: off).
 bool send_filter_auto = true;
+// --lazy-heavy off|auto|<distance> (step 8d). Off: a vertex relaxes every edge
+// each time process_heap() finds its distance current, as before. On: it
+// relaxes its light edges (weight <= L) then, and leaves the rest behind one
+// token per weight range (L, 2L], (2L, 4L], ... The token for range j is
+// queued at d + L 2^j, below every update it can make, and charged to the
+// histogram like an update at that distance, so the controller admits it
+// exactly when it would admit the first update it will make. When it is
+// admitted it relaxes its range only if d is still the vertex's distance, and
+// queues the next range's token. A vertex that improves meanwhile never sends
+// the heavy updates of the distance it left, which is where 8a found the
+// growth: at 8 nodes rmat25 created 3.7 heavy updates per heavy edge, and
+// RIKEN, which relaxes heavy edges once per settled vertex, sends 0.5.
+// auto: L is the natural bucket width. The token lives only in the local
+// queue; it never reaches htram.
+long lazy_cut = 0;
 const int SEND_FILTER_AUTO_BITS = 17;
 const int SEND_FILTER_MIN_BUFFER = 2048;
 // --idle-flush off|on|starved. The per-chare [whenidle] callback drains the
@@ -454,6 +471,8 @@ enum {
   STAT_FOLDED,        // updates folded away in a delivered batch, --batch-fold
   STAT_SKEW_TOP,      // unflagged arrivals charged to the overflow index, 7.6g
   STAT_SEND_FILTERED, // updates dropped by --send-filter-bits, 7.6j
+  STAT_TOKENS,        // --lazy-heavy tokens queued, 8d
+  STAT_TOKENS_STALE,  // ... and dropped because their vertex had moved
   STAT_INSTRUCTIONS,  // PAPI builds only
   STAT_BATCH_ITEMS,   // ACIC_DIAG builds only, from here down
   STAT_BATCH_ABSORBABLE,
@@ -481,8 +500,25 @@ enum {
   // PEs. Coarsening moves items across the threshold, so this is the check
   // that it moved the counters with them.
   STAT_ADMITTED_DRIFT = STAT_HISTO_LIVE + HISTO_BUCKET_COUNT,
+  // Step 8a: where the work per edge goes as the PE count grows. A vertex's
+  // edges are relaxed each time process_heap() finds its queued distance still
+  // current; the last such expansion is at its final distance, so every other
+  // one is speculation that lost (H5). Heavy edges are those longer than one
+  // natural bucket width, RIKEN's light/heavy cut (H8).
+  STAT_EXPANSIONS,        // generate_updates() calls
+  STAT_HEAVY_CREATED,     // updates created over heavy edges
+  STAT_REACHED_EXPANDABLE,// reached vertices with an edge: the least expansions
+  STAT_REACHED_EDGES,     // their edges: the least updates any run creates
+  STAT_REACHED_HEAVY,     // of which heavy
+  STAT_ARRIVAL_SETTLED,   // arrivals at a vertex below the frontier, so final
+  // Expansions by how far the vertex was above the frontier the PE last heard
+  // of, in natural bucket widths (0, 1, 2-3, 4-7, ...), and of those the ones
+  // at the vertex's final distance.
+  STAT_LEAD_EXPANSIONS,
+  STAT_LEAD_FINAL = STAT_LEAD_EXPANSIONS + LEAD_CLASSES,
   // ACIC_COMM_SHARE builds only: TSC ticks summed over PEs.
-  STAT_WORK_TSC,      // inside process_heap() or the delivery callback
+  STAT_WORK_TSC = STAT_LEAD_FINAL + LEAD_CLASSES,
+                      // inside process_heap() or the delivery callback
   STAT_WORK_SEND_TSC, // of which htram sends
   STAT_SEND_TSC,      // every htram send in the window
   STAT_WINDOW_TSC,    // each PE's window, start_papi() to print_distances()
@@ -1062,6 +1098,19 @@ public:
           idle_flush_policy = IDLE_FLUSH_STARVED;
         else {
           ckout << "--idle-flush must be off, on or starved" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg == "--lazy-heavy") {
+        const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
+        if (value == "off")
+          lazy_cut = 0;
+        else if (value == "auto")
+          lazy_cut = -1;
+        else if (!value.empty() && std::stol(value) > 0)
+          lazy_cut = std::stol(value);
+        else {
+          ckout << "--lazy-heavy must be off, auto or a positive distance" << endl;
           CkExit(1);
           return;
         }
@@ -2252,6 +2301,10 @@ public:
             << endl;
     }
 #endif
+    if (lazy_cut != 0)
+      ckout << "Lazy heavy: " << msg_stats[STAT_TOKENS] << " tokens, "
+            << msg_stats[STAT_TOKENS_STALE] << " stale, per vertex: "
+            << msg_stats[STAT_TOKENS] * 1.0 / V << endl;
     ckout << "Absorbed updates: " << msg_stats[STAT_ABSORBED]
           << ", normalized to |E|: "
           << (double)msg_stats[STAT_ABSORBED] / msg_stats[STAT_EDGES] << endl;
@@ -2320,6 +2373,30 @@ public:
           << msg_stats[STAT_INSTRUCTIONS] * 1.0 / msg_stats[STAT_EDGES] << endl;
 #endif
 #ifdef ACIC_DIAG
+    {
+      const double reached = std::max(1L, msg_stats[STAT_REACHED_EDGES]);
+      ckout << "STEP8A expansions=" << msg_stats[STAT_EXPANSIONS]
+            << " least_expansions=" << msg_stats[STAT_REACHED_EXPANDABLE]
+            << " reached_edges=" << msg_stats[STAT_REACHED_EDGES]
+            << " reached_heavy=" << msg_stats[STAT_REACHED_HEAVY]
+            << " heavy_created=" << msg_stats[STAT_HEAVY_CREATED]
+            << " heavy_per_reached_heavy="
+            << msg_stats[STAT_HEAVY_CREATED] * 1.0 /
+                   std::max(1L, msg_stats[STAT_REACHED_HEAVY])
+            << " light_per_reached_light="
+            << (msg_stats[STAT_NOTED] + msg_stats[STAT_SEND_FILTERED] -
+                msg_stats[STAT_HEAVY_CREATED]) * 1.0 /
+                   std::max(1.0, reached - msg_stats[STAT_REACHED_HEAVY])
+            << " arrivals_at_settled=" << msg_stats[STAT_ARRIVAL_SETTLED]
+            << endl;
+      ckout << "STEP8A_LEAD class,min_widths,expansions,final";
+      for (int i = 0; i < LEAD_CLASSES; i++)
+        if (msg_stats[STAT_LEAD_EXPANSIONS + i])
+          ckout << " " << i << "," << (i == 0 ? 0 : (1L << (i - 1))) << ","
+                << msg_stats[STAT_LEAD_EXPANSIONS + i] << ","
+                << msg_stats[STAT_LEAD_FINAL + i];
+      ckout << endl;
+    }
     // The receiver-side half of the combining ceiling: how much of the traffic
     // a fold inside the delivery callback could have collapsed. Reported
     // against rejected updates, which bound what *any* combining scheme could
@@ -2491,6 +2568,9 @@ private:
       pq;          // heap of messages
   long *histogram; // local histogram of data, from 0 to max_size, divided into
                    // HISTO_BUCKET_COUNT buckets
+  cost light_cut = 0;       // --lazy-heavy's L on this PE; 0 is off
+  long tokens_created = 0;  // --lazy-heavy tokens queued
+  long tokens_stale = 0;    // ... and found stale when admitted
 #ifdef ACIC_DIAG
   // histogram[] is the live population and is back at zero when the run ends,
   // so it cannot answer how much of the bucket range a graph ever reached.
@@ -2501,6 +2581,11 @@ private:
   long batch_absorbable = 0; // ... repeating a destination inside their batch
   std::vector<long> batch_table;  // open addressed, reused between batches
   long *arrivals_per_vertex = nullptr; // updates delivered to each local vertex
+  // Step 8a counters; see STAT_EXPANSIONS.
+  long expansions = 0, heavy_created = 0, arrival_settled = 0;
+  long lead_expansions[LEAD_CLASSES] = {0};
+  unsigned char *last_lead = nullptr; // lead class of each vertex's last expansion
+  int frontier_bucket = 0;            // lowest live bucket, as last broadcast
   // A per-PE total says how much work a PE did over the whole run, which is
   // the wrong question for a frontier algorithm: the load moves, so a PE can
   // hold a fair share of the graph and still be idle for most of it. Counting
@@ -2727,8 +2812,11 @@ public:
       distances[i] = lmax;
 #ifdef ACIC_DIAG
     arrivals_per_vertex = new long[num_vertices];
-    for (long i = 0; i < num_vertices; i++)
+    last_lead = new unsigned char[num_vertices];
+    for (long i = 0; i < num_vertices; i++) {
       arrivals_per_vertex[i] = 0;
+      last_lead[i] = 0;
+    }
 #endif
     vcount[HISTO_BUCKET_COUNT] += num_vertices;
     flush_rng = VertexRng(thisIndex, S);
@@ -3149,6 +3237,9 @@ public:
     double width =
         bucket_width_override > 0.0 ? bucket_width_override : natural_width;
     bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * width);
+    light_cut = lazy_cut > 0 ? lazy_cut
+                : lazy_cut < 0 ? std::max<cost>(1, (cost)std::llround(width))
+                               : 0;
   }
 
   /**
@@ -3316,11 +3407,94 @@ public:
     tram->coarsenBuckets(k, clamp_freeze);
   }
 
+  /**
+   * Expand a vertex whose queued distance is still current. With --lazy-heavy
+   * only the light edges go now, and a token is left for the rest; see
+   * lazy_cut.
+   */
   void generate_updates(long local_index, bool bfs) {
+#ifdef ACIC_DIAG
+    if (!bfs) {
+      const cost source_distance = distances[local_index];
+      expansions++;
+      // Natural widths above the lower edge of the frontier bucket.
+      const double lead = (double)source_distance * bucket_multiplier -
+                          (double)frontier_bucket * bucket_scale;
+      const int lc = lead < 1.0 ? 0 : std::min(LEAD_CLASSES - 1,
+                                               1 + (int)std::log2(lead));
+      lead_expansions[lc]++;
+      last_lead[local_index] = (unsigned char)lc;
+    }
+#endif
+    const long degree = local_graph.degree(local_index);
+    if (light_cut <= 0 || bfs) {
+      relax_edges(local_index, 0, degree, bfs);
+      return;
+    }
+    const long light_end = edges_up_to(local_index, light_cut);
+    relax_edges(local_index, 0, light_end, bfs);
+    if (light_end < degree)
+      queue_token(local_index, distances[local_index], 0);
+  }
+
+  // Index of the first edge of local_index heavier than w; edges are sorted by
+  // weight within a vertex (LocalCsr).
+  long edges_up_to(long local_index, cost w) {
     const Edge *adjacency = local_graph.edges(local_index);
     const long degree = local_graph.degree(local_index);
+    return std::upper_bound(adjacency, adjacency + degree, w,
+                            [](cost x, const Edge &e) { return x < e.distance; }) -
+           adjacency;
+  }
+
+  // The token for weight range level of local_index at distance d: charged to
+  // the histogram at d + L 2^level, which no update it makes can undercut.
+  void queue_token(long local_index, cost d, int level) {
+    Update t;
+    t.dest_vertex = (start_vertex + local_index) | UPDATE_TOKEN_BIT |
+                    ((long)level << UPDATE_TOKEN_LEVEL_SHIFT);
+    t.distance = d + (light_cut << level);
+    const int bucket = charge_new_update(&t);
+    histogram[bucket]++;
+    updates_created_locally++;
+    tokens_created++;
+    if (bucket > heap_threshold)
+      pq_hold[bucket].push_back(t);
+    else
+      pq.push(t);
+  }
+
+  // An admitted token: relax its range if its vertex has not moved since, and
+  // leave the next range's token. The caller retires it from the histogram.
+  void release_token(const Update &t) {
+    const long local_index = update_vertex(t) - start_vertex;
+    const int level = update_token_level(t);
+    const cost lo = light_cut << level;
+    const cost d = t.distance - lo;
+    if (distances[local_index] != d) {
+      tokens_stale++;
+      return;
+    }
+    const long degree = local_graph.degree(local_index);
+    const long begin = edges_up_to(local_index, lo);
+    const long end = level >= 30 ? degree : edges_up_to(local_index, 2 * lo);
+    relax_edges(local_index, begin, end, false);
+    if (end < degree)
+      queue_token(local_index, d, level + 1);
+  }
+
+  void relax_edges(long local_index, long first, long last, bool bfs) {
+    const Edge *adjacency = local_graph.edges(local_index);
+    const long degree = last;
     const cost source_distance = distances[local_index];
-    for (long i = 0; i < degree; i++) {
+#ifdef ACIC_DIAG
+    const double heavy_cut = 1.0 / bucket_multiplier;
+#endif
+    for (long i = first; i < degree; i++) {
+#ifdef ACIC_DIAG
+      if (adjacency[i].distance > heavy_cut)
+        heavy_created++;
+#endif
       // calculate distance pair for neighbor
       Update new_update;
       new_update.dest_vertex = adjacency[i].end;
@@ -3406,6 +3580,9 @@ public:
     arrivals_per_vertex[local_index]++;
     const int deg_class = degree_class(local_graph.degree(local_index));
     deg_arrivals[deg_class]++;
+    if (distances[local_index] != lmax &&
+        get_histo_bucket(distances[local_index]) < frontier_bucket)
+      arrival_settled++;
 #endif
     if (this_cost < distances[local_index]) {
 #ifdef VCOUNT
@@ -3512,6 +3689,12 @@ public:
         break;
       }
       pq.pop();
+      if (update_is_token(new_vertex_and_distance)) {
+        release_token(new_vertex_and_distance);
+        histogram[this_histo_bucket]--;
+        updates_processed_locally++;
+        continue;
+      }
       if (dest_vertex >= partition_index[thisIndex] &&
           dest_vertex < partition_index[thisIndex + 1]) {
         long local_index = dest_vertex - start_vertex;
@@ -3716,6 +3899,7 @@ public:
         process_update(ready[i]);
     }
 #ifdef ACIC_DIAG
+    frontier_bucket = behind_first_nonzero + 1;
     controller_rounds++;
     if (updates_processed_locally == processed_at_last_round)
       idle_rounds++;
@@ -3819,6 +4003,8 @@ public:
     msg_stats[STAT_FOLDED] = folded_updates;
     msg_stats[STAT_SKEW_TOP] = skew_top_arrivals;
     msg_stats[STAT_SEND_FILTERED] = send_filtered;
+    msg_stats[STAT_TOKENS] = tokens_created;
+    msg_stats[STAT_TOKENS_STALE] = tokens_stale;
 #ifdef PAPI
     msg_stats[STAT_INSTRUCTIONS] = instructions;
 #endif
@@ -3826,6 +4012,26 @@ public:
     msg_stats[STAT_BATCH_ITEMS] = batch_items;
     msg_stats[STAT_BATCH_ABSORBABLE] = batch_absorbable;
     msg_stats[STAT_ADMITTED_DRIFT] = max_admitted_drift;
+    msg_stats[STAT_EXPANSIONS] = expansions;
+    msg_stats[STAT_HEAVY_CREATED] = heavy_created;
+    msg_stats[STAT_ARRIVAL_SETTLED] = arrival_settled;
+    {
+      const double heavy_cut = 1.0 / bucket_multiplier;
+      for (long i = 0; i < num_vertices; i++) {
+        const long degree = local_graph.degree(i);
+        if (distances[i] == lmax || degree == 0)
+          continue;
+        msg_stats[STAT_REACHED_EXPANDABLE]++;
+        msg_stats[STAT_REACHED_EDGES] += degree;
+        const Edge *adjacency = local_graph.edges(i);
+        for (long e = 0; e < degree; e++)
+          if (adjacency[e].distance > heavy_cut)
+            msg_stats[STAT_REACHED_HEAVY]++;
+        msg_stats[STAT_LEAD_FINAL + last_lead[i]]++;
+      }
+      for (int i = 0; i < LEAD_CLASSES; i++)
+        msg_stats[STAT_LEAD_EXPANSIONS + i] = lead_expansions[i];
+    }
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++) {
       msg_stats[STAT_HISTO_CREATED + i] = histo_created[i];
       msg_stats[STAT_HISTO_LIVE + i] = histogram[i];

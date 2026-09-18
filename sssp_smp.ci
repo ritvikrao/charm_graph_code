@@ -33,6 +33,7 @@ mainmodule sssp_smp
   readonly bool batch_fold;
   readonly int send_filter_bits;
   readonly bool send_filter_auto;
+  readonly long lazy_cut;
   readonly int bufsize_policy;
   readonly double bufsize_acc_items;
   readonly int bufsize_min;

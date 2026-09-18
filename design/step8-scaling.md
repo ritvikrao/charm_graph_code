@@ -132,7 +132,7 @@ The build ran in 7.6n and 7.6o (`campaign/bin/acic`, sha256 `a6ef533d…`):
 | buffer size | `--bufsize-policy acceptance` (7.6k): 256 × average degree, in steps of 256, within 512–6144; resized mid-run only when the arrival acceptance share asks for a 2× change. rmat and orkut run at 6144, mesh24 at 1024, road-usa at 512 |
 | send filter | `--send-filter auto`: a 2^17-entry per-PE dominance table, on only while the buffer size is ≥ 2048 |
 | destination lookup | one-load uniform table with fallback (7.6m) |
-| admission | adaptive heap/TRAM thresholds from the reduced histogram; percentiles 0.999 (heap) / 0.005 (TRAM); initial threshold 3; histogram reduction width `HISTO_BUCKET_COUNT/8` |
+| admission | adaptive heap/TRAM thresholds from the reduced histogram; percentiles 0.999 (TRAM: sends) / 0.005 (heap: local expansion), in that positional order; initial threshold 3; histogram reduction width `HISTO_BUCKET_COUNT/8` |
 | delivery | `--flush-policy adaptive` (gated cadence, interval 5 rounds), flush timer 0.01 ms, `--idle-flush starved` |
 | buckets | `--bucket-policy adaptive` (coarsening, target 8, clamp blocked, frozen clamp), width `log(V)` except the mesh `weight` rule (`PER_GRAPH_WIDTH_RULE`, mesh20/22 only); `--pq-overflow-last on` (7.6g) |
 | off | combining and batch fold, range extension, skew deferral |
@@ -225,6 +225,121 @@ algorithm, driven by the controller's signal: the fill observed per stream,
 or the frontier. If either wins, that is the co-design test that 7.6k could
 not provide, and it gets the same ablation (controller-driven vs fixed)
 before it is claimed.
+
+## 8a results (2026-09-18)
+
+Jobs 20818217 (2 nodes), 20818218 (4), 20818219 (8), with 20818202 (one
+node, smoke), on the first 7.6o test source of each graph (rmat25 26007212,
+orkut 2549343), at the 7.6o layouts. The counters come from `acic_diag8`
+(`-DACIC_DIAG -DVCOUNT` plus the 8a counters, one run per cell). The arms
+come from the plain build, interleaved over three rounds. Every digest
+matched. Output is in `campaign/step8a/`, and the job is
+`scripts/anvil/step8a.sbatch`.
+
+### Where the work goes
+
+| | 1 node | 2 nodes | 4 nodes | 8 nodes |
+|---|---:|---:|---:|---:|
+| rmat25 updates delivered per edge | | 1.08 | 1.66 | 3.13 |
+| rmat25 heavy updates per heavy edge of a reached vertex | | 1.30 | 1.76 | 3.72 |
+| rmat25 expansions / least possible | | 1.01 | 1.03 | 1.23 |
+| rmat25 arrivals at final vertices, share of arrivals | | 31% | 0.2% | 29% |
+| **RIKEN rmat25 relaxations sent per edge** | | **0.64** | **0.50** | **0.50** |
+| orkut updates delivered per edge | 1.37 | 2.11 | 2.33 | 4.41 |
+| orkut heavy updates per heavy edge | 1.50 | 2.20 | 2.67 | 6.34 |
+| orkut expansions / least possible | 1.25 | 1.61 | 1.83 | 4.44 |
+| orkut distance changes per vertex | 6.0 | 8.3 | 8.5 | 13.6 |
+| **RIKEN orkut relaxations sent per edge** | | **0.28** | **0.25** | **0.25** |
+| longest controller round, rmat25 / orkut | — / 103 ms | 156 / 92 ms | 282 / 50 ms | 189 / 94 ms |
+
+Definitions:
+
+- **Heavy:** an edge longer than one natural bucket width (log V: 17.3 for
+  rmat25, 14.9 for orkut), RIKEN's own cut. Weights are uniform on
+  [1, 1000], so 98.3–98.6% of edges are heavy.
+- **Least possible:** each reached vertex expanded once, at its final
+  distance.
+- **Arrivals at final vertices:** the target's distance was already below
+  the frontier bucket that its PE last heard of. The 4-node figure is low
+  because that run's frontier sat in bucket 0.
+- **RIKEN's count:** every edge it hands to its send path
+  (`top_down_send`, `top_down_send_large`), from a counting copy of its
+  source (`deps/riken-count`, binary `riken_sssp_verbose`).
+
+Readings:
+
+1. **RIKEN sends fewer relaxations than there are edges.** It relaxes a
+   heavy edge once, from a settled vertex, and skips targets its
+   settled-vertex bitmap marks final. ACIC sends 2–6× RIKEN's count at
+   2 nodes and 6–25× at 8.
+2. **RIKEN's SSSP never pulls.** Its SSSP path asserts on the backward
+   direction ("backward currently not implemented"). It runs 3–4 buckets of
+   light iterations with one heavy phase each, then switches to
+   Bellman-Ford. So the pull phase in 8d is dropped.
+3. **On rmat25 the growth is hubs expanded at distances that are not final.**
+   Expansions grow only 1.01× → 1.23× from 2 to 8 nodes, but heavy updates
+   grow 1.30 → 3.72 per heavy edge. The vertices that get re-expanded are the
+   high-degree ones, and every re-expansion resends all their heavy edges.
+4. **On orkut the growth is broad re-expansion.** Vertices are expanded 4.4×
+   at 8 nodes and change distance 13.6 times each. After round 2 the
+   controller has coarsened buckets 9–20×, to 135–300 distance units. That is
+   more than the typical orkut distance, so nearly all live work sits in one
+   bucket and there is no global order left.
+5. **The controller is blind while the flood happens.** On orkut at one node,
+   94% of all updates are created in rounds 3–6, which take 25–100 ms each.
+   At 2–8 nodes the longest round is 50–282 ms against a median of 1–3 ms.
+   The round's broadcast waits in the PE queues behind the data.
+
+### The suspect arms at 8 nodes
+
+Medians of three runs:
+
+| arm | rmat25 s | updates/edge | messages | items/message | orkut s | updates/edge | messages | items/message |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| base (acceptance buffer size: 6144) | 0.836 | 4.78 | 4.42 M | 1165 | 0.313 | 4.89 | 2.13 M | 509 |
+| buffer size 512 (H6) | **0.572** | 2.92 | 7.73 M | 389 | 0.371 | 4.31 | 4.44 M | 268 |
+| buffer size 2048 (H6) | 0.641 | 3.51 | 3.96 M | 914 | **0.269** | 3.62 | 2.05 M | 416 |
+| TRAM (send) percentile 0.9 (H5) | 0.771 | 4.42 | 4.33 M | 1068 | 0.432 | 4.97 | 2.17 M | 506 |
+| TRAM (send) percentile 0.5 (H5) | 0.773 | 4.51 | 3.33 M | 1442 | 0.284 | 4.53 | 1.89 M | 548 |
+| bucket target 32, finer ordering (H5) | 1.126 | 4.54 | 7.62 M | 610 | 0.356 | 4.13 | 2.48 M | 434 |
+| 0.5 ms added per round (H7) | 0.851 | 4.90 | 3.51 M | 1380 | 0.346 | 5.22 | 2.49 M | 469 |
+
+The job labels the two percentile arms "heap90" and "heap50". The
+positional order is TRAM percentile, then heap percentile, so they moved
+the TRAM percentile. The table above at "Current ACIC build and settings"
+had the two swapped and is corrected.
+
+Each suspect's share:
+
+- **H6 (buffering): implicated.**
+  - Buffer size 512 cuts rmat25's work per edge by 39% and its time 1.46×.
+  - orkut wants 2048: 1.16× faster. It is slower at 512 (4.4 M messages).
+  - So the latency of a partly filled buffer is what makes a hub's first
+    distance wrong on rmat25. No single fill-rate rule fits both graphs:
+    rmat25 is fastest at about one item per 20 edges per stream at both 2 and
+    8 nodes, but orkut at 8 nodes would get about 190 by that rule and is
+    fastest at 2048.
+- **H8 (pruning): implicated.** RIKEN's structure accounts for a 6–25× gap
+  in relaxations sent.
+- **H5 (speculation): weak.**
+  - A tighter TRAM percentile gains 1.08–1.10×.
+  - Finer buckets on their own are slower. On rmat25 they give 4× the rounds
+    and 1.7× the messages, with no less work.
+  - Ordering does not help unless the waste is pruned.
+- **H7 (controller cost): not implicated as posed.** Adding 0.5 ms per round
+  costs at most 1.1×. A round costs what the queue in front of its broadcast
+  costs, and that is a symptom of the waste, not of the reduction's
+  O(PEs × width).
+
+**Consequence for the plan.**
+
+- 8d moves ahead of 8b. The waste is what makes buffer latency expensive and
+  what floods the controller, and RIKEN's 0.25–0.64 relaxations per edge is
+  the target.
+- 8b is re-tuned after 8d, measured as the node count rises.
+- 8c drops its "reduce only the active window" half. It keeps the in-flight
+  accounting only if the rounds are still blind after 8d.
+- 8d's pull phase is dropped (reading 2).
 
 ## Entry condition for 8g, and Gate A
 

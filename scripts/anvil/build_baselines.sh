@@ -50,6 +50,21 @@ mpicxx -O3 -std=c++17 -fopenmp -pthread -msse4.2 -DNDEBUG -include cinttypes \
   -o "$OUT/riken_sssp"
 echo "BUILT riken_sssp gap_sssp"
 
+# --- Step 8a: RIKEN counting its relaxations (RELAX_SENT) with its verbose
+# phase log on. A measurement build only; never timed against the others.
+RCOUNT=$DEPS/riken-count
+if [ ! -d "$RCOUNT" ]; then
+  cp -r "$RIKEN" "$RCOUNT"
+  patch -d "$RCOUNT" -p1 < "$APP/benchmarks/riken_count.patch"
+fi
+mpicxx -O3 -std=c++17 -fopenmp -pthread -msse4.2 -DNDEBUG -include cinttypes \
+  -Drestrict=__restrict__ -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS \
+  -D__STDC_FORMAT_MACROS -DVERTEX_REORDERING=2 -DVERBOSE_MODE=1 \
+  -I"$RCOUNT/src/utils" -I"$RCOUNT/src/sssp" -I"$RCOUNT/src/generator" -I"$APP/benchmarks" \
+  "$APP/benchmarks/riken_driver.cpp" "$RCOUNT/src/sssp/low_level_func.cc" "$OUT/mrg.o" \
+  -o "$OUT/riken_sssp_verbose"
+echo "BUILT riken_sssp_verbose"
+
 # --- fmt.
 if [ ! -f "$PREFIX/lib64/cmake/fmt/fmt-config.cmake" ]; then
   rm -rf "$DEPS/fmt-10.2.1" "$DEPS/fmt-build"
