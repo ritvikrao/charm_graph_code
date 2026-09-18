@@ -341,6 +341,93 @@ Each suspect's share:
   accounting only if the rounds are still blind after 8d.
 - 8d's pull phase is dropped (reading 2).
 
+## 8d results: lazy heavy relaxation (2026-09-18)
+
+`--lazy-heavy` (commit 51db6d9) works as follows:
+
+- **Light edges now.** A vertex relaxes its edges of weight up to L as soon
+  as its queued distance is current.
+- **One token per heavier range.** The rest of its edges are left behind
+  tokens, one per weight range (L, 2L], (2L, 4L], and so on.
+- **Queued like an update.** The token for range j is queued at d + L 2^j
+  and charged to the histogram as if it were an update there. The heap
+  threshold therefore admits it exactly when it would admit the first update
+  the token can make.
+- **Stale tokens are dropped.** When a token is admitted and its vertex has
+  moved since, the token is dropped; otherwise it relaxes its range and
+  queues the next.
+- **What does not change.** The frontier stays monotone, and termination
+  reads the same created and processed counts.
+
+With L the natural bucket width, it sends each heavy edge 1.01–1.16 times
+at every node count measured, against 1.30–6.34 before. The runs are
+`campaign/step8a/*-{20818305,20818307,20818316,20820531,20820559,20820560,20820633}`,
+medians of three runs, one source per graph.
+
+| 8 nodes | old build | lazy, heap 0.005 | lazy, heap 0.5 | lazy, heap 0.95 |
+|---|---:|---:|---:|---:|
+| rmat25 s | 0.759–0.883 | 0.804–0.808 | 0.469–0.506 | **0.424** |
+| rmat25 updates / edge | 4.30–4.93 | 1.04–1.27 | 1.07–1.15 | 1.01 |
+| rmat25 rounds × median round | 58–62 × 1.3–1.5 ms | 105–147 × 2.5–2.8 ms | 57–58 × 5.4–7.2 ms | 62 × 2.8 ms |
+| orkut s | 0.294–0.323 | 0.405–0.422 | 0.226 | **0.188** |
+| orkut updates / edge | 4.71–5.11 | 0.74 | 0.76–0.77 | 0.81 |
+| orkut rounds × median round | 43–46 × 0.6–1.0 ms | 135 × 2.3 ms | 46 × 4.3 ms | 29 × 6.7 ms |
+
+| 2 nodes | old build | lazy, heap 0.005 | lazy, heap 0.95 | lazy L=64, heap 0.5 |
+|---|---:|---:|---:|---:|
+| rmat25 s | 0.593–0.640 | 0.839 | 0.610 | 0.644 |
+| orkut s | 0.235–0.241 | 0.212 | 0.182 | **0.151** |
+| mesh24 s | 0.995 | 2.157 | 2.247 | |
+| road-usa s | 2.630 | 5.611 | 5.540 | |
+
+Readings:
+
+1. **Pruning works.** Work per edge on the scale-free graphs falls below
+   one, near RIKEN's range. With the positional heap percentile (0.005) the
+   time does not follow, because the solve becomes paced by the controller:
+   about 2.5× the rounds, each longer.
+2. **A wider heap percentile recovers the time.** Tokens make running ahead
+   cheap, so fewer, wider rounds pay, and at 0.95 the work stays at one
+   update per edge. At 8 nodes rmat25 is 1.79× faster than the old build
+   and orkut 1.72×. rmat25 is now faster at 8 nodes than at 2 (0.42 against
+   0.61 s); orkut is flat (0.19 against 0.18 s).
+3. **RIKEN's lead at 8 nodes would be 6.1× on rmat25 and 4.6× on orkut,**
+   against 11.7× and 7.5×. This uses RIKEN's 7.6o medians and one ACIC
+   source, so it is not a gate reading.
+4. **High-diameter graphs lose 2.1×.** There every edge is heavy, and
+   deferring them lengthens the improvement chains: distance changes per
+   vertex go from 18 to 84. `--lazy-heavy auto` is therefore on only for
+   average degree ≥ 8, the send filter's scale-free line. `--lazy-heap`
+   (default 0.95) is the heap percentile used only while lazy relaxation is
+   active. The wide heap alone, without lazy, costs mesh24 and road-usa
+   about 5%.
+5. **The rounds are now the critical path.** At 8 nodes, rounds × median
+   round is most of the solve. Reconverse's scheduler polls the node queue
+   (all of htram's traffic) before a PE's own queue, which holds the
+   threshold broadcast, the reduction's tree messages and the per-PE share
+   of every delivery. So a round waits for the whole backlog at every hop.
+   That is 8c's target.
+
+**Reconverse `adaptive-queues`** (merged onto 33b8c36 as local branch
+`step8-adaptive-queues`, `~/reconverse-worktrees/step8-aq`; Charm++ tree
+`-v0918-aq`) polls a PE's own queues 16 times for each poll of the node
+queue and re-weights the table from the work each queue yields.
+`register-queues` has the same static weights.
+
+On orkut at one node (job 20820727, one run each) it is 4–6× slower:
+
+| | lazy off | lazy on |
+|---|---:|---:|
+| 7.6k–n runtime | 0.267 s | 0.306 s |
+| `-v0918-aq` | 1.541 s | 1.127 s |
+| work per edge, `-v0918-aq` | 1.33 → 7.50 | 0.78 → 4.48 |
+| longest round, `-v0918-aq` | 1148 ms | 524 ms |
+
+htram's deliveries then wait in the node queue instead. Re-weighting whole
+queues moves the starvation from the control messages to the data. What
+8c needs is for the control messages alone to go first, so it builds a
+control path on the node queue in the application.
+
 ## Entry condition for 8g, and Gate A
 
 8g runs above 8 nodes only if, at 8 nodes in one allocation:

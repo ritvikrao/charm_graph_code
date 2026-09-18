@@ -174,9 +174,23 @@ bool send_filter_auto = true;
 // the heavy updates of the distance it left, which is where 8a found the
 // growth: at 8 nodes rmat25 created 3.7 heavy updates per heavy edge, and
 // RIKEN, which relaxes heavy edges once per settled vertex, sends 0.5.
-// auto: L is the natural bucket width. The token lives only in the local
+// on: L is the natural bucket width. auto: the same, but only for inputs of
+// average degree 8 or more -- the scale-free regime, the same line the send
+// filter draws (SEND_FILTER_MIN_BUFFER). On mesh24 and road-usa at 2 nodes
+// every edge is heavy, deferring them lengthens the improvement chains, and
+// the solve was 2.1x slower (job 20820633). The token lives only in the local
 // queue; it never reaches htram.
-long lazy_cut = 0;
+enum { LAZY_OFF = 0, LAZY_ON = -1, LAZY_AUTO = -2 };
+long lazy_cut = LAZY_OFF;
+// --lazy-heap P: the heap percentile while --lazy-heavy is active, in place of
+// the positional one. Tokens make running ahead cheap -- a stale range is
+// dropped rather than sent -- so fewer, wider rounds pay: rmat25 at 8 nodes
+// went 0.81 s (0.005) -> 0.47 s (0.5) -> 0.42 s (0.95), job 20820559.
+double lazy_heap_percentile = 0.95;
+static bool lazy_active() {
+  return lazy_cut > 0 || lazy_cut == LAZY_ON ||
+         (lazy_cut == LAZY_AUTO && num_global_edges >= 8L * V);
+}
 const int SEND_FILTER_AUTO_BITS = 17;
 const int SEND_FILTER_MIN_BUFFER = 2048;
 // --idle-flush off|on|starved. The per-chare [whenidle] callback drains the
@@ -1104,16 +1118,25 @@ public:
       } else if (arg == "--lazy-heavy") {
         const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
         if (value == "off")
-          lazy_cut = 0;
+          lazy_cut = LAZY_OFF;
+        else if (value == "on")
+          lazy_cut = LAZY_ON;
         else if (value == "auto")
-          lazy_cut = -1;
+          lazy_cut = LAZY_AUTO;
         else if (!value.empty() && std::stol(value) > 0)
           lazy_cut = std::stol(value);
         else {
-          ckout << "--lazy-heavy must be off, auto or a positive distance" << endl;
+          ckout << "--lazy-heavy must be off, on, auto or a positive distance" << endl;
           CkExit(1);
           return;
         }
+      } else if (arg == "--lazy-heap") {
+        if (i + 1 >= m->argc) {
+          ckout << "--lazy-heap needs a percentile" << endl;
+          CkExit(1);
+          return;
+        }
+        lazy_heap_percentile = std::stod(m->argv[++i]);
       } else if (arg == "--send-filter" || arg.rfind("--send-filter=", 0) == 0) {
         std::string value;
         if (arg == "--send-filter") {
@@ -1929,7 +1952,7 @@ public:
       heap_percent = 0.9999;
       tram_percent = 0.9999;
     } else {
-      heap_percent = heap_percentile;
+      heap_percent = lazy_active() ? lazy_heap_percentile : heap_percentile;
       tram_percent = tram_percentile;
     }
     previous_distance_changes = distance_changes;
@@ -2301,7 +2324,7 @@ public:
             << endl;
     }
 #endif
-    if (lazy_cut != 0)
+    if (lazy_active())
       ckout << "Lazy heavy: " << msg_stats[STAT_TOKENS] << " tokens, "
             << msg_stats[STAT_TOKENS_STALE] << " stale, per vertex: "
             << msg_stats[STAT_TOKENS] * 1.0 / V << endl;
@@ -3237,9 +3260,9 @@ public:
     double width =
         bucket_width_override > 0.0 ? bucket_width_override : natural_width;
     bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * width);
-    light_cut = lazy_cut > 0 ? lazy_cut
-                : lazy_cut < 0 ? std::max<cost>(1, (cost)std::llround(width))
-                               : 0;
+    light_cut = !lazy_active() ? 0
+                : lazy_cut > 0 ? lazy_cut
+                               : std::max<cost>(1, (cost)std::llround(width));
   }
 
   /**
