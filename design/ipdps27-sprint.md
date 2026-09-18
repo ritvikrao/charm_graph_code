@@ -278,6 +278,109 @@ allocation as the pairing arm. GAPBS on one node on every graph that fits.
 
 §4. Jobs 20826213 (paper graphs) and 20826232 (road-usa-w4).
 
+## 5b. Results so far
+
+### E1, first allocation per node count
+
+Paired medians against `current` (8 pairs: four held-out sources × 2), `/x`
+meaning the arm is x times slower. **Bold**: clears the allocation floor.
+`·`: inside it. Scale-free on `acic_ipdps` (8g behavior), jobs 20826260 (2
+nodes, floor 1.07×) and 20826261 (8 nodes, floor 1.29×, set by uniform25;
+rmat25 1.06×, orkut 1.08×). High-diameter on the Morton inputs, job
+20826391 (2 nodes, floor 1.06×).
+
+| arm | rmat25 2n | rmat25 8n | orkut 2n | orkut 8n | uniform25 2n | mesh24-z 2n | road-usa-z 2n | road-usa-w4-z 2n |
+|---|---|---|---|---|---|---|---|---|
+| `ws24` (all post-2024 mechanisms off) | **/2.11** | **/3.03** | **/1.35** | **/3.23** | **1.70** | **/4.72** | **/5.35** | **/5.43** |
+| `ws24-wide` (also the old wire) | **/2.09** | **/11.4** | **/2.74** | **/8.75** | **1.12** | **/4.24** | **/5.06** | **/4.92** |
+| `no-lazy` | **/1.22** | **/3.26** | **/1.33** | **/2.24** | **1.55** | — | — | — |
+| `no-filter` | **/1.15** | /1.07 ~ | 1.04 ~ | 1.00 · | **1.12** | — | — | — |
+| `fixed-cadence` | **/1.11** | /1.07 ~ | 1.02 ~ | 1.02 · | 1.02 ~ | **/1.07** | 1.01 ~ | 1.03 · |
+| `no-idle-flush` | 1.05 · | 1.04 · | 1.00 · | /1.09 ~ | 1.00 · | **/1.32** | **/1.09** | **/1.07** |
+| `no-idle-interval` | 1.00 · | 1.03 · | 1.05 ~ | 1.07 · | 1.01 ~ | **/1.12** | **/1.08** | **/1.10** |
+| `no-coarsen` | /1.07 · | 1.00 · | 1.05 ~ | 1.05 · | 1.01 ~ | 1.04 ~ | **1.14** | 1.04 · |
+| `buffer-2048` | 1.00 · | 1.01 · | /1.06 ~ | 1.07 · | 1.03 ~ | **/1.10** | **/1.88** | **/1.87** |
+| `buffer-no-feedback` | /1.03 · | 1.01 · | /1.04 ~ | 1.08 · | 1.02 ~ | **/1.12** | 1.05 ~ | 1.05 · |
+| `no-skip-empty` | 1.01 · | 1.03 · | 1.01 · | 1.04 · | 1.01 ~ | — | — | — |
+| `global-fixed` | **/1.22** | /1.07 ~ | /1.06 ~ | /1.17 ~ | **/1.07** | **/1.19** | **/1.73** | **/1.75** |
+| `tuned-fixed` | **/1.09** | /1.03 · | **1.13** | **/1.33** | **1.48** | /1.03 ~ | **/1.10** | **/1.07** |
+
+Reading, one allocation:
+
+- **C2 holds on both classes.** Together the post-2024 mechanisms are worth
+  2–3× on scale-free graphs and ~5× on high-diameter ones. Lazy relaxation
+  carries the scale-free gain (2.2–3.3× at 8 nodes). On high-diameter graphs
+  the buffer-size rule (1.9× on roads), idle flush and its interval, and
+  adaptive cadence each clear the floor. The compact wire is a further
+  ~3× on scale-free graphs at 8 nodes and nothing on high-diameter ones;
+  it is an implementation gain and is reported as one.
+- **C3 holds on the high-diameter class at 2 nodes:** the default beats the
+  good fixed setting by 1.19–1.75× and the per-graph tuned fixed setting by
+  1.03–1.10×. On scale-free graphs it is mixed: tuned-fixed wins orkut at 2
+  nodes (1.13×) and loses it at 8 (1.33×). The adaptivity claim, if made,
+  is for the high-diameter class.
+- **uniform25 runs better with lazy relaxation off**, which led to change 2.
+- Nothing hung, crashed or answered wrongly in 1,008 ablation runs.
+
+### Change 2: lazy relaxation only on skewed degree distributions
+
+On uniform25 lazy relaxation leaves traffic unchanged (1.07 × 10^9 updates,
+8.6 GB with or without it) and adds rounds; on rmat25 and orkut it cuts
+updates 1.4–4.8×. The auto gate now also requires a degree coefficient of
+variation of at least 1 (`--lazy-skew`, commit 2943ab5). Paired A/B of the
+old and new binaries in two allocations per node count (jobs
+20826591/93/95/97): uniform25 at 2 nodes 0.89 → 0.57 s (**1.5×**, 16/16
+pairs); at 8 nodes within noise. **Open:** rmat25 at 2 nodes was slower
+with the new binary in 8/8 pairs (1.09× and 1.17×; 5% more updates),
+although the gate gives the same answer there (CV 12). Job 20827103
+separates the binary from the gate (new binary with `--lazy-skew 0`).
+
+### E3, baselines at fair settings
+
+8 nodes (jobs 20826373 and 20827060, the second adding d1/d2), median solve
+seconds over four held-out sources. RIKEN's choices are now interior: 32
+ranks per node (of 8–64) and d4–d8 on RMAT (of d1–d1024).
+
+| graph | ACIC | RIKEN (choice) | Gluon-Async | RIKEN lead | ACIC over Gluon |
+|---|---:|---:|---:|---:|---:|
+| rmat25 | 0.237 / 0.252 | 0.074 / 0.069 (r32 d4) | 1.76 | 3.2× / 3.65× | 7.2× |
+| orkut | 0.098 | 0.031 (r16 d64) | 1.99 | 3.2× | 20× |
+| rmat26 | 0.394 / 0.374 | 0.121 / 0.124 (r32 d4–d8) | 1.94 | 3.0× | 5.4× |
+| rmat27 | 0.742 / 0.796 | 0.223 / 0.232 (r32 d4) | 2.55 | 3.35× / 3.4× | 3.5× |
+| uniform25 | 0.355 | 0.317 (r32 d256) | 3.23 | 1.1× | 9.1× |
+
+2 nodes (job 20826372): RIKEN leads 3.2× (rmat25), 2.2× (orkut), 3.2×
+(rmat26), 3.5× (rmat27), 1.6× (uniform25, before change 2). With RIKEN
+tuned fairly, its scale-free lead is ~3× at both node counts: it no longer
+grows from 2 to 8 nodes on RMAT, and it does not shrink. 8g's RIKEN numbers
+(r16, d16 at the grid edge) understated it by up to 2.5× (orkut 0.079 →
+0.031 s).
+
+### C6: one node
+
+Job 20826395, each system at its own best layout and delta on one node:
+
+| graph | ACIC 1 node | GAPBS 1 node | GAPBS lead | best ACIC at 8 nodes |
+|---|---:|---:|---:|---:|
+| mesh24 / mesh24-z | 0.548 / 0.917 | 0.193 / 0.174 | 2.8× / 5.3× | ~0.37 (-z) |
+| mesh26 / mesh26-z | 5.50 / 5.19 | 0.842 / 0.760 | 6.5× / 6.8× | 1.28 (-z) |
+| road-usa / road-usa-z | 1.51 / 1.66 | 0.152 / 0.118 | 9.9× / 14× | 0.88 (-z) |
+| rmat25 | 1.07 | 0.850 | 1.3× | 0.24 |
+| orkut | 0.288 | 0.145 | 2.0× | 0.10 |
+| uniform25 | 1.80 | 1.14 | 1.6× | 0.36 |
+| rmat26 | 2.26 | 1.68 | 1.3× | 0.37 |
+| rmat27 | 4.63 | 3.86 | 1.2× | 0.74 |
+
+**This is the largest threat to the submission.** On the high-diameter
+graphs that carry C1, one-node GAPBS beats 8-node ACIC: 7.5× on road-usa
+(0.118 s against 0.88 s), 1.7× on mesh26, 2× on mesh24. On scale-free
+graphs 8-node ACIC beats one-node GAPBS by 3.5–5×, but RIKEN beats both. At
+one node ACIC changes each road-usa distance ~9 times where Dijkstra
+changes it once; that per-node inefficiency, not communication, is the gap, and it
+is not something the sprint can close. The paper must either restrict C1 to
+"among distributed systems", with the COST ratio stated in the abstract's
+scope, or not be submitted (§6 go/no-go).
+
 ## 6. Budget and calendar
 
 Balance on 09-18: 66.1 K SU. Planned sprint spend ≤ 12 K SU: E1 ~5.6 K, E3

@@ -107,7 +107,7 @@ class Campaign:
         self.count = 0
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
-            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'acic_ipdps', 'acic_ipdps_wide', 'riken_sssp',
+            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'acic_ipdps', 'acic_ipdps_wide', 'acic_ipdps2', 'acic_ipdps2_wide', 'riken_sssp',
                              'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
@@ -121,7 +121,7 @@ class Campaign:
         # its own per-node total; the record keeps the allocation's budget.
         workers = config.get('workers', self.args.workers)
         per_graph_rule = None
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': 'acic_ipdps', 'acic-ipdps-wide': 'acic_ipdps_wide', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -1063,6 +1063,11 @@ class Campaign:
                          dict(b, name='no-skip-empty', flags=['--skip-empty', 'off'])]
             if g['filter']:
                 arms += [dict(b, name='no-filter', flags=['--send-filter', 'off'])]
+            if self.args.ablation_binary != 'acic_ipdps':
+                # The first allocations' binary at its own defaults: how much
+                # of a difference is the rebuild itself (09-19: rmat25 at 2
+                # nodes read ~7% apart between two builds of the same solve).
+                arms += [dict(b, name='prev-binary', engine='acic-ipdps-prev')]
             keep = self.args.arms.split(',') if self.args.arms else None
             return [a for a in arms if keep is None or a['name'] in keep]
 
@@ -1449,6 +1454,8 @@ if __name__ == '__main__':
     # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
     # fair-baseline re-take extends the grid downward.
     parser.add_argument('--delta-divisors', default='64,16,4,1')
+    parser.add_argument('--ablation-binary', default='acic_ipdps',
+                        help='--mode ablation: campaign/bin name of the binary under test (NAME_wide for ws24-wide)')
     parser.add_argument('--acic-rpn-map', help='--mode ablation: graph:rpn,... (default --acic-rpn)')
     # tuned-fixed is 7.6f2's question, and Gluon-Sync trailed Async in every
     # 7.5 cell; both remain available by name.
