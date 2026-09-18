@@ -428,6 +428,55 @@ queues moves the starvation from the control messages to the data. What
 8c needs is for the control messages alone to go first, so it builds a
 control path on the node queue in the application.
 
+## 8c results: the control path (2026-09-18)
+
+`--control node` (off by default) takes the controller's messages out of
+the PEs' own queues. It works as follows:
+
+- **Contributions are summed per process.** The PEs of a process sum their
+  round contributions in shared memory (`ControlNode::add`), and the last
+  one sends the sum to process 0 on the node queue.
+- **Thresholds come back to shared state.** Process 0 broadcasts them to
+  every process on the node queue, where they wait in shared memory.
+- **Each PE picks the round up at its next opportunity:** a delivery, a heap
+  pass or an idle pass. A queued `pickup_fallback` message covers a PE that
+  reaches none of these first.
+
+The first version livelocked on one PE. There a round followed every
+delivery, and each round queued a heap pass, a hold clear and a fallback
+message, so the PE's queue grew faster than it drained. The reduction path
+had been paced by its own wait in that queue. So now:
+
+- a PE keeps at most one heap pass and one fallback message queued;
+- it clears admitted holds directly;
+- process 0 leaves at least `--control-interval` ms (default 0.25) between
+  broadcasts.
+
+The verify gate passes with it, alone and with `--lazy-heavy on`.
+
+**It is slower.** Jobs 20820853 (8 nodes) and 20820854 (2 nodes), medians
+of three runs, lazy auto throughout:
+
+| | reduction | node, 0.05 ms | node, 0.25 ms | node, 1 ms |
+|---|---:|---:|---:|---:|
+| rmat25, 8 nodes | **0.401 s** (44 rounds × 2.5 ms) | 0.625 s (85 × 6.2 ms) | 0.555 s (74 × 4.0 ms) | 0.566 s (96 × 6.0 ms) |
+| orkut, 8 nodes | **0.189 s** (34 × 2.2 ms) | 0.228 s | 0.214 s | 0.213 s |
+| rmat25, 2 nodes | **0.626 s** | 0.739 s | 0.748 s | 0.802 s |
+| orkut, 2 nodes | **0.193 s** | 0.279 s | 0.264 s | 0.204 s |
+
+Readings:
+
+- **The median round at 8 nodes does not get shorter.** A round still waits
+  for the slowest of 896–960 PEs to reach a pickup point. That can be a
+  heap pass that expands a hub, or a delivery of several thousand items.
+  The queue order was not what set it.
+- **The extra rounds cost stale flushes.** rmat25 at 8 nodes sends
+  2.7–3.5 M stale flushes against 1.4 M, in smaller messages.
+- **With lazy relaxation and heap 0.95 the rounds are no longer most of
+  the solve.** On rmat25 at 8 nodes, 44 rounds of about 2.5 ms are about
+  110 ms of 401. So 8c's other half (accounting for rounds in flight) is
+  not pursued, and the time goes to 8e.
+
 ## Entry condition for 8g, and Gate A
 
 8g runs above 8 nodes only if, at 8 nodes in one allocation:

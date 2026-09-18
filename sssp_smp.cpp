@@ -39,6 +39,9 @@ thread_local double window_s0 = 0;
 #define COMM_SHARE_WORK
 #endif
 #include <algorithm>
+#include <atomic>
+#include <memory>
+#include <mutex>
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -187,6 +190,28 @@ long lazy_cut = LAZY_OFF;
 // dropped rather than sent -- so fewer, wider rounds pay: rmat25 at 8 nodes
 // went 0.81 s (0.005) -> 0.47 s (0.5) -> 0.42 s (0.95), job 20820559.
 double lazy_heap_percentile = 0.95;
+// --control reduction|node (step 8c). reduction: each round is a Charm++
+// reduction to Main and an array broadcast back, as always. Both travel in
+// the PEs' own queues, which Reconverse polls only when the node queue --
+// where every htram delivery lands -- is empty, so under load a round waits
+// for the backlog at every hop: 5-7 ms per round at 8 nodes once the rounds
+// became the critical path (8d). node: the PEs of a process sum their
+// contributions in shared memory and the last one sends the sum to process 0
+// on the node queue; the thresholds come back the same way, into shared
+// state that each PE picks up at its next delivery, heap pass or idle pass
+// (and, failing those, from a message in its own queue).
+//
+// The reduction path is paced by the queue it waits in; this one is not, and
+// a round per delivery would let the rounds' own messages outgrow the queue
+// (a single PE livelocked that way). So a PE keeps at most one heap pass and
+// one fallback message queued, and process 0 leaves at least
+// --control-interval ms between broadcasts.
+enum { CONTROL_REDUCTION = 0, CONTROL_NODE = 1 };
+int control_mode = CONTROL_REDUCTION;
+double control_interval_ms = 0.25;
+CProxy_ControlNode controlProxy;
+class Main;
+Main *main_instance = nullptr;
 static bool lazy_active() {
   return lazy_cut > 0 || lazy_cut == LAZY_ON ||
          (lazy_cut == LAZY_AUTO && num_global_edges >= 8L * V);
@@ -804,6 +829,7 @@ public:
   double compute_begin;
   double compute_time = -1.0; // set on convergence, or by the timeout handler
   bool run_truncated = false; // set by fast_exit; forces a nonzero exit
+  int control_generation = 0; // --control node: rounds broadcast so far
 
   /**
    * Read in graph from csv (currently sequential)
@@ -1130,6 +1156,24 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg == "--control") {
+        const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
+        if (value == "reduction")
+          control_mode = CONTROL_REDUCTION;
+        else if (value == "node")
+          control_mode = CONTROL_NODE;
+        else {
+          ckout << "--control must be reduction or node" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg == "--control-interval") {
+        if (i + 1 >= m->argc) {
+          ckout << "--control-interval needs milliseconds" << endl;
+          CkExit(1);
+          return;
+        }
+        control_interval_ms = std::stod(m->argv[++i]);
       } else if (arg == "--lazy-heap") {
         if (i + 1 >= m->argc) {
           ckout << "--lazy-heap needs a percentile" << endl;
@@ -1327,6 +1371,8 @@ public:
                                      buffer_size, enable_buffer_flushing,
                                      flush_timer, false, true, ignore_cb);
     shared = CProxy_SharedInfo::ckNew();
+    main_instance = this;
+    controlProxy = CProxy_ControlNode::ckNew();
     arr = CProxy_SsspChares::ckNew(tram_proxy, N);
     mainProxy = thisProxy;
     arr.initiate_pointers();
@@ -2178,9 +2224,15 @@ public:
                  coarsen);
     // arr.contribute_histogram(first_nonzero-1);
     last_first_nonzero = first_nonzero;
-    arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
-                           first_nonzero - 1, current_phase, starved, coarsen,
-                           extend ? 1 : 0, new_buffer_size);
+    if (control_mode == CONTROL_NODE)
+      controlProxy.thresholds(++control_generation, heap_threshold,
+                              tram_threshold, bfs_threshold, first_nonzero - 1,
+                              current_phase, starved, coarsen, extend ? 1 : 0,
+                              new_buffer_size);
+    else
+      arr.current_thresholds(heap_threshold, tram_threshold, bfs_threshold,
+                             first_nonzero - 1, current_phase, starved, coarsen,
+                             extend ? 1 : 0, new_buffer_size);
 
     // start next reduction round
     // CcdCallFnAfter(start_reductions, (void *) this, reduction_delay);
@@ -2541,6 +2593,116 @@ void fast_exit(void *obj, double time) {
  * This holds information that needs to be broadcasted
  * but that is calculated after the Main method
  */
+/** One round's thresholds, as --control node leaves them for the PEs. */
+struct ControlRound {
+  int gen = 0, heap = 0, tram = 0, bfs = 0, behind = 0, phase = 0,
+      starved = 0, coarsen = 1, extend = 0, bufsize = 0;
+};
+
+/**
+ * --control node. One per process. add() is called by each PE of the process
+ * with its round contribution; the last one forwards the sum to process 0,
+ * whose collect() hands the global sum to Main once every process has
+ * reported. thresholds() stores the round for the PEs to pick up.
+ */
+class ControlNode : public CBase_ControlNode {
+  std::mutex acc_lock, root_lock, round_lock;
+  std::vector<long> acc, root_acc;
+  int acc_count = 0, root_count = 0;
+  ControlRound latest;
+  // Process 0 only: the round waiting out --control-interval.
+  std::vector<long> ready;
+  double last_broadcast = 0.0;
+
+  static void release_ready(void *p, double) {
+    ControlNode *self = (ControlNode *)p;
+    std::vector<long> total;
+    total.swap(self->ready);
+    self->last_broadcast = CkWallTimer();
+    main_instance->reduce_histogram(total.data(), (int)total.size());
+  }
+
+public:
+  std::atomic<int> generation{0};
+  std::unique_ptr<std::atomic<char>[]> fallback_queued;
+  ControlNode() : fallback_queued(new std::atomic<char>[CkNodeSize(CkMyNode())]) {
+    for (int i = 0; i < CkNodeSize(CkMyNode()); i++)
+      fallback_queued[i] = 0;
+  }
+
+  void add(const long *values, int n) {
+    std::vector<long> out;
+    {
+      std::lock_guard<std::mutex> guard(acc_lock);
+      if (acc.empty())
+        acc.assign(n, 0);
+      for (int i = 0; i < n; i++)
+        acc[i] += values[i];
+      if (++acc_count == CkNodeSize(CkMyNode())) {
+        out.swap(acc);
+        acc_count = 0;
+      }
+    }
+    if (!out.empty())
+      thisProxy[0].collect(n, out.data());
+  }
+
+  void collect(int n, long *values) {
+    std::vector<long> total;
+    {
+      std::lock_guard<std::mutex> guard(root_lock);
+      if (root_acc.empty())
+        root_acc.assign(n, 0);
+      for (int i = 0; i < n; i++)
+        root_acc[i] += values[i];
+      if (++root_count == CkNumNodes()) {
+        total.swap(root_acc);
+        root_count = 0;
+      }
+    }
+    // One round at a time: the next cannot complete before this one's
+    // thresholds have gone out, which is the last thing reduce_histogram does.
+    if (total.empty())
+      return;
+    ready.swap(total);
+    const double wait_ms =
+        control_interval_ms - 1e3 * (CkWallTimer() - last_broadcast);
+    if (wait_ms > 0.0)
+      CcdCallFnAfter(release_ready, this, wait_ms);
+    else
+      release_ready(this, 0.0);
+  }
+
+  void thresholds(int gen, int heap, int tram, int bfs, int behind, int phase,
+                  int starved, int coarsen, int extend, int bufsize) {
+    {
+      std::lock_guard<std::mutex> guard(round_lock);
+      latest.gen = gen;
+      latest.heap = heap;
+      latest.tram = tram;
+      latest.bfs = bfs;
+      latest.behind = behind;
+      latest.phase = phase;
+      latest.starved = starved;
+      latest.coarsen = coarsen;
+      latest.extend = extend;
+      latest.bufsize = bufsize;
+    }
+    generation.store(gen, std::memory_order_release);
+    // The fallback, for a PE that runs none of the pickup points first; at
+    // most one queued per PE.
+    const int first = CkNodeFirst(CkMyNode());
+    for (int r = 0; r < CkNodeSize(CkMyNode()); r++)
+      if (!fallback_queued[r].exchange(1))
+        arr[first + r].pickup_fallback();
+  }
+
+  ControlRound get() {
+    std::lock_guard<std::mutex> guard(round_lock);
+    return latest;
+  }
+};
+
 class SharedInfo : public CBase_SharedInfo {
 public:
   int event_id;
@@ -2769,9 +2931,40 @@ public:
     // initialize_data(): under mode 1 that can run before this does.
     tram->setBufferSize(initial_buffer_size());
     shared_local = shared.ckLocalBranch();
+    control_local = controlProxy.ckLocalBranch();
+  }
+
+  ControlNode *control_local = nullptr;
+  int applied_generation = 0; // --control node: last round this PE applied
+
+  // --control node: apply a round the process has received and this PE has
+  // not. Called where the PE runs anyway -- a delivery, a heap pass, an idle
+  // pass -- and from the per-PE fallback message.
+  inline void maybe_pickup() {
+    if (control_mode == CONTROL_NODE &&
+        control_local->generation.load(std::memory_order_acquire) !=
+            applied_generation)
+      pickup_round();
+  }
+
+  void pickup_fallback() {
+    control_local->fallback_queued[CkMyRank()] = 0;
+    pickup_round();
+  }
+
+  void pickup_round() {
+    if (control_mode != CONTROL_NODE ||
+        control_local->generation.load(std::memory_order_acquire) ==
+            applied_generation)
+      return;
+    const ControlRound r = control_local->get();
+    applied_generation = r.gen;
+    current_thresholds(r.heap, r.tram, r.bfs, r.behind, r.phase, r.starved,
+                       r.coarsen, r.extend, r.bufsize);
   }
 
   bool idle_triggered() {
+    maybe_pickup();
     process_heap();
     // A heap that yielded has re-queued itself, so the PE is not idle yet.
     if (!heap_yielded &&
@@ -3092,6 +3285,7 @@ public:
     // endl;
     COMM_SHARE_WORK
     SsspChares *self = (SsspChares *)p;
+    self->maybe_pickup();
 #ifdef ACIC_DIAG
     self->count_batch_duplicates(new_vertex_and_distances, count);
 #endif
@@ -3663,7 +3857,10 @@ public:
    * this is not an entry method
    * returns true (runs when pe is idle)
    */
+  bool heap_queued = false; // --control node: a process_heap message is pending
   void process_heap() {
+    heap_queued = false;
+    maybe_pickup();
     COMM_SHARE_WORK
     heap_yielded = false;
 #ifdef PQ_HOLD_ONLY
@@ -3770,8 +3967,11 @@ public:
     // range is still too small.
     info_array[histo_reduction_width + 8] = clamped_created_locally;
     info_array[histo_reduction_width + 9] = send_filtered;
-    contribute((histo_reduction_width + 10) * sizeof(long), info_array,
-               CkReduction::sum_long, cb);
+    if (control_mode == CONTROL_NODE)
+      control_local->add(info_array, histo_reduction_width + 10);
+    else
+      contribute((histo_reduction_width + 10) * sizeof(long), info_array,
+                 CkReduction::sum_long, cb);
   }
 
   /**
@@ -3948,7 +4148,10 @@ public:
         std::max(max_admitted_drift, (long)tram->admittedDrift());
 #endif
 #ifndef PQ_HOLD_ONLY
-    arr[thisIndex].clear_pq_hold();
+    if (control_mode == CONTROL_NODE)
+      clear_pq_hold();
+    else
+      arr[thisIndex].clear_pq_hold();
 // add user event
 #endif
     // This was `rand() % 5 == 0`. rand() keeps process-global state, shared by
@@ -3971,7 +4174,12 @@ public:
       tram->tflush();
     //    tram->sanityCheck();
     //    tram->flush_everything();
-    arr[thisIndex].process_heap();
+    if (control_mode != CONTROL_NODE)
+      arr[thisIndex].process_heap();
+    else if (!heap_queued) {
+      heap_queued = true;
+      arr[thisIndex].process_heap();
+    }
     // The controller's cadence is normally not a knob: this call closes the
     // loop, so a round costs exactly a reduction plus a broadcast and nothing
     // sets the period. H4 says the tail advances only at that cadence, which
