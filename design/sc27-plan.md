@@ -456,17 +456,35 @@ alone does not show shared adaptive benefit. Use
 
 ### Baselines
 
-Each baseline gets a documented tuning budget, its own choice of rank/thread
-layout, and identical input semantics on equal node resources.
+Use [GAPBS](https://github.com/sbeamer/gapbs) as the *workload and
+one-node CPU benchmark*; its suite specifies kernels, graph families, and a
+methodology, and its current SSSP is optimized Δ-stepping with bucket fusion.
+It cannot serve as a many-node competitor because it is OpenMP shared memory.
+Use the RIKEN *implementation* as a distributed competitor on compatible
+graphs; using it does not turn this campaign into an official Graph500 score.
+Each system gets a documented tuning budget, its own rank/thread layout and
+partitioner, the same canonical graph and source, and the same node resources
+within a distributed comparison. Preserve the existing matched-input harness.
 
-| System | Role |
-|---|---|
-| Repaired pre-step-7 ACIC; strong fixed settings | Internal attribution |
-| [RIKEN Graph500-SSSP](https://github.com/RIKEN-RCCS/Graph500-SSSP) | Distributed Δ-stepping; audit input compatibility and delta tuning |
-| [GAPBS SSSP](https://github.com/sbeamer/gapbs) | One-node baseline and independent reference |
-| [Gluon-Async/Sync](https://iss.oden.utexas.edu/?p=projects/galois/analytics/dist-sssp) | Distributed asynchronous comparison |
-| [Wasp, SC25](https://research.chalmers.se/en/publication/549745) | One node; separates local scheduling from distributed effects |
-| Kernel-specific CPU and bounded GPU baselines | After the scope gate |
+| Priority | Implementation | Required comparison / reason |
+|---|---|---|
+| P0, internal | Repaired workshop-era ACIC, 8g ACIC, global-fixed and per-graph tuned-fixed, one-axis ablations | Establish what is new and whether feedback pays rather than just code repair and faster wire format. |
+| P0, shared memory | [GAPBS SSSP](https://github.com/sbeamer/gapbs) | Strong one-node reference; report the best one-node time alongside multi-node ACIC time on graphs fitting one node. Tune Δ; record the current bucket-fusion version. |
+| P0, distributed | [RIKEN Graph500-SSSP](https://github.com/RIKEN-RCCS/Graph500-SSSP) | Strong distributed Δ-stepping and ACIC's hard scale-free competitor. Tune Δ and process/thread geometry. Mark a graph incomparable when exact integer distances cannot be represented in RIKEN's binary32 path; do not count it as a loss. |
+| P0, distributed | [Galois/Gluon SSSP](https://github.com/IntelligentSoftwareSystems/Galois), Async and Sync | Nearest published asynchronous, bulk-communication alternative and a synchronous control. Keep both where the supported adapter validates; compare at the same node counts as RIKEN. |
+| P1, shared memory | [Wasp (SC25)](https://research.chalmers.se/publication/549745/file/549745_Fulltext.pdf), artifact DOI [10.5281/zenodo.15872863](https://doi.org/10.5281/zenodo.15872863) | A newer asynchronous priority/work-stealing SSSP CPU comparator that is particularly relevant to roads. Its artifact includes GAPBS and other baselines and many graph conversions. One-node only. |
+| P1, shared memory | [GBBS/Julienne](https://github.com/ParAlg/gbbs) or [GraphIt priority SSSP](https://github.com/GraphIt-DSL/graphit/tree/master/graphit_eval/priority_graph_cgo2020_eval) | Add one if the one-node/local-scheduling story is central and the P0 matrix is complete. Do not spend the IPDPS sprint reproducing every one-node algorithm. |
+| P2, hardware contingent | [cuGraph SSSP](https://docs.rapids.ai/api/cugraph/stable/api_docs/api/cugraph/cugraph.dask.traversal.sssp.sssp/) (single/multi GPU) and [Gunrock](https://github.com/gunrock/gunrock) | A bounded cross-hardware comparison, with graph fit, precision, device count and setup boundaries stated. The CPU-cluster paper's core evidence is the CPU matrix. |
+
+The [SC22 140-trillion-edge Graph500 SSSP result](https://sc22.supercomputing.org/proceedings/tech_paper/tech_paper_pages/pap112.html)
+is an extreme-scale *literature reference*, not a runnable baseline assumed to
+exist on the current cluster. Do not compare its GTEPS with an ACIC solve-only
+edge rate: graph generator, weights, undirected edge accounting, search-source
+protocol, hardware and validation all differ. Its own algorithm also adapts
+between sparse and dense communication, so ACIC cannot claim adaptation at
+extreme scale as an unoccupied design space. The [November 2025 Graph500 SSSP
+table](https://graph500.org/?page_id=238) is a second reference for system
+scale; distinguish that ranked submission from the SC22 published experiment.
 
 [Gluon-Async](https://roshandathathri.github.io/publication/2019-pact) already
 does asynchronous distributed execution with bulk communication, so the claim
@@ -479,13 +497,46 @@ failure as a slowdown or infer energy from edge counts.
 ### Inputs
 
 Record a canonical graph identity across systems; a generator name and seed is
-not enough. Mesh, RMAT and uniform generators plus road (road-ny, road-usa) and
-social (youtube, orkut) graphs. Sources are predeclared, several per graph, with
-reachability reported, and never selected by speed. Weight variants beyond
-unit/uniform/file are optional. Preserve directionality, duplicates, weights and
-ID mappings through conversion; time construction, conversion, solve and
-validation separately. Road graphs test the mesh hypothesis; they are not a
-promised win.
+not enough. This is the minimum *coverage matrix*, with graph topology and
+weight distribution varied separately:
+
+| Priority | Family and examples | Why it matters |
+|---|---|---|
+| P0 | High-diameter synthetic 2-D meshes at several scales; real [DIMACS road networks](https://www.diag.uniroma1.it/~challenge9/download.shtml), road-ny, road-usa and a held-out road region (e.g. Road-EU) | Main hypothesis. Real roads must use their original positive weights in at least one row; a mesh-only win is insufficient. Include a road weight variant whose maximum distance fits every P0 baseline, without changing topology. |
+| P0 | Scale-free RMAT/Kronecker at several scales plus Orkut and a larger social/web graph such as GAP-twitter or GAP-web | The known counter-regime. Retain losses and work-growth analysis as graphs and node counts increase. ACIC's current RMAT is not bit-identical to Graph500's generator. |
+| P0 | Uniform random (GAP-urand), at multiple scales | Degree-unskewed control that can expose controller overhead and poor partition assumptions. |
+| P1 | A non-grid, sparse high-diameter graph such as a road region, Delaunay triangulation or Kmer-v1r | Test whether the claimed regime is diameter/degree rather than the mesh generator. Wasp's public artifact supplies several of these. |
+| P1 | Large real web/social graph (GAP-web/uk-2007/Friendster) and, for a many-node real-data test, [ClueWeb12](https://law.di.unimi.it/webdata/clueweb12/) if its conversion is feasible | Tests the scale-free conclusion beyond tiny Orkut. ClueWeb12 has 978M vertices and 42.6B directed arcs, a useful bridge between one-node GAP graphs and synthetic trillion-edge runs. Report directedness and reachable fraction; do not symmetrize it silently. |
+| Stress, separate | Near-zero or highly skewed weights; optional official Graph500-style floats | Tests work explosion and numerical behavior. Do not mix this with the exact-positive-integer GAPBS campaign or call an integer surrogate Graph500-compliant. |
+
+For the main GAPBS-style SSSP matrix, use native positive weights for roads
+and reproducible integer weights (including GAPBS's common 1–255 variant) for
+graphs without weights. Include at least one second weight regime on the same
+topology. Sources are predeclared, several per graph, with reachability and
+distance range reported; never select them by speed. Preserve directionality,
+duplicates, weights and ID mappings through conversion; time construction,
+conversion, solve and validation separately. The current matched-input harness
+canonicalizes to undirected min-weight edges, so a directed run needs its own
+independently checked adapter and should not be silently pooled with those
+results.
+
+For IPDPS, the already prepared mesh24/26, road-usa, rmat25–27, orkut and
+uniform25 form the core, with a second real high-diameter graph and at least
+one larger web/social graph added only after the P0 validation and ablations.
+For SC27, require exact positive-integer weighted SSSP on both undirected and
+directed inputs, disconnected components and several held-out sources; document
+how loops and parallel edges are handled. Float weights and official Graph500
+compliance are separate extensions, each needing its own numerical validation.
+
+**GAPBS versus Graph500:** the [Graph500 specification](https://graph500.org/?page_id=12)
+uses an undirected Kronecker graph, 16 edge tuples per vertex, randomized labels,
+single-precision weights in [0,1), 64 search roots and a parent-tree validation
+contract. The present ACIC/GAPBS campaign uses integer weights, different
+RMAT generation and a smaller held-out source set. Report those as GAPBS-style
+SSSP measurements; do not claim an official Graph500 run or directly compare
+GTEPS to the extreme-scale leaderboard. Graph500's near-zero weights are
+algorithmically important: the SC22 study identified them as a cause of deeper
+SSSP trees at large scale.
 
 ### Methodology rules
 
@@ -515,12 +566,50 @@ validation of large runs ([protocol](post-step7-review.md)).
 
 ### Scaling and portability
 
-Increase through 2/8/16 nodes with larger problems first. Audit the starvation
-gate's `P × nodes × buffer_size` scaling (and the 7.6k buffer-size choice with it), the per-idle destination scan, hub
-handler durations and reduction latency; balanced edges are not balanced
-active work. After Gate A, 32–64 nodes, then 128–512 only where the regime
-justifies it; strong and weak scaling; one additional architecture or
-interconnect with frozen constants.
+**Two separate questions:** strong scaling asks whether a fixed graph gets
+faster as nodes increase; weak scaling asks whether time stays controlled when
+graph size grows with nodes. Report both with solve time, edge work, peak memory
+and failures; also report load/build time. A spectacular largest run alone is
+not evidence of scalability. For very short solves, use larger inputs before
+adding nodes. Freeze policy constants before the scale sweep.
+
+| Stage | Suggested graph / allocation | Gate before the next stage |
+|---|---|---|
+| Validation | rmat26–27 and mesh24–26 on 2/8/16/32 nodes, plus road-usa and a second real graph | Correct and stable on independent sources; comparable P0 baselines; no hidden setup or source-selection effect. |
+| Large | RMAT scale 30 and a sparse high-diameter graph on 32/64/128 nodes; add ClueWeb12 if its directed reader and validation are ready | 64-bit counts, no overflows; measured memory headroom and construction cost; meaningful 32→128 strong/weak scaling. |
+| Very large | Scale 33 on 128/256/512 nodes, then scale 35 only if a memory model and a smaller pilot support it | All-node run with an independently checked SSSP certificate and at least one distributed baseline on the largest common graph. If only ACIC fits, label a capacity result, not a speedup. |
+| Frontier, conditional | 1,024+ nodes or still larger scales only with machine time, memory, and robust validation | Treat as a separate SC27 or later campaign; publish actual graph and machine scale, not an implied Graph500 record. |
+
+At 16 *undirected edge tuples* per vertex, scale 30 has 1.07B vertices and
+17.2B tuples, scale 33 has 8.59B and 137B, scale 35 has 34.4B and 550B, and
+scale 43 has 8.80T and about 141T (the SC22 order of magnitude). Storing both
+directions makes up to twice as many adjacency entries before deduplication.
+ACIC's `Edge` uses two 64-bit longs on this platform, so one trillion stored
+arcs alone require about **16 TB**, before offsets, distances, work queues,
+runtime buffers and construction peaks. Set the scale from a measured per-node
+peak and at most ~70% of available aggregate memory, not from edge count alone.
+At scale 43, storing both directions of ~141T tuples in ACIC's current `Edge`
+would require roughly **4.5 PB for edges alone**; matching the SC22 volume
+requires a different memory representation and vastly larger allocation, not
+simply extending the 512-node sweep.
+
+**Current code blockers before scale 31+:** `graphlib/gapbs.h` stores .wsg/.sg
+destinations as signed 32-bit integers; its 64-bit header counts do not make
+that a 64-bit vertex format. More immediately, `WireUpdate` stores the
+overflow flag in bit 31 of a 32-bit vertex field and aborts at vertex IDs
+≥ 2^31 or tentative distances ≥ 2^32. Scale 31+ therefore requires a wider
+wire mode and a distributed 64-bit generator/reader before any solve. GAPBS
+and Wasp are one-node baselines and their 32-bit vertex formats cannot cover
+the trillion-edge stage. Prove canonical identity and weights across ACIC and
+the distributed baseline. Audit all counts, reductions, file offsets,
+allocation products and source IDs for overflow; test the boundary just below
+and above 2^31 vertices before committing a very large allocation. Remeasure
+bytes/update and buffer optima after widening the wire. Audit the starvation gate's
+`P × nodes × buffer_size` scaling, per-idle destination scan, hub handler
+durations, reduction latency, graph generation/exchange and shared filesystem
+traffic. Balanced edge counts are not balanced active work. A second CPU
+architecture/interconnect with frozen constants is valuable after the main
+scale campaign.
 
 Parked for the first campaign above 16 nodes: rmat20 reads 1.59× and 1.55× for
 the `weight` width rule at 16 nodes (floors 1.14×, 1.22×) but regresses at two.
