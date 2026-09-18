@@ -554,6 +554,63 @@ Against the 7.6k–n build (`campaign/bin/acic`) these defaults are:
   4 per node 0.54 s, 2 per node 1.05 s (jobs 20821055–56). That is left
   to 8b.
 
+## 8b so far: empty deliveries, and the entry check (2026-09-18)
+
+htram's node-level receive sorts a message by destination PE, then sends
+one per-PE delivery to *every* PE of the process, whatever that PE's share.
+At 8 nodes a message averages about 70 items over 15 PEs, so most
+deliveries carry nothing.
+
+Skipping the empty ones had opposite effects by regime (jobs
+20821360–62, 20821390–91):
+
+- **Scale-free:** orkut at 8 nodes 1.1× faster (0.180 against 0.202 s),
+  neutral at 2 nodes.
+- **High-diameter:** mesh24 at 2 nodes 2.1× slower (0.91–1.02 against
+  0.44 s) and road-usa 4.4× slower. Updates per edge rose from 12.5 to 20.
+
+The empty deliveries sit in each PE's FIFO ahead of its heap-pass
+continuations. So more improvements are applied before a vertex is
+expanded, and a high-diameter graph's long improvement chains depend on
+that. It is an accident of scheduling, not a design. The skip is now an
+htram option (`setSkipEmptyDeliveries`), and ACIC turns it on in the
+scale-free regime only, with lazy relaxation.
+
+**Entry check, one allocation per node count** (jobs 20821480 at 8 nodes
+and 20821481 at 2 nodes):
+
+- the current defaults (`acic_8b2`), the 7.6k–n build and RIKEN at its
+  7.6o setting;
+- run interleaved on the four 7.6o test sources;
+- medians, with leads as paired medians.
+
+| | ACIC now | ACIC 7.6k–n | RIKEN | RIKEN lead now | RIKEN lead, 7.6k–n build | now vs 7.6k–n |
+|---|---:|---:|---:|---:|---:|---:|
+| rmat25, 8 nodes | 0.259 s | 0.852 s | 0.072 s | **3.59×** | 11.8× | 3.60× |
+| orkut, 8 nodes | 0.175 s | 0.303 s | 0.032 s | **4.85×** | 9.46× | 1.80× |
+| rmat25, 2 nodes | 0.558 s | 0.659 s | 0.196 s | 2.78× | 3.35× | 1.17× |
+| orkut, 2 nodes | 0.150 s | 0.215 s | 0.067 s | 2.25× | 3.35× | 1.45× |
+
+Against the entry condition:
+
+- rmat25 is now faster at 8 nodes than at 2 (0.56 → 0.26 s); orkut is not
+  (0.15 → 0.175 s).
+- RIKEN's lead at 8 nodes is still above 3× on both.
+- The high-diameter graphs are faster than with the 7.6k–n build.
+
+Not met yet. The stop rule (RIKEN more than 5× ahead on rmat25) is not
+triggered.
+
+**Settled pruning, measured again under the new defaults.** 8a counted
+70–75% of orkut's arrivals landing on vertices already below the frontier.
+Those were lazy runs at heap percentile 0.005. At the current heap
+percentile of 0.95 the same counter reads 0.1% on rmat25 and 4.4% on orkut
+at 8 nodes (`acic_diag8h`, `STEP8A_SETTLED_BY_DEGREE`, job 20822160). The
+frontier now sits far behind the work, so a sender that knew which hubs are
+settled would skip almost nothing. The settled-hub filter planned for 8d
+was written but never built, and was taken out. RIKEN's bitmap works
+because its buckets are narrow and its phases synchronous.
+
 ## Entry condition for 8g, and Gate A
 
 8g runs above 8 nodes only if, at 8 nodes in one allocation:

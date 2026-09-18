@@ -13,7 +13,10 @@
 #        every run with --diag so each has a rounds.csv. An arm is
 #        LABEL:BINARY:TRAM:HEAP:FLAGS -- TRAM and HEAP are the solver's two
 #        positional percentiles in that order (0.999 and 0.005 by default),
-#        FLAGS comma-separated.
+#        FLAGS comma-separated. A BINARY of riken_sssp runs RIKEN at the
+#        graph's delta (16 ranks x 7 threads per node), TRAM and HEAP unused.
+# GRAPHS may name a graph more than once, with different sources; labels then
+# carry the source (arm-GRAPH-SOURCE-LABEL-rN).
 #
 # GRAPHS is "graph:source:ranks_per_node:riken_delta ...", defaulting to the
 # first 7.6o test source of rmat25 and orkut.
@@ -62,10 +65,21 @@ acic() {  # acic BINARY LABEL GRAPH SOURCE RPN TRAM HEAP [flags...]
 }
 
 check() {  # check LABEL GRAPH SOURCE -> "seconds ok|bad"
-  local f=$OUT/$1.out ref h1
+  local f=$OUT/$1.out ref h1 secs
   ref=$(grep -E "^$3\b" "$ROOT/graphs/$2.reference.txt" | awk '{print $3}')
   h1=$(grep -oE 'VERIFY parallel digest h1=[0-9]+' "$f" | cut -d= -f2)
-  printf '%s %s' "$(awk '/^Compute time/{print $3}' "$f")" "$([ "$h1" = "$ref" ] && echo ok || echo bad)"
+  secs=$(awk '/^Compute time/{print $3}' "$f")
+  if [ -z "$h1" ]; then  # RIKEN's BENCH line
+    h1=$(grep -oE '^BENCH .*' "$f" | grep -oE 'h1=[0-9]+' | cut -d= -f2)
+    secs=$(grep -oE ' solve_seconds=[0-9.e-]+' "$f" | cut -d= -f2)
+  fi
+  printf '%s %s' "$secs" "$([ "$h1" = "$ref" ] && echo ok || echo bad)"
+}
+
+riken() {  # riken BINARY LABEL GRAPH SOURCE DELTA
+  OMP_NUM_THREADS=7 srun -N "$N" -n $((N * 16)) --ntasks-per-node 16 -c 8 --cpu-bind=cores \
+    --unbuffered --kill-on-bad-exit=1 "$ROOT/bin/$1" \
+    "$ROOT/graphs/$3.wsg" "$4" "$5" 1024 0 > "$OUT/$2.out" 2>&1
 }
 
 for spec in $GRAPHS; do
@@ -92,15 +106,23 @@ if [[ " $PARTS " == *" arms "* ]]; then
   for spec in $GRAPHS; do
     IFS=: read -r graph source rpn delta <<< "$spec"
     first=${arms[0]}; IFS=: read -r _ wbin _ <<< "$first"
-    acic "$wbin" "arm-$graph-warm" "$graph" "$source" "$rpn" 0.999 0.005 || true
+    [[ $wbin == riken* ]] || acic "$wbin" "arm-$graph-$source-warm" "$graph" "$source" "$rpn" 0.999 0.005 || true
+    tag=$graph
+    [ "$(printf '%s\n' $GRAPHS | grep -c "^$graph:")" -gt 1 ] && tag=$graph-$source
     for ((r = 0; r < ROUNDS; r++)); do
       for ((k = 0; k < na; k++)); do
         IFS=: read -r label bin tram heap flags <<< "${arms[$(((k + r) % na))]}"
         IFS=, read -r -a extra <<< "$flags"
-        if acic "$bin" "arm-$graph-$label-r$r" "$graph" "$source" "$rpn" "$tram" "$heap" "${extra[@]}"; then
-          echo "$graph $label $r $(check "arm-$graph-$label-r$r" "$graph" "$source")" | tee -a "$OUT/arms.txt"
+        name="arm-$tag-$label-r$r"
+        if [[ $bin == riken* ]]; then
+          riken "$bin" "$name" "$graph" "$source" "$delta"
         else
-          echo "$graph $label $r FAILED"
+          acic "$bin" "$name" "$graph" "$source" "$rpn" "$tram" "$heap" "${extra[@]}"
+        fi
+        if [ $? -eq 0 ]; then
+          echo "$graph $source $label $r $(check "$name" "$graph" "$source")" | tee -a "$OUT/arms.txt"
+        else
+          echo "$graph $source $label $r FAILED"
         fi
       done
     done

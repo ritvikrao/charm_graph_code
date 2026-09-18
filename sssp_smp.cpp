@@ -33,6 +33,20 @@ struct Work {
 };
 thread_local unsigned long window_tsc0 = 0;
 thread_local double window_s0 = 0;
+// Step 8e: time between the scheduler's begin-idle and end-idle conditions,
+// less the solver work the idle callback did inside it (process_heap runs
+// from there), so idle + work never counts a tick twice.
+thread_local unsigned long idle_tsc = 0, idle_t0 = 0, idle_work0 = 0;
+inline void idle_begin(void *) {
+  idle_t0 = __rdtsc();
+  idle_work0 = work_tsc;
+}
+inline void idle_end(void *) {
+  if (idle_t0) {
+    idle_tsc += (__rdtsc() - idle_t0) - (work_tsc - idle_work0);
+    idle_t0 = 0;
+  }
+}
 } // namespace comm_share
 #define COMM_SHARE_WORK comm_share::Work comm_share_work_;
 #else
@@ -572,13 +586,17 @@ enum {
   // at the vertex's final distance.
   STAT_LEAD_EXPANSIONS,
   STAT_LEAD_FINAL = STAT_LEAD_EXPANSIONS + LEAD_CLASSES,
+  // Arrivals at final vertices by the target's degree class: what a filter
+  // on settled hubs could remove at the sender.
+  STAT_SETTLED_DEG = STAT_LEAD_FINAL + LEAD_CLASSES,
   // ACIC_COMM_SHARE builds only: TSC ticks summed over PEs.
-  STAT_WORK_TSC = STAT_LEAD_FINAL + LEAD_CLASSES,
+  STAT_WORK_TSC = STAT_SETTLED_DEG + DEGREE_CLASSES,
                       // inside process_heap() or the delivery callback
   STAT_WORK_SEND_TSC, // of which htram sends
   STAT_SEND_TSC,      // every htram send in the window
   STAT_WINDOW_TSC,    // each PE's window, start_papi() to print_distances()
   STAT_WINDOW_US,     // the same windows in microseconds, to convert ticks
+  STAT_IDLE_TSC,      // scheduler idle, less the work idle callbacks did
   STAT_END
 };
 
@@ -2398,6 +2416,7 @@ public:
             << " compute_share=" << (work - work_send) / pe_seconds
             << " send_share=" << send / pe_seconds
             << " other_share=" << 1.0 - (work - work_send + send) / pe_seconds
+            << " idle_share=" << msg_stats[STAT_IDLE_TSC] * s_per_tick / pe_seconds
             << endl;
     }
 #endif
@@ -2489,6 +2508,13 @@ public:
                    std::max(1.0, reached - msg_stats[STAT_REACHED_HEAVY])
             << " arrivals_at_settled=" << msg_stats[STAT_ARRIVAL_SETTLED]
             << endl;
+      ckout << "STEP8A_SETTLED_BY_DEGREE class,min_degree,settled_arrivals,arrivals";
+      for (int i = 0; i < DEGREE_CLASSES; i++)
+        if (msg_stats[STAT_DEG_ARRIVALS + i])
+          ckout << " " << i << "," << (i == 0 ? 0 : (1L << (i - 1))) << ","
+                << msg_stats[STAT_SETTLED_DEG + i] << ","
+                << msg_stats[STAT_DEG_ARRIVALS + i];
+      ckout << endl;
       ckout << "STEP8A_LEAD class,min_widths,expansions,final";
       for (int i = 0; i < LEAD_CLASSES; i++)
         if (msg_stats[STAT_LEAD_EXPANSIONS + i])
@@ -2779,6 +2805,7 @@ private:
   long *histogram; // local histogram of data, from 0 to max_size, divided into
                    // HISTO_BUCKET_COUNT buckets
   cost light_cut = 0;       // --lazy-heavy's L on this PE; 0 is off
+
   long tokens_created = 0;  // --lazy-heavy tokens queued
   long tokens_stale = 0;    // ... and found stale when admitted
 #ifdef ACIC_DIAG
@@ -2794,6 +2821,7 @@ private:
   // Step 8a counters; see STAT_EXPANSIONS.
   long expansions = 0, heavy_created = 0, arrival_settled = 0;
   long lead_expansions[LEAD_CLASSES] = {0};
+  long settled_deg[DEGREE_CLASSES] = {0};
   unsigned char *last_lead = nullptr; // lead class of each vertex's last expansion
   int frontier_bucket = 0;            // lowest live bucket, as last broadcast
   // A per-PE total says how much work a PE did over the whole run, which is
@@ -2956,6 +2984,11 @@ public:
     // initialize_data(): under mode 1 that can run before this does.
     tram->setBufferSize(initial_buffer_size());
     tram->setIdleFlushInterval(idle_flush_interval_seconds());
+    // Step 8b: in the scale-free regime a delivery goes only to the PEs it
+    // has items for (orkut at 8 nodes 1.1x). Below it the empty deliveries
+    // stay, because they pace the heap passes that a high-diameter solve
+    // relies on (mesh24 at 2 nodes 2.1x slower without them, job 20821390).
+    tram->setSkipEmptyDeliveries(lazy_active());
     shared_local = shared.ckLocalBranch();
     control_local = controlProxy.ckLocalBranch();
   }
@@ -3277,6 +3310,11 @@ public:
 #ifdef ACIC_COMM_SHARE
     comm_share::work_tsc = comm_share::work_send_tsc = 0;
     htram_send_tsc = 0;
+    comm_share::idle_tsc = comm_share::idle_t0 = 0;
+    CcdCallOnConditionKeep(CcdPROCESSOR_BEGIN_IDLE,
+                           (CcdCondFn)comm_share::idle_begin, nullptr);
+    CcdCallOnConditionKeep(CcdPROCESSOR_END_IDLE,
+                           (CcdCondFn)comm_share::idle_end, nullptr);
     comm_share::window_s0 = CkWallTimer();
     comm_share::window_tsc0 = __rdtsc();
 #endif
@@ -3824,8 +3862,10 @@ public:
     const int deg_class = degree_class(local_graph.degree(local_index));
     deg_arrivals[deg_class]++;
     if (distances[local_index] != lmax &&
-        get_histo_bucket(distances[local_index]) < frontier_bucket)
+        get_histo_bucket(distances[local_index]) < frontier_bucket) {
       arrival_settled++;
+      settled_deg[deg_class]++;
+    }
 #endif
     if (this_cost < distances[local_index]) {
 #ifdef VCOUNT
@@ -4241,6 +4281,8 @@ public:
     msg_stats[STAT_WORK_TSC] = (long)comm_share::work_tsc;
     msg_stats[STAT_WORK_SEND_TSC] = (long)comm_share::work_send_tsc;
     msg_stats[STAT_SEND_TSC] = (long)htram_send_tsc;
+    comm_share::idle_end(nullptr);
+    msg_stats[STAT_IDLE_TSC] = (long)comm_share::idle_tsc;
 #endif
     msg_stats[STAT_WASTED] = wasted_updates;
     msg_stats[STAT_REJECTED] = rejected_updates;
@@ -4288,6 +4330,8 @@ public:
       }
       for (int i = 0; i < LEAD_CLASSES; i++)
         msg_stats[STAT_LEAD_EXPANSIONS + i] = lead_expansions[i];
+      for (int i = 0; i < DEGREE_CLASSES; i++)
+        msg_stats[STAT_SETTLED_DEG + i] = settled_deg[i];
     }
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++) {
       msg_stats[STAT_HISTO_CREATED + i] = histo_created[i];
