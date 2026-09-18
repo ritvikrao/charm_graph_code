@@ -37,6 +37,7 @@ mainmodule sssp_smp
   readonly long lazy_cut;
   readonly bool warm_links_on;
   readonly int lazy_growth;
+  readonly int skip_empty_mode;
   readonly int control_mode;
   readonly double control_interval_ms;
   readonly CProxy_ControlNode controlProxy;

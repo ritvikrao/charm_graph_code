@@ -159,6 +159,12 @@ submission decision.
 | Sep 27–30 | Freeze data, produce figures/tables with uncertainty and failures, write a complete anonymized draft, get a skeptical internal read, and register a truthful ≤500-word abstract by Oct 1 AOE if the go gate passed. |
 | Oct 1–7 | Revise, audit every result against raw logs and source version, verify citations and anonymity, and submit the full paper by Oct 8 AOE. |
 
+**Sprint working documents (09-18):** [ipdps27-sprint.md](ipdps27-sprint.md)
+holds the claim/evidence table, the overlap check against the workshop code,
+pinned versions, validation, and experiments E1–E4 (ablation on one binary,
+the high-diameter scaling diagnosis, baselines at fair settings, independent
+validation). [ipdps27-paper.md](ipdps27-paper.md) is the ten-page skeleton.
+
 GPU SSSP belongs in related work and scope, with a bounded direct comparison
 only if matching GPU hardware and input semantics are available without
 displacing the CPU causal study. Single- and multi-GPU weighted SSSP exist:
@@ -593,23 +599,46 @@ would require roughly **4.5 PB for edges alone**; matching the SC22 volume
 requires a different memory representation and vastly larger allocation, not
 simply extending the 512-node sweep.
 
-**Current code blockers before scale 31+:** `graphlib/gapbs.h` stores .wsg/.sg
-destinations as signed 32-bit integers; its 64-bit header counts do not make
-that a 64-bit vertex format. More immediately, `WireUpdate` stores the
-overflow flag in bit 31 of a 32-bit vertex field and aborts at vertex IDs
-≥ 2^31 or tentative distances ≥ 2^32. Scale 31+ therefore requires a wider
-wire mode and a distributed 64-bit generator/reader before any solve. GAPBS
-and Wasp are one-node baselines and their 32-bit vertex formats cannot cover
-the trillion-edge stage. Prove canonical identity and weights across ACIC and
-the distributed baseline. Audit all counts, reductions, file offsets,
-allocation products and source IDs for overflow; test the boundary just below
-and above 2^31 vertices before committing a very large allocation. Remeasure
-bytes/update and buffer optima after widening the wire. Audit the starvation gate's
-`P × nodes × buffer_size` scaling, per-idle destination scan, hub handler
-durations, reduction latency, graph generation/exchange and shared filesystem
-traffic. Balanced edge counts are not balanced active work. A second CPU
-architecture/interconnect with frozen constants is valuable after the main
-scale campaign.
+**Vertex-count audit: every type on the path must hold the larger graphs
+(09-18).** Growing the graph is not only a memory question. Before any run
+at scale 30 or above, every type that holds a vertex ID, an edge index or
+count, a distance, or a product of them must be wide enough. The table is the
+09-18 read of the code. `long` is 64-bit on every platform used here (LP64).
+
+| Where | Type now | Limit | Action before larger graphs |
+|---|---|---|---|
+| `weighted_node_struct.h` `Edge`, `Update`, `LongEdge` | `long` vertex and distance | 2^56 vertices in `Update` (bits 56–62 carry the token and overflow flags) | none |
+| `WireUpdate` (compact wire, the default) | `uint32` vertex with the overflow flag in bit 31; `uint32` distance | aborts at vertex ≥ 2^31 or tentative distance ≥ 2^32 | a 64-bit wire mode (12- or 16-byte items) selected by V and the distance bound; remeasure bytes per update and buffer optima |
+| `sssp_smp.cpp` send-filter cache | `uint32` vertex and distance | wider values are not cached (safe, filter weaker) | widen with the wire |
+| `sssp_smp.cpp` destination-table setup | `int i = j * M` | overflowed at V ≥ 2^31 | **fixed 09-18** (`long`) |
+| `sssp_smp.cpp` per-PE loops (`verify_hash`, `get_max_cost`) | `int` over a PE's vertices | 2^31 per PE | widened to `long` 09-18 |
+| `sssp_smp.cpp` destination tables | `int[V/1024]` twice, per PE | ~V/128 bytes per PE: 16 MB at 2^31, 256 MB at 2^35, times 120 PEs per node | share one table per process or store PE boundaries (≤ PEs entries) and binary-search |
+| `sssp_smp.cpp` global counts, reductions | `long`, `sum_long` / `sum_ulong_long` | 2^63 | none |
+| `sssp_smp.cpp` CSV reader (mode 0) | `int` counters, `new int[V]` | 2^31 | retired path; do not use at scale |
+| `histogramSequence` (diag builds) | `int` bucket counts | 2^31 per bucket | widen if the diag build runs at scale |
+| htram `tot_send_count`, `tot_recv_count`, `agg_msg_count`, `flush_msg_count`, `updates_in_tram_count` | `int` per PE | 2^31 items or messages per PE per run | `long`; rmat27 at 2 nodes is ~2×10^7 per PE, so this bites near scale 33 on few nodes |
+| `graphlib/gapbs.h` `.wsg`/`.sg` | 64-bit header counts and offsets, `int32` destinations and weights | 2^31 vertices, weights < 2^31 | a 64-bit-ID format (or ACIC's in-process generator) above 2^31 |
+| `benchmarks/prepare_graph.cpp` | `int32` `PairEdge`; one process holds all edges | 2^31 vertices; memory (12 bytes per undirected edge plus sort: ~200 GB at scale 30) | distributed generation; no serial conversion at scale 30+ |
+| `benchmarks/reference_gap.cpp`, ACIC `--verify` | serial 64-bit Dijkstra on one process | memory of one node | a distributed certificate (parent/edge-tightness check) for scale 30+ |
+| `benchmarks/common.h` (RIKEN, GAPBS adapters) | `int32` edge `{v, w}`; rejects n > INT32_MAX | 2^31 vertices | RIKEN has its own 64-bit generator path; use it instead of the file adapter at scale |
+| `benchmarks/to_galois.py` (Gluon `.gr` v1) | 4-byte destinations | 2^31 (signed read) | `.gr` v2 (8-byte IDs) above 2^31 |
+| `benchmarks/validate_independent.py` | scipy csgraph, int32 indices | 2^31 stored arcs (rmat26 and larger excluded) | spot checks only at scale |
+| RIKEN distances | binary32 | integer distances exact below 2^24 | integer-exact variants only (road-usa-w4); otherwise mark incomparable |
+
+The IPDPS inputs (at most rmat27: 2^27 vertices, 4.2 × 10^9 stored arcs,
+distances below 2^26) are inside every limit. The first graph that is not
+is scale 31, so the wire mode, the file format, the converter, the reference
+and the htram counters must change before any allocation above scale 30.
+Test just below and above 2^31 vertices on a small node count before
+committing a large allocation. Also audit the starvation gate's
+`P × nodes × buffer_size` product, the per-idle destination scan, hub
+handler durations, reduction latency, graph generation and exchange, and
+shared filesystem traffic at scale. GAPBS and Wasp are one-node baselines
+with 32-bit vertex formats; they cannot cover the trillion-edge stage. Prove
+canonical identity and weights across ACIC and the distributed baseline.
+Balanced edge counts are not balanced active work. A second CPU
+architecture or interconnect with frozen constants is valuable after the
+main scale campaign.
 
 Parked for the first campaign above 16 nodes: rmat20 reads 1.59× and 1.55× for
 the `weight` width rule at 16 nodes (floors 1.14×, 1.22×) but regresses at two.

@@ -15,6 +15,11 @@
 # names (comma-separated) defaults to the 7.6f2 set. rmat27 (7.6o) is not in
 # it: 4.2B edges, about twice rmat26's 43 GB peak, and it also writes the
 # Galois .gr copy for the Gluon arm here rather than in prepare_gluon.sbatch.
+# Neither is road-usa-w4 (IPDPS sprint), which also writes its .gr here. Run
+# one small input on the shared partition by calling this script with bash
+# inside a smaller allocation, e.g.
+#   sbatch -p shared -c 8 --mem=24G -t 40 -A asc050025 \
+#     --wrap "bash scripts/anvil/prepare_large.sbatch CAMPAIGN road-usa-w4"
 #SBATCH --account=asc050025
 #SBATCH --partition=wholenode
 #SBATCH --nodes=1
@@ -59,6 +64,14 @@ prepare_one() {
       [ -s "$DATA/road-usa.meta" ] || gzip -dc "$DEPS/USA-road-d.USA.gr.gz" |
         /usr/bin/time -v "$BIN/prepare_graph" dimacs 23947347 0 1 "$DATA/road-usa.wsg" \
           > "$DATA/road-usa.meta" 2> "$DATA/road-usa.prepare.log" ;;
+    road-usa-w4)
+      # IPDPS sprint: road-usa's topology with each native weight divided by
+      # four, rounded up, so every distance stays below 2^24 and RIKEN's
+      # binary32 path is exact. The reference below keeps the guard on.
+      [ -s "$DATA/road-usa-w4.meta" ] || gzip -dc "$DEPS/USA-road-d.USA.gr.gz" |
+        awk '$1 == "a" { $4 = int(($4 + 3) / 4) } { print }' |
+        /usr/bin/time -v "$BIN/prepare_graph" dimacs 23947347 0 1 "$DATA/road-usa-w4.wsg" \
+          > "$DATA/road-usa-w4.meta" 2> "$DATA/road-usa-w4.prepare.log" ;;
     orkut)
       [ -s "$DATA/orkut.meta" ] || gzip -dc "$DEPS/com-orkut.ungraph.txt.gz" |
         /usr/bin/time -v "$BIN/prepare_graph" snap 3072441 0 1 "$DATA/orkut.wsg" \
@@ -66,7 +79,7 @@ prepare_one() {
   esac || { echo "PREPARE FAILED $name"; return 1; }
   if [ "$name" = road-usa ]; then reference "$name" any-range; else reference "$name"; fi ||
     { echo "REFERENCE FAILED $name"; return 1; }
-  if [ "$name" = rmat27 ] && [ ! -e "$DATA/$name.gr.done" ]; then
+  if { [ "$name" = rmat27 ] || [ "$name" = road-usa-w4 ]; } && [ ! -e "$DATA/$name.gr.done" ]; then
     python3 "$APP/benchmarks/to_galois.py" "$DATA/$name.wsg" && touch "$DATA/$name.gr.done" ||
       { echo "CONVERSION FAILED $name"; return 1; }
   fi

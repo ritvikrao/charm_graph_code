@@ -211,6 +211,11 @@ double lazy_heap_percentile = 0.95;
 // means fewer tokens per vertex -- fewer queue operations -- and a coarser
 // deferral of the heavier edges (step 8f).
 int lazy_growth = 2;
+// --skip-empty auto|on|off (IPDPS ablation): whether a node delivery skips
+// the PEs it has no items for (HTram::setSkipEmptyDeliveries). auto follows
+// the lazy-relaxation regime, as it always has; on/off separate the two.
+enum { SKIP_EMPTY_OFF = 0, SKIP_EMPTY_ON = 1, SKIP_EMPTY_AUTO = 2 };
+int skip_empty_mode = SKIP_EMPTY_AUTO;
 // --control reduction|node (step 8c). reduction: each round is a Charm++
 // reduction to Main and an array broadcast back, as always. Both travel in
 // the PEs' own queues, which Reconverse polls only when the node queue --
@@ -1238,6 +1243,19 @@ public:
           warm_links_on = value == "on";
         else {
           ckout << "--warm-links must be on or off" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg == "--skip-empty") {
+        const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
+        if (value == "auto")
+          skip_empty_mode = SKIP_EMPTY_AUTO;
+        else if (value == "on")
+          skip_empty_mode = SKIP_EMPTY_ON;
+        else if (value == "off")
+          skip_empty_mode = SKIP_EMPTY_OFF;
+        else {
+          ckout << "--skip-empty must be auto, on or off" << endl;
           CkExit(1);
           return;
         }
@@ -3026,7 +3044,9 @@ public:
     // has items for (orkut at 8 nodes 1.1x). Below it the empty deliveries
     // stay, because they pace the heap passes that a high-diameter solve
     // relies on (mesh24 at 2 nodes 2.1x slower without them, job 20821390).
-    tram->setSkipEmptyDeliveries(lazy_active());
+    tram->setSkipEmptyDeliveries(skip_empty_mode == SKIP_EMPTY_AUTO
+                                     ? lazy_active()
+                                     : skip_empty_mode == SKIP_EMPTY_ON);
     shared_local = shared.ckLocalBranch();
     control_local = controlProxy.ckLocalBranch();
   }
@@ -3111,7 +3131,8 @@ public:
     dest_table_last = V / M - 1;
     my_pe = CkMyPe();
     dest_table = new int[(V + M - 1) / M];
-    for (int i = 0, j = 0; i < V; j++, i = j * M) {
+    // long: j * M passes 2^31 once V does (sc27-plan.md, vertex-count audit).
+    for (long i = 0, j = 0; i < V; j++, i = j * (long)M) {
       dest_table[j] = get_dest_proc(i);
     }
     const long dest_table_size = (V + M - 1) / M;
@@ -4446,7 +4467,7 @@ public:
    */
   void verify_hash() {
     DistanceDigest digest;
-    for (int i = 0; i < num_vertices; i++) {
+    for (long i = 0; i < num_vertices; i++) {
       digest.add(start_vertex + i, distances[i], lmax);
     }
     unsigned long long values[4] = {digest.h1, digest.h2, digest.reachable,
@@ -4458,7 +4479,7 @@ public:
 
   void get_max_cost() {
     cost max_cost = 0;
-    for (int i = 0; i < num_vertices; i++) {
+    for (long i = 0; i < num_vertices; i++) {
       cost vertex_cost = distances[i];
       if (vertex_cost != lmax) {
         if (vertex_cost > max_cost) {

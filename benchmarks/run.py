@@ -107,7 +107,7 @@ class Campaign:
         self.count = 0
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
-            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'riken_sssp',
+            if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'acic_ipdps', 'acic_ipdps_wide', 'riken_sssp',
                              'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
@@ -121,7 +121,7 @@ class Campaign:
         # its own per-node total; the record keeps the allocation's budget.
         workers = config.get('workers', self.args.workers)
         per_graph_rule = None
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': 'acic_ipdps', 'acic-ipdps-wide': 'acic_ipdps_wide', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -996,6 +996,150 @@ class Campaign:
                     for c in order:
                         self.run(graph, int(row['source']), c, row, 'policy', rep)
 
+    def ablation(self):
+        """IPDPS sprint: what each post-2024 mechanism buys, on one binary.
+
+        design/ipdps27-sprint.md has the arm list and the reading rules. Every
+        arm is the 8g default with one mechanism turned off, except:
+
+        * `ws24`, the repaired 2024-style solver: flush every five rounds, no
+          coarsening, no idle flush, a fixed 2048-item buffer, no send filter,
+          no lazy relaxation and no delivery skipping -- with every correctness
+          repair (progress rescue, overflow ordering) kept. `ws24-wide` is the
+          same on the 16-byte wire build, so the wire format's share of the
+          gain is separate from the mechanisms';
+        * `global-fixed`, one configuration with every runtime-adaptive choice
+          fixed, chosen once on --dev-graphs' tuning sources;
+        * `tuned-fixed`, the same space plus explicit widths and buffer sizes,
+          chosen per graph on its own tuning sources (a coordinate search:
+          cadence x width at the regime's buffer size, then buffer size).
+
+        A one-axis arm whose mechanism the regime rules leave off on a graph
+        is the default under another name, so it is not run there. The
+        process layout per graph is --acic-rpn-map (8g's choice at this node
+        count); `control` is `current` again, the allocation's floor.
+        """
+        rng = random.Random(20260918 + int(self.job))
+        rpn_map = dict(x.split(':') for x in self.args.acic_rpn_map.split(',')) if self.args.acic_rpn_map else {}
+
+        def base(graph):
+            r = int(rpn_map.get(graph, self.args.acic_rpn))
+            return dict(engine='acic-ipdps', per_graph_width=True, rpn=r, workers=r*(128//r-1))
+
+        def regime(graph):
+            meta = dict(re.findall(r'(\w+)=(\d+)', (self.root/'graphs'/(graph+'.meta')).read_text()))
+            degree = int(meta['arcs']) / int(meta['vertices'])
+            # sssp_smp.cpp's initial_buffer_size(): 256 items per unit of
+            # average degree, to a multiple of 256 in [512, 6144]. Lazy
+            # relaxation, delivery skipping and the 30 us idle-flush interval
+            # turn on at degree >= 8, the send filter at 2048 items or more.
+            items = int(min(256 * degree, 6144))
+            initial = min(6144, max(512, max(256, (items + 128) // 256 * 256)))
+            return dict(degree=degree, scale_free=degree >= 8, buffer=initial,
+                        filter=initial >= 2048, denominator=int(meta['riken_denominator']))
+
+        ws24 = ['--flush-policy', 'fixed', '--flush-interval', '5', '--bucket-policy', 'fixed',
+                '--idle-flush', 'off', '--bufsize', '2048', '--send-filter', 'off',
+                '--lazy-heavy', 'off', '--skip-empty', 'off']
+        fixed_all = ['--bucket-policy', 'fixed', '--idle-flush', 'off']
+
+        def arms_for(graph):
+            g = regime(graph)
+            b = base(graph)
+            arms = [dict(b, name='current'), dict(b, name='control'),
+                    dict(b, name='ws24', flags=ws24),
+                    dict(b, name='ws24-wide', engine='acic-ipdps-wide', flags=ws24),
+                    dict(b, name='fixed-cadence', flags=['--flush-policy', 'fixed', '--flush-interval', '1']),
+                    dict(b, name='no-idle-flush', flags=['--idle-flush', 'off']),
+                    dict(b, name='no-coarsen', flags=['--bucket-policy', 'fixed']),
+                    dict(b, name='no-idle-interval', flags=['--idle-flush-interval', '0']),
+                    # A fixed 2048 would also switch the send filter on where
+                    # the regime leaves it off; keep the filter as it was.
+                    dict(b, name='buffer-2048', flags=['--bufsize', '2048']
+                         + ([] if g['filter'] else ['--send-filter', 'off'])),
+                    dict(b, name='buffer-no-feedback', flags=['--bufsize', str(g['buffer'])])]
+            if g['scale_free']:
+                arms += [dict(b, name='no-lazy', flags=['--lazy-heavy', 'off', '--skip-empty', 'on']),
+                         dict(b, name='no-skip-empty', flags=['--skip-empty', 'off'])]
+            if g['filter']:
+                arms += [dict(b, name='no-filter', flags=['--send-filter', 'off'])]
+            keep = self.args.arms.split(',') if self.args.arms else None
+            return [a for a in arms if keep is None or a['name'] in keep]
+
+        def fixed_candidates(graph, widths, buffers):
+            b = base(graph)
+            return [dict(b, name=f'fixed-i{i}-{w}-b{s}', per_graph_width=False,
+                         flags=['--flush-policy', 'fixed', '--flush-interval', str(i)] + fixed_all
+                         + (['--bucket-width-rule', w] if w in ('logv', 'weight') else ['--bucket-width', w])
+                         + ['--bufsize', str(s)])
+                    for i in [1, 5] for w in widths for s in buffers]
+
+        def choose(candidates, samples, label):
+            valid = [c for c in candidates if samples[c['name']] and all(r['valid'] for r in samples[c['name']])]
+            record = {c['name']: dict(valid=c in valid, seconds=[r.get('seconds') for r in samples[c['name']]])
+                      for c in candidates}
+            if not valid:
+                raise RuntimeError(f'no valid candidate for {label}: {record}')
+            return min(valid, key=lambda c: statistics.geometric_mean(r['seconds'] for r in samples[c['name']])), record
+
+        def search(graph, candidates, phase, samples=None):
+            samples = samples if samples is not None else {}
+            for c in candidates:
+                samples.setdefault(c['name'], [])
+            for row in [x for x in self.references(graph) if x['role'] == 'tune']:
+                order = candidates[:]
+                rng.shuffle(order)
+                for c in order:
+                    samples[c['name']].append(self.run(graph, int(row['source']), c, row, phase))
+            return samples
+
+        # Global fixed: every rule-based width x cadence x two buffer sizes,
+        # on the development graphs, each at its own layout.
+        dev = self.args.dev_graphs.split(',')
+        global_samples = {}
+        names = None
+        for graph in dev:
+            cands = fixed_candidates(graph, ['logv', 'weight'], [1024, 2048])
+            names = [c['name'] for c in cands]
+            search(graph, cands, 'ablation-global-tune', global_samples)
+        best, record = choose([dict(name=n) for n in names], global_samples, 'global-fixed')
+        global_flags = next(c for c in fixed_candidates(dev[0], ['logv', 'weight'], [1024, 2048])
+                            if c['name'] == best['name'])['flags']
+        (self.root/'logs'/f'{self.tag}-global-selected.json').write_text(
+            json.dumps(dict(dev_graphs=dev, selected=best['name'], flags=global_flags, candidates=record), indent=2)+'\n')
+
+        for graph in self.args.graphs.split(','):
+            g = regime(graph)
+            refs = self.references(graph)
+            test = [x for x in refs if x['role'] == 'test'][:self.args.sources]
+            training_max = max(int(r['max_distance']) for r in refs if r['role'] == 'tune')
+            widths = ['logv', 'weight', str(max(1, math.ceil(training_max/1024)))]
+            warm = dict(base(graph), name='warmup')
+            self.run(graph, int(refs[0]['source']), warm, refs[0], 'warmup')
+            stage1 = fixed_candidates(graph, widths, [g['buffer']])
+            samples = search(graph, stage1, 'ablation-tune')
+            first, _ = choose(stage1, samples, f'tuned-fixed stage 1 on {graph}')
+            i = first['flags'][first['flags'].index('--flush-interval')+1]
+            w = first['name'].split('-')[2]
+            stage2 = [c for c in fixed_candidates(graph, [w], [512, 1024, 2048, 6144])
+                      if c['name'].startswith(f'fixed-i{i}-') and c['name'] != first['name']]
+            samples = search(graph, stage2, 'ablation-tune', samples)
+            tuned, record = choose(stage1 + stage2, samples, f'tuned-fixed on {graph}')
+            b = base(graph)
+            arms = arms_for(graph) + [
+                dict(b, name='global-fixed', per_graph_width=False, flags=global_flags, chosen=best['name']),
+                dict(tuned, name='tuned-fixed', chosen=tuned['name'])]
+            (self.root/'logs'/f'{self.tag}-{graph}-selected.json').write_text(
+                json.dumps(dict(regime=g, arms=arms, tuned_candidates=record), indent=2)+'\n')
+            for rep in range(self.args.reps):
+                rows = test[:]
+                rng.shuffle(rows)
+                for row in rows:
+                    order = arms[:]
+                    rng.shuffle(order)
+                    for c in order:
+                        self.run(graph, int(row['source']), c, row, 'ablation', rep)
+
     def external_candidates(self, graph):
         """7.6f1 search space: every system picks its own process layout.
 
@@ -1012,7 +1156,7 @@ class Campaign:
         """
         meta = dict(re.findall(r'(\w+)=(\d+)', (self.root/'graphs'/(graph+'.meta')).read_text()))
         denominator = int(meta['riken_denominator'])
-        deltas = sorted({max(1, denominator // k) for k in [64, 16, 4, 1]})
+        deltas = sorted({max(1, denominator // k) for k in map(int, self.args.delta_divisors.split(','))})
         mid = max(1, denominator // 16)
         stride = lambda rpn: 128 // rpn
         layouts = lambda arg: [int(x) for x in arg.split(',')]
@@ -1281,7 +1425,7 @@ class Campaign:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('campaign')
-    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width', 'policy', 'external', 'external_smoke', 'comm_share'], default='benchmark')
+    parser.add_argument('--mode', choices=['smoke', 'tiny', 'benchmark', 'presolve', 'confirm', 'gluon', 'numa', 'finish', 'layout_confirm', 'quiet', 'finish_layout', 'progress', 'controller', 'bimodal', 'deployment', 'width', 'policy', 'external', 'external_smoke', 'comm_share', 'ablation'], default='benchmark')
     parser.add_argument('--graphs', default='uniform20,rmat20,mesh20,rmat22,mesh22,rmat20-s2,uniform20-s2,road-ny,youtube')
     parser.add_argument('--workers', type=int, default=16)
     parser.add_argument('--ranks-per-node', default='1,4', help='RIKEN layout candidates; workers divided among ranks')
@@ -1301,6 +1445,11 @@ if __name__ == '__main__':
     parser.add_argument('--riken-layouts', default='4,8,16')
     parser.add_argument('--gluon-layouts', default='1,8')
     parser.add_argument('--gap-threads', default='16,64,127')
+    # IPDPS sprint: RIKEN and GAPBS deltas are denominator / each divisor. 8g
+    # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
+    # fair-baseline re-take extends the grid downward.
+    parser.add_argument('--delta-divisors', default='64,16,4,1')
+    parser.add_argument('--acic-rpn-map', help='--mode ablation: graph:rpn,... (default --acic-rpn)')
     # tuned-fixed is 7.6f2's question, and Gluon-Sync trailed Async in every
     # 7.5 cell; both remain available by name.
     parser.add_argument('--external-arms', default='adaptive,riken,gluon-async,gap',
