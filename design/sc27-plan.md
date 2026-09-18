@@ -1,7 +1,7 @@
-# ACIC → SC27: research and engineering plan
+# ACIC → IPDPS27 / SC27: research and engineering plan
 
 *Drafted 2026-09-10; revised after step 7 (09-13), compacted with the Gate A
-checkpoints (09-15), re-evaluated after 7.6j, updated with 7.6k–o and step 8 added (09-16). `htram_group.*`
+checkpoints (09-15), re-evaluated after 7.6j, updated with 7.6k–o and step 8 added (09-16); IPDPS27 decision added (09-18). `htram_group.*`
 references are in github.com/UIUC-PPL/htram.*
 
 ## Status
@@ -90,11 +90,89 @@ graphs ACIC is 19–53× ahead of RIKEN and 7–79× ahead of Gluon-Async at 8 n
 but its own time is flat from 2 to 8 nodes. Details and the Gate A reading are
 in [8g](step8-scaling.md#8g-results-the-re-take-at-2-and-8-nodes-2026-09-18).
 
+**Decision on 09-18:** pursue a bounded, SSSP-only IPDPS27 submission test.
+The 8g results justify a high-diameter performance claim against distributed
+CPU baselines, but do not yet justify a general adaptivity/co-design or strong
+scaling claim. ACIC's mesh24 and road-usa solve times are almost flat from two
+to eight nodes. Read the [IPDPS sprint](#ipdps27-submission-sprint-2026-09-18-to-10-08)
+before adding another optimization step. Gate A for the broader SC27 program
+remains open; its October 18 date cannot decide an October 8 submission.
+
 Checkpoint 1's "co-design: no" still stands for admission and delivery
 thresholds. A controller-chosen buffer size (7.6k) was a new, direct test of
 the same claim. It found the right regime on all four graphs, but from the
 graph's degree; the algorithm's feedback never had to correct it, so it does
 not show co-design either.
+
+## IPDPS27 submission sprint (2026-09-18 to 10-08)
+
+The [official CFP](https://www.ipdps.org/ipdps2027/2027-call-for-papers.html)
+requires a registered abstract (at most 500 words) by **October 1 AOE** and a
+full, double-anonymous manuscript by **October 8 AOE**, with a firm deadline.
+The submission limit is ten IEEE double-column pages for body, figures and
+tables; references are outside the limit. A reproducibility appendix is
+required for accepted papers, not an extra submission appendix. Review the
+CFP's rule against previously published manuscripts and its anonymity rules
+when explaining the IA³@SC24 workshop predecessor and preparing artifact
+links. The submitted contribution must be substantially new. Do not assume a January
+revision can supply evidence missing from the October submission.
+
+**Provisional thesis:** ACIC's bounded asynchronous admission and aggregated
+delivery make distributed weighted SSSP fast on sparse, high-diameter graphs
+where repeated global frontiers are expensive. The contribution since IA³@SC24
+must be identified as specific new mechanisms and their causal effects, not
+the already published ACIC idea, correctness repairs, or implementation speedups
+alone. A possible title is *Adaptive Communication for High-Diameter SSSP on
+CPU Clusters* **only if** the new-build fixed-policy ablation proves adaptation
+matters. Otherwise pitch the measured scheduling and communication mechanism,
+with a title that does not promise adaptivity. Include the scale-free losses and
+one-node GAPBS result prominently. RIKEN has no comparable road-usa result with
+its current binary32 distances, so do not call that cell an ACIC win over RIKEN.
+
+**What is currently supported:** at eight nodes, ACIC beats RIKEN 19× on
+mesh24 and 53× on mesh26, and beats Gluon-Async 8.1×, 7.4× and 79× on mesh24,
+mesh26 and road-usa respectively. It trails RIKEN 1.87–3.65× on the four
+scale-free graphs in the 8g allocation. Those ratios are solve-only, at four
+held-out sources, and the 8g allocation was slow for some systems; they are
+not yet final paper figures. ACIC is also slower than one-node GAPBS on every
+graph in 7.6n. The 7.6f2 large-input ablations rejected the joint-feedback
+co-design claim and showed a severe road-usa loss to tuned fixed admission
+under the old width/default configuration. Re-run the relevant ablations on
+the 8g build before calling the current default adaptive.
+
+**Finite work budget and stop rule.** Freeze the candidate algorithm after at
+most two diagnostic, hypothesis-driven changes, each with a correctness check
+and paired A/B against the 8g build. Do not chase RIKEN on RMAT for this
+submission: a 1.9–3.7× remaining gap, noisy 8g rmat25/orkut ratios, and the
+October deadline make that a separate research track. Reserve at least the
+last seven days for analysis, figures and writing. Stop optimizing earlier if a
+change fails to clear its allocation floor in two allocations, moves the cost
+to another graph/source, or creates a validation/hang regression. No BFS,
+PageRank, generic payload refactor, or speculative 16-node sweep before the
+submission decision.
+
+| Date | Deliverable / decision |
+|---|---|
+| Sep 18–21 | Draft one-page claim/evidence table and 10-page skeleton. Pin the 8g source, binary and baseline versions. Check 2024 overlap. Run independent cross-system distance validation on paper graphs and sources; verify graph direction, weights, duplicates and timing boundaries. Prepare at least one high-diameter real graph/weight variant that RIKEN can represent, if feasible. |
+| Sep 22–25 | On the final build, compare the repaired 2024-style ACIC, current default, fixed thresholds with progress/termination preserved, graph-tuned fixed, and one-axis ablations on high-diameter and scale-free graphs. Use held-out sources and repeated allocations. Measure solve, setup, work, bytes, message counts, peak memory and failures. Test only one or two diagnosed changes. |
+| **Sep 26 go/no-go** | Submit to IPDPS only if a new post-workshop mechanism has a causal, reproducible time-to-solution gain; high-diameter wins survive independent validation and fair baseline layouts; and the 10-page paper can explain the scale-free/GAPBS losses. If adaptive and strong fixed policies tie, remove the adaptivity claim. If the only advantage is against a poorly matched baseline or the result depends on the old width bug, keep the work for SC27. |
+| Sep 27–30 | Freeze data, produce figures/tables with uncertainty and failures, write a complete anonymized draft, get a skeptical internal read, and register a truthful ≤500-word abstract by Oct 1 AOE if the go gate passed. |
+| Oct 1–7 | Revise, audit every result against raw logs and source version, verify citations and anonymity, and submit the full paper by Oct 8 AOE. |
+
+GPU SSSP belongs in related work and scope, with a bounded direct comparison
+only if matching GPU hardware and input semantics are available without
+displacing the CPU causal study. Single- and multi-GPU weighted SSSP exist:
+[Gunrock](https://github.com/gunrock/gunrock),
+[cuGraph](https://docs.rapids.ai/api/cugraph/stable/api_docs/api/plc/pylibcugraph.sssp/),
+and [G2/GraphIt GPU](https://jshun.csail.mit.edu/gpu-graphit.pdf) are relevant;
+[Atos](https://escholarship.org/uc/item/9f17k8gk) is a task-parallel GPU
+counterexample to a claim that asynchrony itself is unique to Charm++.
+[Recent GPU queue work](https://arxiv.org/abs/2602.10080) also studies
+input-adaptive SSSP scheduling. State hardware, memory capacity, graph fit,
+precision/weights, and whether transfer/build time is included before any
+CPU/GPU runtime claim. A CPU-cluster contribution does not require beating a
+GPU, but omitting these systems would make a broad "fastest SSSP" pitch
+indefensible.
 
 ## Context
 
@@ -448,9 +526,11 @@ Parked for the first campaign above 16 nodes: rmat20 reads 1.59× and 1.55× for
 the `weight` width rule at 16 nodes (floors 1.14×, 1.22×) but regresses at two.
 It is the only candidate third entry in `PER_GRAPH_WIDTH_RULE`.
 
-## Schedule
+## SC27 schedule after the IPDPS decision
 
-Provisional, from 2026-09-13, assuming early-April submission.
+Provisional, from 2026-09-13, assuming early-April submission. The IPDPS
+sprint above supersedes this schedule through October 8; its go/no-go gate is
+independent of the broader SC27 Gate A.
 
 | Window | Work | Decision |
 |---|---|---|
