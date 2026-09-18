@@ -655,6 +655,106 @@ Fewer tokens help at 2 nodes, where the queue is deep. The finer deferral
 wins at 8, so the default stays at 2. A faster queue (a 4-ary or bucketed
 heap) is worth at most the 20%, so it is left for step 9.
 
+## 8g results: the re-take at 2 and 8 nodes (2026-09-18)
+
+Jobs 20823613 (2 nodes, scale-free), 20823612 (8 nodes, scale-free),
+20823614 (2 nodes, mesh24 and road-usa) and 20823615 (8 nodes, mesh24,
+road-usa, mesh26). The run.py harness, search and four held-out sources
+are the same as in 7.6n and 7.6o, with `THEN_COMM_SHARE=2` on the
+scale-free jobs. ACIC is `campaign/bin/acic` sha256 `cfdacb33…`
+(charm_graph_code de0ed1c, htram 7db9c0a), with its new defaults: lazy
+heavy relaxation and heap percentile 0.95 on graphs with average degree
+of at least 8, the htram hold bitmap, and the idle-flush interval. Every
+ACIC, Gluon and test-phase RIKEN run was correct. The only failures are
+eight RIKEN crashes at the d1024 setting during the 2-node parameter
+search, which also crashed in 7.6o. The search chose other settings.
+Cost: 2,004 SU.
+
+Median solve seconds over the four sources. Leads are paired medians, as
+in the table above. 7.6 is the older build (7.6n, or 7.6o for rmat26 and
+rmat27 at 2 nodes and for every 8-node row).
+
+| graph | nodes | ACIC (7.6) | ACIC (8g) | RIKEN | Gluon-Async | RIKEN lead (7.6) | RIKEN lead (8g) | ACIC lead over Gluon (8g) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| rmat25 | 2 | 0.637 | 0.531 | 0.208 | 1.81 | 2.8× | 2.6× | 3.4× |
+| rmat25 | 8 | 0.802 | **0.370** | 0.102 | 2.20 | 11.7× | 3.65× | 5.5× |
+| orkut | 2 | 0.230 | 0.148 | 0.068 | 1.65 | 3.5× | 2.2× | 11× |
+| orkut | 8 | 0.315 | **0.136** | 0.079 | 2.31 | 7.5× | 1.87× | 17× |
+| rmat26 | 2 | 1.13 | 1.17 | 0.389 | 2.55 | 2.9× | 2.95× | 2.2× |
+| rmat26 | 8 | 1.06 | **0.580** | 0.164 | 2.07 | 5.6× | 3.54× | 3.5× |
+| rmat27 | 2 | 2.02 | 2.48 | 0.833 | 5.71 | 2.5× | 2.8× | 2.3× |
+| rmat27 | 8 | 1.41 | **1.07** | 0.319 | 2.52 | 4.1× | 3.47× | 2.3× |
+| mesh24 | 2 | 0.658 | 0.440 | 17.2 | 4.25 | ACIC 27× | ACIC 37× | 9.8× |
+| mesh24 | 8 | | 0.414 | 8.03 | 3.14 | | ACIC 19× | 8.1× |
+| road-usa | 2 | 1.57 | 1.36 | n/a | 44.3 | | | 32× |
+| road-usa | 8 | | 1.33 | n/a | 95.8 | | | 79× |
+| mesh26 | 8 | | 1.39 | 72.0 | 9.18 | | ACIC 53× | 7.4× |
+
+**Scale-free graphs.**
+
+- ACIC now gets faster from 2 to 8 nodes on all four graphs: 1.4× on
+  rmat25, 1.09× on orkut, 2.0× on rmat26 and 2.3× on rmat27. In 7.6o it
+  got slower on rmat25 and orkut.
+- RIKEN's lead at 8 nodes fell from 4.1–11.7× to 1.9–3.7×. It still grows
+  from 2 to 8 nodes on the three RMAT graphs (2.6 → 3.65×, 2.95 → 3.54×,
+  2.8 → 3.47×) and shrinks only on orkut (2.2 → 1.87×).
+- **This allocation was slow for every system on rmat25 and orkut.**
+  RIKEN, at the same setting as in 7.6o, took 0.102 s on rmat25 against
+  0.069 s, and Gluon 2.20 s against 1.77 s. On orkut the RIKEN search also
+  picked d16 over 7.6o's d64 from single noisy runs. ACIC's rmat25 time
+  (0.37 s) is likewise above the 0.24–0.26 s of the 8-node A/Bs.
+  RIKEN's rmat26 and rmat27 times match 7.6o's (0.164 vs 0.179 s, 0.319 vs
+  0.343 s), so those two leads are reliable. Against 7.6o's RIKEN medians,
+  rmat25 and orkut would read about 5.3× and 3.4×.
+- **rmat27 at 2 nodes regressed**, from 2.02 to 2.48 s (1.23×), and rmat26
+  there is flat (1.13 → 1.17 s). Both graphs have average degree of at
+  least 8, so the lazy defaults apply. 8f showed that the finer deferral
+  (G = 2) costs 5–20% at 2 nodes, where the queue is deep. That is the
+  likely cause, but it was not tested.
+- ACIC's time outside its own work at 8 nodes is still 46–49% on the RMAT
+  graphs and 71% on orkut. 8e's target was at most 30% on rmat25.
+
+**High-diameter graphs.** ACIC is 19–53× ahead of RIKEN and 7.4–79× ahead
+of Gluon-Async at 8 nodes. Against 7.6n at 2 nodes, mesh24 is 1.5× faster
+and road-usa 1.15× faster, so there is no regression. But ACIC does not
+get faster from 2 to 8 nodes on these graphs: mesh24 0.44 → 0.41 s,
+road-usa 1.36 → 1.33 s. Its lead over Gluon grows on road-usa (32 →
+79×, because Gluon slows down) and shrinks on mesh24 (9.8 → 8.1×). Its
+lead over RIKEN on mesh24 halves (37 → 19×), because RIKEN gets 2.1×
+faster.
+
+**Entry condition for 16 nodes, on this allocation.**
+
+| condition | result |
+|---|---|
+| ACIC faster at 8 nodes than at 2 on rmat25 and orkut | met (0.53 → 0.37 s, 0.148 → 0.136 s) |
+| RIKEN lead ≤ 3× at 8 nodes on rmat25 and orkut | orkut met (1.87×); **rmat25 missed (3.65×)** |
+| mesh24 and road-usa do not regress against 7.6n | met |
+
+Not met, so the 16-node runs were not submitted. The stop rule (RIKEN
+more than 5× ahead on rmat25 at 8 nodes, in one allocation) is not
+triggered: 3.65×. It would be triggered, narrowly, against 7.6o's faster
+RIKEN time (5.3×).
+
+**Gate A, read on 8g at 2–8 nodes.** The proceed rule asks that ACIC be
+faster than RIKEN or Gluon-Async at 8–16 nodes on at least one graph class
+at a fair layout, with an advantage that grows with node count.
+
+- **High-diameter:** ACIC is faster than both at 8 nodes, by a wide margin
+  and on clean cells. The advantage grows only against Gluon on road-usa.
+  ACIC's own time is flat from 2 to 8 nodes, so the "advantage grows with
+  node count" half is not shown.
+- **Scale-free:** ACIC beats Gluon-Async everywhere (2.3–17×) and trails
+  RIKEN by 1.9–3.7×. Its advantage over Gluon grows on rmat25, orkut and
+  rmat26.
+
+So Gate A's first half holds on both classes against Gluon-Async, and on
+high-diameter graphs against RIKEN too. The second half holds only against
+Gluon-Async on scale-free graphs. Nothing here is above 8 nodes. The
+decision among proceed, narrow and stop is the user's; the data supports
+the narrower claim (high-diameter, plus "beats Gluon-Async" on
+scale-free) more than the full one.
+
 ## Entry condition for 8g, and Gate A
 
 8g runs above 8 nodes only if, at 8 nodes in one allocation:

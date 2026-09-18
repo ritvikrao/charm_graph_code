@@ -498,3 +498,44 @@ report_scaling.py CAMPAIGN/logs 20770612 20770615 20776355 20776356 20776357
 
 `--mode comm_share --selection-job JOB` reuses another allocation's choices
 at the same node count; that is how the 1-node debug smoke test ran.
+
+### Step 8 tools and switches
+
+`scripts/anvil/step8a.sbatch` runs one allocation of any of three parts
+(`PARTS`):
+
+- **diag:** one run of a counter build per graph (`DIAG_BIN`, `DIAG_FLAGS`).
+  `STEP8A` lines give expansions, heavy updates per heavy edge, and
+  arrivals at final vertices, overall and by degree.
+- **riken:** RIKEN's relaxation count (`bin/riken_sssp_verbose`, built by
+  `build_baselines.sh` from `benchmarks/riken_count.patch`), which prints
+  `RELAX_SENT`.
+- **arms:** interleaved arms `LABEL:BINARY:TRAM:HEAP:FLAGS`. A binary named
+  `riken_sssp` runs RIKEN, and every ACIC run writes a `rounds.csv`.
+
+```sh
+ARMS="new:acic:0.999:0.005: old:acic_76n:0.999:0.005: riken:riken_sssp:0:0:" \
+GRAPHS="rmat25:26007212:16:16 orkut:2549343:8:64" PARTS=arms ROUNDS=3 \
+  sbatch -N 8 scripts/anvil/step8a.sbatch CAMPAIGN
+```
+
+`papi_profile.sbatch` takes `WORKERS=112` for 16 × 7 layouts. The
+communication-share build also prints `idle_share`.
+
+The solver switches added in step 8 are below.
+[design/step8-scaling.md](../design/step8-scaling.md) has the measurements
+behind each default.
+
+| switch | default | what it does |
+|---|---|---|
+| `--lazy-heavy off\|on\|auto\|L` | auto | light edges relax at once; heavier ranges wait as tokens queued at d + L G^j. auto: average degree ≥ 8 only |
+| `--lazy-heap P` | 0.95 | heap percentile while lazy relaxation is active |
+| `--lazy-growth G` | 2 | token range growth; 4–8 help at 2 nodes, 2 wins at 8 |
+| `--idle-flush-interval auto\|us` | auto | least time between two idle flushes that sent something: 30 µs at degree ≥ 8, 100 µs below |
+| `--control reduction\|node` | reduction | node: controller messages on the node queue (slower; kept for reference) |
+| `--control-interval ms` | 0.25 | least time between broadcasts under `--control node` |
+| `--warm-links on\|off` | off | one message to every other process before the solve |
+
+htram additions: a per-destination hold bitmap (always on),
+`setIdleFlushInterval`, and `setSkipEmptyDeliveries`. ACIC turns the
+latter on at average degree ≥ 8.
