@@ -249,9 +249,22 @@ Main *main_instance = nullptr;
 // but not the solve, rmat25 0.250 -> 0.235 s and orkut 0.156 -> 0.169 s,
 // within the noise (job 20823450).
 bool warm_links_on = false;
+// --lazy-skew CV (IPDPS change 2): auto also needs the degree distribution
+// to be skewed, a coefficient of variation of at least CV over vertices with
+// edges (default 1; 0 restores 8g's average-degree rule). Lazy relaxation
+// pays by cutting the traffic that hub re-relaxations send: at 2 nodes it
+// takes rmat25 from 1.25e9 to 8.7e8 updates and orkut from 4.0e8 to 1.9e8,
+// but leaves uniform25 at 1.07e9 while adding rounds, and uniform25 ran 1.55x
+// faster without it (job 20826260). Degree CV: rmat20-27 6.7-13.5, youtube
+// 9.6, orkut 2.0; uniform 0.32, road-usa 0.39, meshes 0.01. PE 0 computes it
+// from the offsets array it already reads for the partition (mode 4); -1
+// (other modes) keeps the average-degree rule alone.
+double degree_cv = -1.0;
+double lazy_skew_min = 1.0;
 static bool lazy_active() {
   return lazy_cut > 0 || lazy_cut == LAZY_ON ||
-         (lazy_cut == LAZY_AUTO && num_global_edges >= 8L * V);
+         (lazy_cut == LAZY_AUTO && num_global_edges >= 8L * V &&
+          (degree_cv < 0.0 || degree_cv >= lazy_skew_min));
 }
 const int SEND_FILTER_AUTO_BITS = 17;
 const int SEND_FILTER_MIN_BUFFER = 2048;
@@ -1246,6 +1259,13 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg == "--lazy-skew") {
+        if (i + 1 >= m->argc) {
+          ckout << "--lazy-skew needs a coefficient of variation" << endl;
+          CkExit(1);
+          return;
+        }
+        lazy_skew_min = std::stod(m->argv[++i]);
       } else if (arg == "--skip-empty") {
         const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
         if (value == "auto")
@@ -1613,6 +1633,23 @@ public:
           vertex++;
       }
       partition_index[N] = V;
+      {
+        double sum = 0.0, sum_sq = 0.0;
+        long with_edges = 0;
+        for (long v = 0; v < V; v++) {
+          const double d = (double)(offsets[(size_t)v + 1] - offsets[(size_t)v]);
+          if (d > 0) {
+            sum += d;
+            sum_sq += d * d;
+            with_edges++;
+          }
+        }
+        if (with_edges > 0) {
+          const double mean = sum / with_edges;
+          degree_cv = std::sqrt(std::max(0.0, sum_sq / with_edges - mean * mean)) / mean;
+        }
+        ckout << "Degree CV: " << degree_cv << endl;
+      }
       graph_spec.num_vertices = V;
       graph_spec.num_edges = num_global_edges;
       // Everything above is PE 0 reading the header and the offsets array to
