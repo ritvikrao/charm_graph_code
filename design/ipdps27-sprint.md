@@ -479,6 +479,21 @@ allocations' build): /1.54 on uniform25 (change 2, third allocation), and
 ±7–16% with no consistent sign elsewhere -- the rebuild noise. Coarsening
 costs road-usa-z in both allocations (`no-coarsen` 1.14×, 1.20× faster).
 
+### E1, second allocation (8 nodes, frozen build)
+
+Job 20827653, `acic_ipdps2`, floor 1.09×, 776 runs, no failures, 2 h 02 m
+(~2,000 SU; launch overhead of 6–8 s per run dominates). Replicates the
+first 8-node allocation: `ws24` /11.6–/21.9 on high-diameter graphs, /2.88
+(rmat25), /4.30 (orkut), /1.53 (uniform25); `no-lazy` /3.00 (rmat25),
+/2.72 (orkut); `no-idle-flush` /2.14–/3.31 and `buffer-2048` /1.26–/2.61 on
+high-diameter graphs; `global-fixed` /2.63–/7.64 high-diameter, /1.82–/1.86
+scale-free; `tuned-fixed` (idle off) /1.25–/2.77 high-diameter, /1.44
+orkut. New: on uniform25 (lazy now off) the buffer-size feedback and
+coarsening matter (`buffer-no-feedback` /1.97, `no-coarsen` /1.69), and
+`no-idle-flush` is 1.26× faster; `prev-binary` (lazy on) is 1.10× faster
+there, so change 2 is a 2-node gain (1.5×) and roughly neutral-to-slightly
+negative at 8 nodes on uniform25.
+
 ### Interim go/no-go reading (09-18 evening)
 
 | Gate condition (sc27-plan.md) | Reading |
