@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""Interleaved, fail-closed paired comparisons for each one-node lever.
+
+Run inside a Slurm allocation. JSON variants specify binary, optional graph,
+and flags. Reference row index pairs the same physical source after relabeling.
+Two copies of the baseline estimate the allocation's timing floor. Run in two
+allocations; this script records evidence and never silently adopts a default.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import statistics
+import subprocess
+from check_onenode_digest import check
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('campaign', type=Path)
+    ap.add_argument('graph')
+    ap.add_argument('variants', type=Path)
+    ap.add_argument('--reps', type=int, default=3)
+    ap.add_argument('--workers', type=int, default=120)
+    ap.add_argument('--rpn', type=int, default=8)
+    ap.add_argument('--sources', type=int, default=4)
+    args = ap.parse_args()
+    nodes = int(os.environ['SLURM_NNODES'])
+    out = args.campaign / 'logs' / f'AB-{args.graph}-{nodes}n-{os.environ["SLURM_JOB_ID"]}'
+    out.mkdir(parents=True, exist_ok=False)
+    variants = json.loads(args.variants.read_text())
+    if len({v['label'] for v in variants}) != len(variants):
+        raise ValueError('variant labels must be unique')
+    for v in variants:
+        if not re.fullmatch(r'[A-Za-z0-9_-]+', v['label']):
+            raise ValueError('unsafe variant label')
+        binary = args.campaign / 'bin' / v['binary']
+        v['sha256'] = hashlib.sha256(binary.read_bytes()).hexdigest()
+    (out / 'manifest.json').write_text(json.dumps(dict(variants=variants, nodes=nodes,
+        workers=args.workers, rpn=args.rpn, hosts=os.environ.get('SLURM_JOB_NODELIST')), indent=2))
+    app = Path(__file__).resolve().parents[1]
+    references = {}
+    for v in variants:
+        graph = v.get('graph', args.graph)
+        path = args.campaign / 'graphs' / f'{graph}.reference.txt'
+        rows = [r.split() for r in path.read_text().splitlines() if r[:1].isdigit()]
+        references[graph] = (path, [r for r in rows if r[1] == 'test'][:args.sources])
+    # Roles and graph-invariant distance aggregates prove physical source pairing.
+    base_rows = next(iter(references.values()))[1]
+    if len(base_rows) != args.sources:
+        raise ValueError('not enough held-out sources')
+    for path, rows in references.values():
+        if [r[4:7] for r in rows] != [r[4:7] for r in base_rows]:
+            raise ValueError(f'{path}: sources are not paired with the baseline')
+    env = dict(os.environ, SLURM_MPI_TYPE='cray_shasta', PMI_MAX_KVS_ENTRIES='100000',
+               FI_CXI_RX_MATCH_MODE='hybrid')
+    env.pop('LCT_PMI_BACKEND', None)
+    records = []
+    with (out / 'runs.jsonl').open('w', buffering=1) as stream:
+        for source_index in range(args.sources):
+            for rep in range(-1, args.reps):  # warm every arm on every source
+                rotated = variants[rep % len(variants):] + variants[:rep % len(variants)]
+                for variant in rotated:
+                    graph = variant.get('graph', args.graph)
+                    refpath, refs = references[graph]
+                    source = refs[source_index][0]
+                    log = out / f'{variant["label"]}-s{source_index}-r{rep}.out'
+                    command = ['srun', '-N', str(nodes), '-n', str(nodes * args.rpn),
+                        '--ntasks-per-node', str(args.rpn), '-c', str(128 // args.rpn),
+                        '--cpu-bind=none', '--unbuffered', '--kill-on-bad-exit=1',
+                        'bash', str(app / 'benchmarks/launch_acic.sh'), str(args.rpn), str(args.workers),
+                        str(args.campaign / 'bin' / variant['binary']), '0',
+                        str(args.campaign / 'graphs' / f'{graph}.wsg'), '1', source, '4', '0.999', '0.005',
+                        '--result-digest', '--timeout', '300'] + variant.get('flags', [])
+                    with log.open('w') as output:
+                        subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT,
+                                       check=True, timeout=420)
+                    check(refpath, source, log)
+                    seconds = float(re.search(r'^Compute time: ([\d.eE+-]+)', log.read_text(), re.M)[1])
+                    row = dict(variant=variant['label'], graph=graph, source=source,
+                               source_index=source_index, rep=rep, seconds=seconds, valid=True)
+                    stream.write(json.dumps(row) + '\n')
+                    if rep >= 0:
+                        records.append(row)
+    summary = {}
+    for v in variants:
+        summary[v['label']] = {str(i): statistics.median(r['seconds'] for r in records
+            if r['variant'] == v['label'] and r['source_index'] == i) for i in range(args.sources)}
+    (out / 'summary.json').write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2))
+
+
+if __name__ == '__main__':
+    main()

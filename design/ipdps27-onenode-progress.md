@@ -42,3 +42,23 @@ the user NumPy 2 installation is incompatible with the system SciPy build.
 
 No optimization has been adopted yet. L1 reader placement and L4 remain
 conditional on the measurements required by the original plan.
+
+## L1 relabeling experiment
+
+`reorder_graph.py --tile T --pes P` deals compact tiles round-robin,
+concatenates each owner's tiles, remaps physical sources, and checks independent
+Dijkstra distance aggregates. `ordered` accepts an already Morton-ordered input.
+Cut reporting now reproduces the existing reader's equal-edge partition loop;
+assuming equal vertex ranges was inaccurate. Those edge-balanced boundaries may
+split the intended tile-owner groups, so the report explicitly records this.
+The solver's reader is unchanged pending evidence that tiling pays.
+
+Validation: three unit tests cover incomplete tiles, more PEs than vertices,
+invalid sizes, and the exact reader partition on random/empty degree sequences.
+A 256-vertex weighted mesh with T=7, P=4 preserved all six independently solved
+source distance aggregates after relabeling. Preparation job 22218017 generates
+the mesh24 sweep for 1/2/8 nodes and 1/4/16/64 pieces per PE.
+`onenode_ab.py` interleaves variants, validates all four digest fields, pairs
+physical held-out sources by reference row, retains warmups separately, and
+fails on missing results or stalls. Include a repeated baseline arm to measure
+the allocation floor. No timing result or adoption claim is available yet.
