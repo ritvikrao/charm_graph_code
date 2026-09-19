@@ -630,6 +630,8 @@ enum {
   STAT_WINDOW_TSC,    // each PE's window, start_papi() to print_distances()
   STAT_WINDOW_US,     // the same windows in microseconds, to convert ticks
   STAT_IDLE_TSC,      // scheduler idle, less the work idle callbacks did
+  STAT_SAME_PE_CHANGES,
+  STAT_CROSS_PE_CHANGES,
   STAT_END
 };
 
@@ -799,6 +801,8 @@ struct RoundRecord {
   long done_vertices;
   // Items per aggregation buffer the chares ran this round with.
   int buffer_size;
+  long active_pes;
+  double round_seconds;
 };
 
 class Main : public CBase_Main {
@@ -826,6 +830,7 @@ private:
   int reduction_counts = 0;
   int no_incoming = 0;
   std::vector<double> reduction_times;
+  long round_active_pes = 0;
   std::vector<RoundRecord> rounds; // --diag; see RoundRecord
   bool first_qd_done = false;
   bool second_qd_done = false;
@@ -1993,6 +1998,8 @@ public:
     r.distance_changes = distance_changes;
     r.done_vertices = done_vertices;
     r.buffer_size = current_buffer_size;
+    r.active_pes = round_active_pes;
+    r.round_seconds = r.t - (rounds.empty() ? 0.0 : rounds.back().t);
     rounds.push_back(r);
   }
 
@@ -2004,6 +2011,7 @@ public:
   void reduce_histogram(long *histo_values, int histo_length) {
     reduction_times.push_back(CkWallTimer());
     reduction_counts++;
+    round_active_pes = histo_values[histo_reduction_width + 10];
     long histogram_sum = 0;
     int first_nonzero = -1;
     long updates_processed = histo_values[histo_reduction_width + 1];
@@ -2390,7 +2398,7 @@ public:
            "heap_threshold,tram_threshold,two_tier,starved,bucket_scale,"
            "coarsen_reason,coarsen_k,"
            "updates_created,updates_processed,updates_noted,distance_changes,"
-           "done_vertices,clamped,clamped_arrivals,buffer_size\n";
+           "done_vertices,clamped,clamped_arrivals,buffer_size,active_pes,round_seconds\n";
     for (size_t i = 0; i < rounds.size(); i++) {
       const RoundRecord &r = rounds[i];
       out << i << ',' << r.t << ',' << r.histogram_sum << ','
@@ -2401,7 +2409,8 @@ public:
           << ',' << r.updates_created << ',' << r.updates_processed << ','
           << r.updates_noted << ',' << r.distance_changes << ','
           << r.done_vertices << ',' << r.clamped << ','
-          << r.clamped_arrivals << ',' << r.buffer_size << '\n';
+          << r.clamped_arrivals << ',' << r.buffer_size << ',' << r.active_pes
+          << ',' << r.round_seconds << '\n';
     }
     ckout << "DIAG wrote " << rounds.size() << " rounds to "
           << rounds_path.c_str() << endl;
@@ -2413,12 +2422,10 @@ public:
       buckets << i << ',' << msg_stats[STAT_HISTO_CREATED + i] << '\n';
     ckout << "DIAG wrote " << HISTO_BUCKET_COUNT << " buckets to "
           << buckets_path.c_str() << endl;
-    // The source's update is processed without ever being created, which is
-    // the same off-by-one the termination test allows for, so bucket 0 ends at
-    // exactly -1 and is not counted.
+    // start_algo charges the source, so every bucket must return to zero.
     int live_nonzero = 0;
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
-      if (msg_stats[STAT_HISTO_LIVE + i] != (i == 0 ? -1 : 0)) {
+      if (msg_stats[STAT_HISTO_LIVE + i] != 0) {
         if (live_nonzero++ < 4)
           ckout << "DIAG histogram bucket " << i << " ends at "
                 << msg_stats[STAT_HISTO_LIVE + i] << endl;
@@ -2626,6 +2633,12 @@ public:
           << " (" << 100.0 * msg_stats[STAT_BATCH_ABSORBABLE] /
                          (msg_stats[STAT_BATCH_ITEMS] ? msg_stats[STAT_BATCH_ITEMS] : 1)
           << "%)" << endl;
+#endif
+#ifdef ACIC_IPDPS_DIAG
+    ckout << "ONENODE_CHANGES same_pe=" << msg_stats[STAT_SAME_PE_CHANGES]
+          << " cross_pe=" << msg_stats[STAT_CROSS_PE_CHANGES]
+          << " total=" << msg_stats[STAT_DISTANCE_CHANGES] << " vertices=" << V
+          << " source_in_same_pe=1" << endl;
 #endif
     write_diag_files(msg_stats);
     arr.get_max_cost();
@@ -2997,6 +3010,10 @@ private:
   long bfs_noted = 0;
   long *info_array;
   long distance_changes = 0;
+  long processed_at_contribution = 0;
+#ifdef ACIC_IPDPS_DIAG
+  long same_pe_changes = 0, cross_pe_changes = 0;
+#endif
   long updates_in_tram = 0;
 
 public:
@@ -3197,7 +3214,7 @@ public:
     pq_hold = new std::vector<Update>[HISTO_BUCKET_COUNT];
     for (int i = 0; i < HISTO_BUCKET_COUNT; i++)
       pq_hold[i].reserve(4096);
-    info_array = new long[histo_reduction_width + 10];
+    info_array = new long[histo_reduction_width + 11];
     set_bucket_width(log(V));
     CkCallWhenIdle(CkIndex_SsspChares::idle_triggered(), this);
   }
@@ -3926,6 +3943,9 @@ public:
       // The destination is looked up once here and handed to the library,
       // which would otherwise look it up again through get_dest_proc.
       const int dest_pe = get_dest_proc_fast(update_vertex(new_update));
+#ifdef ACIC_IPDPS_DIAG
+      if (dest_pe != my_pe) new_update.dest_vertex |= UPDATE_CROSS_PE_BIT;
+#endif
 #ifndef ALL_TO_TRAM_HOLD
       if ((neighbor_bucket > tram_threshold) && !bfs) {
         tram->sendItemPrioDeferredDest(new_update, neighbor_bucket, dest_pe);
@@ -3988,6 +4008,12 @@ public:
 #endif
       distances[local_index] = this_cost;
       distance_changes++;
+#ifdef ACIC_IPDPS_DIAG
+      if (new_vertex_and_distance.dest_vertex & UPDATE_CROSS_PE_BIT)
+        cross_pe_changes++;
+      else
+        same_pe_changes++;
+#endif
       updates_noted++;
       int pq_bucket;
       if (local_graph.degree(local_index) > 0) {
@@ -4152,10 +4178,13 @@ public:
     // range is still too small.
     info_array[histo_reduction_width + 8] = clamped_created_locally;
     info_array[histo_reduction_width + 9] = send_filtered;
+    info_array[histo_reduction_width + 10] =
+        updates_processed_locally != processed_at_contribution;
+    processed_at_contribution = updates_processed_locally;
     if (control_mode == CONTROL_NODE)
-      control_local->add(info_array, histo_reduction_width + 10);
+      control_local->add(info_array, histo_reduction_width + 11);
     else
-      contribute((histo_reduction_width + 10) * sizeof(long), info_array,
+      contribute((histo_reduction_width + 11) * sizeof(long), info_array,
                  CkReduction::sum_long, cb);
   }
 
@@ -4411,6 +4440,10 @@ public:
     msg_stats[STAT_NOTED] = updates_noted;
     msg_stats[STAT_EDGES] = actual_edges;
     msg_stats[STAT_DISTANCE_CHANGES] = distance_changes;
+#ifdef ACIC_IPDPS_DIAG
+    msg_stats[STAT_SAME_PE_CHANGES] = same_pe_changes;
+    msg_stats[STAT_CROSS_PE_CHANGES] = cross_pe_changes;
+#endif
     // Topology bytes actually held, summed over PEs. Reported from inside the
     // run because peak RSS cannot see it: this runtime reserves a fixed ~554 MB
     // regardless of graph or PE count, which swamps the graph until it passes a

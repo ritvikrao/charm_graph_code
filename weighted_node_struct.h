@@ -62,8 +62,15 @@ static const long UPDATE_OVERFLOW_BIT = 1L << 62;
 static const long UPDATE_TOKEN_BIT = 1L << 61;
 static const int UPDATE_TOKEN_LEVEL_SHIFT = 56;
 static const long UPDATE_TOKEN_MASK = UPDATE_TOKEN_BIT | (31L << UPDATE_TOKEN_LEVEL_SHIFT);
+// D0 records the creator PE without changing the production wire format.
+// The diagnostic compact wire reserves bit 30 (paper graphs have < 2^30 IDs).
+#ifdef ACIC_IPDPS_DIAG
+static const long UPDATE_CROSS_PE_BIT = 1L << 55;
+#else
+static const long UPDATE_CROSS_PE_BIT = 0;
+#endif
 inline long update_vertex(const Update &u) {
-	return u.dest_vertex & ~(UPDATE_OVERFLOW_BIT | UPDATE_TOKEN_MASK);
+	return u.dest_vertex & ~(UPDATE_OVERFLOW_BIT | UPDATE_TOKEN_MASK | UPDATE_CROSS_PE_BIT);
 }
 inline bool update_is_token(const Update &u) {
 	return (u.dest_vertex & UPDATE_TOKEN_BIT) != 0;
@@ -89,11 +96,19 @@ struct WireUpdate {
 };
 inline WireUpdate wire_pack(const Update &u) {
 	const unsigned long v = (unsigned long)update_vertex(u);
-	if (__builtin_expect((v >> 31) | ((unsigned long)u.distance >> 32), 0))
+#ifdef ACIC_IPDPS_DIAG
+        const int vertex_bits = 30;
+#else
+        const int vertex_bits = 31;
+#endif
+	if (__builtin_expect((v >> vertex_bits) | ((unsigned long)u.distance >> 32), 0))
 		CkAbort("compact wire: vertex %ld or distance %ld does not fit in 31/32 bits",
 		        update_vertex(u), (long)u.distance);
 	WireUpdate w;
 	w.vertex = (uint32_t)v | (update_overflowed(u) ? 0x80000000u : 0u);
+#ifdef ACIC_IPDPS_DIAG
+        if (u.dest_vertex & UPDATE_CROSS_PE_BIT) w.vertex |= 0x40000000u;
+#endif
 	w.distance = (uint32_t)u.distance;
 	return w;
 }
@@ -101,6 +116,11 @@ inline Update wire_unpack(const WireUpdate &w) {
 	Update u;
 	u.dest_vertex = (long)(w.vertex & 0x7fffffffu) |
 	                ((w.vertex >> 31) ? UPDATE_OVERFLOW_BIT : 0L);
+#ifdef ACIC_IPDPS_DIAG
+        u.dest_vertex = (long)(w.vertex & 0x3fffffffu) |
+                       ((w.vertex >> 31) ? UPDATE_OVERFLOW_BIT : 0L) |
+                       ((w.vertex & 0x40000000u) ? UPDATE_CROSS_PE_BIT : 0L);
+#endif
 	u.distance = (long)w.distance;
 	return u;
 }
@@ -119,4 +139,3 @@ class LongEdge
 		p | distance;
 	}
 };
-
