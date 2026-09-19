@@ -3,6 +3,7 @@
 #include "sssp_smp.decl.h"
 #include "graphlib/graphlib.h"
 #include "process_work.h"
+#include "live_slack.h"
 #ifdef PAPI
 #include "acic_prof.h"
 #endif
@@ -109,6 +110,11 @@ int initial_threshold = 3; // initial histo threshold
 bool verify_mode = false;  // --verify: check the result against serial Dijkstra
 enum { PROCESS_SHARE_OFF = 0, PROCESS_SHARE_ON = 1, PROCESS_SHARE_AUTO = 2 };
 int process_share_mode = PROCESS_SHARE_OFF;
+int slack_control_mode = PROCESS_SHARE_OFF;
+static bool slack_control_active() {
+  return slack_control_mode == PROCESS_SHARE_ON ||
+         (slack_control_mode == PROCESS_SHARE_AUTO && num_global_edges < 8L * V);
+}
 static bool process_share_active() {
   return process_share_mode == PROCESS_SHARE_ON ||
          (process_share_mode == PROCESS_SHARE_AUTO && num_global_edges < 8L * V);
@@ -811,6 +817,8 @@ struct RoundRecord {
   int buffer_size;
   long active_pes;
   double round_seconds;
+  double slack_widths, slack_ratio, slack_idle;
+  int slack_action;
 };
 
 class Main : public CBase_Main {
@@ -839,6 +847,7 @@ private:
   int no_incoming = 0;
   std::vector<double> reduction_times;
   long round_active_pes = 0;
+  LiveSlack live_slack;
   std::vector<RoundRecord> rounds; // --diag; see RoundRecord
   bool first_qd_done = false;
   bool second_qd_done = false;
@@ -934,6 +943,14 @@ public:
         verify_mode = true;
       else if (arg == "--result-digest")
         result_digest = true;
+      else if (arg == "--slack-control" || arg.rfind("--slack-control=", 0) == 0) {
+        const std::string value = arg == "--slack-control"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(16);
+        if (value == "off") slack_control_mode = PROCESS_SHARE_OFF;
+        else if (value == "on") slack_control_mode = PROCESS_SHARE_ON;
+        else if (value == "auto") slack_control_mode = PROCESS_SHARE_AUTO;
+        else CkAbort("--slack-control must be off, on, or auto");
+      }
       else if (arg == "--sources" || arg.rfind("--sources=", 0) == 0) {
         source_spec = arg == "--sources"
             ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(10);
@@ -1407,7 +1424,7 @@ public:
             << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
-            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--sources v1,v2,...] [--diag <prefix>]" << endl
+            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--sources v1,v2,...] [--slack-control off|on|auto] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -1803,6 +1820,7 @@ public:
     graph_max_weight = max_edge_weight;
     if (process_share_active() && lazy_active())
       CkAbort("process sharing currently requires --lazy-heavy off (auto sharing selects sparse graphs)");
+    ckout << "Live slack: " << (slack_control_active() ? "on" : "off") << endl;
     ckout << "Process sharing: " << (process_share_active() ? "on" : "off") << endl;
 #ifdef INFO_PRINTS
     ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
@@ -2052,6 +2070,10 @@ public:
     r.buffer_size = current_buffer_size;
     r.active_pes = round_active_pes;
     r.round_seconds = r.t - (rounds.empty() ? 0.0 : rounds.back().t);
+    r.slack_widths = slack_control_active() ? live_slack.widths : 0.0;
+    r.slack_ratio = live_slack.changes_per_retired;
+    r.slack_idle = live_slack.idle_fraction;
+    r.slack_action = live_slack.action;
     rounds.push_back(r);
   }
 
@@ -2073,6 +2095,10 @@ public:
     long updates_noted = histo_values[histo_reduction_width + 4];
     long bfs_noted = histo_values[histo_reduction_width + 5];
     long distance_changes = histo_values[histo_reduction_width + 6];
+    if (slack_control_active())
+      live_slack.observe(distance_changes - previous_distance_changes,
+                         updates_processed - previous_updates_processed,
+                         round_active_pes, N);
     long clamped = histo_values[histo_reduction_width + 7];
     const long clamped_created = histo_values[histo_reduction_width + 8];
     const long send_filtered = histo_values[histo_reduction_width + 9];
@@ -2216,6 +2242,11 @@ public:
         tram_threshold = i + last_first_nonzero;
         break;
       }
+    }
+    if (slack_control_active() && histogram_sum > 0 && first_nonzero >= 0) {
+      heap_threshold = live_slack.threshold(first_nonzero, bucket_scale, HISTO_BUCKET_COUNT - 1);
+      tram_threshold = heap_threshold;
+      bfs_threshold = heap_threshold;
     }
     // in case of floating point weirdness
     if (heap_threshold >= HISTO_BUCKET_COUNT)
@@ -2451,7 +2482,7 @@ public:
            "heap_threshold,tram_threshold,two_tier,starved,bucket_scale,"
            "coarsen_reason,coarsen_k,"
            "updates_created,updates_processed,updates_noted,distance_changes,"
-           "done_vertices,clamped,clamped_arrivals,buffer_size,active_pes,round_seconds\n";
+           "done_vertices,clamped,clamped_arrivals,buffer_size,active_pes,round_seconds,slack_widths,slack_ratio,slack_idle,slack_action\n";
     for (size_t i = 0; i < rounds.size(); i++) {
       const RoundRecord &r = rounds[i];
       out << i << ',' << r.t << ',' << r.histogram_sum << ','
@@ -2463,7 +2494,8 @@ public:
           << r.updates_noted << ',' << r.distance_changes << ','
           << r.done_vertices << ',' << r.clamped << ','
           << r.clamped_arrivals << ',' << r.buffer_size << ',' << r.active_pes
-          << ',' << r.round_seconds << '\n';
+          << ',' << r.round_seconds << ',' << r.slack_widths << ',' << r.slack_ratio
+          << ',' << r.slack_idle << ',' << r.slack_action << '\n';
     }
     ckout << "DIAG wrote " << rounds.size() << " rounds to "
           << rounds_path.c_str() << endl;
@@ -2751,7 +2783,7 @@ public:
     previous_threshold = initial_threshold;
     reduction_counts = no_incoming = current_phase = last_first_nonzero = 0;
     reduction_times.clear(); rounds.clear(); round_active_pes = 0;
-    bucket_scale = 1; coarsenings = 0;
+    bucket_scale = 1; coarsenings = 0; live_slack = LiveSlack();
     previous_updates_created = previous_updates_processed = previous_distance_changes = 0;
     stall_rounds = stall_rescues = stall_reports = 0; stall_report_at = 256;
     rounds_window_empty = max_above_window = range_extensions = 0;

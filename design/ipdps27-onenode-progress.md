@@ -114,3 +114,22 @@ lazy tokens. Final bucketed build also passed batching (22218198) and
 multi-node verification (22218197); the final full gate passed in job 22218196.
 An eight-thread queue test checks exactly-once consumption of 80,000 items.
 No performance adoption has been made.
+
+## L3 implementation
+
+`--slack-control off|on|auto` (default off) replaces percentile admission with
+a frontier-relative slack, kept in original bucket widths across coarsening.
+The controller samples successful changes per retired update and the fraction
+of inactive PEs. A rising change ratio halves the slack; otherwise starvation
+widens it by 1.5x. An EWMA, one-round cooldown, minimum sample size, and bounded
+slack damp oscillation. Empty-window and overflow progress rules retain
+precedence. Workers continue asynchronously within the admitted range.
+Round CSVs include slack, input measurements, and the chosen action. State
+resets for every source. Auto is restricted to sparse graphs pending evidence.
+
+Validation: controller unit checks cover competing signals, cooldown, empty
+samples, bounds, and coarsening. Full correctness gate passed with both sharing
+and slack enabled (22218297), as did two-node verification (22218298) and all
+42 batch-source solves (22218299). No default was changed. Paired performance
+and scale-free checks remain required before adoption. L4 still requires
+post-L1/L2/L3 diagnosis; no round-cost mechanism has been assumed necessary.
