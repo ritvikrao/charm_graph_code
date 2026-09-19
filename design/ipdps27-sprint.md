@@ -411,6 +411,37 @@ grows from 2 to 8 nodes on RMAT, and it does not shrink. 8g's RIKEN numbers
 (r16, d16 at the grid edge) understated it by up to 2.5× (orkut 0.079 →
 0.031 s).
 
+**High-diameter** (jobs 20826393 at 2 nodes, 20826394 at 8; median solve
+seconds over four held-out sources; RIKEN on road-usa-w4 has one valid
+source of four, see §5b's go/no-go table):
+
+| graph | nodes | ACIC | RIKEN (choice) | Gluon-Async | ACIC over RIKEN | ACIC over Gluon |
+|---|---:|---:|---:|---:|---:|---:|
+| mesh24 | 2 | 0.557 | 12.3 (r64 d64) | 3.66 | 22× | 6.6× |
+| mesh24-z | 2 | 0.588 | 10.6 (r64 d1024) | 6.96 | 18× | 12× |
+| road-usa-w4 | 2 | 1.36 | 118 (r32 d512) | 34.8 | ~86× | 26× |
+| road-usa-w4-z | 2 | 1.11 | 115 (r64 d512) | 18.2 | ~100× | 16× |
+| road-usa-z | 2 | 0.914 | — | 19.4 | — | 21× |
+| mesh24 | 8 | 0.420 | 6.99 (r32 d64) | 3.29 | 17× | 7.8× |
+| mesh24-z | 8 | 0.380 | 6.03 (r32 d1024) | 5.32 | 16× | 14× |
+| mesh26-z | 8 | 1.29 | 64.6 (r64 d64) | 22.6 | 50× | 17.5× |
+| road-usa-w4 | 8 | 1.33 | 49.9 (r64 d512) | 94.4 | ~38× | 71× |
+| road-usa-w4-z | 8 | 0.663 | 48.4 (r64 d512) | 9.36 | ~73× | 14× |
+| road-usa-z | 8 | 0.689 | — | 9.46 | — | 14× |
+
+- **C1 survives the widened baselines**: 16–50× over RIKEN on meshes,
+  7.8–17.5× over Gluon-Async; on the Morton-ordered roads 14× over Gluon.
+- **Morton order helps Gluon more than ACIC on roads** (94 → 9.4 s at 8
+  nodes). Every system gets the `-z` file, so the fair road ratio is ~14×,
+  not the 71–79× of native order.
+- **C4 on high-diameter, second allocation:** ACIC on `-z` inputs gets
+  faster from 2 to 8 nodes: road-usa-z 1.33×, road-usa-w4-z 1.68×, mesh24-z
+  1.55×; road-usa-w4 native → Morton at 8 nodes 1.33 → 0.66 s (change 1
+  replicated).
+- RIKEN picked 64 ranks per node (the most the sizing rule allows) on four
+  cells and d1024 (the largest offered) on mesh24-z. At 16–100× this cannot
+  change a sign; it is stated as a limit of its search.
+
 ### C6: one node
 
 Job 20826395, each system at its own best layout and delta on one node:
@@ -453,7 +484,7 @@ costs road-usa-z in both allocations (`no-coarsen` 1.14×, 1.20× faster).
 | Gate condition (sc27-plan.md) | Reading |
 |---|---|
 | A new post-workshop mechanism with a causal, reproducible time-to-solution gain | **Met.** Lazy relaxation (scale-free, 1.3–3.3×), the degree-based buffer size (roads, 1.6–2.6×), the idle flush and its interval (high-diameter, 1.1–3.6×); together 2–3× (scale-free) and 4–21× (high-diameter); two allocations at 2 nodes, one at 8 so far |
-| High-diameter wins survive independent validation and fair baseline layouts | Validation **met** (E4). Fair layouts: RIKEN's grid widened (interior optimum on scale-free); high-diameter E3 finishing. RIKEN takes 100–170 s on road-usa-w4 at 2 nodes against ACIC's ~1.5 s, **and returns wrong distances from 3 of the 4 held-out sources** (reaching 14, 188 and 288 vertices) at every layout, delta and node count, in both vertex orders; it is right from the tuning sources and the fourth test source. Our driver passes other graphs; the cause is not diagnosed. Its wrong cells are excluded and reported as failures |
+| High-diameter wins survive independent validation and fair baseline layouts | **Met.** Validation (E4); widened RIKEN and Gluon searches, same `-z` inputs for every system: 16–50× over RIKEN, 7.8–17.5× over Gluon at 8 nodes (E3 table). RIKEN takes 100–170 s on road-usa-w4 at 2 nodes against ACIC's ~1.5 s, **and returns wrong distances from 3 of the 4 held-out sources** (reaching 14, 188 and 288 vertices) at every layout, delta and node count, in both vertex orders; it is right from the tuning sources and the fourth test source. Our driver passes other graphs; the cause is not diagnosed. Its wrong cells are excluded and reported as failures |
 | The paper can explain the scale-free and GAPBS losses | Scale-free: yes (RIKEN ~3× with its phases pruning work; ACIC's work per edge, 8a). **GAPBS: one-node GAPBS beats 8-node ACIC on the high-diameter graphs (road-usa-z 7.5×)** -- explainable (per-node re-work) but it caps the claim at "among distributed systems" |
 | Adaptive vs strong fixed | Defaults match per-graph tuned fixed (±7%) and beat the best single fixed setting 1.05–1.95× (2 nodes); feedback and co-design add nothing measurable. Drop "adaptive" from the title; claim "no per-graph tuning" |
 | Result depends on the old width bug / a poorly matched baseline | No: every cell above is on the current build, with RIKEN's widened grid |
