@@ -380,3 +380,89 @@ Dijkstra references; file sizes match their graph headers. All six remaining
 jobs are eight-node jobs: 22218064, 22218229, 22218280, 22218344, 22218784,
 22218785. None had started at this review. No final paper pass or default
 adoption is claimed.
+
+## Eight-node review and acceptance follow-up
+
+All six previously queued jobs reached a terminal state. Jobs 22218229,
+22218280, 22218344, 22218784 and 22218785 completed cleanly. Baseline D0 job
+22218064 finished all three solves correctly but its report formatter failed:
+Slurm joined the intact mesh26 `COMM_SHARE` record to a partial per-PE line,
+so the old start-of-line regex missed it. The parser now accepts that prefix
+while rejecting duplicate, malformed or nonfinite records. Three parser tests
+pass. The recovered table is `logs/D0-8n-22218064/report-recovered.md`; the
+original failed output is preserved. Future diagnostic jobs only install
+`report.md` after the entire report succeeds.
+
+Rechecked all 462 eight-node A/B results, including warmups, against independent
+reference digests, raw solve times, source/repetition counts and stored medians.
+All passed. The six baseline/post-lever D0 solves also passed their digests
+and ended with zero outstanding histogram entries.
+
+The completed held-out L2 experiment 22218229 (four sources, three repetitions)
+does not meet the GAPBS target:
+
+| graph | eight-node shared seconds | one-node GAPBS seconds | median paired ACIC/GAPBS | worst source |
+|---|---:|---:|---:|---:|
+| mesh24-z | 0.551025 | 0.097570 | 5.525 | 5.905 |
+| mesh26-z | 1.542858 | 0.415810 | 3.792 | 4.148 |
+| road-usa-z | 0.777911 | 0.174827 | 4.073 | 4.788 |
+
+Seconds are medians of per-source medians; ratios pair the corresponding
+physical source medians before aggregation. GAPBS is allocation 22218622.
+The separate L3 allocation 22218344 also misses the target: shared+slack gives
+paired ratios 5.069, 3.975, 4.324 on mesh24, mesh26 and road respectively.
+It does beat ACIC's own one-node shared+slack runs: paired eight/one-node
+ratios are 0.347, 0.338, 0.382. The one-node counterpart is 22218342 for meshes
+and 22218658 for road, using the same `acic_L3` build.
+
+The eight-node reader sweep 22218785 used two training sources and two
+repetitions, so it is not the held-out acceptance test:
+
+| graph | shared seconds | shared+tiled seconds | shared+tiled+slack seconds |
+|---|---:|---:|---:|
+| mesh24-z | 0.584561 | 0.410662 | 0.381559 |
+| mesh26-z | 1.658599 | 0.952335 | 0.924094 |
+| road-usa-z | 0.731096 | 0.761797 | 0.825899 |
+
+On the individual sources, tiles reduce mesh24 time by 23–37% and mesh26 by
+35–50%; road is 0.4–7.2% slower. Adding slack to the tiled road path makes
+it 12–14% slower than sharing alone in this sweep. This argues against
+assuming one tile/slack policy benefits every sparse graph. The offline L1
+mesh24 sweep 22218280 also changes shape at eight nodes: four pieces per PE
+has paired ratio 0.722, while 16/64 pieces give 0.961/0.934. None of these
+training observations authorizes changing defaults.
+
+Eight-node diagnosis before and after sharing+reader tiles+slack:
+
+| graph | inactive participation before/after | changes/V before/after | work share before/after | rounds before/after |
+|---|---:|---:|---:|---:|
+| mesh24-z | 88.0% / 7.7% | 20.39 / 32.65 | 5.9% / 73.9% | 1115 / 150 |
+| mesh26-z | 79.9% / 3.5% | 38.01 / 34.91 | 9.9% / 84.9% | 2183 / 203 |
+| road-usa-z | 79.6% / 16.7% | 38.76 / 42.49 | 8.3% / 64.6% | 1446 / 364 |
+
+The participation problem is greatly reduced, but rework remains high and
+grows sharply with node count in the combined variant (road changes/V is
+10.12 at one node versus 42.49 at eight). Measured work includes queue and
+locking overhead; it is not all useful relaxation work. These observations
+do not isolate round handling as the binding remaining cost, so L4 is not
+triggered simply because the performance target failed. Remaining work/rework
+and the dense-graph regression need investigation. No formal final acceptance
+claim is possible yet: the reader lacks held-out results, the second GAPBS
+allocation and full regression suite are missing, and road-usa-w4-z still
+lacks performance measurements.
+
+The following follow-up jobs use the already verified immutable reader build:
+
+| job | purpose |
+|---|---|
+| 22222842 | eight-node held-out CANDIDATE comparison on all four high-diameter graphs |
+| 22222843 | matching one-node CANDIDATE comparison |
+| 22222844 | second GAPBS allocation, frozen selections from 22218622 |
+| 22222845 | joint GAPBS tuning and held-out measurements for road-usa-w4-z |
+| 22222846 | rmat24 isolation: frozen/control/current-off/current-auto, four sources x three reps |
+| 22222847 | independent allocation of the same rmat24 isolation experiment |
+
+The CANDIDATE flags remain `--process-share auto --reader-tile auto
+--slack-control off`; this is a measured candidate, not a default adoption.
+The regression isolation distinguishes the current build's general overhead
+from the auto-mode decision paths before any performance fix is selected.

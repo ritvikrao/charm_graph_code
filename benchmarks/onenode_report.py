@@ -7,15 +7,30 @@ the remaining columns diagnose why those PE-seconds were spent.
 """
 import argparse
 import csv
+import math
 import re
 from pathlib import Path
 
 
 def fields(text, tag):
-    match = re.search(r'^' + tag + r' (.*)$', text, re.M)
-    if not match:
-        raise ValueError(f'missing {tag}')
-    return {k: float(v) for k, v in re.findall(r'(\w+)=([0-9.eE+-]+)', match[1])}
+    # Slurm merges concurrent rank output. A complete Main record can begin
+    # immediately after a partial per-PE line, without a preceding newline.
+    # Accept that prefix, but reject duplicate records or damage within one.
+    matches = re.findall(re.escape(tag) + r' ([^\r\n]*)', text)
+    if len(matches) != 1:
+        raise ValueError(f'expected one {tag} record, found {len(matches)}')
+    result = {}
+    for token in matches[0].split():
+        match = re.fullmatch(r'(\w+)=([0-9.eE+-]+)', token)
+        if not match or match[1] in result:
+            raise ValueError(f'malformed {tag} record: {token}')
+        value = float(match[2])
+        if not math.isfinite(value):
+            raise ValueError(f'nonfinite {tag} field: {token}')
+        result[match[1]] = value
+    if not result:
+        raise ValueError(f'empty {tag} record')
+    return result
 
 
 def summarize(prefix):

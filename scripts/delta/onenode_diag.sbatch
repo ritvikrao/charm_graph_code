@@ -38,4 +38,6 @@ for graph in "${graphs[@]}"; do
     --result-digest --timeout 300 --diag "$OUT/$graph" "${FLAGS[@]}" > "$OUT/$graph.out" 2>&1
   python3 "$APP/benchmarks/check_onenode_digest.py" "$ROOT/graphs/$graph.reference.txt" "$source" "$OUT/$graph.out"
 done
-python3 "$APP/benchmarks/onenode_report.py" "$OUT" | tee "$OUT/report.md"
+python3 "$APP/benchmarks/onenode_report.py" "$OUT" > "$OUT/report.tmp"
+mv "$OUT/report.tmp" "$OUT/report.md"
+cat "$OUT/report.md"
