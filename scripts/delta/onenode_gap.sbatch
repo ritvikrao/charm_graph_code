@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tune GAPBS using the existing external harness, then count buckets at the
+# Tune GAPBS jointly using the external harness, then count buckets at the
 # selected settings. Training sources choose settings; tests stay held out.
 #SBATCH --account=mzu-delta-cpu
 #SBATCH --partition=cpu
@@ -16,9 +16,8 @@ GRAPHS=${2:-road-usa-z,mesh24-z,mesh26-z}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 export SLURM_MPI_TYPE=cray_shasta PYTHONNOUSERSITE=1 OMP_PROC_BIND=close OMP_PLACES=cores
 if [ -z "${GAP_SELECTION_JOB:-}" ]; then
-python3 "$APP/benchmarks/run.py" "$ROOT" --mode external --external-arms gap \
-  --graphs "$GRAPHS" --workers 120 --gap-threads 8,16,32,64,96,120,127 \
-  --delta-divisors 256,64,16,4,1 --sources 4 --reps 3 --timeout 300
+python3 "$APP/benchmarks/onenode_gap_tune.py" "$ROOT" \
+  --graphs "$GRAPHS" --sources 4 --reps 3 --timeout 120
 fi
 python3 - "$ROOT" "${GAP_SELECTION_JOB:-$SLURM_JOB_ID}" "$APP" <<'PY'
 import json, os, subprocess, sys

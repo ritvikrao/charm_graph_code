@@ -188,3 +188,23 @@ Candidate binary `acic_reader_final` and diagnostic companion have immutable
 source/hash manifests. Reader pilots 22218625/26 and regression pilot 22218627
 use this exact build. Post-lever D0 jobs 22218629/30 measure the remaining
 work, inactivity and round cost before deciding on L4.
+
+## GAPBS baseline and outstanding acceptance work
+
+Initial tuning 22218065 used the existing two-stage layout/parameter search.
+Its optimum touched the smallest thread count (eight), and mesh24 touched
+the largest delta. These results cannot establish the strongest baseline.
+`onenode_gap_tune.py` therefore searches the joint thread/delta grid, including
+1/2/4 threads, all 128 cores, and larger deltas; it confirms the top three
+using training sources before measuring held-out sources. A second allocation
+can reuse the selection with `--selection-job`. Job 22218622 runs this search.
+Upstream bucket fusion remains intact. The initial bucket diagnostics completed
+as 22218556: roughly 1,100–1,600 road buckets, 1,300–1,600 mesh24 buckets and
+5,500–7,500 mesh26 buckets across the held-out sources. These use the initial
+settings and will be replaced after stronger tuning.
+
+The eight-node allocations are still queued. No eight-node/GAPBS pass, second
+allocation confirmation, scale-free suite result, or default adoption is
+claimed. Several full comparison matrices exceeded their requested 30-minute
+window; the scheduler refused a running-job time extension. Complete graph
+cells remain usable; incomplete cells must be rerun in separate allocations.
