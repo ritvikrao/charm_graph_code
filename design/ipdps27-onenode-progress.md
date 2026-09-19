@@ -296,3 +296,87 @@ Future joint GAPBS searches record a configurable per-launch wall-time cap
 an otherwise subsecond solve take minutes. A timeout is invalid and cannot
 win selection. Existing external-harness runs retain their previous timeout
 unless this configuration field is explicitly set.
+
+## Completed-job review (2026-09-19)
+
+Rechecked the original reference digests and recorded solve times for 392
+A/B runs from jobs 22218463, 22218558, 22218625/26/27 and 22218658 (including
+their discarded warmups). Every matrix has its full source/repetition grid;
+every stored summary agrees with its raw times. All 549 GAPBS runs from
+22218622 passed independent reference digests, as did the six post-lever
+diagnostic solves in 22218629/30, with zero remaining histogram entries.
+
+New complete L2 comparisons, four held-out sources and three repetitions:
+
+| job | graph | nodes | shared/frozen, paired median | speedup |
+|---|---|---:|---:|---:|
+| 22218463 | mesh26-z | 1 | 0.155 | 6.5x |
+| 22218463 | road-usa-z | 1 | 0.201 | 5.0x |
+| 22218558 | mesh24-z | 2 | 0.294 | 3.4x |
+| 22218558 | mesh26-z | 2 | 0.183 | 5.5x |
+| 22218558 | road-usa-z | 2 | 0.255 | 3.9x |
+
+Slurm records 22218463 as TIMEOUT at 30 minutes, but both graph matrices and
+all their raw solves completed and validated. Retain those complete cells;
+do not describe the allocation itself as a clean completion. The road-only
+L3 retry 22218658 completed cleanly. Shared/frozen was 0.239 and slack/frozen
+0.232 by the paired-ratio statistic, while the medians of absolute source
+times were 2.215 and 2.245 seconds. These noisy, small differences still do
+not establish a benefit from live slack.
+
+The two-node reader pilot 22218626 completed: sharing alone took 1.216 / 1.094
+seconds on its two training sources, and sharing plus tiles took 0.810 / 0.621
+seconds, a further 33–43% reduction. The one-node pilot showed 33–40%.
+These remain one-repetition training pilots, not held-out confirmation.
+
+The regression pilot 22218627 is a concern: on rmat24, the auto candidate's
+median paired ratio is 1.078 and worst source is 1.161, versus 1.037 and
+1.051 for the duplicate frozen control. Using ratios of per-source medians,
+the worst candidate is 1.146 against an observed allocation floor of 1.051.
+Thus this allocation does not meet the regression criterion. It is only one
+allocation and one dense graph; it cannot establish the cause. All three
+auto features select their off paths on this graph's roughly 31 arcs/vertex.
+An isolated current-build off/auto comparison and a second allocation are
+needed before attributing the regression or adopting the candidate.
+
+Joint GAPBS search 22218622 completed all 462 joint samples, 36 finalist
+confirmation samples, 36 held-out samples and 15 warmups, without failures.
+Selections and medians over four held-out source medians are:
+
+| graph | threads | delta | one-node GAPBS seconds |
+|---|---:|---:|---:|
+| mesh24-z | 120 | 4096 | 0.097570 |
+| mesh26-z | 128 | 4096 | 0.415810 |
+| road-usa-z | 64 | 32768 | 0.174827 |
+
+No selected delta touches the search boundary. Mesh26 uses all 128 physical
+cores. These replace the weaker initial coordinate-search baselines; a second
+allocation with the same selections is still required. GAPBS bucket counts
+at these settings are 148–197 for mesh24, 344–469 for mesh26, and 1103–1625
+for road across the four held-out sources.
+
+Post-lever D0 (sharing + reader tiles + slack, diagnostic builds, first tuning
+source) now gives:
+
+| graph | nodes | inactive round participation | changes/V | work share | rounds |
+|---|---:|---:|---:|---:|---:|
+| mesh24-z | 1 | 1.6% | 14.28 | 88.5% | 163 |
+| mesh26-z | 1 | 1.4% | 12.96 | 91.6% | 259 |
+| road-usa-z | 1 | 4.5% | 10.12 | 85.3% | 368 |
+| mesh24-z | 2 | 3.6% | 15.98 | 84.2% | 145 |
+| mesh26-z | 2 | 2.9% | 16.24 | 88.9% | 225 |
+| road-usa-z | 2 | 7.0% | 15.47 | 80.7% | 355 |
+
+Work timers include queue/locking costs, and round participation is not a CPU
+idle measurement. Nevertheless, the original inactivity has largely gone,
+and changes/V remains well above the plan's 2–3 target. These one/two-node
+signals favor investigating remaining work/rework and shared-queue cost;
+they do not establish that cheaper rounds are the next lever. Eight-node
+post-lever diagnosis is still needed for the conditional L4 decision.
+
+Paper input job 22218657 completed road-usa-w4 (including Morton order), orkut,
+rmat25, uniform25, rmat26 and rmat27. Each has two training and four held-out
+Dijkstra references; file sizes match their graph headers. All six remaining
+jobs are eight-node jobs: 22218064, 22218229, 22218280, 22218344, 22218784,
+22218785. None had started at this review. No final paper pass or default
+adoption is claimed.
