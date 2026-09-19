@@ -366,7 +366,16 @@ single fixed setting by 1.05–1.95×.** The feedback itself -- the
 controller's gate on delivery, buffer correction, coarsening -- adds
 nothing measurable; local-delivery ties, as in 7.6f2. The defensible C3 is
 "no per-graph tuning needed", from regime rules plus an idle flush, not
-"feedback beats tuning" and not co-design. 8 nodes: job 20827706.
+"feedback beats tuning" and not co-design.
+
+**C3 test, 8 nodes** (job 20827706, floor 1.10×): `tuned-fixed-idle` 1.18×
+faster on mesh24-z and 1.06× on mesh26-z, 1.11× slower on road-usa-z and
+rmat25, within the floor elsewhere; `global-fixed-idle` /2.86–/4.99 on the
+high-diameter graphs, ±1.05 on scale-free ones; `idle-ungated` ties on the
+high-diameter graphs (/1.11 on orkut); `local-delivery` ties except /1.31
+on orkut. Same reading at 8 nodes: defaults within ±18% of per-graph
+tuning, up to 5× better than one fixed setting; the gate matters only on
+orkut.
 
 ### Change 2: lazy relaxation only on skewed degree distributions
 
@@ -426,6 +435,33 @@ changes it once; that per-node inefficiency, not communication, is the gap, and 
 is not something the sprint can close. The paper must either restrict C1 to
 "among distributed systems", with the COST ratio stated in the abstract's
 scope, or not be submitted (§6 go/no-go).
+
+### E1, second allocation (2 nodes, frozen build)
+
+Job 20827652, `acic_ipdps2`, floor 1.09×, 672 runs, no failures. Replicates
+the first allocation's signs: `ws24` /2.29 (rmat25), /1.40 (orkut), /3.97
+(mesh24-z), /5.03 (road-usa-z), /5.19 (road-usa-w4-z); `no-lazy` /1.56
+(rmat25), /1.29 (orkut); `buffer-2048` /1.63–/1.80 on roads; `no-idle-flush`
+/1.13–/1.27 on high-diameter graphs; `global-fixed` /1.33–/2.87 on
+high-diameter graphs and /1.49 on rmat25. `prev-binary` (the first
+allocations' build): /1.54 on uniform25 (change 2, third allocation), and
+±7–16% with no consistent sign elsewhere -- the rebuild noise. Coarsening
+costs road-usa-z in both allocations (`no-coarsen` 1.14×, 1.20× faster).
+
+### Interim go/no-go reading (09-18 evening)
+
+| Gate condition (sc27-plan.md) | Reading |
+|---|---|
+| A new post-workshop mechanism with a causal, reproducible time-to-solution gain | **Met.** Lazy relaxation (scale-free, 1.3–3.3×), the degree-based buffer size (roads, 1.6–2.6×), the idle flush and its interval (high-diameter, 1.1–3.6×); together 2–3× (scale-free) and 4–21× (high-diameter); two allocations at 2 nodes, one at 8 so far |
+| High-diameter wins survive independent validation and fair baseline layouts | Validation **met** (E4). Fair layouts: RIKEN's grid widened (interior optimum on scale-free); high-diameter E3 finishing. RIKEN takes 100–170 s on road-usa-w4 at 2 nodes against ACIC's ~1.5 s, **and returns wrong distances from 3 of the 4 held-out sources** (reaching 14, 188 and 288 vertices) at every layout, delta and node count, in both vertex orders; it is right from the tuning sources and the fourth test source. Our driver passes other graphs; the cause is not diagnosed. Its wrong cells are excluded and reported as failures |
+| The paper can explain the scale-free and GAPBS losses | Scale-free: yes (RIKEN ~3× with its phases pruning work; ACIC's work per edge, 8a). **GAPBS: one-node GAPBS beats 8-node ACIC on the high-diameter graphs (road-usa-z 7.5×)** -- explainable (per-node re-work) but it caps the claim at "among distributed systems" |
+| Adaptive vs strong fixed | Defaults match per-graph tuned fixed (±7%) and beat the best single fixed setting 1.05–1.95× (2 nodes); feedback and co-design add nothing measurable. Drop "adaptive" from the title; claim "no per-graph tuning" |
+| Result depends on the old width bug / a poorly matched baseline | No: every cell above is on the current build, with RIKEN's widened grid |
+
+What remains for 09-26: the 8-node C3 test and E1 second allocation, the
+high-diameter E3 (partial if it times out), and the decision itself, which
+turns on whether a distributed-only high-diameter claim with a stated
+one-node GAPBS gap is a paper the authors want to submit.
 
 ## 6. Budget and calendar
 
