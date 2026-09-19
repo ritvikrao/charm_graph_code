@@ -15,6 +15,11 @@ def paired(directory):
     if not base:
         return []
     graph = base[0]['graph']
+    reference = directory.parents[1] / 'graphs' / f'{graph}.reference.txt'
+    roles = {row[0]: row[1] for line in reference.read_text().splitlines()
+             if line[:1].isdigit() for row in [line.split()]}
+    observed_roles = {roles[str(r['source'])] for r in base}
+    role = next(iter(observed_roles)) if len(observed_roles) == 1 else 'mixed'
     result = []
     for variant in manifest['variants']:
         label = variant['label']
@@ -30,7 +35,7 @@ def paired(directory):
         if not ratios: continue
         by_source = {s: statistics.median(values) for s, values in ratios.items()}
         result.append(dict(directory=str(directory), graph=graph, nodes=manifest['nodes'],
-            variant=label, sources=len(ratios), min_reps=min(map(len, ratios.values())),
+            variant=label, role=role, sources=len(ratios), min_reps=min(map(len, ratios.values())),
             ratio=statistics.median(by_source.values()), worst=max(by_source.values()),
             missing=missing, completed=(directory / 'summary.json').exists(),
             sha256=variant['sha256']))
@@ -44,10 +49,10 @@ def main():
     results = []
     for path in sorted((args.campaign / 'logs').glob('AB-*/manifest.json')):
         results.extend(paired(path.parent))
-    print('| allocation / graph | nodes | variant | sources | min reps | variant/frozen | worst source | complete |')
-    print('|' + '---|' * 8)
+    print('| allocation / graph | nodes | variant | role | sources | min reps | variant/frozen | worst source | complete |')
+    print('|' + '---|' * 9)
     for r in results:
-        print(f"| {Path(r['directory']).name} | {r['nodes']} | {r['variant']} | {r['sources']} | "
+        print(f"| {Path(r['directory']).name} | {r['nodes']} | {r['variant']} | {r['role']} | {r['sources']} | "
               f"{r['min_reps']} | {r['ratio']:.3f} | {r['worst']:.3f} | "
               f"{'yes' if r['completed'] and not r['missing'] else 'NO'} |")
     print('\nRatios below 1 are faster. Control is a second frozen run and measures '

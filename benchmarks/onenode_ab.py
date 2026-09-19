@@ -43,7 +43,9 @@ def main():
         binary = args.campaign / 'bin' / v['binary']
         v['sha256'] = hashlib.sha256(binary.read_bytes()).hexdigest()
     (out / 'manifest.json').write_text(json.dumps(dict(variants=variants, nodes=nodes,
-        workers=args.workers, rpn=args.rpn, hosts=os.environ.get('SLURM_JOB_NODELIST')), indent=2))
+        workers=args.workers, rpn=args.rpn, sources=args.sources, reps=args.reps,
+        source_role=args.source_role, batch=args.batch,
+        hosts=os.environ.get('SLURM_JOB_NODELIST')), indent=2))
     app = Path(__file__).resolve().parents[1]
     references = {}
     for v in variants:

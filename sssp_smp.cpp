@@ -3322,7 +3322,9 @@ public:
     }
     CkAssert(M > 0 && (M & (M - 1)) == 0);
     dest_table_shift = __builtin_ctz(M);
-    dest_table_last = V / M - 1;
+    // Small verification graphs still have one table entry. A negative tail
+    // index used to read dest_table[-1] for every edge when V < M.
+    dest_table_last = std::max(0L, V / M - 1);
     my_pe = CkMyPe();
     dest_table = new int[(V + M - 1) / M];
     // long: j * M passes 2^31 once V does (sc27-plan.md, vertex-count audit).

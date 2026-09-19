@@ -133,3 +133,27 @@ and slack enabled (22218297), as did two-node verification (22218298) and all
 42 batch-source solves (22218299). No default was changed. Paired performance
 and scale-free checks remain required before adoption. L4 still requires
 post-L1/L2/L3 diagnosis; no round-cost mechanism has been assumed necessary.
+
+
+## Storage and boundary checks
+
+The home directory has a 100 GiB soft quota. Tile preparation exhausted it;
+its generated files were moved to
+`/work/hdd/mzu/rao1/acic-ipdps27-onenode-20260919/graphs`, with compatibility
+symlinks from the original campaign. Use the work campaign for further input
+preparation; its bin/logs/build links retain the existing manifests and logs.
+Mesh26 tile preparation resumed as job 22218452. Job 22218227 completed all
+mesh24 pairs before failing during the next graph; its complete mesh24 result
+is retained, and the remaining graphs are resubmitted as 22218463.
+
+Review found a preexisting owner-table underflow for V < 1024. Clamping the
+last table index to zero fixes it without changing large-graph lookup. Jobs
+22218461/62 passed 60 solves each on one/two nodes: empty and disconnected
+path graphs at 16, 256, 1023, 1024, 1025 vertices, sharing on/off, live slack,
+and repeated sources spanning connected and isolated components.
+
+First complete production result: mesh24-z, one node, job 22218227, four
+held-out sources x three repetitions: L2/frozen median paired ratio **0.263**
+(3.8x faster), worst source 0.288. Repeated frozen control median ratio 1.014.
+This is one allocation, not an adoption or paper-pass claim. L3's first mesh24
+allocations show no clear additional gain over L2, so its default remains off.
