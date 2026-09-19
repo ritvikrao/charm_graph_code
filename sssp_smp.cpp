@@ -2,6 +2,7 @@
 #include "htram_group.h"
 #include "sssp_smp.decl.h"
 #include "graphlib/graphlib.h"
+#include "process_work.h"
 #ifdef PAPI
 #include "acic_prof.h"
 #endif
@@ -65,6 +66,7 @@ inline void idle_end(void *) {
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
 
 #define INFO_PRINTS
 // #define PRINT_HISTO //print histograms to file
@@ -105,6 +107,12 @@ double reduction_delay =
     0.1;                   // each histogram reduction happens at this interval
 int initial_threshold = 3; // initial histo threshold
 bool verify_mode = false;  // --verify: check the result against serial Dijkstra
+enum { PROCESS_SHARE_OFF = 0, PROCESS_SHARE_ON = 1, PROCESS_SHARE_AUTO = 2 };
+int process_share_mode = PROCESS_SHARE_OFF;
+static bool process_share_active() {
+  return process_share_mode == PROCESS_SHARE_ON ||
+         (process_share_mode == PROCESS_SHARE_AUTO && num_global_edges < 8L * V);
+}
 bool result_digest = false; // --result-digest: emit distances' digest after timing
 // Everything needed to rebuild the graph from scratch, used by the serial
 // reference. Filled in by Main; not a Charm readonly, because only PE 0 needs
@@ -892,6 +900,9 @@ private:
   long acc_changes_mark = 0;
   double smoothed_acceptance = -1.0;
   int buffer_size_changes = 0;
+  std::vector<long> sources;
+  std::string source_spec, base_diag_prefix;
+  std::vector<unsigned long long> previous_tram_stats;
   double tram_percentile = 0.01;
   double heap_percentile = 0.01;
 #ifdef PRINT_HISTO
@@ -902,6 +913,8 @@ public:
   double compute_begin;
   double compute_time = -1.0; // set on convergence, or by the timeout handler
   bool run_truncated = false; // set by fast_exit; forces a nonzero exit
+  size_t source_epoch = 0;
+  bool source_running = false;
   int control_generation = 0; // --control node: rounds broadcast so far
 
   /**
@@ -921,6 +934,19 @@ public:
         verify_mode = true;
       else if (arg == "--result-digest")
         result_digest = true;
+      else if (arg == "--sources" || arg.rfind("--sources=", 0) == 0) {
+        source_spec = arg == "--sources"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(10);
+        if (source_spec.empty()) CkAbort("--sources needs a comma-separated list");
+      }
+      else if (arg == "--process-share" || arg.rfind("--process-share=", 0) == 0) {
+        const std::string value = arg == "--process-share"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(16);
+        if (value == "off") process_share_mode = PROCESS_SHARE_OFF;
+        else if (value == "on") process_share_mode = PROCESS_SHARE_ON;
+        else if (value == "auto") process_share_mode = PROCESS_SHARE_AUTO;
+        else CkAbort("--process-share must be off, on, or auto");
+      }
       else if (arg.rfind("--timeout=", 0) == 0)
         timeout_seconds = std::stod(arg.substr(10));
       else if (arg == "--timeout") {
@@ -1381,7 +1407,7 @@ public:
             << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
-            << "[--partition-jitter <percent>] [--diag <prefix>]" << endl
+            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--sources v1,v2,...] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -1459,6 +1485,20 @@ public:
     std::string file_name = args[1];    // file name or edge count
     S = atoi(args[2].c_str());          // randomization seed
     start_vertex = atol(args[3].c_str());
+    if (source_spec.empty()) sources.push_back(start_vertex);
+    else {
+      std::istringstream input(source_spec);
+      std::string token;
+      while (std::getline(input, token, ',')) {
+        size_t used = 0;
+        long source = std::stol(token, &used);
+        if (used != token.size() || source < 0) CkAbort("invalid --sources list");
+        sources.push_back(source);
+      }
+      if (source_spec.back() == ',') CkAbort("invalid --sources list");
+      start_vertex = sources.front();
+    }
+    base_diag_prefix = diag_prefix;
     generate_mode = atoi(args[4].c_str()); // 0 read from csv, 1/2 generate
     tram_percentile = std::stod(args[5]);
     heap_percentile = std::stod(args[6]);
@@ -1761,6 +1801,9 @@ public:
    */
   void begin(cost max_edge_weight) {
     graph_max_weight = max_edge_weight;
+    if (process_share_active() && lazy_active())
+      CkAbort("process sharing currently requires --lazy-heavy off (auto sharing selects sparse graphs)");
+    ckout << "Process sharing: " << (process_share_active() ? "on" : "off") << endl;
 #ifdef INFO_PRINTS
     ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
 #endif
@@ -1787,6 +1830,13 @@ public:
       CkStartQD(CkCallback(CkIndex_Main::start_source(), mainProxy));
       return;
     }
+    start_vertex = sources[source_epoch];
+    for (long source : sources)
+      if (source < 0 || source >= V) CkAbort("source %ld outside graph", source);
+    if (sources.size() > 1 && !base_diag_prefix.empty())
+      diag_prefix = base_diag_prefix + ".s" + std::to_string(source_epoch) +
+                    "-v" + std::to_string(start_vertex);
+    ckout << "SOURCE_RUN index=" << source_epoch << " source=" << start_vertex << endl;
     // Reached once every chare holds its partition and the width it will
     // bucket with, in every mode, so this is the one boundary that means the
     // same thing everywhere: the solver could start now. MODE_UNIFORM and
@@ -1814,9 +1864,11 @@ public:
     previous_threshold = initial_threshold;
     CcdCallFnAfter(start_reductions, (void *)this, reduction_delay);
     if (timeout_seconds > 0.0)
-      CcdCallFnAfter(fast_exit, (void *)this, timeout_seconds * 1000.0);
+      CcdCallFnAfter(fast_exit, new std::pair<Main *, size_t>(this, source_epoch),
+                     timeout_seconds * 1000.0);
     // The chares set the same size when they built their partitions.
     current_buffer_size = initial_buffer_size();
+    source_running = true;
     compute_begin = CkWallTimer();
 #ifdef INFO_PRINTS
     ckout << "Beginning at time: " << compute_begin << endl;
@@ -2112,6 +2164,7 @@ public:
       ckout << "Threshold: " << previous_threshold << endl;
 #endif
       compute_time = CkWallTimer() - compute_begin;
+      source_running = false;
       arr.print_distances();
       return;
     }
@@ -2659,6 +2712,12 @@ public:
    * bytes actually handed to the send path, and bytes allocated to carry them.
    */
   void done_tram_stats(unsigned long long *values, int n) {
+    if (previous_tram_stats.empty()) previous_tram_stats.assign(n, 0);
+    for (int i = 0; i < n; ++i) {
+      const auto cumulative = values[i];
+      values[i] -= previous_tram_stats[i];
+      previous_tram_stats[i] = cumulative;
+    }
     ckout << "TRAM messages: " << values[0] << ", bytes sent: " << values[1]
           << ", bytes allocated: " << values[2] << endl;
     ckout << "TRAM node messages: " << values[3]
@@ -2672,8 +2731,40 @@ public:
     if (verify_mode || result_digest)
       arr.verify_hash();
     else
-      CkExit(run_truncated ? 1 : 0);
+      finish_source();
   }
+
+  void finish_source() {
+    if (run_truncated) { CkExit(1); return; }
+    if (source_epoch + 1 == sources.size()) { CkExit(0); return; }
+    // No old data/control message may observe the next source's empty ledger.
+    CkStartQD(CkCallback(CkIndex_Main::advance_source(), mainProxy));
+  }
+
+  void advance_source() {
+    ++source_epoch;
+    source_running = false;
+    start_time = CkWallTimer();
+    read_time = index_time = 0.0; // topology retained; only solver state resets
+    setup_time = stats_time = total_time = compute_time = -1.0;
+    threshold_change_counter = 0;
+    previous_threshold = initial_threshold;
+    reduction_counts = no_incoming = current_phase = last_first_nonzero = 0;
+    reduction_times.clear(); rounds.clear(); round_active_pes = 0;
+    bucket_scale = 1; coarsenings = 0;
+    previous_updates_created = previous_updates_processed = previous_distance_changes = 0;
+    stall_rounds = stall_rescues = stall_reports = 0; stall_report_at = 256;
+    rounds_window_empty = max_above_window = range_extensions = 0;
+    last_clamped_created = last_updates_created_seen = extend_ready_at = windows_slid = 0;
+    above_negative_rounds = 0; conservation_warned = clamp_ever_live = false;
+    acc_noted_mark = acc_changes_mark = buffer_size_changes = 0;
+    smoothed_acceptance = -1.0; current_buffer_size = initial_buffer_size();
+    // Keep control generations monotone across solves, so stale pickup
+    // notifications cannot replay a previous source's final thresholds.
+    arr.reset_for_source();
+  }
+
+  void source_reset_done() { start_source(); }
 
   /**
    * Compare the parallel result against serial Dijkstra over the same
@@ -2695,7 +2786,7 @@ public:
     // --verify still performs its in-process Dijkstra check when both flags
     // are present, and a timed-out solve can never become a successful result.
     if (!verify_mode) {
-      CkExit(run_truncated ? 1 : 0);
+      finish_source();
       return;
     }
 
@@ -2718,7 +2809,7 @@ public:
       CkExit(1);
     } else if (parallel == serial) {
       ckout << "VERIFY PASS" << endl;
-      CkExit(0);
+      finish_source();
     } else {
       ckout << "VERIFY FAIL: parallel result does not match serial Dijkstra"
             << endl;
@@ -2735,7 +2826,10 @@ public:
  * converged one in a batch log.
  */
 void fast_exit(void *obj, double time) {
-  Main *main_chare = (Main *)obj;
+  std::unique_ptr<std::pair<Main *, size_t>> ticket((std::pair<Main *, size_t> *)obj);
+  Main *main_chare = ticket->first;
+  if (ticket->second != main_chare->source_epoch || !main_chare->source_running) return;
+  main_chare->source_running = false;
   ckout << endl
         << "TIMEOUT: no convergence after " << timeout_seconds
         << " s. The results below are a PARTIAL result and must not be "
@@ -2762,6 +2856,16 @@ struct ControlRound {
  * whose collect() hands the global sum to Main once every process has
  * reported. thresholds() stores the round for the PEs to pick up.
  */
+struct ProcessPartition {
+  long first = 0, size = 0;
+  LocalCsr *graph = nullptr;
+  cost *distances = nullptr;
+#ifdef ACIC_DIAG
+  long *arrivals = nullptr;
+  unsigned char *last_lead = nullptr;
+#endif
+};
+
 class ControlNode : public CBase_ControlNode {
   std::mutex acc_lock, root_lock, round_lock;
   std::vector<long> acc, root_acc;
@@ -2780,6 +2884,8 @@ class ControlNode : public CBase_ControlNode {
   }
 
 public:
+  ProcessWork<Update, ComparePairs> work{CkNodeSize(CkMyNode())};
+  std::vector<ProcessPartition> partitions{(size_t)CkNodeSize(CkMyNode())};
   std::atomic<int> generation{0};
   std::unique_ptr<std::atomic<char>[]> fallback_queued;
   ControlNode() : fallback_queued(new std::atomic<char>[CkNodeSize(CkMyNode())]) {
@@ -2962,6 +3068,8 @@ private:
   int heap_threshold; // highest bucket where messages can be pushed to heap
   int tram_threshold; // highest bucket where messages can be pushed to tram
   int bfs_threshold;
+  double initial_width = 0.0;
+  bool idle_timers_registered = false;
   double bucket_multiplier;       // constant to calculate bucket
   // Original buckets merged into each bucket by coarsen_buckets(). The bucket
   // is the integer quotient of the original index, which is what keeps a merge
@@ -3252,6 +3360,7 @@ public:
       local_graph.append(adjacency);
     }
     local_graph.finish();
+    publish_process_partition();
 #ifdef INFO_PRINTS
     ckout << "PE " << CkMyPe() << " generated " << actual_edges << " edges"
           << endl;
@@ -3289,6 +3398,7 @@ public:
       local_graph.append(adjacency);
     }
     local_graph.finish();
+    publish_process_partition();
     CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
     contribute(sizeof(cost), &heaviest_edge, CkReduction::max_long, cb);
   }
@@ -3388,6 +3498,7 @@ public:
    * rule needs, at no extra collective and no extra pass over the rows.
    */
   void contribute_largest_outedges() {
+    publish_process_partition();
     cost heaviest_edge = 0;
     for (long i = 0; i < num_vertices; i++) {
       long degree = local_graph.degree(i);
@@ -3416,6 +3527,51 @@ public:
     contribute_largest_outedges();
   }
 
+  void reset_for_source() {
+    CkAssert(pq.empty() && deferred_updates.empty());
+    if (process_share_active()) CkAssert(control_local->work.empty());
+    for (int b = 0; b < HISTO_BUCKET_COUNT; ++b) {
+      CkAssert(pq_hold[b].empty());
+      histogram[b] = vcount[b] = 0;
+    }
+    vcount[HISTO_BUCKET_COUNT] = num_vertices;
+    std::fill(distances, distances + num_vertices, lmax);
+    updates_created_locally = updates_processed_locally = processed_at_contribution = 0;
+    wasted_updates = rejected_updates = absorbed_updates = folded_updates = 0;
+    send_filtered = tokens_created = tokens_stale = clamped_created_locally = 0;
+    deferred_peak = deferred_total = skew_top_arrivals = bfs_created = bfs_processed = 0;
+    updates_noted = bfs_noted = distance_changes = updates_in_tram = 0;
+    heap_threshold = bfs_threshold = initial_threshold;
+    tram_threshold = initial_threshold + 2;
+    bucket_scale = 1; bucket_scale_inverse = 0; bucket_limit = HISTO_BUCKET_COUNT;
+    current_phase = 0; last_round_starved = 1; pending_first_nonzero = 0;
+    heap_queued = heap_yielded = clamp_coarsen_warned = false;
+    flush_rng = VertexRng(thisIndex, S);
+    std::fill(sent_cache.begin(), sent_cache.end(), SentEntry());
+    send_filter_on = send_filter_bits > 0 ||
+                    (send_filter_auto && initial_buffer_size() >= SEND_FILTER_MIN_BUFFER);
+    set_bucket_width(initial_width);
+    tram->changeThreshold(0, tram_threshold, 1.0);
+    tram->setBufferSize(initial_buffer_size());
+    tram->last_idle_flush = -1.0;
+#ifdef ACIC_IPDPS_DIAG
+    same_pe_changes = cross_pe_changes = 0;
+#endif
+#ifdef ACIC_DIAG
+    std::fill(histo_created, histo_created + HISTO_BUCKET_COUNT, 0);
+    std::fill(arrivals_per_vertex, arrivals_per_vertex + num_vertices, 0);
+    std::fill(last_lead, last_lead + num_vertices, 0);
+    batch_items = batch_absorbable = expansions = heavy_created = arrival_settled = 0;
+    controller_rounds = idle_rounds = max_admitted_drift = processed_at_last_round = 0;
+    frontier_bucket = 0;
+    for (auto array : {deg_vertices, deg_edges, deg_arrivals, deg_rejects,
+                       arr_vertices, arr_arrivals, settled_deg})
+      std::fill(array, array + DEGREE_CLASSES, 0);
+    std::fill(lead_expansions, lead_expansions + LEAD_CLASSES, 0);
+#endif
+    contribute(CkCallback(CkReductionTarget(Main, source_reset_done), mainProxy));
+  }
+
   void start_papi() {
 #ifdef PAPI
     acic_prof::start(CkMyPe(), CkMyPe() == CkNodeFirst(CkMyNode()));
@@ -3424,10 +3580,13 @@ public:
     comm_share::work_tsc = comm_share::work_send_tsc = 0;
     htram_send_tsc = 0;
     comm_share::idle_tsc = comm_share::idle_t0 = 0;
+    if (!idle_timers_registered) {
+    idle_timers_registered = true;
     CcdCallOnConditionKeep(CcdPROCESSOR_BEGIN_IDLE,
                            (CcdCondFn)comm_share::idle_begin, nullptr);
     CcdCallOnConditionKeep(CcdPROCESSOR_END_IDLE,
                            (CcdCondFn)comm_share::idle_end, nullptr);
+    }
     comm_share::window_s0 = CkWallTimer();
     comm_share::window_tsc0 = __rdtsc();
 #endif
@@ -3630,6 +3789,7 @@ public:
   void set_bucket_width(double natural_width) {
     double width =
         bucket_width_override > 0.0 ? bucket_width_override : natural_width;
+    initial_width = width;
     bucket_multiplier = HISTO_BUCKET_COUNT / (HISTO_BUCKET_COUNT * width);
     light_cut = !lazy_active() ? 0
                 : lazy_cut > 0 ? lazy_cut
@@ -3894,8 +4054,12 @@ public:
 
   void relax_edges(long local_index, long first, long last, bool bfs) {
     const Edge *adjacency = local_graph.edges(local_index);
+    send_relaxations(adjacency, first, last, distances[local_index], bfs);
+  }
+
+  void send_relaxations(const Edge *adjacency, long first, long last,
+                        cost source_distance, bool bfs) {
     const long degree = last;
-    const cost source_distance = distances[local_index];
 #ifdef ACIC_DIAG
     const double heavy_cut = 1.0 / bucket_multiplier;
 #endif
@@ -3946,6 +4110,10 @@ public:
 #ifdef ACIC_IPDPS_DIAG
       if (dest_pe != my_pe) new_update.dest_vertex |= UPDATE_CROSS_PE_BIT;
 #endif
+      if (process_share_active() && CkNodeOf(dest_pe) == CkMyNode()) {
+        process_shared_update(new_update);
+        continue;
+      }
 #ifndef ALL_TO_TRAM_HOLD
       if ((neighbor_bucket > tram_threshold) && !bfs) {
         tram->sendItemPrioDeferredDest(new_update, neighbor_bucket, dest_pe);
@@ -3968,10 +4136,131 @@ public:
   }
 
 
+  void publish_process_partition() {
+    if (!process_share_active()) return;
+    auto *node = controlProxy.ckLocalBranch();
+    auto &part = node->partitions[CkMyRank()];
+    part.first = start_vertex;
+    part.size = num_vertices;
+    part.graph = &local_graph;
+    part.distances = distances;
+#ifdef ACIC_DIAG
+    part.arrivals = arrivals_per_vertex;
+    part.last_lead = last_lead;
+#endif
+    // All partitions are published before Main::begin's reduction completes.
+  }
+
+  ProcessPartition &process_partition(long vertex) {
+    const int pe = get_dest_proc_fast(vertex);
+    CkAssert(CkNodeOf(pe) == CkMyNode());
+    auto &part = control_local->partitions[pe - CkNodeFirst(CkMyNode())];
+    CkAssert(part.graph != nullptr && vertex >= part.first && vertex < part.first + part.size);
+    return part;
+  }
+
+  void process_shared_update(const Update &u) {
+    // Same skew rule as the owner path: never retire against a stale clamp.
+    if (created_beyond_my_clamp(u)) {
+      defer_until_extended(u);
+      return;
+    }
+    const int bucket = bucket_of(u);
+    auto &part = process_partition(update_vertex(u));
+    const long index = update_vertex(u) - part.first;
+    cost *address = part.distances + index;
+    cost old = __atomic_load_n(address, __ATOMIC_RELAXED);
+#ifdef ACIC_DIAG
+    __atomic_fetch_add(part.arrivals + index, 1L, __ATOMIC_RELAXED);
+    const int dc = degree_class(part.graph->degree(index));
+    deg_arrivals[dc]++;
+    if (old != lmax && get_histo_bucket(old) < frontier_bucket) {
+      arrival_settled++;
+      settled_deg[dc]++;
+    }
+#endif
+    bool changed = false;
+    while (u.distance < old) {
+      if (__atomic_compare_exchange_n(address, &old, u.distance, false,
+                                      __ATOMIC_RELAXED, __ATOMIC_RELAXED)) {
+        changed = true;
+        break;
+      }
+    }
+    updates_noted++;
+    if (changed) {
+      distance_changes++;
+#ifdef VCOUNT
+      vcount[bucket]++;
+      vcount[old == lmax ? HISTO_BUCKET_COUNT : get_histo_bucket(old)]--;
+#endif
+#ifdef ACIC_IPDPS_DIAG
+      if (u.dest_vertex & UPDATE_CROSS_PE_BIT) cross_pe_changes++;
+      else same_pe_changes++;
+#endif
+      if (part.graph->degree(index)) {
+        const long original_bucket = update_overflowed(u)
+            ? std::numeric_limits<long>::max()
+            : (long)((double)u.distance * bucket_multiplier);
+        control_local->work.push(CkMyRank(), u, original_bucket);
+        return; // The worker that expands (or rejects) it retires its charge.
+      }
+    } else {
+      rejected_updates++;
+#ifdef ACIC_DIAG
+      deg_rejects[dc]++;
+#endif
+    }
+    wasted_updates++;
+    histogram[bucket]--;
+    updates_processed_locally++;
+  }
+
+  void process_shared_heap() {
+    Update u;
+    int processed = 0;
+    while (processed < 100 && control_local->work.pop(CkMyRank(),
+           [this](const Update &v) {
+             return !created_beyond_my_clamp(v) && bucket_of(v) <= heap_threshold;
+           }, u)) {
+      ++processed;
+      const int bucket = bucket_of(u);
+      auto &part = process_partition(update_vertex(u));
+      const long index = update_vertex(u) - part.first;
+      if (u.distance == __atomic_load_n(part.distances + index, __ATOMIC_RELAXED)) {
+#ifdef ACIC_DIAG
+        expansions++;
+        const double lead = (double)u.distance * bucket_multiplier -
+                            (double)frontier_bucket * bucket_scale;
+        const int lc = lead < 1.0 ? 0 : std::min(LEAD_CLASSES - 1, 1 + (int)std::log2(lead));
+        lead_expansions[lc]++;
+        __atomic_store_n(part.last_lead + index, (unsigned char)lc, __ATOMIC_RELAXED);
+#endif
+        // Expand the accepted snapshot, not a distance that can change halfway
+        // through the adjacency scan. A concurrent improvement queues new work.
+        send_relaxations(part.graph->edges(index), 0, part.graph->degree(index), u.distance, false);
+      } else {
+        rejected_updates++;
+      }
+      wasted_updates++;
+      histogram[bucket]--;
+      updates_processed_locally++;
+    }
+    if (processed == 100 && !heap_queued) {
+      heap_yielded = true;
+      heap_queued = true;
+      thisProxy[thisIndex].process_heap();
+    }
+  }
+
   /**
    * Takes a distance update and immediately adds it to the local heap/pq
    */
   inline void process_update(Update new_vertex_and_distance) {
+    if (process_share_active()) {
+      process_shared_update(new_vertex_and_distance);
+      return;
+    }
     // charged_top_by_skew() and bucket_of(), with the bucket computed once.
     const bool overflowed = update_overflowed(new_vertex_and_distance);
     const int distance_bucket =
@@ -4074,6 +4363,10 @@ public:
     maybe_pickup();
     COMM_SHARE_WORK
     heap_yielded = false;
+    if (process_share_active()) {
+      process_shared_heap();
+      return;
+    }
 #ifdef PQ_HOLD_ONLY
     for (int i = 0; i <= heap_threshold; i++) // iterate to heap threshold
     {

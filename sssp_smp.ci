@@ -15,6 +15,7 @@ mainmodule sssp_smp
   readonly int buffer_size;
   readonly int initial_threshold;
   readonly bool verify_mode;
+  readonly int process_share_mode;
   readonly int flush_round_interval;
   readonly int flush_policy;
   readonly int idle_flush_policy;
@@ -61,6 +62,8 @@ mainmodule sssp_smp
     entry [reductiontarget] void begin(cost max_edge_weight); //every chare holds its partition and the graph's heaviest edge is known: seed the bucket width, then start
     entry [reductiontarget] void width_seeded(); //every chare is binning at the seeded width
     entry void start_source(); // --warm-links: called again at quiescence
+    entry void advance_source(); // quiescence before resetting retained graph state
+    entry [reductiontarget] void source_reset_done();
     entry void rmat_edges_distributed(); // quiescence: every generated edge has reached its owner
     entry [reductiontarget, expedited] void reduce_histogram(long histo_values[N], int histo_length);
     entry [reductiontarget] void done(long msg_stats[N], int N); //bcast to chares to print results and end program
@@ -81,6 +84,7 @@ mainmodule sssp_smp
     entry void build_rmat_csr(); // all edges have arrived; build the rows
     entry void load_gapbs_graph(std::string path, long partition[dividers], int dividers); // read this PE's rows straight out of a .sg/.wsg file
     entry void start_papi();
+    entry void reset_for_source();
     entry void seed_bucket_width(cost max_edge_weight); // --bucket-width-rule weight: bucket by distance, not by |V|
     entry void start_algo(Update new_vertex_and_distance);
     entry void process_heap();

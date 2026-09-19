@@ -26,7 +26,11 @@ def main():
     ap.add_argument('--workers', type=int, default=120)
     ap.add_argument('--rpn', type=int, default=8)
     ap.add_argument('--sources', type=int, default=4)
+    ap.add_argument('--source-role', choices=['tune', 'test'], default='test')
+    ap.add_argument('--batch', action='store_true', help='all variants must support --sources')
     args = ap.parse_args()
+    if args.reps < 1 or args.sources < 1 or args.rpn < 1 or args.workers < 1:
+        ap.error('reps, sources, rpn and workers must be positive')
     nodes = int(os.environ['SLURM_NNODES'])
     out = args.campaign / 'logs' / f'AB-{args.graph}-{nodes}n-{os.environ["SLURM_JOB_ID"]}'
     out.mkdir(parents=True, exist_ok=False)
@@ -46,11 +50,11 @@ def main():
         graph = v.get('graph', args.graph)
         path = args.campaign / 'graphs' / f'{graph}.reference.txt'
         rows = [r.split() for r in path.read_text().splitlines() if r[:1].isdigit()]
-        references[graph] = (path, [r for r in rows if r[1] == 'test'][:args.sources])
+        references[graph] = (path, [r for r in rows if r[1] == args.source_role][:args.sources])
     # Roles and graph-invariant distance aggregates prove physical source pairing.
     base_rows = next(iter(references.values()))[1]
     if len(base_rows) != args.sources:
-        raise ValueError('not enough held-out sources')
+        raise ValueError(f'not enough {args.source_role} sources')
     for path, rows in references.values():
         if [r[4:7] for r in rows] != [r[4:7] for r in base_rows]:
             raise ValueError(f'{path}: sources are not paired with the baseline')
@@ -59,31 +63,44 @@ def main():
     env.pop('LCT_PMI_BACKEND', None)
     records = []
     with (out / 'runs.jsonl').open('w', buffering=1) as stream:
-        for source_index in range(args.sources):
+        groups = [list(range(args.sources))] if args.batch else [[i] for i in range(args.sources)]
+        for group in groups:
             for rep in range(-1, args.reps):  # warm every arm on every source
                 rotated = variants[rep % len(variants):] + variants[:rep % len(variants)]
                 for variant in rotated:
                     graph = variant.get('graph', args.graph)
                     refpath, refs = references[graph]
-                    source = refs[source_index][0]
-                    log = out / f'{variant["label"]}-s{source_index}-r{rep}.out'
+                    sources = [refs[i][0] for i in group]
+                    log = out / f'{variant["label"]}-g{group[0]}-r{rep}.launch.out'
                     command = ['srun', '-N', str(nodes), '-n', str(nodes * args.rpn),
                         '--ntasks-per-node', str(args.rpn), '-c', str(128 // args.rpn),
-                        '--cpu-bind=none', '--unbuffered', '--kill-on-bad-exit=1',
+                        '--cpu-bind=none', '--unbuffered', '--kill-on-bad-exit=1', '--time=00:06:00',
                         'bash', str(app / 'benchmarks/launch_acic.sh'), str(args.rpn), str(args.workers),
                         str(args.campaign / 'bin' / variant['binary']), '0',
-                        str(args.campaign / 'graphs' / f'{graph}.wsg'), '1', source, '4', '0.999', '0.005',
+                        str(args.campaign / 'graphs' / f'{graph}.wsg'), '1', sources[0], '4', '0.999', '0.005',
                         '--result-digest', '--timeout', '300'] + variant.get('flags', [])
+                    if args.batch:
+                        command += ['--sources', ','.join(sources)]
                     with log.open('w') as output:
                         subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT,
                                        check=True, timeout=420)
-                    check(refpath, source, log)
-                    seconds = float(re.search(r'^Compute time: ([\d.eE+-]+)', log.read_text(), re.M)[1])
-                    row = dict(variant=variant['label'], graph=graph, source=source,
-                               source_index=source_index, rep=rep, seconds=seconds, valid=True)
-                    stream.write(json.dumps(row) + '\n')
-                    if rep >= 0:
-                        records.append(row)
+                    if args.batch:
+                        chunks = re.split(r'^SOURCE_RUN index=\d+ source=(\d+)\n', log.read_text(), flags=re.M)
+                        if chunks[1::2] != sources:
+                            raise ValueError(f'{log}: missing or reordered source results')
+                        outputs = chunks[2::2]
+                    else:
+                        outputs = [log.read_text()]
+                    for source_index, source, output in zip(group, sources, outputs):
+                        result_log = out / f'{variant["label"]}-s{source_index}-r{rep}.out'
+                        result_log.write_text(output)
+                        check(refpath, source, result_log)
+                        seconds = float(re.search(r'^Compute time: ([\d.eE+-]+)', output, re.M)[1])
+                        row = dict(variant=variant['label'], graph=graph, source=source,
+                                   source_index=source_index, rep=rep, seconds=seconds, valid=True)
+                        stream.write(json.dumps(row) + '\n')
+                        if rep >= 0:
+                            records.append(row)
     summary = {}
     for v in variants:
         summary[v['label']] = {str(i): statistics.median(r['seconds'] for r in records

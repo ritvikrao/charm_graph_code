@@ -62,3 +62,55 @@ the mesh24 sweep for 1/2/8 nodes and 1/4/16/64 pieces per PE.
 physical held-out sources by reference row, retains warmups separately, and
 fails on missing results or stalls. Include a repeated baseline arm to measure
 the allocation floor. No timing result or adoption claim is available yet.
+
+
+## D0 first allocations
+
+Jobs 22218062 (one node) and 22218063 (two nodes), eight processes x 15
+workers per physical node. All graph/source digests passed. Diagnostic results:
+
+| graph | nodes | round-inactive PE-time | changes/V | cross-PE changes/V | work share |
+|---|---:|---:|---:|---:|---:|
+| mesh24-z | 1 | 74.8% | 31.03 | 0.24 | 14.4% |
+| mesh26-z | 1 | 67.4% | 46.49 | 0.21 | 19.8% |
+| road-usa-z | 1 | 78.6% | 28.58 | 0.08 | 10.4% |
+| mesh24-z | 2 | 78.0% | 28.14 | 0.28 | 11.3% |
+| mesh26-z | 2 | 70.0% | 39.70 | 0.23 | 16.4% |
+| road-usa-z | 2 | 78.7% | 33.01 | 0.13 | 9.3% |
+
+These structural results support keeping the proposed lever order: wavefront
+concentration and same-PE re-work dominate. Diagnostic solve times differ
+substantially from the earlier machine's production table; no performance
+claim compares those unlike builds. Eight-node job 22218064 and tuned GAPBS
+job 22218065 are tracked separately in the campaign.
+
+## L2 implementation
+
+`--process-share off|on|auto` (default off) publishes each PE's immutable CSR
+and distance storage through the existing Charm++ nodegroup. Same-process
+updates use an atomic minimum and enter per-worker bins, keyed by original
+bucket index; peer workers steal admitted expansions. Edges between processes
+retain htram. Every created update remains charged until a worker retires it,
+including stale entries and updates delayed by a clamp-generation mismatch.
+A worker expands a captured accepted distance, so concurrent improvements do
+not change a scan halfway through. `auto` enables this path only below eight
+arcs per vertex. Explicit sharing requires lazy-heavy off on dense graphs;
+the current implementation does not share lazy edge-range tokens.
+
+`--sources v1,v2,...` retains CSR across solves. A Charm++ quiescence boundary
+precedes reset, followed by a reset reduction before the next injection.
+Distance arrays, queues, ledgers, coarsening, filters, counters, and live
+control state reset; control generations stay monotone. Old timeout callbacks
+carry a source epoch. Each source gets its own timing, digest and diagnostic
+files. `onenode_ab.py --batch` uses this path when all variants support it.
+
+Validation so far: original gate with sharing on (job 22218082); genuine
+two-node, two-process verification (22218153). The first two-node attempt
+22218083 failed before solving because fixed OS core IDs fell outside its
+shared allocation; correctness jobs now use their allocated CPU set.
+Batch tests passed all 42 solves (22218181), covering repeated sources,
+uniform/mesh/RMAT, both control paths, sharing on/off, overflow extension and
+lazy tokens. Final bucketed build also passed batching (22218198) and
+multi-node verification (22218197); the final full gate passed in job 22218196.
+An eight-thread queue test checks exactly-once consumption of 80,000 items.
+No performance adoption has been made.
