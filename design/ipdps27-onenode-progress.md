@@ -272,3 +272,27 @@ cached per-PE reports from one ready PE would not safely implement L4: reports
 could mix coarsening generations or falsely report zero outstanding work.
 A process snapshot implementation must preserve that ledger and termination
 invariant before the all-PE wait can be removed.
+
+## Latest checkpoint
+
+Mesh tile preparation 22218452 completed. The second two-node L1 mesh24 sweep
+22218464 also completed: 64 pieces per PE gave a paired ratio of 0.543,
+compared with 0.438 in the first allocation. Both are training sweeps.
+
+The first one-node reader pilot 22218625 completed and every digest passed.
+For its two training sources, sharing alone took 1.732 / 1.292 s; sharing plus
+reader tiles took 1.153 / 0.780 s; adding live slack took 1.176 / 0.762 s.
+This pilot has one measured repetition per source and is not acceptance.
+The eight-node reader matrix is queued as 22218785. Post-lever diagnostics
+are 22218629 (one node), 22218630 (two nodes), and 22218784 (eight nodes).
+Scheduler estimates for the eight-node work extend well beyond the current
+session; those results remain necessary for an L4 decision and the final pass.
+
+The acceptance check now has seven passing tests, including complete synthetic
+two-allocation PASS, missing second allocation, changed build, and worst-source
+NO-GO cases. These validate the checker, not the solver's paper performance.
+Future joint GAPBS searches record a configurable per-launch wall-time cap
+(60 seconds by default, including loading), since extreme deltas can make
+an otherwise subsecond solve take minutes. A timeout is invalid and cannot
+win selection. Existing external-harness runs retain their previous timeout
+unless this configuration field is explicitly set.

@@ -198,7 +198,7 @@ class Campaign:
         with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               text=True, env=env, start_new_session=True) as process:
             try:
-                output, _ = process.communicate(timeout=self.args.timeout+90)
+                output, _ = process.communicate(timeout=config.get('launch_timeout_seconds', self.args.timeout+90))
                 record['returncode'] = process.returncode
             except subprocess.TimeoutExpired:
                 # Signal only this launcher's process group. srun tears down

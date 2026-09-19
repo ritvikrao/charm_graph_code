@@ -20,8 +20,12 @@ def main():
     ap.add_argument('--sources', type=int, default=4)
     ap.add_argument('--reps', type=int, default=3)
     ap.add_argument('--timeout', type=int, default=120)
+    ap.add_argument('--launch-timeout', type=int, default=60,
+                    help='wall-clock cap per tuning launch, including startup and graph loading')
     ap.add_argument('--selection-job', help='reuse a frozen selection in a second allocation')
     args = ap.parse_args()
+    if args.sources < 1 or args.reps < 1 or args.launch_timeout < 1:
+        ap.error('sources, repetitions and launch timeout must be positive')
     args.mode, args.workers = 'external', 120
     args.ablation_binary, args.per_graph_width = 'acic', 'off'
     campaign = Campaign(args)
@@ -48,7 +52,8 @@ def main():
             deltas = sorted({max(1, denominator // d) for d in [256, 64, 16, 4, 1]}
                             | {4 * denominator, 16 * denominator})
             candidates = [dict(engine='gap', name=f'gap-t{t}-d{d}',
-                               threads=t, cpus=t, delta=d) for t in threads for d in deltas]
+                               threads=t, cpus=t, delta=d, launch_timeout_seconds=args.launch_timeout)
+                          for t in threads for d in deltas]
             campaign.run(graph, int(train[0]['source']), candidates[0], train[0], 'external-warmup')
             samples = {c['name']: [] for c in candidates}
             order = [(c, r) for c in candidates for r in train]
