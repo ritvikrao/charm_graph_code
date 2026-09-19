@@ -159,6 +159,43 @@ submission decision.
 | Sep 27–30 | Freeze data, produce figures/tables with uncertainty and failures, write a complete anonymized draft, get a skeptical internal read, and register a truthful ≤500-word abstract by Oct 1 AOE if the go gate passed. |
 | Oct 1–7 | Revise, audit every result against raw logs and source version, verify citations and anonymity, and submit the full paper by Oct 8 AOE. |
 
+**Revision, 09-18 evening (author decisions).** These override the text
+above where they conflict:
+
+1. **One-node runs must not beat 8-node ACIC.** Currently one-node GAPBS
+   leads on road-usa-z (5.8–7.5×), mesh24-z (2.1×) and mesh26-z (1.7×). A
+   "fastest among distributed systems" claim is not acceptable. Closing
+   the gap is the sprint's main work, planned in
+   [ipdps27-onenode-gap.md](ipdps27-onenode-gap.md):
+   - D0 diagnosis;
+   - L1, tiled vertex placement (over-decomposition);
+   - L2, shared state and work sharing within a process;
+   - L3, live control of how far ahead a PE may run.
+
+   The **Sep 26 go/no-go adds this condition**: 8-node ACIC is no slower
+   than one-node GAPBS on every high-diameter paper graph (median ≤ 1.0×,
+   no held-out source above 1.2×). If it fails, IPDPS is a no-go and the
+   work carries into SC27. The "at most two diagnosed changes" rule is
+   replaced: each lever still needs its own verify gate and paired A/B in
+   two allocations.
+2. **"Adaptive" means real-time control of message flow.** That covers:
+   - live changes to htram;
+   - parameters chosen from the graph as read and from the live flow;
+   - mechanisms that Charm++'s abstractions make easy and MPI makes hard,
+     each with a measured effect.
+
+   E1 supports two parts of this: event-driven flow control, and read-time
+   decisions matching per-graph tuning. The third part is live feedback on
+   a parameter beating a good constant, and it is not yet shown; L3 is
+   designed to show it. The title keeps "adaptive" in this sense and must
+   differ from the 2024 title. See [ipdps27-sprint.md §1b](ipdps27-sprint.md#1b-what-adaptive-means-in-this-paper).
+3. **2024 overlap checked against the PDF** (`design/acic_2024paper.pdf`).
+   There are two discrepancies to explain:
+   - the paper says it flushed every broadcast, but the code flushed one
+     broadcast in five;
+   - the paper's uniform-graph win over RIKEN (1.3–1.8×) reverses with
+     RIKEN tuned.
+
 **Sprint working documents (09-18):** [ipdps27-sprint.md](ipdps27-sprint.md)
 holds the claim/evidence table, the overlap check against the workshop code,
 pinned versions, validation, and experiments E1–E4 (ablation on one binary,

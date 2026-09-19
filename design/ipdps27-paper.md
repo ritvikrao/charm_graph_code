@@ -5,10 +5,13 @@ references outside. Double-anonymous: cite the IA³@SC24 paper in the third
 person, no repository or cluster-allocation names that identify the authors,
 artifact links anonymized. Claims refer to [ipdps27-sprint.md](ipdps27-sprint.md) §1.*
 
-**Working title (no adaptivity claim):** *Bounded Asynchrony for
-High-Diameter Weighted SSSP on CPU Clusters.* If E1 shows feedback beats
-strong fixed settings (C3): *Adaptive Communication for High-Diameter SSSP on
-CPU Clusters.*
+**Working title:** *Adaptive Message Flow for Asynchronous SSSP on
+High-Diameter Graphs*. "Adaptive" is used in the author's sense (sprint doc
+§1b): real-time control of message flow, from the graph as read and from
+live flow, built on Charm++ abstractions. It must stay distinct from the
+2024 title ("An Adaptive Asynchronous Approach for the Single-Source
+Shortest Paths Problem"). The paper is submitted only if C6 passes
+([ipdps27-onenode-gap.md](ipdps27-onenode-gap.md)).
 
 ## Page budget
 
@@ -35,8 +38,14 @@ CPU Clusters.*
 3. The result: 7–79× over the best distributed baseline on high-diameter
    graphs at 8 nodes, and a stated 1.9–3.7× loss to RIKEN on scale-free
    graphs with its cause (work per edge growing with node count; 8a).
-4. (Only if C3 holds.) Evidence that runtime feedback, not per-graph tuning,
-   finds these operating points.
+4. Adaptive message flow in the sense of sprint doc §1b. Flow control
+   driven by runtime events (C3a), and decisions made when the graph is
+   read that reach per-graph tuned performance (C3b), each mapped to the
+   Charm++ abstraction it relies on. Live parameter feedback (C3c) is
+   claimed only if L3 clears its A/B.
+5. Closing the one-node gap (C6): tiled placement, shared state within a
+   process, and live control of how far a PE runs ahead, measured one at a
+   time. The contribution is claimed only for the levers that are adopted.
 
 ## Figures and tables
 
@@ -54,7 +63,10 @@ CPU Clusters.*
 
 | Threat | Answer in the paper |
 |---|---|
-| "One-node GAPBS beats all of this" | State it in 6.5 with the ratio; the distributed setting is for graphs split across memory; give the per-node efficiency and do not claim otherwise |
+| "One-node GAPBS beats all of this" | Must be false before submission (C6 is a go/no-go condition). Fig. 1 carries the one-node GAPBS line, and every table has a one-node ACIC column |
+| "Easy in Charm++, hard in MPI" is asserted, not shown | Design section table: mechanism → Charm++ feature → what an MPI code would need (sprint doc §1b); each mechanism's measured effect next to it |
+| "The 2024 paper was already adaptive" | 2024 controlled two admission percentiles, and its buffer size was hand-picked per node count. This paper controls the aggregation layer, flush timing, relaxation order and placement, from the graph as read and from live flow |
+| "The 2024 paper beat RIKEN on uniform graphs; this one doesn't" | RIKEN is now searched over layout and delta; state the reversal |
 | "RIKEN is mistuned" | E3's grid with interior optima, named in Table 2; RIKEN runs on road-usa-w4 |
 | "Road-usa has no RIKEN cell" | road-usa-w4 (same topology, weights ÷ 4, exact in binary32) |
 | "Gains are implementation, not ideas" | `ws24-wide` vs `ws24` vs `current` separates wire format from mechanisms |

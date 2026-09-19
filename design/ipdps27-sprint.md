@@ -15,29 +15,115 @@ allocation floor. Cells from one allocation are marked as such.
 |---|---|---|---|---|
 | C1 | On sparse, high-diameter graphs, ACIC solves weighted SSSP faster than distributed Δ-stepping (RIKEN) and asynchronous bulk-communication SSSP (Gluon-Async) on equal CPU nodes | **supported, one allocation per node count** | 8g, 8 nodes: 19× (mesh24) and 53× (mesh26) ahead of RIKEN; 8.1×, 7.4× and 79× ahead of Gluon-Async on mesh24, mesh26, road-usa. 2 nodes: 37× and 9.8× on mesh24 | E3: RIKEN and Gluon re-taken on wider grids (RIKEN's search chose its grid's edge); a second allocation; road-usa-w4 so RIKEN has a real road cell |
 | C2 | The gain comes from specific mechanisms added since the workshop paper, each with a causal time-to-solution effect | **open** | Step 7–8 A/Bs on the build of their day, one mechanism at a time, mostly at 2 nodes; never all on one binary | E1 (ablation on one binary, 2 and 8 nodes, two allocations) |
-| C3 | The runtime feedback (adaptation) matters: it beats a strong fixed configuration | **open, and was negative on the old build** | 7.6f2: adaptive lost road-usa to tuned fixed admission by 7.6–10×; co-design not shown; 7.6k's buffer-size feedback never acted | E1's `global-fixed`, `tuned-fixed`, `buffer-no-feedback` and `no-coarsen` arms. If they tie with `current`, the title drops "adaptive" |
+| C3 | Adaptive message-flow control (§1b: decisions from the graph as read and from live message flow, built on Charm++ abstractions) is what makes ACIC fast | **C3a, C3b supported; C3c not yet** | C3a, flow control driven by runtime events is worth 12–22× on high-diameter graphs at 8 nodes (`ws24`), and the idle flush alone 2–3.6×. C3b, decisions taken when the graph is read match per-graph hand tuning within ±18% and beat the best single fixed setting by up to 7.6×. C3c, live parameter feedback (buffer correction, coarsening, the starvation gate) ties with the same mechanism at a fixed parameter | E1, both allocations. C3c: [L3](ipdps27-onenode-gap.md#l3-live-control-of-how-far-ahead-a-pe-may-run) is designed to make it hold |
 | C4 | ACIC scales from 2 to 8 nodes | **scale-free yes; high-diameter only with a locality-preserving order** | 8g: rmat25 1.4×, orkut 1.09×, rmat26 2.0×, rmat27 2.3× faster at 8 nodes; native mesh24 0.44 → 0.41 s, road-usa 1.36 → 1.33 s (flat). E2: re-work across PE boundaries is the cause; with Morton order road-usa-z goes 1.50 → 0.88 s from 2 to 8 nodes (one allocation) | E1 and E3 on the `-z` inputs (second allocation); only claimed where measured |
 | C5 | ACIC is competitive on scale-free graphs | **not supported against RIKEN** | RIKEN ahead 1.9–3.7× at 8 nodes (8g), the lead growing 2 → 8 nodes on RMAT; ACIC ahead of Gluon-Async 2.3–17× | Reported as a loss, with 8a's work-growth attribution. Not chased (sprint rule) |
-| C6 | Relative to a strong one-node code | **not supported** | 7.6n: one-node GAPBS faster than ACIC on every graph (road-usa 0.15 s vs ACIC 1.33 s at 8 nodes; mesh24 0.19 vs 0.41 s) | Reported prominently. E2 decides whether any part of it is recoverable; the paper states the COST-style ratio |
+| C6 | 8-node ACIC is no slower than any one-node run (GAPBS or ACIC) on every paper graph | **not supported; now a requirement for submission** | C6 table: one-node GAPBS beats 8-node ACIC on road-usa-z (5.8–7.5×), mesh24-z (2.1×) and mesh26-z (1.7×); 8-node ACIC beats one-node GAPBS 1.4–5× on scale-free graphs | [ipdps27-onenode-gap.md](ipdps27-onenode-gap.md): D0, then L1–L3; the go/no-go on 09-26 is that this passes |
 | C7 | All reported distances are correct | **supported for every timed run; independent check in progress** | Every 8g run matched its reference digest (table in §4). The references come from ACIC's repository C++ | E4 (independent validator: raw downloads or numpy generators, scipy Dijkstra) |
 
-The provisional thesis is C1 with C2. C3 decides the title. C5 and C6 are
-losses the paper must state and explain, not omit.
+The thesis is C1 with C2 and C3, under C6. C6 is a condition for
+submitting, not a loss the paper states (author, 09-18). C5 stays a stated
+loss.
+
+## 1b. What "adaptive" means in this paper
+
+**The author's definition (09-18).** Adaptivity is control of the message
+flow in real time. That covers:
+
+- live changes to the aggregation library (htram);
+- choices of ACIC parameters from what is known about the graph when it is
+  read;
+- choices from how messages are flowing during the solve.
+
+The paper's argument is that these controls are easy to express with
+Charm++'s abstractions and hard in MPI or a bulk-synchronous runtime, and
+that each one measurably changes time to solution.
+
+**The narrower test used in E1 so far (C3c).** For each runtime-adjusted
+parameter, E1 asked whether changing it during the solve beats a well-chosen
+constant: `buffer-no-feedback`, `no-coarsen`, `idle-ungated`, `global-fixed`
+and `tuned-fixed`. That test is a reviewer's question ("is it just a good
+constant?"), and it is only one part of the definition. Under the author's
+definition the evidence splits into three parts:
+
+| Part | What it covers | Mechanisms | Evidence (E1, two allocations) |
+|---|---|---|---|
+| C3a: flow control driven by runtime events | Messages leave, are held, or are admitted according to runtime state, not a schedule | histogram admission (2024); the idle flush (fires when the scheduler finds a PE idle) and its interval; the starvation-gated flush cadence; lazy relaxation, which defers heavy edges as tokens released by the window | **Supported.** Together (`ws24`) 12–22× on high-diameter graphs and 2.9–4.3× on scale-free graphs at 8 nodes; `no-idle-flush` /2.1–/3.6; `no-lazy` /2.2–/3.3 |
+| C3b: decisions from the graph as read | Parameters chosen once from V, E, degree and degree skew | buffer size from average degree (256 items per unit, 512–6144); the lazy-relaxation and delivery-skipping regime (degree ≥ 8, degree CV ≥ 1); the idle-flush interval regime; the send filter; L1's tile size (planned) | **Supported.** Within ±18% of per-graph tuned fixed settings with no tuning (2 and 8 nodes); up to 7.6× ahead of the best single fixed setting; `buffer-2048` /1.3–/2.6 on roads |
+| C3c: live feedback on a parameter | A parameter changed during the solve from measured flow | buffer-size correction by acceptance rate; coarsening; the starvation gate on the idle flush; L3's run-ahead slack (planned) | **Not yet.** Ties with fixed values almost everywhere. Exceptions: uniform25 at 8 nodes (`buffer-no-feedback` /1.97, `no-coarsen` /1.69, second allocation only); `local-delivery` /1.31 on orkut. Coarsening costs road-usa-z 1.14–1.20× |
+
+**Charm++ abstraction behind each mechanism.** This is the paper's argument
+that these mechanisms are "easy in Charm++, hard in MPI". It is a
+programmability argument, so it goes in Design (§3 of the paper) as a table,
+with an honest statement of what an MPI version would need:
+
+| Mechanism | Charm++ / Reconverse feature it uses | What an MPI code would need |
+|---|---|---|
+| Histogram controller overlapped with the solve (2024) | asynchronous reductions and broadcasts delivered as messages | `MPI_Iallreduce` plus a hand-written progress loop that polls it between relaxations |
+| Idle flush | scheduler idle callback (`CcdPROCESSOR_BEGIN_IDLE`) | a user-level scheduler that detects idleness itself |
+| Live changes to htram (flush cadence, buffer size, delivery skipping, holds released by threshold) | htram as a Charm++ group whose methods the controller's broadcast invokes on every PE | a custom aggregation layer whose parameters every rank changes at a matching point |
+| Lazy relaxation tokens | message-driven entry methods that carry work across rounds | explicit deferral queues, re-checked by the progress loop |
+| L1 tiles (planned) | over-decomposition: many pieces per PE, placed by the runtime's map | a custom partition and index translation |
+| L2 shared state within a process (planned) | SMP mode: PEs of a process share memory and the node queue | MPI+threads with explicit locking, or MPI-3 shared-memory windows |
+| L3 live run-ahead slack (planned) | the same reduction-broadcast cycle, with PEs picking up the new value at their next delivery or idle pass | the same progress loop, with a way to act on the value mid-epoch |
+
+**Title.** The 2024 paper's title is already "An Adaptive Asynchronous
+Approach for the Single-Source Shortest Paths Problem", and its abstract
+names "an adaptive aggregation library". The new title must differ. The new
+paper's adaptivity differs from 2024's in what it controls. In 2024, the
+only live control was the two admission percentiles, and the buffer size
+was chosen by hand per node count. Now the aggregation layer, flush timing
+and relaxation order are also controlled. Working title: *Adaptive Message
+Flow for Asynchronous SSSP on High-Diameter Graphs*.
 
 ## 2. What is new since IA³@SC24 (overlap check)
 
-**Caveat:** the workshop PDF is not on Anvil or Delta (`~/Downloads/acic_2024paper.pdf`
-is referenced but absent). This table is reconstructed from the code at
-charm_graph_code `50ec8f2` (2024-11-21, the last 2024 commit) and the plan's
-account of the paper. **Check it against the PDF before the abstract**; the
-CFP requires the submission to be substantially new and the predecessor to be
-explained without breaking anonymity.
+**Checked against the PDF** ([acic_2024paper.pdf](acic_2024paper.pdf), IA³@SC24:
+Rao, Chandrasekar, Kale, "An Adaptive Asynchronous Approach for the
+Single-Source Shortest Paths Problem") on 09-18, and against the code at
+`50ec8f2` (2024-11-21). The CFP requires the submission to be substantially
+new, and the predecessor to be explained in the third person.
+
+**What the 2024 paper contains:**
+
+- **Algorithm:** histogram reductions to PE 0 with bucket width
+  d / log|V|; two percentile thresholds, `t_tram` (send or hold) and `t_pq`
+  (heap or hold); all thresholds opened when fewer than 100·|PE| updates are
+  live; a heap holding only improving updates; tram holds drained in bucket
+  order; a flush after every broadcast; termination by created and
+  processed counters in the same reduction.
+- **Tuning:** WP aggregation. The buffer size was one of 512, 1024 or 2048,
+  **chosen by hand per node count** (Fig. 6). There was a one-node sweep of
+  the percentiles, and a reduction-overhead microbenchmark.
+- **Evaluation:** uniform and RMAT graphs at scale 26, 1–16 nodes on Delta
+  and Frontier, against RIKEN. ACIC was 1.3–1.8× faster on uniform graphs
+  and 2.8–3.3× slower on RMAT.
+- **Future work, which this paper now delivers in part:** high-diameter
+  (road) graphs; work sharing within a process; over-decomposition with
+  migration; a threshold function of the whole histogram; 2D or 1.5D
+  partitioning.
+
+**Discrepancies the paper must handle:**
+
+- **Flush cadence.** The 2024 paper says it flushed after every broadcast.
+  The 2024 code flushed on a random one in five (`if(rand()%5==0)
+  tram->tflush()`). `ws24` follows the code (every 5 rounds). The
+  `fixed-cadence` arm (every round) ties with `current` everywhere, so the
+  difference does not move any `ws24` cell by more than the floor. The
+  paper describes `ws24` as "the 2024 design as released".
+- **Uniform graphs.** 2024 had ACIC ahead of RIKEN by 1.3–1.8×. Now RIKEN
+  is ahead by 1.1× on uniform25 at 8 nodes. The difference: the old
+  comparison used RIKEN at fixed settings and a different graph. The paper
+  must say that with RIKEN searched over layout and delta, the uniform
+  result reverses, and it must not cite the 2024 number as current.
+- **"Adaptive" is already in the 2024 title and abstract.** See §1b for
+  what is new.
 
 | Element | In the 2024 code? | Kind | Since then |
 |---|---|---|---|
 | Asynchronous SSSP over htram; histogram of live updates by distance; percentile thresholds for heap admission and sending | yes | mechanism (published) | Kept. Correctness of its control path repaired (step 3, 7.6a, 7.6g) |
-| Buffer size | fixed at compile time (`BUFSIZE` 512 at `50ec8f2`; the runtime argument was ignored) | — | 7.6k: chosen by the controller from average degree (256 items per unit, 512–6144), with an acceptance-rate correction |
-| Flush cadence | fixed (flush when the threshold stalls; `tflush` bug armed a 2048-iteration scan per edge) | — | Step 7.1: adaptive, gated by the controller's starvation signal |
+| Buffer size | paper: one of 512/1024/2048, picked by hand per node count; code: fixed at compile time (`BUFSIZE` 512; the runtime argument was ignored) | — | 7.6k: chosen by the controller from average degree (256 items per unit, 512–6144), with an acceptance-rate correction |
+| Flush cadence | paper: every broadcast; code: a random one broadcast in five (`tflush` bug armed a 2048-iteration scan per edge) | — | Step 7.1: adaptive, gated by the controller's starvation signal |
 | Bucket width | fixed by a formula | — | Step 7.3: coarsening by the controller; 7.6b clamp/two-tier rules; 7.6d width rule for meshes |
 | Idle flush | stub (`IDLE_FLUSH` undefined) | — | Step 7.4: starvation-gated idle flush; 8e: minimum interval between idle flushes (30/100 µs by regime) |
 | Lazy relaxation of heavy edges | no | — | 8d: light edges relaxed at once, heavier ranges deferred as tokens (G = 2), degree ≥ 8 |
@@ -49,7 +135,9 @@ explained without breaking anonymity.
 | Progress and termination | the default could deadlock; empty-window rescue missing | repair | 7.6a, 7.6g (`--pq-overflow-last`), stall rescue |
 | Runtime | Charm++ (classic) | platform | Reconverse; `--enable-shmem` (7.6l) |
 | Validation | none | methodology | Dijkstra digests, verify gate, matched-input harness, independent validator (E4) |
-| Evaluation | two synthetic families, 16 nodes, no external baseline comparison of the current code | methodology | Real road/social inputs, RIKEN, Gluon-Async, GAPBS, per-system layout search |
+| Evaluation | uniform and RMAT at scale 26, 1–16 nodes, RIKEN at fixed settings | methodology | Real road/social inputs, RIKEN, Gluon-Async, GAPBS, per-system layout search |
+| Vertex placement | 1-D contiguous ranges; paper names 2D/1.5D and over-decomposition as future work | — | Change 1 (Morton order); L1 tiles (planned) |
+| Work sharing within a process | paper names it as future work | — | L2 (planned) |
 
 The paper's new-mechanism claims can only be the "mechanism" rows marked as
 new: adaptive flush cadence, coarsening, idle flush and its interval, the
@@ -462,10 +550,14 @@ graphs that carry C1, one-node GAPBS beats 8-node ACIC: 7.5× on road-usa
 (0.118 s against 0.88 s), 1.7× on mesh26, 2× on mesh24. On scale-free
 graphs 8-node ACIC beats one-node GAPBS by 3.5–5×, but RIKEN beats both. At
 one node ACIC changes each road-usa distance ~9 times where Dijkstra
-changes it once; that per-node inefficiency, not communication, is the gap, and it
-is not something the sprint can close. The paper must either restrict C1 to
-"among distributed systems", with the COST ratio stated in the abstract's
-scope, or not be submitted (§6 go/no-go).
+changes it once.
+
+**Superseded on 09-18 by the author:** a distributed-only claim is not
+acceptable. The gap must close. Morton order makes ACIC *slower* at one
+node (mesh24 0.55 → 0.92 s), which points at the wavefront sitting on a few
+PEs as well as at re-work. The plan is in
+[ipdps27-onenode-gap.md](ipdps27-onenode-gap.md), and it is the sprint's
+main work until 09-26.
 
 ### E1, second allocation (2 nodes, frozen build)
 
@@ -501,7 +593,8 @@ negative at 8 nodes on uniform25.
 | A new post-workshop mechanism with a causal, reproducible time-to-solution gain | **Met.** Lazy relaxation (scale-free, 1.3–3.3×), the degree-based buffer size (roads, 1.6–2.6×), the idle flush and its interval (high-diameter, 1.1–3.6×); together 2–3× (scale-free) and 4–21× (high-diameter); two allocations at 2 nodes, one at 8 so far |
 | High-diameter wins survive independent validation and fair baseline layouts | **Met.** Validation (E4); widened RIKEN and Gluon searches, same `-z` inputs for every system: 16–50× over RIKEN, 7.8–17.5× over Gluon at 8 nodes (E3 table). RIKEN takes 100–170 s on road-usa-w4 at 2 nodes against ACIC's ~1.5 s, **and returns wrong distances from 3 of the 4 held-out sources** (reaching 14, 188 and 288 vertices) at every layout, delta and node count, in both vertex orders; it is right from the tuning sources and the fourth test source. Our driver passes other graphs; the cause is not diagnosed. Its wrong cells are excluded and reported as failures |
 | The paper can explain the scale-free and GAPBS losses | Scale-free: yes (RIKEN ~3× with its phases pruning work; ACIC's work per edge, 8a). **GAPBS: one-node GAPBS beats 8-node ACIC on the high-diameter graphs (road-usa-z 7.5×)** -- explainable (per-node re-work) but it caps the claim at "among distributed systems" |
-| Adaptive vs strong fixed | Defaults match per-graph tuned fixed (±7%) and beat the best single fixed setting 1.05–1.95× (2 nodes); feedback and co-design add nothing measurable. Drop "adaptive" from the title; claim "no per-graph tuning" |
+| Adaptive vs strong fixed | Under the author's definition (§1b), adaptivity is supported by C3a (event-driven flow control, 12–22×) and C3b (read-time decisions ≈ per-graph tuning). C3c (live feedback on a parameter beats a constant) is not supported yet; L3 targets it. The title keeps "adaptive" in the §1b sense, distinct from the 2024 title |
+| One-node runs no faster than 8-node ACIC (added 09-18) | **Not met**: road-usa-z 5.8–7.5×, mesh24-z 2.1×, mesh26-z 1.7× behind one-node GAPBS. [Plan](ipdps27-onenode-gap.md) |
 | Result depends on the old width bug / a poorly matched baseline | No: every cell above is on the current build, with RIKEN's widened grid |
 
 What remains for 09-26: the 8-node C3 test and E1 second allocation, the
@@ -520,3 +613,16 @@ Balance on 09-18: 66.1 K SU. Planned sprint spend ≤ 12 K SU: E1 ~5.6 K, E3
 | 09-20/21 | E1 second allocations; E3; E2 reading and at most one change |
 | 09-22–25 | Change A/B (if any); tables; freeze build and data |
 | 09-26 | Go/no-go against §5's rules |
+
+**Revised 09-18 (evening)** for the one-node requirement. Spend so far is
+about 10.3 K SU. The schedule and its ~7 K SU are in
+[ipdps27-onenode-gap.md §6](ipdps27-onenode-gap.md#6-schedule-and-stop-rule):
+
+- D0 and L1 on 09-19;
+- L2 on 09-20–23, with the multi-source harness built alongside;
+- L3 on 09-23–24;
+- freeze on 09-25;
+- go/no-go on 09-26, on the one-node condition first;
+- E1 and E3 re-takes on the frozen build on 09-27–30.
+
+The projected total is ~17–18 K SU, against 55.8 K remaining.
