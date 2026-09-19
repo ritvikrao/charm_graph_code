@@ -16,8 +16,10 @@ GRAPHS=${2:-road-usa-z,mesh24-z,mesh26-z}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 export SLURM_MPI_TYPE=cray_shasta PYTHONNOUSERSITE=1 OMP_PROC_BIND=close OMP_PLACES=cores
 if [ -z "${GAP_SELECTION_JOB:-}" ]; then
+selection=()
+if [ -n "${GAP_CONFIRM_JOB:-}" ]; then selection=(--selection-job "$GAP_CONFIRM_JOB"); fi
 python3 "$APP/benchmarks/onenode_gap_tune.py" "$ROOT" \
-  --graphs "$GRAPHS" --sources 4 --reps 3 --timeout 120
+  --graphs "$GRAPHS" --sources 4 --reps 3 --timeout 120 "${selection[@]}"
 fi
 python3 - "$ROOT" "${GAP_SELECTION_JOB:-$SLURM_JOB_ID}" "$APP" <<'PY'
 import json, os, subprocess, sys

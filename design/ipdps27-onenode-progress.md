@@ -205,6 +205,70 @@ settings and will be replaced after stronger tuning.
 
 The eight-node allocations are still queued. No eight-node/GAPBS pass, second
 allocation confirmation, scale-free suite result, or default adoption is
-claimed. Several full comparison matrices exceeded their requested 30-minute
-window; the scheduler refused a running-job time extension. Complete graph
-cells remain usable; incomplete cells must be rerun in separate allocations.
+claimed. The one-node L3 matrix exceeded its requested 30-minute window;
+the scheduler refused a running-job time extension. Its mesh24 and mesh26
+cells completed, and road was resubmitted as 22218658. The two-node L3 matrix
+22218343 completed all three graphs in 27 minutes. Future matrix jobs request
+an hour; complete graph cells remain usable after a later cell is interrupted.
+
+Additional complete held-out results (four sources, three repetitions):
+
+| job | graph | nodes | shared/frozen | slack/frozen | control/frozen |
+|---|---|---:|---:|---:|---:|
+| 22218342 | mesh26-z | 1 | 0.142 | 0.154 | 1.133 |
+| 22218343 | mesh26-z | 2 | 0.180 | 0.185 | 0.909 |
+| 22218343 | road-usa-z | 2 | 0.259 | 0.254 | 1.058 |
+
+These are median paired ratios, not final acceptance results. There is no
+consistent additional L3 gain. All new optimization defaults remain off.
+
+`onenode_accept.py` requires two explicitly paired sets of four job IDs:
+eight-node ACIC, one-node GAPBS, one-node ACIC, and eight-node regressions.
+It rejects missing/repeated samples, training sources, incomplete matrices,
+mixed candidate binaries/flags/layouts, and changed GAPBS selections. Every
+high-diameter graph must meet the median <=1 and worst-source <=1.2 GAPBS
+limits, and the median eight-node run must beat its own one-node run. The
+regression threshold is the largest absolute log deviation of the duplicate
+baseline's per-source medians in that allocation, stated explicitly in the
+output. Tests cover missing cells, duplicates, invalid timings and warmups.
+
+The default acceptance graph list includes road-usa-w4-z and the five named
+regression inputs, not just the three initial D0 graphs. Preparation job
+22218657 creates those missing inputs on work storage, with independent
+Dijkstra references. Orkut comes from SNAP's public community dataset.
+Large graph and reference files are renamed into place only after successful
+completion. Subsequent input preparation can resume without accepting partial
+outputs. The existing mesh tile sweep is a separate job, 22218452.
+
+## Reproducible continuation
+
+Use `scripts/delta/onenode_matrix.sbatch CAMPAIGN READER GRAPHS` for training
+comparisons of shared, shared+tiled, and shared+tiled+slack against the frozen
+build and a duplicate frozen control. `CANDIDATE` uses `acic_reader_final`
+with `--process-share auto --reader-tile auto --slack-control off`, identically
+on sparse and dense graphs. This policy is an experimental candidate, not
+an adopted default. Specify the graph list explicitly for the full regression
+suite. Each step supports Slurm `-N 1`, `-N 2`, or `-N 8`.
+
+After stronger GAPBS tuning finishes, submit a second GAPBS allocation with
+`--export=ALL,GAP_CONFIRM_JOB=FIRST_JOB` to freeze its training selection and
+rerun its held-out sources. `GAP_SELECTION_JOB` is different: it only reruns
+bucket diagnostics from an existing completed measurement job.
+
+Inspect results with `python3 benchmarks/onenode_assess.py CAMPAIGN`. For the
+final test, use `python3 benchmarks/onenode_accept.py CAMPAIGN --allocation
+ACIC8_JOB,GAP1_JOB,ACIC1_JOB,REGRESSION8_JOB --allocation
+SECOND_ACIC8_JOB,SECOND_GAP1_JOB,SECOND_ACIC1_JOB,SECOND_REGRESSION8_JOB`.
+Missing evidence yields `INCOMPLETE` and exit 2, measured failure `NO-GO` and
+exit 1, and a complete passing comparison `PASS` and exit 0.
+
+Build labels may no longer overwrite existing binaries or manifests. New
+builds retain a pre-build SHA-256 inventory of the complete source snapshot
+and private htram copy as well as compiler flags and the output hash.
+
+L4 is deliberately pending the post-lever measurements required by the plan.
+The existing `ControlNode` still waits for all local contributions. Reading
+cached per-PE reports from one ready PE would not safely implement L4: reports
+could mix coarsening generations or falsely report zero outstanding work.
+A process snapshot implementation must preserve that ledger and termination
+invariant before the all-PE wait can be removed.

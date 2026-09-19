@@ -8,12 +8,12 @@
 #SBATCH --cpus-per-task=128
 #SBATCH --mem=0
 #SBATCH --exclusive
-#SBATCH --time=00:30:00
+#SBATCH --time=01:00:00
 #SBATCH --job-name=acic-gap-matrix
 set -euo pipefail
 ulimit -c 0
 ROOT=${1:?campaign}
-STEP=${2:?L1 or L2 or L3}
+STEP=${2:?L1 or L2 or L3 or READER or CANDIDATE}
 GRAPHS=${3:-mesh24-z,mesh26-z,road-usa-z}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 WORKERS=${WORKERS:-120}
@@ -38,11 +38,20 @@ elif step == 'L2':
 elif step == 'L3':
     variants += [dict(label='shared', binary='acic_L3', flags=['--process-share', 'on']),
                  dict(label='slack', binary='acic_L3', flags=['--process-share', 'on', '--slack-control', 'on'])]
+elif step == 'READER':
+    variants += [dict(label='shared', binary='acic_reader_final', flags=['--process-share', 'on']),
+                 dict(label='tiled', binary='acic_reader_final', flags=['--process-share', 'on', '--reader-tile', 'auto']),
+                 dict(label='tiled_slack', binary='acic_reader_final', flags=['--process-share', 'on', '--reader-tile', 'auto', '--slack-control', 'on'])]
+elif step == 'CANDIDATE':
+    # A testable frozen policy, not default adoption. The same flags apply to
+    # high-diameter and regression graphs; each auto decision uses input data.
+    variants.append(dict(label='candidate', binary='acic_reader_final',
+        flags=['--process-share', 'auto', '--reader-tile', 'auto', '--slack-control', 'off']))
 else:
     raise SystemExit('unknown step')
 Path(output).write_text(json.dumps(variants, indent=2))
 PY
-  if [ "$STEP" = L1 ]; then
+  if [ "$STEP" = L1 ] || [ "$STEP" = READER ]; then
     selection=(--source-role tune --sources 2 --reps 2)
   else
     selection=(--sources 4 --reps 3)

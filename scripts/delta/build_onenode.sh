@@ -9,6 +9,10 @@ KIND=${4:-production}
 APP=$(cd "$(dirname "$0")/../.." && pwd)
 HTRAM=${HTRAM:-$HOME/htram}
 CHARMC=${CHARMC:-$HOME/charm_reconverse/bin/charmc}
+if [ -e "$ROOT/bin/$LABEL" ] || [ -e "$ROOT/bin/$LABEL.manifest" ]; then
+  echo "Refusing to overwrite frozen build $LABEL; choose a new label" >&2
+  exit 2
+fi
 mkdir -p "$ROOT/build" "$ROOT/bin"
 WORK=$(mktemp -d "$ROOT/build/$LABEL.XXXXXX")
 mkdir "$WORK/src" "$WORK/htram"
@@ -19,6 +23,20 @@ else
   git -C "$APP" archive "$REV" | tar -x -C "$WORK/src"
 fi
 git -C "$HTRAM" ls-files -z | rsync -a --from0 --files-from=- "$HTRAM/" "$WORK/htram/"
+python3 - "$WORK" <<'PY'
+import hashlib, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+with (root/'source-files.sha256').open('w') as output:
+    for directory in ['src', 'htram']:
+        for path in sorted((root/directory).rglob('*')):
+            if path.is_file():
+                digest = hashlib.sha256()
+                with path.open('rb') as stream:
+                    for chunk in iter(lambda: stream.read(1048576), b''):
+                        digest.update(chunk)
+                output.write(f'{digest.hexdigest()}  {path.relative_to(root)}\n')
+PY
 # htram's object recipe does not use OPTS. Put the shared defines on charmc
 # itself so the application, wire packing, and transport timers agree.
 FLAGS=
@@ -30,9 +48,11 @@ make -C "$WORK/src" sssp_smp CHARMC_SMP="$CHARMC $FLAGS" HTRAM_DIR="$WORK/htram"
 install -m755 "$WORK/src/sssp_smp" "$ROOT/bin/$LABEL"
 {
   echo "revision=$REV kind=$KIND build=$WORK"
+  echo "compiler=$CHARMC flags=$FLAGS"
+  g++ --version | head -n 1
   git -C "$APP" rev-parse HEAD
   git -C "$HTRAM" rev-parse HEAD
   git -C "$APP" diff --stat
-  sha256sum "$ROOT/bin/$LABEL" "$WORK/src/sssp_smp.cpp" "$WORK/src/weighted_node_struct.h"
+  sha256sum "$ROOT/bin/$LABEL" "$WORK/source-files.sha256" "$WORK/src/sssp_smp.cpp" "$WORK/src/weighted_node_struct.h"
 } > "$ROOT/bin/$LABEL.manifest"
 echo "Built $ROOT/bin/$LABEL"

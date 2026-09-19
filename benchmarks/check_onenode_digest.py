@@ -11,10 +11,10 @@ def check(reference, source, log):
     text = Path(log).read_text()
     if re.search(r'PROGRESS_STALL|CONSERVATION VIOLATED|STALL_RESCUE|TRUNCATED|VERIFY FAIL', text):
         raise ValueError(f'{log}: stalled, truncated, or failed')
-    match = re.search(r'(?:VERIFY parallel digest|BENCH source=\d+ solve_seconds=[\d.]+) h1=(\d+) h2=(\d+) reachable=(\d+) distance_sum=(\d+)', text)
-    if not match:
-        raise ValueError(f'{log}: missing digest')
-    got = list(match.groups())
+    matches = re.findall(r'(?:VERIFY parallel digest|BENCH source=\d+ solve_seconds=[\d.eE+-]+) h1=(\d+) h2=(\d+) reachable=(\d+) distance_sum=(\d+)', text)
+    if len(matches) != 1:
+        raise ValueError(f'{log}: expected exactly one digest, found {len(matches)}')
+    got = list(matches[0])
     if got != ref[2:6]:
         raise ValueError(f'{log}: digest {got} != {ref[2:6]}')
 
