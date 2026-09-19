@@ -16,6 +16,8 @@ mainmodule sssp_smp
   readonly int initial_threshold;
   readonly bool verify_mode;
   readonly int process_share_mode;
+  readonly long reader_tile_size;
+  readonly int reader_tile_owners;
   readonly int flush_round_interval;
   readonly int flush_policy;
   readonly int idle_flush_policy;

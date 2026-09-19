@@ -4,6 +4,7 @@
 #include "graphlib/graphlib.h"
 #include "process_work.h"
 #include "live_slack.h"
+#include "graphlib/tile_layout.h"
 #ifdef PAPI
 #include "acic_prof.h"
 #endif
@@ -110,6 +111,8 @@ int initial_threshold = 3; // initial histo threshold
 bool verify_mode = false;  // --verify: check the result against serial Dijkstra
 enum { PROCESS_SHARE_OFF = 0, PROCESS_SHARE_ON = 1, PROCESS_SHARE_AUTO = 2 };
 int process_share_mode = PROCESS_SHARE_OFF;
+long reader_tile_size = 0;
+int reader_tile_owners = 1;
 int slack_control_mode = PROCESS_SHARE_OFF;
 static bool slack_control_active() {
   return slack_control_mode == PROCESS_SHARE_ON ||
@@ -943,6 +946,18 @@ public:
         verify_mode = true;
       else if (arg == "--result-digest")
         result_digest = true;
+      else if (arg == "--reader-tile" || arg.rfind("--reader-tile=", 0) == 0) {
+        const std::string value = arg == "--reader-tile"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(14);
+        if (value == "off") reader_tile_size = 0;
+        else if (value == "auto") reader_tile_size = -1;
+        else {
+          size_t used = 0;
+          reader_tile_size = std::stol(value, &used);
+          if (used != value.size() || reader_tile_size < 1)
+            CkAbort("--reader-tile must be off, auto, or a positive vertex count");
+        }
+      }
       else if (arg == "--slack-control" || arg.rfind("--slack-control=", 0) == 0) {
         const std::string value = arg == "--slack-control"
             ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(16);
@@ -1424,7 +1439,7 @@ public:
             << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
-            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--sources v1,v2,...] [--slack-control off|on|auto] [--diag <prefix>]" << endl
+            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|T] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -1553,6 +1568,8 @@ public:
     partition_index = new long[N + 1]; // last index=maximum index
     lmax = std::numeric_limits<cost>::max();
     start_time = CkWallTimer();
+    if (reader_tile_size != 0 && generate_mode != MODE_GAPBS)
+      CkAbort("--reader-tile requires a GAPBS input file (mode 4)");
     if (generate_mode == MODE_MESH) {
       long side_length = mesh_side_length(V);
 #ifdef INFO_PRINTS
@@ -1681,20 +1698,48 @@ public:
       // bad split; this is the one place the information is free.
       std::vector<int64_t> offsets;
       gapbs_read_offsets(file_name, header, 0, V, offsets);
+      reader_tile_owners = process_share_active() ? CkNumNodes() : N;
+      if (reader_tile_size == -1)
+        reader_tile_size = num_global_edges < 8L * V
+            ? std::max(1L, V / (64L * reader_tile_owners)) : 0;
+      if (reader_tile_size > 0) {
+        TileLayout layout(V, reader_tile_size, reader_tile_owners);
+        std::vector<int64_t> tiled((size_t)V + 1, 0);
+        for (long v = 0; v < V; ++v) {
+          const long original = layout.original(v);
+          tiled[(size_t)v + 1] = tiled[(size_t)v] +
+              offsets[(size_t)original + 1] - offsets[(size_t)original];
+        }
+        offsets.swap(tiled);
+        ckout << "Reader tiles: vertices=" << reader_tile_size
+              << " owners=" << reader_tile_owners << endl;
+      }
       // At least one, so an edgeless graph still spreads its vertices instead
       // of handing every one of them to the last PE.
-      long per_pe = (num_global_edges + N - 1) / (N > 0 ? N : 1);
-      if (per_pe < 1)
-        per_pe = 1;
-      long vertex = 0;
-      for (int i = 0; i < N; i++) {
-        partition_index[i] = vertex;
-        long target = (long)offsets[(size_t)vertex] + per_pe;
-        while (vertex < V && (long)offsets[(size_t)vertex] < target &&
-               V - vertex > N - i - 1)
-          vertex++;
+      auto partition_region = [&](int first_pe, int last_pe, long begin, long end) {
+        const long pes = last_pe - first_pe;
+        const long region_edges = offsets[(size_t)end] - offsets[(size_t)begin];
+        const long per_pe = std::max(1L, (region_edges + pes - 1) / pes);
+        long vertex = begin;
+        for (int i = first_pe; i < last_pe; ++i) {
+          partition_index[i] = vertex;
+          const long target = (long)offsets[(size_t)vertex] + per_pe;
+          while (vertex < end && (long)offsets[(size_t)vertex] < target &&
+                 end - vertex > last_pe - i - 1)
+            ++vertex;
+        }
+        partition_index[last_pe] = end;
+      };
+      if (reader_tile_size > 0) {
+        TileLayout layout(V, reader_tile_size, reader_tile_owners);
+        for (int owner = 0; owner < reader_tile_owners; ++owner) {
+          const int first = process_share_active() ? CkNodeFirst(owner) : owner;
+          const int size = process_share_active() ? CkNodeSize(owner) : 1;
+          partition_region(first, first + size, layout.owner_begin(owner), layout.owner_end(owner));
+        }
+      } else {
+        partition_region(0, N, 0, V);
       }
-      partition_index[N] = V;
       {
         double sum = 0.0, sum_sq = 0.0;
         long with_edges = 0;
@@ -1866,12 +1911,13 @@ public:
         generate_mode == MODE_RMAT)
       read_time = setup_time; // generated, so there is no separable input
     Update new_edge;
-    new_edge.dest_vertex = start_vertex;
+    const TileLayout layout(V, reader_tile_size, reader_tile_owners);
+    new_edge.dest_vertex = layout.internal(start_vertex);
     new_edge.distance = 0;
     int dest_proc = 0;
     for (int i = 0; i < N; i++) {
-      if (start_vertex >= partition_index[i] &&
-          start_vertex < partition_index[i + 1]) {
+      if (new_edge.dest_vertex >= partition_index[i] &&
+          new_edge.dest_vertex < partition_index[i + 1]) {
         dest_proc = i;
         break;
       }
@@ -3507,8 +3553,28 @@ public:
     GapbsHeader header = gapbs_read_header(path);
     std::vector<long> row_offset;
     std::vector<Edge> edges;
-    gapbs_read_slice(path, header, start_vertex, start_vertex + num_vertices,
-                     graph_weights, row_offset, edges);
+    if (reader_tile_size == 0) {
+      gapbs_read_slice(path, header, start_vertex, start_vertex + num_vertices,
+                       graph_weights, row_offset, edges);
+    } else {
+      TileLayout layout(V, reader_tile_size, reader_tile_owners);
+      row_offset.assign(1, 0);
+      row_offset.reserve((size_t)num_vertices + 1);
+      std::vector<long> slice_offsets;
+      std::vector<Edge> slice_edges;
+      for (long next = start_vertex; next < start_vertex + num_vertices;) {
+        const long count = layout.contiguous(next, start_vertex + num_vertices);
+        const long original = layout.original(next);
+        gapbs_read_slice(path, header, original, original + count,
+                         graph_weights, slice_offsets, slice_edges);
+        const long base = (long)edges.size();
+        for (long i = 1; i <= count; ++i)
+          row_offset.push_back(base + slice_offsets[(size_t)i]);
+        for (auto &edge : slice_edges) edge.end = layout.internal(edge.end);
+        edges.insert(edges.end(), slice_edges.begin(), slice_edges.end());
+        next += count;
+      }
+    }
     actual_edges = (long)edges.size();
     local_graph.adopt_rows(num_vertices, row_offset, edges);
 #ifdef INFO_PRINTS
@@ -4864,8 +4930,9 @@ public:
    */
   void verify_hash() {
     DistanceDigest digest;
+    TileLayout layout(V, reader_tile_size, reader_tile_owners);
     for (long i = 0; i < num_vertices; i++) {
-      digest.add(start_vertex + i, distances[i], lmax);
+      digest.add(layout.original(start_vertex + i), distances[i], lmax);
     }
     unsigned long long values[4] = {digest.h1, digest.h2, digest.reachable,
                                     digest.distance_sum};

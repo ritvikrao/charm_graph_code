@@ -40,8 +40,9 @@ roads and coordinates come from the official DIMACS Challenge 9 dataset.
 The NumPy/SciPy tools require `PYTHONNOUSERSITE=1` on this account, because
 the user NumPy 2 installation is incompatible with the system SciPy build.
 
-No optimization has been adopted yet. L1 reader placement and L4 remain
-conditional on the measurements required by the original plan.
+No optimization has been adopted as a default. L1 reader placement was
+subsequently implemented after the pilot below; L4 remains conditional on
+post-lever diagnosis.
 
 ## L1 relabeling experiment
 
@@ -51,7 +52,8 @@ Dijkstra distance aggregates. `ordered` accepts an already Morton-ordered input.
 Cut reporting now reproduces the existing reader's equal-edge partition loop;
 assuming equal vertex ranges was inaccurate. Those edge-balanced boundaries may
 split the intended tile-owner groups, so the report explicitly records this.
-The solver's reader is unchanged pending evidence that tiling pays.
+The initial experiment left the solver's reader unchanged; the later optional
+reader implementation is described below.
 
 Validation: three unit tests cover incomplete tiles, more PEs than vertices,
 invalid sizes, and the exact reader partition on random/empty degree sequences.
@@ -157,3 +159,32 @@ held-out sources x three repetitions: L2/frozen median paired ratio **0.263**
 (3.8x faster), worst source 0.288. Repeated frozen control median ratio 1.014.
 This is one allocation, not an adoption or paper-pass claim. L3's first mesh24
 allocations show no clear additional gain over L2, so its default remains off.
+
+## L1 reader placement
+
+The completed two-node mesh24 tuning pilot (22218279, two training sources,
+two repetitions) gave paired ratios to frozen of 0.932, 0.670, 0.528, 0.438
+for 1, 4, 16, 64 pieces per PE. The repeated baseline ratio was 0.868.
+This justified implementing the optional reader path, not adopting a default.
+
+`--reader-tile off|auto|T` defaults off. GAPBS input IDs are mapped once at
+read time; source arguments and result digests retain their original IDs.
+Contiguous tiles are dealt round-robin to processes with sharing enabled,
+or to PEs otherwise. Owner-group boundaries are exact; within a shared process
+its CSR is balanced by edge count among its PEs. Runtime updates still use
+the existing destination table. Auto chooses 64 pieces per owner for sparse
+inputs and stays off for dense inputs. This is a candidate policy awaiting
+paired measurements, not a claim that 64 is globally optimal.
+
+Validation: full existing gate 22218613 passed; jobs 22218615/16 passed 60
+solves each with explicit T=7 on one node and auto on two nodes. These cover
+empty partitions, uneven tile tails, fewer vertices than owners, isolated
+sources, shared/off execution, live slack, and repeated-source reset. The
+unit check exhaustively compares mapping/inverse/chunk boundaries against
+explicit tile dealing for small and boundary-sized graphs. Independent scipy
+relabeling tests passed using `PYTHONNOUSERSITE=1`.
+
+Candidate binary `acic_reader_final` and diagnostic companion have immutable
+source/hash manifests. Reader pilots 22218625/26 and regression pilot 22218627
+use this exact build. Post-lever D0 jobs 22218629/30 measure the remaining
+work, inactivity and round cost before deciding on L4.
