@@ -17,8 +17,10 @@ shows repeat slowdown relative to explicit off.
 
 The [completed-job report](ipdps27-onenode-results-22222842.md) records the
 evidence. The [revised one-node plan](ipdps27-onenode-gap.md) now controls next
-work: R0 auto-mode isolation/repair, R1 matched work/cost attribution, and at
-most one justified R2 intervention, capped at 2,000 additional SU combined.
+work: R0 redundant-work analysis and matched cost attribution, then at most
+one justified R1 intervention. R2 auto-mode isolation/repair is deferred until
+a promising high-diameter result warrants final acceptance; it must not delay
+R0 or R1. The combined cap remains 2,000 additional SU.
 L4 and full E1/E3 retakes are conditional. No new jobs are implied by this
 review. The current performance-led IPDPS paper is **no-go as-is** under the
 unchanged author gate. Failure does not automatically trigger a larger SC27

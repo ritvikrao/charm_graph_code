@@ -112,28 +112,14 @@ judge a frozen policy. Do not tune a graph-name table against these results.
 If these observed held-out sources guide another policy, freeze an additional
 unseen source set before evaluating that policy's final claim.
 
-### R0. Isolate and remove unnecessary dense-mode cost
+### R0. Quantify redundant work, then cost per operation
 
-Use RMAT24 to compare explicit off, the exact candidate flags, each auto
-flag separately, and all-auto, within the same binary/allocation. Keep a
-repeated frozen control and rotate arm order. Resolve which flag matters
-before assigning the slowdown to sharing, slack, or layout.
-
-A concrete first hypothesis is repeated density/mode evaluation:
-`process_share_active()` and `slack_control_active()` are called in solve
-paths even when dense-graph auto selects off. Inspect/profile those paths;
-if implicated, resolve the decisions once after graph metadata is available
-and distribute consistent immutable decisions to every process/PE. Preserve
-explicit-on behavior, graph-reader ordering and multi-source resets.
-
-**Exit:** equivalent effective settings and correct digests, plus the
-mode-dependent penalty removed within repeated-control noise in two
-allocations. Include before/after, exact-candidate and explicit-off arms;
-do not call a 2–3% current-off difference harmless without measuring its
-floor. This is an engineering repair, not evidence that live adaptation
-improves SSSP, and RMAT24 is not the full regression gate.
-
-### R1. Separate amount of work from cost per operation
+Start with the high-diameter gap: measure excess edge attempts, repeated
+vertex expansions and stale queue work against GAPBS, and how these grow
+from one to eight nodes. Use cost-per-operation measurements to distinguish
+redundant work from expensive execution of comparable work. The smaller RMAT
+auto-mode penalty is deferred; it is not a prerequisite for this diagnosis
+or the intervention it selects.
 
 Run a small matched diagnostic on `mesh26-z` and `road-usa-z` at one and
 eight nodes, initially two training sources and two repetitions. Compare
@@ -166,9 +152,9 @@ exact candidate and support a testable counterfactual with enough potential
 to address the measured gap. Report uncertainty and instrumentation overhead.
 If the evidence cannot identify such a path, stop the performance sprint.
 
-### R2. At most one intervention selected by R1
+### R1. At most one intervention selected by R0
 
-| If R1 isolates… | Candidate intervention | Required causal check |
+| If R0 isolates… | Candidate intervention | Required causal check |
 |---|---|---|
 | Excess relaxations/expansions | Tighter priority discipline or admission in shared work queues | Work falls enough to offset lost participation; compare against a strong fixed policy |
 | Queue/lock/delivery cost per attempt | Coarser batches or cheaper shared-queue access | Cost per attempt falls with comparable work counts; distinguish this from ordering effects |
@@ -181,7 +167,33 @@ beat the same mechanism at a training-selected constant; comparing it only
 with a weaker old baseline does not establish C3c. If its plausible benefit
 cannot close the remaining gap, it does not trigger another C6 campaign.
 
-### R3. Freeze and accept only after a promising R2
+### R2. Address dense-mode cost after a promising intervention
+
+Run this step only after R1 produces a candidate worth taking to final
+acceptance. The 6–9% all-auto RMAT penalty is secondary to the 2.5–4.1 times
+high-diameter gap. It must not delay R0 or R1; if the high-diameter route
+stops, do not pursue this repair as part of the performance sprint.
+
+Use RMAT24 to compare explicit off, the exact candidate flags, each auto
+flag separately, and all-auto, within the same binary/allocation. Keep a
+repeated frozen control and rotate arm order. Resolve which flag matters
+before assigning the slowdown to sharing, slack, or layout.
+
+A concrete first hypothesis is repeated density/mode evaluation:
+`process_share_active()` and `slack_control_active()` are called in solve
+paths even when dense-graph auto selects off. Inspect/profile those paths;
+if implicated, resolve the decisions once after graph metadata is available
+and distribute consistent immutable decisions to every process/PE. Preserve
+explicit-on behavior, graph-reader ordering and multi-source resets.
+
+**Exit:** equivalent effective settings and correct digests, plus the
+mode-dependent penalty removed within repeated-control noise in two
+allocations. Include before/after, exact-candidate and explicit-off arms;
+do not call a 2–3% current-off difference harmless without measuring its
+floor. This is an engineering repair, not evidence that live adaptation
+improves SSSP, and RMAT24 is not the full regression gate.
+
+### R3. Freeze and accept after R1 and the R2 regression check
 
 Run the full protocol in §1, with both node counts, independent allocations,
 frozen tuned GAPBS settings (including a second weight-scaled road run), and
@@ -203,7 +215,7 @@ Offline relabeling and reader tiling are implemented and verified. Reader
 mapping preserves original source/digest IDs and does not change the runtime
 destination-table lookup. Mesh pilots benefit; road does not yet show a
 consistent benefit. The current 64-tiles-per-owner auto policy is a measured
-candidate, not an adopted universal sparse-graph rule. R1 decides whether to
+candidate, not an adopted universal sparse-graph rule. R0 decides whether to
 retain it on the basis of placement, work and cost together.
 
 ### L2. Shared state within a process
@@ -224,7 +236,7 @@ not a promised result of having implemented L3.
 ### L4. Cheaper rounds (only if D0 says rounds still bind after L1–L3)
 
 Not triggered. Existing D0 counters do not isolate exposed round cost after
-sharing/tiling. R1 must establish it before R2 selects L4. A process-level
+sharing/tiling. R0 must establish it before R1 selects L4. A process-level
 controller still has to preserve the conservation ledger, progress guarantees
 and pickup semantics; a stale contribution from one ready PE is not a valid
 substitute for unfinished peers.
@@ -243,13 +255,16 @@ Replace the old open-ended L1–L3 implementation schedule with these gates:
 | When | Deliverable / decision |
 |---|---|
 | Completed review, 09-19 | Archive validated results; record C6 failure and incomplete acceptance; revise paper claims |
-| Next, before further performance changes | R0 isolation/repair and R1 matched work/cost attribution |
-| By 09-24, only if justified | One R2 intervention, correctness gate and independent paired A/B |
+| Next, before further performance changes | R0 redundant-work analysis and matched cost attribution on the high-diameter graphs |
+| By 09-24, only if justified | One R1 intervention, correctness gate and independent paired A/B |
+| Only after a promising R1, before final freeze | R2 isolate/address RMAT auto-mode cost; retain the full regression gate |
 | 09-25 | Freeze a promising candidate and its policy, or stop the sprint |
 | **09-26** | Initial C6 go/no-go; an incomplete or failed target does not authorize a submission claim |
 | 09-27–30, only after a promising first pass | R3 second allocations, full regression/claim checks, final paper decision |
 
 Cap **R0–R2 combined at 2,000 additional SU**, not an automatic expenditure.
+Prioritize the R0 diagnosis and R1 intervention; spend on R2 only if that
+route produces a promising candidate.
 Estimate each job from allocated cores and its wall-time limit before
 submission; use small training panels and stop ineffective arms early. If the
 planned diagnostic cannot fit, narrow it rather than silently extending the

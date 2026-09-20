@@ -31,7 +31,7 @@ Shortest Paths Problem"). The paper is submitted only if C6 passes
 | 3 | Design | 2.0 | Solver loop and histogram controller (short, it is prior work); then the new mechanisms, one paragraph each with its rule and why: lazy heavy relaxation, delivery cadence and idle flush (with interval), coarsening, buffer size by degree, send filter, delivery skipping. Correctness: progress rescue and overflow ordering (a repair, stated as such) | C2 | step 7–8 docs |
 | 4 | Implementation | 0.75 | Charm++ on Reconverse, htram aggregation, compact wire items, hold bitmap, process layout (8×15 / 16×7), what is compile-time and what is runtime | — | — |
 | 5 | Methodology | 0.75 | Inputs (Table 1: V, E, degree, diameter proxy, max distance; canonical undirected min-weight; not Graph500), sources (seeded, held-out), validation (digests, independent validator), timing boundaries per system, layout and parameter search per system with its grid, floors and repetition, hardware | C7 | §4 of sprint doc |
-| 6 | Results | 3.5 | 6.1 Best feasible baseline: one-node GAPBS alongside ACIC 1/2/8 nodes and distributed RIKEN/Gluon (Fig. 1 + Table 2). 6.2 Causal ablation (Fig. 2). 6.3 Live feedback vs strong fixed policy, only if established (Table 3). 6.4 Work per reachable arc and CPU cost per attempt, with placement/queue/control attribution (Fig. 3). 6.5 Scale-free losses and limits of the explanation (Fig. 4) | C1–C6 | Final-build R1/R3; earlier E1/E3 labeled by version |
+| 6 | Results | 3.5 | 6.1 Best feasible baseline: one-node GAPBS alongside ACIC 1/2/8 nodes and distributed RIKEN/Gluon (Fig. 1 + Table 2). 6.2 Causal ablation (Fig. 2). 6.3 Live feedback vs strong fixed policy, only if established (Table 3). 6.4 Work per reachable arc and CPU cost per attempt, with placement/queue/control attribution (Fig. 3). 6.5 Scale-free losses and limits of the explanation (Fig. 4) | C1–C6 | Final-build R0/R3; earlier E1/E3 labeled by version |
 | 7 | Discussion and limitations | 0.5 | When to use it; COST-style ratio against one-node GAPBS; graphs that fit one node; no runs above 8 nodes; integer weights; 32-bit wire limit | C4–C6 | — |
 | 8 | Conclusion | 0.25 | | | |
 | | Figures and tables inside the above | — | ~2.25 pages equivalent | | |
@@ -56,7 +56,7 @@ Shortest Paths Problem"). The paper is submitted only if C6 passes
    claimed only if it beats the same mechanism with a strong fixed parameter
    in independent allocations. Implemented L3 does not currently qualify.
 5. A new mechanism explaining and improving the tradeoff between work,
-   placement and per-operation cost, if R1/R2 establish it. Tiling and shared
+   placement and per-operation cost, if R0/R1 establish it. Tiling and shared
    state are implemented; their combination has not closed C6. Passing C6 is
    a submission prerequisite, not by itself a novel contribution.
 
@@ -75,7 +75,7 @@ to separate from redundant work, not an established fundamental limit.
 | Table 2 | Paired medians and allocation floors, per graph and node count; failures and hangs column | report_arms.py over 8g + E3 |
 | Fig. 2 | Ablation: slowdown of each one-axis arm and `ws24`/`ws24-wide` vs `current`, per graph, 8 nodes (2 nodes in text) | E1 |
 | Table 3 | `current` vs `global-fixed` and `tuned-fixed` (chosen setting named), 2 and 8 nodes | E1 |
-| Fig. 3 | High-diameter scaling, edge attempts per reachable arc, CPU cost per attempt, queue/delivery samples and exposed controller latency; do not add overlapping timers | R1 on the exact candidate |
+| Fig. 3 | High-diameter scaling, edge attempts per reachable arc, CPU cost per attempt, queue/delivery samples and exposed controller latency; do not add overlapping timers | R0 on the exact candidate |
 | Fig. 4 | Scale-free: ACIC delivered updates per edge vs nodes against RIKEN's relaxations per edge | 8a |
 
 ## Threats a reviewer will raise, and the planned answer

@@ -24,11 +24,11 @@ allocation floor. Cells from one allocation are marked as such.
 | # | Claim (draft wording) | Status | Evidence now | Decided by |
 |---|---|---|---|---|
 | C1 | On sparse, high-diameter graphs, ACIC solves weighted SSSP faster than distributed RIKEN and Gluon-Async on equal CPU nodes | **supported for earlier builds; final-candidate comparison pending** | Earlier 8g/E3 distributed wins remain; they do not establish a benefit over feasible one-node GAPBS. Latest Delta jobs did not retake RIKEN/Gluon | Retake only after the revised performance gate justifies a candidate; retain the weight-scaled road comparison |
-| C2 | Specific post-workshop mechanisms cause the gains | **partly supported; final attribution open** | Earlier E1 ablates event/aggregation mechanisms. L2 and reader pilots show large gains, but the final combined candidate needs matched work/cost attribution; implementation alone is not novelty | R1 matched counters/profiles; R2 one causal intervention; final-build ablations only if R3 is justified |
+| C2 | Specific post-workshop mechanisms cause the gains | **partly supported; final attribution open** | Earlier E1 ablates event/aggregation mechanisms. L2 and reader pilots show large gains, but the final combined candidate needs matched work/cost attribution; implementation alone is not novelty | R0 redundant-work counters/profiles; R1 one causal intervention; final-build ablations only if R3 is justified |
 | C3 | Adaptive message-flow control makes ACIC fast | **historical C3a/C3b evidence; C3c unproven** | Earlier E1 supports runtime-event control and read-time choices. Implemented L3 has no established benefit over strong fixed settings and can hurt road; the measured candidate disables it | Preserve §1b distinctions; claim live feedback only if it beats a training-selected fixed counterpart in independent allocations |
 | C4 | ACIC benefits from more nodes | **latest candidate: 1 to 8 yes, one allocation at each count** | Median paired 8/1 ratios: mesh24 0.395, mesh26 0.308, road 0.587, weight-scaled road 0.620. These do not establish 2-to-8 scaling or efficiency beyond eight nodes | Independent candidate allocation if R3 proceeds; state exact node counts and input order |
-| C5 | ACIC is competitive on scale-free graphs | **not supported against RIKEN; auto-mode regression unresolved** | Earlier RIKEN lead 1.9–3.7× at eight nodes; latest RMAT24 same-binary all-auto/all-off ratios 1.062 and 1.094 at one node. This is isolation evidence, not a fresh external ranking or full regression suite | R0 isolate mode overhead; retain scale-free loss and require the five-graph regression gate before adoption |
-| C6 | Eight-node ACIC is no slower than one-node GAPBS or ACIC on every paper graph | **observed high-diameter target fails; mandatory gate retained** | Four held-out graphs: eight-node ACIC/GAPBS median 2.5–4.1×, worst sources up to 4.28×. Own one-node ACIC is slower. Two candidate allocations and full regressions remain incomplete | [Revised plan](ipdps27-onenode-gap.md): bounded R0/R1, at most one justified R2, then R3 only if promising; no submission claim on incomplete evidence |
+| C5 | ACIC is competitive on scale-free graphs | **not supported against RIKEN; auto-mode regression unresolved** | Earlier RIKEN lead 1.9–3.7× at eight nodes; latest RMAT24 same-binary all-auto/all-off ratios 1.062 and 1.094 at one node. This is isolation evidence, not a fresh external ranking or full regression suite | R2 isolate mode overhead after a promising high-diameter intervention; retain scale-free loss and require the five-graph regression gate before adoption |
+| C6 | Eight-node ACIC is no slower than one-node GAPBS or ACIC on every paper graph | **observed high-diameter target fails; mandatory gate retained** | Four held-out graphs: eight-node ACIC/GAPBS median 2.5–4.1×, worst sources up to 4.28×. Own one-node ACIC is slower. Two candidate allocations and full regressions remain incomplete | [Revised plan](ipdps27-onenode-gap.md): R0 redundant-work analysis, one justified R1 intervention, deferred R2 mode repair, then R3 only if promising; no submission claim on incomplete evidence |
 | C7 | Reported solves are correct | **latest candidate and RMAT isolation verified** | All 512 new ACIC solves match independent full digests and raw times. All selected-setting GAPBS runs pass; five extreme training cells timed out and remain recorded | Preserve per-cell raw-log checks, small-graph verification, independent references, conservation and no-rescue gates for every code change |
 
 The proposed performance thesis remains C1 with C2 and C3, under C6.
@@ -624,8 +624,10 @@ to submit a distributed-only result with the GAPBS gap left open.
 ## 6. Budget and calendar
 
 The [revised one-node plan §6](ipdps27-onenode-gap.md#6-schedule-and-stop-rule)
-controls the remaining work: R0 mode isolation/repair, R1 work/cost attribution,
-and **at most one** R2 intervention, with a combined cap of 2,000 additional SU.
+controls the remaining work: R0 redundant-work analysis and cost attribution,
+then **at most one** R1 intervention. R2 mode isolation/repair follows only if
+that produces a promising candidate; it must not delay R0 or R1. The combined
+R0–R2 cap remains 2,000 additional SU.
 This replaces the earlier L1–L3 schedule, which is now implemented, and defers
 the unconditional ~5,000-SU E1/E3 retake. It is a spending cap, not a request
 to launch all those jobs. Current allocation balance must be checked before

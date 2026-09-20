@@ -498,3 +498,15 @@ on the exact slack-off candidate, and at most one justified R2 intervention.
 L4 stays conditional. The author acceptance thresholds remain unchanged, and
 the performance-led paper is no-go as-is. Full retakes and broader SC27 work
 require evidence that justifies them; this review submits no further jobs.
+
+## Priority correction after the completed-job review
+
+The author prioritized redundant-work analysis and a targeted intervention
+over the smaller RMAT auto-mode penalty. The current plan renumbers the
+steps accordingly: **R0** quantifies high-diameter redundant work and cost
+per operation; **R1** selects and tests at most one intervention; **R2**
+isolates/addresses the dense auto-mode penalty only after a promising R1;
+**R3** performs final acceptance. This order supersedes the step numbering
+in the preceding review entry. RMAT cleanup does not block diagnosis or the
+high-diameter intervention, and is not pursued in this sprint if that route
+stops. The 2,000-SU combined cap and all acceptance thresholds are unchanged.
