@@ -466,3 +466,35 @@ The CANDIDATE flags remain `--process-share auto --reader-tile auto
 --slack-control off`; this is a measured candidate, not a default adoption.
 The regression isolation distinguishes the current build's general overhead
 from the auto-mode decision paths before any performance fix is selected.
+
+## Completed follow-up and revised plan (2026-09-19)
+
+Jobs 22222842–22222847 all completed, exit 0:0. Revalidated 512 ACIC solves
+against independent full digests, raw times, source/repetition grids, saved
+medians and executable hashes. The two new GAPBS jobs contain 226 successful
+runs and five training timeouts at extreme weight-scaled road settings;
+all selected-setting held-out measurements passed. Also rechecked all 549
+records from original GAPBS allocation 22218622 against its compressed raw log.
+
+The complete [results report](ipdps27-onenode-results-22222842.md) and
+[per-source data](onenode-data/followup-22222842.json) preserve the analysis.
+Eight-node candidate / one-node GAPBS median ratios are 3.697, 2.481, 4.117
+and 3.575 on mesh24, mesh26, road and weight-scaled road. The independent
+GAPBS allocation gives 2.623, 2.477 and 3.525 on the first three, with the
+same selected settings. All target cells fail despite large improvements
+over frozen ACIC. Eight/one-node candidate ratios are 0.395, 0.308, 0.587,
+0.620. Only one candidate allocation per node count is available; full
+acceptance remains incomplete, not a two-allocation result.
+
+RMAT24 all-auto/all-off ratios repeat at 1.062 and 1.094 within the same
+binary, while auto/frozen is 1.087 and 1.086. All-auto includes slack auto;
+the high-diameter candidate uses slack off. Flag isolation and profiling are
+needed before assigning this cost to a particular auto check. No default
+or algorithm change is justified solely by these isolation results.
+
+The [revised plan](ipdps27-onenode-gap.md) replaces the completed L1–L3
+schedule with bounded R0 mode isolation/repair, R1 work-versus-cost attribution
+on the exact slack-off candidate, and at most one justified R2 intervention.
+L4 stays conditional. The author acceptance thresholds remain unchanged, and
+the performance-led paper is no-go as-is. Full retakes and broader SC27 work
+require evidence that justifies them; this review submits no further jobs.

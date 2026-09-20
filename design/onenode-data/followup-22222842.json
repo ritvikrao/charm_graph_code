@@ -1,0 +1,1452 @@
+{
+  "method": "Warmups excluded. Cross-system/node ratios divide per-source medians, then aggregate across four physical held-out sources. Within-allocation A/B ratios first pair repetitions, then take median per source and across sources. Seconds are median of per-source medians. Neither two GAP allocations nor one allocation at each node count constitutes two candidate allocations.",
+  "campaign": "/u/rao1/.tmp/ipdps27-onenode",
+  "ab": {
+    "AB-mesh24-z-8n-22222842": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "candidate",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 8,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn[030-031,048,053,080,091,100,110]"
+      },
+      "validated_runs": 48,
+      "input_sha256": {
+        "manifest.json": "66461813a4fb3dcd720abf20c000673945c8aa8c32ab5ae58ebfbbe85263f64d",
+        "runs.jsonl": "96dfe17d7dfd119bfcbfea2f3028fe083190ee04794106f2c8e5e0c38d76660a",
+        "summary.json": "87b147af3e43ccf57ca88a4ca44e442eadfededadd4b56210f8cf71eb758b7cd"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "4910385": 1.421961,
+          "11959333": 1.312731,
+          "6871281": 1.338127,
+          "1835524": 1.508629
+        },
+        "control": {
+          "4910385": 1.396087,
+          "11959333": 1.564523,
+          "6871281": 1.24159,
+          "1835524": 1.177609
+        },
+        "candidate": {
+          "4910385": 0.344574,
+          "11959333": 0.396398,
+          "6871281": 0.309272,
+          "1835524": 0.392674
+        }
+      },
+      "seconds": {
+        "frozen": 1.380044,
+        "control": 1.3188385,
+        "candidate": 0.368624
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "4910385": 0.9818040016568669,
+            "11959333": 1.2328473998100145,
+            "6871281": 0.9278566234744534,
+            "1835524": 0.764536565570152
+          },
+          "median": 0.9548303125656601,
+          "worst": 1.2328473998100145,
+          "best": 0.764536565570152
+        },
+        "candidate": {
+          "by_source": {
+            "4910385": 0.2438671051484347,
+            "11959333": 0.29235997321614254,
+            "6871281": 0.22474515103462822,
+            "1835524": 0.246116175680038
+          },
+          "median": 0.24499164041423635,
+          "worst": 0.29235997321614254,
+          "best": 0.22474515103462822
+        }
+      }
+    },
+    "AB-mesh26-z-8n-22222842": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "candidate",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 8,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn[030-031,048,053,080,091,100,110]"
+      },
+      "validated_runs": 48,
+      "input_sha256": {
+        "manifest.json": "66461813a4fb3dcd720abf20c000673945c8aa8c32ab5ae58ebfbbe85263f64d",
+        "runs.jsonl": "c2211705bab7052d21a911f92a69e587a595d3dbf9683961b6f14b2e5d12d6e6",
+        "summary.json": "429d1ec63bdee9cc5187e899f81b3305f544270164f46a17f83e98d095b560ad"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "35305828": 6.402546,
+          "44514593": 7.825683,
+          "41458868": 4.467063,
+          "21824001": 7.615477
+        },
+        "control": {
+          "35305828": 6.606777,
+          "44514593": 8.446432,
+          "41458868": 4.279007,
+          "21824001": 6.870927
+        },
+        "candidate": {
+          "35305828": 0.981848,
+          "44514593": 1.139654,
+          "41458868": 0.844264,
+          "21824001": 1.024907
+        }
+      },
+      "seconds": {
+        "frozen": 7.0090115,
+        "control": 6.738852,
+        "candidate": 1.0033775
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "35305828": 1.011552747922467,
+            "44514593": 1.0793220221161526,
+            "41458868": 0.898378715048472,
+            "21824001": 0.9022319941351015
+          },
+          "median": 0.9568923710287842,
+          "worst": 1.0793220221161526,
+          "best": 0.898378715048472
+        },
+        "candidate": {
+          "by_source": {
+            "35305828": 0.14649359801553943,
+            "44514593": 0.144523270174821,
+            "41458868": 0.20070271529570619,
+            "21824001": 0.14042337728811996
+          },
+          "median": 0.14550843409518022,
+          "worst": 0.20070271529570619,
+          "best": 0.14042337728811996
+        }
+      }
+    },
+    "AB-road-usa-z-8n-22222842": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "candidate",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 8,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn[030-031,048,053,080,091,100,110]"
+      },
+      "validated_runs": 48,
+      "input_sha256": {
+        "manifest.json": "66461813a4fb3dcd720abf20c000673945c8aa8c32ab5ae58ebfbbe85263f64d",
+        "runs.jsonl": "946b3c5e1b0604748b7bf6d1e73fb6504d5a5b6f7e749d0de647fcd12e3cd26b",
+        "summary.json": "d3461e49697d9fa314340ba658602e82f7db9a7132a9e05f3a5fc17e5c34cecb"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "8718204": 3.072384,
+          "22613654": 1.964889,
+          "10159848": 2.306935,
+          "3073839": 3.277716
+        },
+        "control": {
+          "8718204": 3.465224,
+          "22613654": 1.934537,
+          "10159848": 2.914689,
+          "3073839": 3.396817
+        },
+        "candidate": {
+          "8718204": 0.872179,
+          "22613654": 0.566603,
+          "10159848": 0.737015,
+          "3073839": 0.723833
+        }
+      },
+      "seconds": {
+        "frozen": 2.6896595000000003,
+        "control": 3.155753,
+        "candidate": 0.730424
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "8718204": 1.035885162792151,
+            "22613654": 0.9432751671977398,
+            "10159848": 1.0407872673814933,
+            "3073839": 1.018189864404142
+          },
+          "median": 1.0270375135981467,
+          "worst": 1.0407872673814933,
+          "best": 0.9432751671977398
+        },
+        "candidate": {
+          "by_source": {
+            "8718204": 0.28387695027704873,
+            "22613654": 0.2787312667534909,
+            "10159848": 0.319478008699855,
+            "3073839": 0.22000502789137316
+          },
+          "median": 0.2813041085152698,
+          "worst": 0.319478008699855,
+          "best": 0.22000502789137316
+        }
+      }
+    },
+    "AB-road-usa-w4-z-8n-22222842": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "candidate",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 8,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn[030-031,048,053,080,091,100,110]"
+      },
+      "validated_runs": 48,
+      "input_sha256": {
+        "manifest.json": "66461813a4fb3dcd720abf20c000673945c8aa8c32ab5ae58ebfbbe85263f64d",
+        "runs.jsonl": "1729157effcf1a99e4e9943b7f9d7d59d274a890b6e67764db99076f3e085638",
+        "summary.json": "acbfc827f5ad57a990e9a4d33966a2875f717e0a9b4eaf6853d2bb3de2a303fb"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "8718204": 3.028543,
+          "22613654": 2.016325,
+          "10159848": 2.30533,
+          "3073839": 3.74724
+        },
+        "control": {
+          "8718204": 2.698427,
+          "22613654": 1.907285,
+          "10159848": 2.678858,
+          "3073839": 3.404173
+        },
+        "candidate": {
+          "8718204": 0.913294,
+          "22613654": 0.581418,
+          "10159848": 0.707408,
+          "3073839": 0.78122
+        }
+      },
+      "seconds": {
+        "frozen": 2.6669365000000003,
+        "control": 2.6886425000000003,
+        "candidate": 0.744314
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "8718204": 0.8909984107869692,
+            "22613654": 1.0339146714939307,
+            "10159848": 0.9451720138751161,
+            "3073839": 0.9448168611414188
+          },
+          "median": 0.9449944375082675,
+          "worst": 1.0339146714939307,
+          "best": 0.8909984107869692
+        },
+        "candidate": {
+          "by_source": {
+            "8718204": 0.3194790075761763,
+            "22613654": 0.3068691803156733,
+            "10159848": 0.3068575865494311,
+            "3073839": 0.21129444604562292
+          },
+          "median": 0.3068633834325522,
+          "worst": 0.3194790075761763,
+          "best": 0.21129444604562292
+        }
+      }
+    },
+    "AB-mesh24-z-1n-22222843": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "candidate",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 1,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn065"
+      },
+      "validated_runs": 48,
+      "input_sha256": {
+        "manifest.json": "47135125549711f2dc39a9604c495d9a42987ba80125c6342fe086827ac6ca6f",
+        "runs.jsonl": "20d12ada73519c8727e8e93410cdf7bae47174219900f6e11866512e287ee451",
+        "summary.json": "4605b73d04ba89764325c203fc15451309a7fef2b59a6b05c5e074abacb52fc9"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "4910385": 7.758161,
+          "11959333": 5.385388,
+          "6871281": 5.403211,
+          "1835524": 5.056348
+        },
+        "control": {
+          "4910385": 7.31853,
+          "11959333": 8.124061,
+          "6871281": 4.716214,
+          "1835524": 6.110145
+        },
+        "candidate": {
+          "4910385": 0.820861,
+          "11959333": 1.133907,
+          "6871281": 0.644647,
+          "1835524": 1.058789
+        }
+      },
+      "seconds": {
+        "frozen": 5.3942995,
+        "control": 6.7143375,
+        "candidate": 0.9398249999999999
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "4910385": 0.9433330914375198,
+            "11959333": 1.5085377321002682,
+            "6871281": 0.9530025562288623,
+            "1835524": 1.1759268868653276
+          },
+          "median": 1.064464721547095,
+          "worst": 1.5085377321002682,
+          "best": 0.9433330914375198
+        },
+        "candidate": {
+          "by_source": {
+            "4910385": 0.1053476461754274,
+            "11959333": 0.20875134716384408,
+            "6871281": 0.11930812992496499,
+            "1835524": 0.2093979686524741
+          },
+          "median": 0.16402973854440453,
+          "worst": 0.2093979686524741,
+          "best": 0.1053476461754274
+        }
+      }
+    },
+    "AB-mesh26-z-1n-22222843": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "candidate",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 1,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn065"
+      },
+      "validated_runs": 48,
+      "input_sha256": {
+        "manifest.json": "47135125549711f2dc39a9604c495d9a42987ba80125c6342fe086827ac6ca6f",
+        "runs.jsonl": "22efb2fddbc28a12da6a0afb99152cdb87e7cb94764b670e651c915665e77a75",
+        "summary.json": "6424a95a8e3932b6ee03f92937a04943998a0c5e52299499871d6e986c0c049d"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "35305828": 25.840734,
+          "44514593": 39.003433,
+          "41458868": 22.331429,
+          "21824001": 43.941703
+        },
+        "control": {
+          "35305828": 28.699138,
+          "44514593": 42.33299,
+          "41458868": 28.608343,
+          "21824001": 38.72792
+        },
+        "candidate": {
+          "35305828": 2.367285,
+          "44514593": 3.524257,
+          "41458868": 2.875793,
+          "21824001": 3.522424
+        }
+      },
+      "seconds": {
+        "frozen": 32.4220835,
+        "control": 33.713529,
+        "candidate": 3.1991085
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "35305828": 1.0715423661249641,
+            "44514593": 1.0813727390445833,
+            "41458868": 1.4074520089728957,
+            "21824001": 0.8538001360575398
+          },
+          "median": 1.0764575525847737,
+          "worst": 1.4074520089728957,
+          "best": 0.8538001360575398
+        },
+        "candidate": {
+          "by_source": {
+            "35305828": 0.09161059434302446,
+            "44514593": 0.09086933450191423,
+            "41458868": 0.13041070355678802,
+            "21824001": 0.08073492281352865
+          },
+          "median": 0.09123996442246934,
+          "worst": 0.13041070355678802,
+          "best": 0.08073492281352865
+        }
+      }
+    },
+    "AB-road-usa-z-1n-22222843": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "candidate",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 1,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn065"
+      },
+      "validated_runs": 48,
+      "input_sha256": {
+        "manifest.json": "47135125549711f2dc39a9604c495d9a42987ba80125c6342fe086827ac6ca6f",
+        "runs.jsonl": "6b4235a7491de16e049c2ccf6a53f1f4d1f4dcc125b4083fbe9da1bd65736433",
+        "summary.json": "7c5913ac3064bb4935ed2cd90e3514ed518e7fcae3ff90d4e44fa610946ce1bf"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "8718204": 12.487489,
+          "22613654": 8.57044,
+          "10159848": 8.985478,
+          "3073839": 9.815959
+        },
+        "control": {
+          "8718204": 16.138845,
+          "22613654": 9.948441,
+          "10159848": 8.821541,
+          "3073839": 11.213869
+        },
+        "candidate": {
+          "8718204": 1.390644,
+          "22613654": 1.034807,
+          "10159848": 1.124016,
+          "3073839": 1.392318
+        }
+      },
+      "seconds": {
+        "frozen": 9.4007185,
+        "control": 10.581155,
+        "candidate": 1.25733
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "8718204": 1.1294996936533839,
+            "22613654": 1.1607853272410753,
+            "10159848": 0.9231053706881259,
+            "3073839": 1.1424119640271522
+          },
+          "median": 1.135955828840268,
+          "worst": 1.1607853272410753,
+          "best": 0.9231053706881259
+        },
+        "candidate": {
+          "by_source": {
+            "8718204": 0.11136298098040366,
+            "22613654": 0.1207414088424865,
+            "10159848": 0.12273837852588364,
+            "3073839": 0.13501380761675963
+          },
+          "median": 0.12173989368418507,
+          "worst": 0.13501380761675963,
+          "best": 0.11136298098040366
+        }
+      }
+    },
+    "AB-road-usa-w4-z-1n-22222843": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "candidate",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 1,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn065"
+      },
+      "validated_runs": 48,
+      "input_sha256": {
+        "manifest.json": "47135125549711f2dc39a9604c495d9a42987ba80125c6342fe086827ac6ca6f",
+        "runs.jsonl": "90372708a225c45e84a171524db8114e27b7ce228fbdf5f6c93a20f4688c9b7a",
+        "summary.json": "1ee089f4be82aa614d45ce1f6431a36f9991a67e52de4bf3622932d819ed5f0c"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "8718204": 11.970491,
+          "22613654": 11.01142,
+          "10159848": 10.601762,
+          "3073839": 12.190906
+        },
+        "control": {
+          "8718204": 12.059134,
+          "22613654": 9.89666,
+          "10159848": 10.076708,
+          "3073839": 11.283696
+        },
+        "candidate": {
+          "8718204": 1.440908,
+          "22613654": 1.055655,
+          "10159848": 1.109251,
+          "3073839": 1.289277
+        }
+      },
+      "seconds": {
+        "frozen": 11.4909555,
+        "control": 10.680202000000001,
+        "candidate": 1.1992639999999999
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "8718204": 1.3473818970153124,
+            "22613654": 0.8820120452668655,
+            "10159848": 0.7399888040128721,
+            "3073839": 0.9134959288505711
+          },
+          "median": 0.8977539870587183,
+          "worst": 1.3473818970153124,
+          "best": 0.7399888040128721
+        },
+        "candidate": {
+          "by_source": {
+            "8718204": 0.12156325744926477,
+            "22613654": 0.09586910680003125,
+            "10159848": 0.10283960345459556,
+            "3073839": 0.10646050424800256
+          },
+          "median": 0.10465005385129905,
+          "worst": 0.12156325744926477,
+          "best": 0.09586910680003125
+        }
+      }
+    },
+    "AB-rmat24-1n-22222846": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "current_off",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "off",
+              "--reader-tile",
+              "off",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          },
+          {
+            "label": "current_auto",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "auto"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 1,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn041"
+      },
+      "validated_runs": 64,
+      "input_sha256": {
+        "manifest.json": "2aa13574b3817a0c1b80845c9a0164c59e13b126837c2d35f3a0089af171a8ec",
+        "runs.jsonl": "53df92eea4eaae366f33a3d575be1ba17a658e02fbed250458ff93e84cb73917",
+        "summary.json": "360b61cae8df6e80fa20908bc32a971c7ac3e84adcf9d7bd04c6f0b9f7c48531"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "9229996": 0.659306,
+          "14868552": 0.653866,
+          "11020011": 0.637137,
+          "8530897": 0.659773
+        },
+        "control": {
+          "9229996": 0.670942,
+          "14868552": 0.653718,
+          "11020011": 0.642056,
+          "8530897": 0.737217
+        },
+        "current_off": {
+          "9229996": 0.670506,
+          "14868552": 0.663579,
+          "11020011": 0.656868,
+          "8530897": 0.655756
+        },
+        "current_auto": {
+          "9229996": 0.746858,
+          "14868552": 0.688886,
+          "11020011": 0.662319,
+          "8530897": 0.745041
+        }
+      },
+      "seconds": {
+        "frozen": 0.6565859999999999,
+        "control": 0.6623300000000001,
+        "current_off": 0.6602235000000001,
+        "current_auto": 0.7169635
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "9229996": 1.0438810215048744,
+            "14868552": 1.0015596751953426,
+            "11020011": 1.010309927238853,
+            "8530897": 1.1483792679640417
+          },
+          "median": 1.0270954743718637,
+          "worst": 1.1483792679640417,
+          "best": 1.0015596751953426
+        },
+        "current_off": {
+          "by_source": {
+            "9229996": 1.029487909537012,
+            "14868552": 1.016667688064961,
+            "11020011": 1.030968221905179,
+            "8530897": 1.0067144305693017
+          },
+          "median": 1.0230777988009865,
+          "worst": 1.030968221905179,
+          "best": 1.0067144305693017
+        },
+        "current_auto": {
+          "by_source": {
+            "9229996": 1.117618687552315,
+            "14868552": 1.0554404780144018,
+            "11020011": 1.0273897136722556,
+            "8530897": 1.1326850295480413
+          },
+          "median": 1.0865295827833585,
+          "worst": 1.1326850295480413,
+          "best": 1.0273897136722556
+        }
+      }
+    },
+    "AB-rmat24-1n-22222847": {
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "control",
+            "binary": "acic_frozen",
+            "sha256": "5913beb1949a9274beb7c7b6ebe279f6f1fd6211fe8fd138a1bccb46226f4abd"
+          },
+          {
+            "label": "current_off",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "off",
+              "--reader-tile",
+              "off",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          },
+          {
+            "label": "current_auto",
+            "binary": "acic_reader_final",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "auto"
+            ],
+            "sha256": "b6239bf7ce75fc41de1fd768f1991cbe606778833e36c84858c1cdb76a809619"
+          }
+        ],
+        "nodes": 1,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": false,
+        "hosts": "cn083"
+      },
+      "validated_runs": 64,
+      "input_sha256": {
+        "manifest.json": "16f3eba6da05176c4a4485f75403f087336110eebb557d66600ddfbeb3544cd0",
+        "runs.jsonl": "46af8a69df93bfc0575376d9745257917f514e9bf66ee884cf09bfe6ed9e06f4",
+        "summary.json": "e70b140bbf24c5309734b1288ddea684f1cd0c4be0720bea5b169cd6772e15c8"
+      },
+      "source_medians_seconds": {
+        "frozen": {
+          "9229996": 0.651118,
+          "14868552": 0.705151,
+          "11020011": 0.636633,
+          "8530897": 0.687964
+        },
+        "control": {
+          "9229996": 0.656455,
+          "14868552": 0.647581,
+          "11020011": 0.700003,
+          "8530897": 0.639672
+        },
+        "current_off": {
+          "9229996": 0.711716,
+          "14868552": 0.72396,
+          "11020011": 0.678683,
+          "8530897": 0.668899
+        },
+        "current_auto": {
+          "9229996": 0.752343,
+          "14868552": 0.733783,
+          "11020011": 0.731469,
+          "8530897": 0.734003
+        }
+      },
+      "seconds": {
+        "frozen": 0.6695409999999999,
+        "control": 0.652018,
+        "current_off": 0.6951995,
+        "current_auto": 0.7338929999999999
+      },
+      "paired_vs_frozen": {
+        "control": {
+          "by_source": {
+            "9229996": 0.9988143470154411,
+            "14868552": 0.9183579119933177,
+            "11020011": 1.0023372963701223,
+            "8530897": 0.9115084510236
+          },
+          "median": 0.9585861295043794,
+          "worst": 1.0023372963701223,
+          "best": 0.9115084510236
+        },
+        "current_off": {
+          "by_source": {
+            "9229996": 1.0073151103179456,
+            "14868552": 1.046611293184013,
+            "11020011": 1.0694017691975584,
+            "8530897": 1.0119561994323718
+          },
+          "median": 1.0292837463081925,
+          "worst": 1.0694017691975584,
+          "best": 1.0073151103179456
+        },
+        "current_auto": {
+          "by_source": {
+            "9229996": 1.104351285020534,
+            "14868552": 1.0310500871444557,
+            "11020011": 1.1489649452667392,
+            "8530897": 1.066920652824857
+          },
+          "median": 1.0856359689226953,
+          "worst": 1.1489649452667392,
+          "best": 1.0310500871444557
+        }
+      }
+    }
+  },
+  "gap": {
+    "22218622": {
+      "records": 549,
+      "phases": {
+        "external-warmup": 3,
+        "external-joint": 462,
+        "external-confirm": 36,
+        "external-test-warmup": 12,
+        "external": 36
+      },
+      "outcomes": {
+        "ok": 549
+      },
+      "input_sha256": "fe5376539c057b079864114ee9ef81dcb0492a7ef58d727319cf457b49de0aa1",
+      "graphs": {
+        "mesh24-z": {
+          "config": {
+            "engine": "gap",
+            "name": "gap-t120-d4096",
+            "threads": 120,
+            "cpus": 120,
+            "delta": 4096
+          },
+          "source_medians_seconds": {
+            "1835524": 0.099360155,
+            "4910385": 0.094803714,
+            "6871281": 0.095778937,
+            "11959333": 0.105461247
+          },
+          "seconds": 0.09756954600000001,
+          "hosts": "cn125"
+        },
+        "mesh26-z": {
+          "config": {
+            "engine": "gap",
+            "name": "gap-t128-d4096",
+            "threads": 128,
+            "cpus": 128,
+            "delta": 4096
+          },
+          "source_medians_seconds": {
+            "21824001": 0.407742926,
+            "35305828": 0.400922191,
+            "41458868": 0.425162964,
+            "44514593": 0.423876739
+          },
+          "seconds": 0.41580983250000003,
+          "hosts": "cn125"
+        },
+        "road-usa-z": {
+          "config": {
+            "engine": "gap",
+            "name": "gap-t64-d32768",
+            "threads": 64,
+            "cpus": 64,
+            "delta": 32768
+          },
+          "source_medians_seconds": {
+            "3073839": 0.168952901,
+            "8718204": 0.218624894,
+            "10159848": 0.173649855,
+            "22613654": 0.176003787
+          },
+          "seconds": 0.174826821,
+          "hosts": "cn125"
+        }
+      }
+    },
+    "22222844": {
+      "records": 48,
+      "phases": {
+        "external-test-warmup": 12,
+        "external": 36
+      },
+      "outcomes": {
+        "ok": 48
+      },
+      "input_sha256": "4cfd5184620ad2308757f2be8085b06f00aff54d898b27264d13ce78682e71f5",
+      "graphs": {
+        "mesh24-z": {
+          "config": {
+            "engine": "gap",
+            "name": "gap-t120-d4096",
+            "threads": 120,
+            "cpus": 120,
+            "delta": 4096
+          },
+          "source_medians_seconds": {
+            "1835524": 0.135209118,
+            "4910385": 0.147139582,
+            "6871281": 0.148619363,
+            "11959333": 0.105761206
+          },
+          "seconds": 0.14117435,
+          "hosts": "cn043"
+        },
+        "mesh26-z": {
+          "config": {
+            "engine": "gap",
+            "name": "gap-t128-d4096",
+            "threads": 128,
+            "cpus": 128,
+            "delta": 4096
+          },
+          "source_medians_seconds": {
+            "21824001": 0.413574758,
+            "35305828": 0.396543533,
+            "41458868": 0.397507418,
+            "44514593": 0.433486377
+          },
+          "seconds": 0.405541088,
+          "hosts": "cn043"
+        },
+        "road-usa-z": {
+          "config": {
+            "engine": "gap",
+            "name": "gap-t64-d32768",
+            "threads": 64,
+            "cpus": 64,
+            "delta": 32768
+          },
+          "source_medians_seconds": {
+            "3073839": 0.199753821,
+            "8718204": 0.25448758,
+            "10159848": 0.199307785,
+            "22613654": 0.198440903
+          },
+          "seconds": 0.19953080299999998,
+          "hosts": "cn043"
+        }
+      }
+    },
+    "22222845": {
+      "records": 183,
+      "phases": {
+        "external-warmup": 1,
+        "external-joint": 154,
+        "external-confirm": 12,
+        "external-test-warmup": 4,
+        "external": 12
+      },
+      "outcomes": {
+        "ok": 178,
+        "hang": 5
+      },
+      "input_sha256": "73f42623e37990ecf587539377afa07c8830ded7759952b819361a8a60b9f879",
+      "graphs": {
+        "road-usa-w4-z": {
+          "config": {
+            "engine": "gap",
+            "name": "gap-t64-d8192",
+            "threads": 64,
+            "cpus": 64,
+            "delta": 8192,
+            "launch_timeout_seconds": 60
+          },
+          "source_medians_seconds": {
+            "3073839": 0.201396214,
+            "8718204": 0.254453139,
+            "10159848": 0.198713861,
+            "22613654": 0.198001768
+          },
+          "seconds": 0.20005503749999998,
+          "hosts": "cn029"
+        }
+      }
+    }
+  },
+  "target": {
+    "mesh24-z": {
+      "acic_seconds": {
+        "1": 0.9398249999999999,
+        "8": 0.368624
+      },
+      "eight_vs_one": {
+        "by_source": {
+          "4910385": 0.4197714351150804,
+          "11959333": 0.3495859889744044,
+          "6871281": 0.4797540359297414,
+          "1835524": 0.3708708722890019
+        },
+        "median": 0.39532115370204113,
+        "worst": 0.4797540359297414,
+        "best": 0.3495859889744044
+      },
+      "gap_comparisons": {
+        "22218622": {
+          "1": {
+            "by_source": {
+              "4910385": 8.658532090841925,
+              "11959333": 10.751883106407798,
+              "6871281": 6.730571670470722,
+              "1835524": 10.656072346102922
+            },
+            "median": 9.657302218472424,
+            "worst": 10.751883106407798,
+            "best": 6.730571670470722
+          },
+          "8": {
+            "by_source": {
+              "4910385": 3.634604441762693,
+              "11959333": 3.7587076890907616,
+              "6871281": 3.22901892302271,
+              "1835524": 3.952026846173901
+            },
+            "median": 3.696656065426727,
+            "worst": 3.952026846173901,
+            "best": 3.22901892302271
+          }
+        },
+        "22222844": {
+          "1": {
+            "by_source": {
+              "4910385": 5.578791164433238,
+              "11959333": 10.721388710336756,
+              "6871281": 4.337570737670299,
+              "1835524": 7.830751473432436
+            },
+            "median": 6.704771318932837,
+            "worst": 10.721388710336756,
+            "best": 4.337570737670299
+          },
+          "8": {
+            "by_source": {
+              "4910385": 2.341817173301471,
+              "11959333": 3.7480472754820893,
+              "6871281": 2.0809670675280714,
+              "1835524": 2.9041976296302745
+            },
+            "median": 2.623007401465873,
+            "worst": 3.7480472754820893,
+            "best": 2.0809670675280714
+          }
+        }
+      }
+    },
+    "mesh26-z": {
+      "acic_seconds": {
+        "1": 3.1991085,
+        "8": 1.0033775
+      },
+      "eight_vs_one": {
+        "by_source": {
+          "35305828": 0.4147569895470973,
+          "44514593": 0.32337426016320603,
+          "41458868": 0.29357606754032717,
+          "21824001": 0.29096639132597324
+        },
+        "median": 0.3084751638517666,
+        "worst": 0.4147569895470973,
+        "best": 0.29096639132597324
+      },
+      "gap_comparisons": {
+        "22218622": {
+          "1": {
+            "by_source": {
+              "35305828": 5.9045995785252,
+              "44514593": 8.314343948937477,
+              "41458868": 6.763978153092375,
+              "21824001": 8.6388353430318
+            },
+            "median": 7.539161051014926,
+            "worst": 8.6388353430318,
+            "best": 5.9045995785252
+          },
+          "8": {
+            "by_source": {
+              "35305828": 2.4489739456701716,
+              "44514593": 2.688644823230085,
+              "41458868": 1.9857421071135446,
+              "21824001": 2.5136107450212393
+            },
+            "median": 2.4812923453457056,
+            "worst": 2.688644823230085,
+            "best": 1.9857421071135446
+          }
+        },
+        "22222844": {
+          "1": {
+            "by_source": {
+              "35305828": 5.969798529030607,
+              "44514593": 8.130029424200337,
+              "41458868": 7.234564362268077,
+              "21824001": 8.517018826376246
+            },
+            "median": 7.6822968932342075,
+            "worst": 8.517018826376246,
+            "best": 5.969798529030607
+          },
+          "8": {
+            "by_source": {
+              "35305828": 2.476015666103424,
+              "44514593": 2.6290422501558797,
+              "41458868": 2.123894955842057,
+              "21824001": 2.4781662327660725
+            },
+            "median": 2.477090949434748,
+            "worst": 2.6290422501558797,
+            "best": 2.123894955842057
+          }
+        }
+      }
+    },
+    "road-usa-z": {
+      "acic_seconds": {
+        "1": 1.25733,
+        "8": 0.730424
+      },
+      "eight_vs_one": {
+        "by_source": {
+          "8718204": 0.6271763298155387,
+          "22613654": 0.5475446145996306,
+          "10159848": 0.6556979615948528,
+          "3073839": 0.5198762064413446
+        },
+        "median": 0.5873604722075847,
+        "worst": 0.6556979615948528,
+        "best": 0.5198762064413446
+      },
+      "gap_comparisons": {
+        "22218622": {
+          "1": {
+            "by_source": {
+              "8718204": 6.360867578053577,
+              "22613654": 5.87945871869223,
+              "10159848": 6.472887639324547,
+              "3073839": 8.240864712941509
+            },
+            "median": 6.416877608689062,
+            "worst": 8.240864712941509,
+            "best": 5.87945871869223
+          },
+          "8": {
+            "by_source": {
+              "8718204": 3.9893855820462973,
+              "22613654": 3.2192659581807748,
+              "10159848": 4.244259230737624,
+              "3073839": 4.284229484760371
+            },
+            "median": 4.116822406391961,
+            "worst": 4.284229484760371,
+            "best": 3.2192659581807748
+          }
+        },
+        "22222844": {
+          "1": {
+            "by_source": {
+              "8718204": 5.464486714832999,
+              "22613654": 5.2146860065437215,
+              "10159848": 5.6395990753697856,
+              "3073839": 6.970169546844363
+            },
+            "median": 5.552042895101392,
+            "worst": 6.970169546844363,
+            "best": 5.2146860065437215
+          },
+          "8": {
+            "by_source": {
+              "8718204": 3.4271967221347306,
+              "22613654": 2.8552732397110687,
+              "10159848": 3.697873617932185,
+              "3073839": 3.623625302266433
+            },
+            "median": 3.525411012200582,
+            "worst": 3.697873617932185,
+            "best": 2.8552732397110687
+          }
+        }
+      }
+    },
+    "road-usa-w4-z": {
+      "acic_seconds": {
+        "1": 1.1992639999999999,
+        "8": 0.744314
+      },
+      "eight_vs_one": {
+        "by_source": {
+          "8718204": 0.6338322779802735,
+          "22613654": 0.550765164755531,
+          "10159848": 0.6377348318820538,
+          "3073839": 0.6059365054988184
+        },
+        "median": 0.619884391739546,
+        "worst": 0.6377348318820538,
+        "best": 0.550765164755531
+      },
+      "gap_comparisons": {
+        "22222845": {
+          "1": {
+            "by_source": {
+              "8718204": 5.662763704400597,
+              "22613654": 5.331543302178999,
+              "10159848": 5.582152117712614,
+              "3073839": 6.401694323806901
+            },
+            "median": 5.622457911056605,
+            "worst": 6.401694323806901,
+            "best": 5.331543302178999
+          },
+          "8": {
+            "by_source": {
+              "8718204": 3.589242418424243,
+              "22613654": 2.936428325225864,
+              "10159848": 3.5599328423295042,
+              "3073839": 3.879020287839175
+            },
+            "median": 3.5745876303768735,
+            "worst": 3.879020287839175,
+            "best": 2.936428325225864
+          }
+        }
+      }
+    }
+  },
+  "rmat": {
+    "22222846": {
+      "auto_vs_off_paired": {
+        "by_source": {
+          "9229996": 1.0856064235421063,
+          "14868552": 1.0381371321274482,
+          "11020011": 0.9965289829920165,
+          "8530897": 1.1251304194651333
+        },
+        "median": 1.0618717778347773,
+        "worst": 1.1251304194651333,
+        "best": 0.9965289829920165
+      },
+      "auto_vs_off_source_medians": {
+        "by_source": {
+          "9229996": 1.1138722099429386,
+          "14868552": 1.0381371321274482,
+          "11020011": 1.0082984709256655,
+          "8530897": 1.1361558262524474
+        },
+        "median": 1.0760046710351934,
+        "worst": 1.1361558262524474,
+        "best": 1.0082984709256655
+      }
+    },
+    "22222847": {
+      "auto_vs_off_paired": {
+        "by_source": {
+          "9229996": 1.0963314991591462,
+          "14868552": 1.0135684291949831,
+          "11020011": 1.0930301775644888,
+          "8530897": 1.0951772988149182
+        },
+        "median": 1.0941037381897036,
+        "worst": 1.0963314991591462,
+        "best": 1.0135684291949831
+      },
+      "auto_vs_off_source_medians": {
+        "by_source": {
+          "9229996": 1.0570831623849961,
+          "14868552": 1.0135684291949831,
+          "11020011": 1.0777771065431136,
+          "8530897": 1.0973300901929888
+        },
+        "median": 1.0674301344640549,
+        "worst": 1.0973300901929888,
+        "best": 1.0135684291949831
+      }
+    }
+  }
+}

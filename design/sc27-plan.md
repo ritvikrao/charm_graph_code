@@ -6,6 +6,26 @@ references are in github.com/UIUC-PPL/htram.*
 
 ## Status
 
+**Current decision, 2026-09-19 (supersedes the dated schedules below):** all
+six one-node follow-up jobs completed. The L1/L2 reader candidate is much
+faster than frozen ACIC but remains 2.5–4.1 times slower at eight nodes than
+tuned one-node GAPBS on the high-diameter targets. It beats its own one-node
+runs. C6's measured target cells fail; the full two-allocation acceptance and
+regression protocol remains incomplete. Implemented L3 has not established a
+live-feedback gain and is off in this candidate. Dense all-auto mode also
+shows repeat slowdown relative to explicit off.
+
+The [completed-job report](ipdps27-onenode-results-22222842.md) records the
+evidence. The [revised one-node plan](ipdps27-onenode-gap.md) now controls next
+work: R0 auto-mode isolation/repair, R1 matched work/cost attribution, and at
+most one justified R2 intervention, capped at 2,000 additional SU combined.
+L4 and full E1/E3 retakes are conditional. No new jobs are implied by this
+review. The current performance-led IPDPS paper is **no-go as-is** under the
+unchanged author gate. Failure does not automatically trigger a larger SC27
+campaign: first select a falsifiable new mechanism or characterization claim
+and its evidence gate. Earlier chronology below is retained as provenance;
+it does not override this decision or promise that L3 will establish C3c.
+
 Steps 1–7 (SSSP development) are complete. The [7.5 comparison
 pilot](step75-comparisons.md) is complete but **cannot be quoted**: 7.6c found
 that process count dominates every other deployment axis by 7–20× (one node,
