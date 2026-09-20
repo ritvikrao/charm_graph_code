@@ -7,10 +7,22 @@ then conditional dense-mode cleanup.
 
 ## Status
 
-R0 instrumentation and its correctness checks are implemented. The full-node
-measurement panel is queued; R0's final attribution is not yet complete.
+R0 instrumentation and its correctness checks are implemented. Both one-node
+allocations completed and their raw results passed validation; the two
+eight-node allocations remain queued. R0's final attribution is not yet complete.
 R1 has a leading hypothesis but has not been selected or implemented. R2
 remains conditional on a promising R1. No defaults changed.
+
+[The one-node analysis](ipdps27-r0-one-node-results.md) confirms substantial
+repeated expansions in two independent allocations: production ACIC makes
+8.51–8.66 attempts per stored directed edge on mesh26 and 11.25–11.58 on
+road, versus GAPBS's diagnostic 2.61 and 1.44–1.45. Queue operations also
+account for an estimated 43–50% of measured solver work. Tiling improves
+one-node time by 43–45%; it adds little mesh work and reduces road work.
+The report retains an ACIC control outlier and a GAPBS timing outlier.
+All 168 solves (120 ACIC, 48 GAPBS, including warmups) passed full digests;
+all 72 diagnostic solves passed queue accounting. The two completed
+allocations consumed 22.649 allocated CPU-hours.
 
 The whole-node scheduler initially estimated several hours of waiting. The
 original pending reservations 22237631–22237634 were cancelled without running
@@ -19,12 +31,12 @@ sources after one CSR load, with identical batching for production, repeated
 control and diagnostic variants. This cuts launch/read overhead and reduces
 the aggregate wall-time-limit exposure from 537.6 to **256 SU**.
 
-| Job | Role | Wall-time limit | Limit in CPU-hours |
-|---|---|---|---:|
-| 22237670 | One node, allocation A, plus full-node GAPBS | 12 minutes | 25.6 |
-| 22237671 | One node, allocation B, plus full-node GAPBS | 12 minutes | 25.6 |
-| 22237672 | Eight nodes, allocation A | 6 minutes | 102.4 |
-| 22237673 | Eight nodes, allocation B | 6 minutes | 102.4 |
+| Job | Role | Wall-time limit | Limit in CPU-hours | Status |
+|---|---|---|---:|---|
+| 22237670 | One node, allocation A, plus full-node GAPBS | 12 minutes | 25.6 | Completed, cn132 |
+| 22237671 | One node, allocation B, plus full-node GAPBS | 12 minutes | 25.6 | Completed, cn112 |
+| 22237672 | Eight nodes, allocation A | 6 minutes | 102.4 | Pending, priority |
+| 22237673 | Eight nodes, allocation B | 6 minutes | 102.4 | Pending, priority |
 
 Graphs: `mesh26-z`, `road-usa-z`. Two training sources, warmup and two timed
 repetitions. ACIC uses eight processes of fifteen workers per physical node.

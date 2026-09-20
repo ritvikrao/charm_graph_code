@@ -111,6 +111,14 @@ decision. [R0 implementation and measurement status](ipdps27-r0-progress.md)
 records completed checks and pending jobs. Stop with a results update after
 R0–R2; R3 requires the author's subsequent decision.
 
+Both one-node R0 allocations have now completed: the
+[analysis](ipdps27-r0-one-node-results.md) finds about 3.3× GAPBS's edge
+attempts on mesh26 and 7.8–8.0× on road, plus substantial queue cost.
+Tiling still improves one-node time by 43–45%. Two timing outliers remain
+in the data. Incorporate the pending eight-node measurements before the
+R1 selection; no intervention or acceptance gate changes from this interim
+result alone.
+
 Each implementation step gets a separate commit, correctness checks and a
 paired comparison. Training sources select parameters; held-out sources
 judge a frozen policy. Do not tune a graph-name table against these results.
