@@ -649,10 +649,11 @@ enum {
   STAT_IDLE_TSC,      // scheduler idle, less the work idle callbacks did
   STAT_SAME_PE_CHANGES,
   STAT_CROSS_PE_CHANGES,
-  STAT_END
+  STAT_COST_METRICS,
+  STAT_END = STAT_COST_METRICS + work_cost::COUNT
 };
 
-#if defined(ACIC_DIAG) || defined(ACIC_COMM_SHARE)
+#if defined(ACIC_DIAG) || defined(ACIC_COMM_SHARE) || defined(ACIC_WORK_COST)
 const int stat_count = STAT_END;
 #elif defined(PAPI)
 const int stat_count = STAT_INSTRUCTIONS + 1;
@@ -2651,6 +2652,11 @@ public:
             << endl;
     }
 #endif
+#ifdef ACIC_WORK_COST
+    CkPrintf("%s\n", work_cost::record(msg_stats + STAT_COST_METRICS).c_str());
+    CkPrintf("WORK_CLOCK window_ticks=%ld window_us=%ld\n",
+             msg_stats[STAT_WINDOW_TSC], msg_stats[STAT_WINDOW_US]);
+#endif
     if (lazy_active())
       ckout << "Lazy heavy: " << msg_stats[STAT_TOKENS] << " tokens, "
             << msg_stats[STAT_TOKENS_STALE] << " stale, per vertex: "
@@ -3628,6 +3634,9 @@ public:
   }
 
   void reset_for_source() {
+#ifdef ACIC_WORK_COST
+    work_cost::started = false;
+#endif
     CkAssert(pq.empty() && deferred_updates.empty());
     if (process_share_active()) CkAssert(control_local->work.empty());
     for (int b = 0; b < HISTO_BUCKET_COUNT; ++b) {
@@ -3673,6 +3682,9 @@ public:
   }
 
   void start_papi() {
+#ifdef ACIC_WORK_COST
+    work_cost::ensure_start(CkMyPe());
+#endif
 #ifdef PAPI
     acic_prof::start(CkMyPe(), CkMyPe() == CkNodeFirst(CkMyNode()));
 #endif
@@ -4067,6 +4079,7 @@ public:
    * lazy_cut.
    */
   void generate_updates(long local_index, bool bfs) {
+    if (!bfs) COST_ADD(EXPANSIONS, 1);
 #ifdef ACIC_DIAG
     if (!bfs) {
       const cost source_distance = distances[local_index];
@@ -4160,6 +4173,7 @@ public:
   void send_relaxations(const Edge *adjacency, long first, long last,
                         cost source_distance, bool bfs) {
     const long degree = last;
+    if (!bfs) COST_ADD(EDGE_ATTEMPTS, last - first);
 #ifdef ACIC_DIAG
     const double heavy_cut = 1.0 / bucket_multiplier;
 #endif
@@ -4207,6 +4221,11 @@ public:
       // The destination is looked up once here and handed to the library,
       // which would otherwise look it up again through get_dest_proc.
       const int dest_pe = get_dest_proc_fast(update_vertex(new_update));
+#ifdef ACIC_WORK_COST
+      if (CkNodeOf(dest_pe) == CkMyNode()) COST_ADD(INTRA_PROCESS, 1);
+      else if (CmiPhysicalNodeID(dest_pe) == CmiPhysicalNodeID(my_pe)) COST_ADD(INTRA_NODE, 1);
+      else COST_ADD(INTER_NODE, 1);
+#endif
 #ifdef ACIC_IPDPS_DIAG
       if (dest_pe != my_pe) new_update.dest_vertex |= UPDATE_CROSS_PE_BIT;
 #endif
@@ -4281,11 +4300,13 @@ public:
 #endif
     bool changed = false;
     while (u.distance < old) {
+      COST_ADD(CAS_ATTEMPTS, 1);
       if (__atomic_compare_exchange_n(address, &old, u.distance, false,
                                       __ATOMIC_RELAXED, __ATOMIC_RELAXED)) {
         changed = true;
         break;
       }
+      COST_ADD(CAS_FAILURES, 1);
     }
     updates_noted++;
     if (changed) {
@@ -4302,6 +4323,7 @@ public:
         const long original_bucket = update_overflowed(u)
             ? std::numeric_limits<long>::max()
             : (long)((double)u.distance * bucket_multiplier);
+        COST_ADD(QUEUE_PUSHES, 1);
         control_local->work.push(CkMyRank(), u, original_bucket);
         return; // The worker that expands (or rejects) it retires its charge.
       }
@@ -4323,11 +4345,16 @@ public:
            [this](const Update &v) {
              return !created_beyond_my_clamp(v) && bucket_of(v) <= heap_threshold;
            }, u)) {
+#ifdef ACIC_WORK_COST
+      work_cost::ensure_start(CkMyPe());
+#endif
       ++processed;
+      COST_ADD(QUEUE_POPS, 1);
       const int bucket = bucket_of(u);
       auto &part = process_partition(update_vertex(u));
       const long index = update_vertex(u) - part.first;
       if (u.distance == __atomic_load_n(part.distances + index, __ATOMIC_RELAXED)) {
+        COST_ADD(EXPANSIONS, 1);
 #ifdef ACIC_DIAG
         expansions++;
         const double lead = (double)u.distance * bucket_multiplier -
@@ -4340,6 +4367,7 @@ public:
         // through the adjacency scan. A concurrent improvement queues new work.
         send_relaxations(part.graph->edges(index), 0, part.graph->degree(index), u.distance, false);
       } else {
+        COST_ADD(STALE_POPS, 1);
         rejected_updates++;
       }
       wasted_updates++;
@@ -4357,6 +4385,9 @@ public:
    * Takes a distance update and immediately adds it to the local heap/pq
    */
   inline void process_update(Update new_vertex_and_distance) {
+#ifdef ACIC_WORK_COST
+    work_cost::ensure_start(CkMyPe());
+#endif
     if (process_share_active()) {
       process_shared_update(new_vertex_and_distance);
       return;
@@ -4406,6 +4437,7 @@ public:
       updates_noted++;
       int pq_bucket;
       if (local_graph.degree(local_index) > 0) {
+        COST_ADD(QUEUE_PUSHES, 1);
 #ifdef PQ_EDGE_DIST
         pq_bucket = get_histo_bucket(
             local_graph.edges(local_index)[0].distance + this_cost);
@@ -4480,10 +4512,12 @@ public:
         cost new_distance = new_vertex_and_distance.distance;
         int this_histo_bucket = bucket_of(new_vertex_and_distance);
         long local_index = dest_vertex - start_vertex;
+        COST_ADD(QUEUE_POPS, 1);
         if (new_distance == distances[local_index]) {
           // for all neighbors
           generate_updates(local_index, false);
         } else {
+          COST_ADD(STALE_POPS, 1);
           rejected_updates++;
         }
         wasted_updates++;
@@ -4519,6 +4553,7 @@ public:
         updates_processed_locally++;
         continue;
       }
+      COST_ADD(QUEUE_POPS, 1);
       if (dest_vertex >= partition_index[thisIndex] &&
           dest_vertex < partition_index[thisIndex + 1]) {
         long local_index = dest_vertex - start_vertex;
@@ -4526,6 +4561,7 @@ public:
         if (new_distance == distances[local_index]) {
           generate_updates(local_index, false);
         } else {
+          COST_ADD(STALE_POPS, 1);
           rejected_updates++;
         }
       }
@@ -4815,6 +4851,12 @@ public:
     const long long instructions = acic_prof::stop(CkMyPe());
 #endif
     std::vector<long> msg_stats(stat_count, 0);
+#ifdef ACIC_WORK_COST
+    work_cost::stop();
+    work_cost::counts[work_cost::CHANGES] = distance_changes;
+    std::copy(work_cost::counts, work_cost::counts + work_cost::COUNT,
+              msg_stats.begin() + STAT_COST_METRICS);
+#endif
 #ifdef ACIC_COMM_SHARE
     msg_stats[STAT_WINDOW_TSC] = (long)(__rdtsc() - comm_share::window_tsc0);
     msg_stats[STAT_WINDOW_US] =

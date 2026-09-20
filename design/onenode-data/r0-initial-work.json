@@ -1,0 +1,847 @@
+{
+  "status": "R0 full-node panel pending; R1/R2 not selected or implemented; R3 requires user decision",
+  "prior_production": [
+    {
+      "graph": "mesh24-z",
+      "vertices": 16777216,
+      "arcs": 67092480,
+      "source_medians": {
+        "1": {
+          "4910385": {
+            "attempts": 448285667,
+            "seconds": 0.820861
+          },
+          "11959333": {
+            "attempts": 595430353,
+            "seconds": 1.133907
+          },
+          "6871281": {
+            "attempts": 343138393,
+            "seconds": 0.644647
+          },
+          "1835524": {
+            "attempts": 618441279,
+            "seconds": 1.058789
+          }
+        },
+        "8": {
+          "4910385": {
+            "attempts": 1175366454,
+            "seconds": 0.344574
+          },
+          "11959333": {
+            "attempts": 1411784055,
+            "seconds": 0.396398
+          },
+          "6871281": {
+            "attempts": 959506682,
+            "seconds": 0.309272
+          },
+          "1835524": {
+            "attempts": 1484568642,
+            "seconds": 0.392674
+          }
+        }
+      },
+      "jobs": {
+        "1": 22222843,
+        "8": 22222842
+      }
+    },
+    {
+      "graph": "mesh26-z",
+      "vertices": 67108864,
+      "arcs": 268402688,
+      "source_medians": {
+        "1": {
+          "35305828": {
+            "attempts": 1916323308,
+            "seconds": 2.367285
+          },
+          "44514593": {
+            "attempts": 2801378589,
+            "seconds": 3.524257
+          },
+          "41458868": {
+            "attempts": 1951665679,
+            "seconds": 2.875793
+          },
+          "21824001": {
+            "attempts": 2850485939,
+            "seconds": 3.522424
+          }
+        },
+        "8": {
+          "35305828": {
+            "attempts": 5767998377,
+            "seconds": 0.981848
+          },
+          "44514593": {
+            "attempts": 6995252217,
+            "seconds": 1.139654
+          },
+          "41458868": {
+            "attempts": 5010805233,
+            "seconds": 0.844264
+          },
+          "21824001": {
+            "attempts": 6394265765,
+            "seconds": 1.024907
+          }
+        }
+      },
+      "jobs": {
+        "1": 22222843,
+        "8": 22222842
+      }
+    },
+    {
+      "graph": "road-usa-z",
+      "vertices": 23947347,
+      "arcs": 57708624,
+      "source_medians": {
+        "1": {
+          "8718204": {
+            "attempts": 727694494,
+            "seconds": 1.390644
+          },
+          "22613654": {
+            "attempts": 502646975,
+            "seconds": 1.034807
+          },
+          "10159848": {
+            "attempts": 534665806,
+            "seconds": 1.124016
+          },
+          "3073839": {
+            "attempts": 677158185,
+            "seconds": 1.392318
+          }
+        },
+        "8": {
+          "8718204": {
+            "attempts": 3749452749,
+            "seconds": 0.872179
+          },
+          "22613654": {
+            "attempts": 2088147630,
+            "seconds": 0.566603
+          },
+          "10159848": {
+            "attempts": 2855465730,
+            "seconds": 0.737015
+          },
+          "3073839": {
+            "attempts": 2875196331,
+            "seconds": 0.723833
+          }
+        }
+      },
+      "jobs": {
+        "1": 22222843,
+        "8": 22222842
+      }
+    },
+    {
+      "graph": "road-usa-w4-z",
+      "vertices": 23947347,
+      "arcs": 57708624,
+      "source_medians": {
+        "1": {
+          "8718204": {
+            "attempts": 737722480,
+            "seconds": 1.440908
+          },
+          "22613654": {
+            "attempts": 501285818,
+            "seconds": 1.055655
+          },
+          "10159848": {
+            "attempts": 544701213,
+            "seconds": 1.109251
+          },
+          "3073839": {
+            "attempts": 679151005,
+            "seconds": 1.289277
+          }
+        },
+        "8": {
+          "8718204": {
+            "attempts": 3803962089,
+            "seconds": 0.913294
+          },
+          "22613654": {
+            "attempts": 2173596076,
+            "seconds": 0.581418
+          },
+          "10159848": {
+            "attempts": 2810265026,
+            "seconds": 0.707408
+          },
+          "3073839": {
+            "attempts": 2970733972,
+            "seconds": 0.78122
+          }
+        }
+      },
+      "jobs": {
+        "1": 22222843,
+        "8": 22222842
+      }
+    }
+  ],
+  "gap_shared_node_structural_only": {
+    "22237693": [
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": -1,
+        "variant": "production",
+        "seconds": 0.217020255,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": -1,
+        "variant": "diagnostic",
+        "seconds": 0.24031188,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83797051,
+          "expansions": 33247688,
+          "changes": 33938218,
+          "queue_pushes": 33938218,
+          "queue_pops": 33938218,
+          "stale_pops": 690530,
+          "cas_attempts": 33949448,
+          "cas_failures": 11231,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 14966109992,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": 0,
+        "variant": "diagnostic",
+        "seconds": 0.247277762,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83769880,
+          "expansions": 33237748,
+          "changes": 33925377,
+          "queue_pushes": 33925377,
+          "queue_pops": 33925377,
+          "stale_pops": 687629,
+          "cas_attempts": 33936559,
+          "cas_failures": 11183,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 15416210873,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": 0,
+        "variant": "production",
+        "seconds": 0.222120982,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": 1,
+        "variant": "production",
+        "seconds": 0.218716473,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": 1,
+        "variant": "diagnostic",
+        "seconds": 0.230518394,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83816815,
+          "expansions": 33257263,
+          "changes": 33948437,
+          "queue_pushes": 33948437,
+          "queue_pops": 33948437,
+          "stale_pops": 691174,
+          "cas_attempts": 33959647,
+          "cas_failures": 11211,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 14355512219,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": -1,
+        "variant": "production",
+        "seconds": 0.279995172,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": -1,
+        "variant": "diagnostic",
+        "seconds": 0.289960611,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83238375,
+          "expansions": 33055602,
+          "changes": 33730314,
+          "queue_pushes": 33730314,
+          "queue_pops": 33730314,
+          "stale_pops": 674712,
+          "cas_attempts": 33742829,
+          "cas_failures": 12516,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 18141403226,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": 0,
+        "variant": "diagnostic",
+        "seconds": 0.386821035,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83243423,
+          "expansions": 33059675,
+          "changes": 33733872,
+          "queue_pushes": 33733872,
+          "queue_pops": 33733872,
+          "stale_pops": 674197,
+          "cas_attempts": 33745191,
+          "cas_failures": 11320,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 23496924940,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": 0,
+        "variant": "production",
+        "seconds": 0.275823852,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": 1,
+        "variant": "production",
+        "seconds": 0.279389042,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": 1,
+        "variant": "diagnostic",
+        "seconds": 0.301151965,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn002",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83227959,
+          "expansions": 33051072,
+          "changes": 33725278,
+          "queue_pushes": 33725278,
+          "queue_pops": 33725278,
+          "stale_pops": 674206,
+          "cas_attempts": 33737701,
+          "cas_failures": 12424,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 18858283095,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      }
+    ],
+    "22237694": [
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": -1,
+        "variant": "production",
+        "seconds": 0.213457898,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": -1,
+        "variant": "diagnostic",
+        "seconds": 0.225702144,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83902812,
+          "expansions": 33285954,
+          "changes": 33978580,
+          "queue_pushes": 33978580,
+          "queue_pops": 33978580,
+          "stale_pops": 692626,
+          "cas_attempts": 33989649,
+          "cas_failures": 11070,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 14157531717,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": 0,
+        "variant": "diagnostic",
+        "seconds": 0.229481341,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83840222,
+          "expansions": 33262333,
+          "changes": 33955492,
+          "queue_pushes": 33955492,
+          "queue_pops": 33955492,
+          "stale_pops": 693159,
+          "cas_attempts": 33966429,
+          "cas_failures": 10938,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 14363669649,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": 0,
+        "variant": "production",
+        "seconds": 0.211551789,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": 1,
+        "variant": "production",
+        "seconds": 0.223736011,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 5620086,
+        "role": "tune",
+        "rep": 1,
+        "variant": "diagnostic",
+        "seconds": 0.246068681,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83816756,
+          "expansions": 33254612,
+          "changes": 33945314,
+          "queue_pushes": 33945314,
+          "queue_pops": 33945314,
+          "stale_pops": 690702,
+          "cas_attempts": 33956398,
+          "cas_failures": 11085,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 15107782890,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": -1,
+        "variant": "production",
+        "seconds": 0.324542443,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": -1,
+        "variant": "diagnostic",
+        "seconds": 0.290188887,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83303088,
+          "expansions": 33079637,
+          "changes": 33756667,
+          "queue_pushes": 33756667,
+          "queue_pops": 33756667,
+          "stale_pops": 677030,
+          "cas_attempts": 33768533,
+          "cas_failures": 11867,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 18261745876,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": 0,
+        "variant": "diagnostic",
+        "seconds": 0.295114789,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83243096,
+          "expansions": 33059837,
+          "changes": 33735739,
+          "queue_pushes": 33735739,
+          "queue_pops": 33735739,
+          "stale_pops": 675902,
+          "cas_attempts": 33747879,
+          "cas_failures": 12141,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 18534617675,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": 0,
+        "variant": "production",
+        "seconds": 0.272030066,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": 1,
+        "variant": "production",
+        "seconds": 0.275362364,
+        "binary_sha256": "84dc8f7cf176499b97470b6a4f7a4a289128662ec34fb65bff99684a8d11c629",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624
+      },
+      {
+        "graph": "road-usa-z",
+        "source": 1294456,
+        "role": "tune",
+        "rep": 1,
+        "variant": "diagnostic",
+        "seconds": 0.285356643,
+        "binary_sha256": "ed900c0933ce387c2bb03f2c137358aa7010e65c15909f5a859751fe095c52fc",
+        "threads": 64,
+        "delta": 32768,
+        "valid": true,
+        "hosts": "cn004",
+        "reachable_vertices": 23947347,
+        "reachable_arcs": 57708624,
+        "counters": {
+          "sample_period": 1024,
+          "edge_attempts": 83273233,
+          "expansions": 33070397,
+          "changes": 33748200,
+          "queue_pushes": 33748200,
+          "queue_pops": 33748200,
+          "stale_pops": 677803,
+          "cas_attempts": 33760158,
+          "cas_failures": 11959,
+          "intra_process": 0,
+          "intra_node": 0,
+          "inter_node": 0,
+          "queue_probes": 0,
+          "lock_misses": 0,
+          "cpu_ns": 17911662851,
+          "push_calls": 0,
+          "push_samples": 0,
+          "push_ticks": 0,
+          "pop_calls": 0,
+          "pop_samples": 0,
+          "pop_ticks": 0
+        }
+      }
+    ]
+  },
+  "pending_r0_jobs": {
+    "one_node": [
+      22237670,
+      22237671
+    ],
+    "eight_nodes": [
+      22237672,
+      22237673
+    ]
+  },
+  "verification_pass_job": 22237625,
+  "verification_failed_counter_version_job": 22237563
+}

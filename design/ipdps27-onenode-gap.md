@@ -106,6 +106,11 @@ use these same inputs, sources, layouts and executable variants.
 
 ## 4. Revised steps and decision gates
 
+**Execution, 2026-09-20:** the author authorized R0–R2 and reserved the R3
+decision. [R0 implementation and measurement status](ipdps27-r0-progress.md)
+records completed checks and pending jobs. Stop with a results update after
+R0–R2; R3 requires the author's subsequent decision.
+
 Each implementation step gets a separate commit, correctness checks and a
 paired comparison. Training sources select parameters; held-out sources
 judge a frozen policy. Do not tune a graph-name table against these results.

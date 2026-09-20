@@ -510,3 +510,16 @@ isolates/addresses the dense auto-mode penalty only after a promising R1;
 in the preceding review entry. RMAT cleanup does not block diagnosis or the
 high-diameter intervention, and is not pursued in this sprint if that route
 stops. The 2,000-SU combined cap and all acceptance thresholds are unchanged.
+
+## R0 implementation started (2026-09-20)
+
+The author authorized R0–R2, retaining a decision before R3. Lightweight
+per-worker accounting, sampled queue timing, a pinned GAPBS counter build,
+counter/digest checks and the bounded two-allocation harness are implemented.
+Verification 22237625 passed; full-node jobs 22237670–22237673 are queued.
+The exact production retirement ledger already shows eight/one-node work
+growth of 2.53 on mesh26 and 4.70 on road. Two structural GAPBS allocations
+agree at about 1.44–1.45 scans per road arc. The complete status, methodology,
+instrumentation startup fix, queue delays and pending decision are recorded
+in [the R0 progress report](ipdps27-r0-progress.md). R0 attribution is still
+pending the full panel; R1/R2 have not been implemented, and R3 is not started.

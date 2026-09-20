@@ -42,6 +42,11 @@ PY
 FLAGS=
 if [ "$KIND" = diagnostic ]; then
   FLAGS='-DACIC_IPDPS_DIAG -DACIC_DIAG -DACIC_COMM_SHARE -DVCOUNT'
+elif [ "$KIND" = work-cost ]; then
+  FLAGS='-DACIC_WORK_COST -DACIC_COMM_SHARE'
+elif [ "$KIND" != production ]; then
+  echo "Unknown build kind: $KIND" >&2
+  exit 2
 fi
 make -C "$WORK/src" sssp_smp CHARMC_SMP="$CHARMC $FLAGS" HTRAM_DIR="$WORK/htram" \
   > "$WORK/build.log" 2>&1 || { tail -40 "$WORK/build.log"; exit 1; }

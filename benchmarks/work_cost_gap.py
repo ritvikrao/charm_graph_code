@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""R0 GAPBS reference: frozen tuning, interleaved production/counter builds."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import re
+from check_onenode_digest import check
+from work_cost_report import counters
+
+
+def main():
+    import sys
+    root = Path(sys.argv[1])
+    graphs = set(sys.argv[2].split(',')) if len(sys.argv) > 2 else {'mesh26-z', 'road-usa-z'}
+    out = root / 'logs' / f'GAP-R0-{os.environ["SLURM_JOB_ID"]}'
+    out.mkdir(exist_ok=False)
+    env = dict(os.environ, SLURM_MPI_TYPE='cray_shasta', OMP_PROC_BIND='close', OMP_PLACES='cores')
+    with (out / 'runs.jsonl').open('w', buffering=1) as stream:
+        for graph, threads, delta in [('mesh26-z', 128, 4096), ('road-usa-z', 64, 32768)]:
+            if graph not in graphs:
+                continue
+            ref = root / 'graphs' / f'{graph}.reference.txt'
+            sources = [r for l in ref.read_text().splitlines() for r in [l.split()] if len(r) > 1 and r[1] == 'tune']
+            for index, source in enumerate(sources):
+                for rep in range(-1, 2):
+                    labels = ['production', 'diagnostic'] if rep % 2 else ['diagnostic', 'production']
+                    for label in labels:
+                        binary = root / ('bin/gap_sssp' if label == 'production' else 'build/gap_r0/gap_work_cost')
+                        log = out / f'{graph}-{label}-s{index}-r{rep}.out'
+                        command = ['srun', '-N', '1', '-n', '1', '-c', str(threads), '--cpu-bind=cores',
+                                   '--kill-on-bad-exit=1', str(binary), str(root/'graphs'/f'{graph}.wsg'), source[0], str(delta)]
+                        with log.open('w') as f:
+                            subprocess.run(command, env=dict(env, OMP_NUM_THREADS=str(threads)),
+                                           stdout=f, stderr=subprocess.STDOUT, check=True, timeout=180)
+                        check(ref, source[0], log)
+                        text = log.read_text()
+                        row = dict(graph=graph, source=int(source[0]), role='tune', rep=rep, variant=label,
+                                   seconds=float(re.search(r'BENCH source=\d+ solve_seconds=([\d.eE+-]+)', text)[1]),
+                                   binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),
+                                   threads=threads, delta=delta, valid=True, hosts=os.environ['SLURM_JOB_NODELIST'],
+                                   reachable_vertices=int(source[4]), reachable_arcs=int(source[7]))
+                        if label == 'diagnostic':
+                            row['counters'] = counters(text)
+                        stream.write(json.dumps(row) + '\n')
+    (out/'complete').write_text('All raw times, digests and counter identities passed.\n')
+
+
+if __name__ == '__main__':
+    main()
