@@ -14,6 +14,18 @@ claim that the current results support submission. See the
 [results](ipdps27-onenode-results-22222842.md) and
 [revised plan](ipdps27-onenode-gap.md).
 
+**2026-09-21 direction under investigation:** use established local execution
+techniques where they help, credit them, and judge a narrower high-diameter
+paper by its distributed contribution. The authorized
+[queue-batching experiment](ipdps27-r1-batch-decision.md) tests local cost;
+it is not itself a novelty or scaling result. A candidate claim is that ACIC's
+distributed control preserves useful parallelism while limiting redundant
+work as node count grows. Establish that with an optimized one-node baseline,
+fixed-size scaling, larger-graph capacity experiments and distributed
+competitors, including an ablation of the claimed control mechanism. Show
+absolute times as well as speedup. Current slack-off results cannot support
+a live-feedback claim. The current submission gate is unchanged.
+
 **Provisional working title:** *Adaptive Message Flow for Asynchronous SSSP on
 High-Diameter Graphs*. "Adaptive" is used in the author's sense (sprint doc
 §1b): real-time control of message flow, from the graph as read and from

@@ -11,6 +11,11 @@ work but substantial queue cost and no reproducible road speedup. Eight-node
 jobs remain queued. R1 has not passed its performance gate. R2 remains
 conditional, and R3 still requires the author's decision.
 
+The author subsequently authorized a bounded one-node queue-batching follow-up.
+Its implementation, checks and submitted jobs are recorded in the
+[batching progress log](ipdps27-r1-batch-progress.md). This does not wait for
+the original eight-node jobs or change the final performance gate.
+
 ## Implementation
 
 `--process-queue local|nearest` defaults to `local`. `ProcessWork` retains
