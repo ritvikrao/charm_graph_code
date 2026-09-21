@@ -7,8 +7,10 @@ correct solves, cancelling all four dependent performance jobs before they
 ran. The diagnostic bug is fixed: replacement verification passed all 88
 solves and both one-node jobs completed with 160 valid performance solves.
 The [one-node audit](ipdps27-r1-one-node-check.md) finds much less repeated
-work but substantial queue cost and no reproducible road speedup. Eight-node
-jobs remain queued. R1 has not passed its performance gate. R2 remains
+work but substantial queue cost and no reproducible road speedup. The
+[eight-node jobs also completed](ipdps27-r1-eight-node-check.md): all 160 solves
+validate, mesh improves 16–18%, but road is 74–82% slower than frozen R0.
+The unbatched R1 policy has not passed its performance gate. R2 remains
 conditional, and R3 still requires the author's decision.
 
 The author subsequently authorized a bounded one-node queue-batching follow-up.
@@ -17,7 +19,8 @@ Its implementation, checks and submitted jobs are recorded in the
 the original eight-node jobs or change the final performance gate.
 That follow-up is now [complete and validated](ipdps27-r1-batch-one-node-results.md):
 batch 8 converts reduced work into 60–61% lower mesh time and 33–35% lower
-road time against frozen R0. Its distributed scaling is still unmeasured.
+road time against frozen R0. Its distributed scaling is still unmeasured;
+the author authorized the [bounded two-node experiment](ipdps27-r1-batch-scaling.md).
 
 ## Implementation
 
@@ -88,15 +91,15 @@ direct-versus-production edge accounting and offered-update topology sums.
 Raw revalidation confirms all 88 serial/parallel digests and all 44 diagnostic
 accounting records, including the eight dense sender-filter cases.
 
-## Queued experiment
+## Completed experiment
 
 | Job | Role | Limit | Current status |
 |---|---|---|---|
 | 22281603 | Correctness, 16 cores | 2 minutes | Completed, cn007, 39 s |
 | 22281605 | One node A | 12 minutes | Completed, cn130, 284 s |
 | 22281606 | One node B | 12 minutes | Completed, cn133, 284 s |
-| 22281608 | Eight nodes A | 6 minutes | Pending |
-| 22281609 | Eight nodes B | 6 minutes | Pending |
+| 22281608 | Eight nodes A | 6 minutes | Completed, 261 s, exit 0 |
+| 22281609 | Eight nodes B | 6 minutes | Completed, 267 s, exit 0 |
 
 Original performance jobs 22276940/22276941/22276942/22276945 were cancelled
 by the failed dependency, consuming zero allocated CPU time. No slow arm

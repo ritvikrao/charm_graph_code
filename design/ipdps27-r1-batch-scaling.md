@@ -74,3 +74,47 @@ unbatched nearest. A win against those slower baselines alone does not meet
 this experiment's objective. C6 and default settings remain unchanged; R2
 remains conditional on a credible route to final acceptance, and R3 still
 requires the author's decision.
+
+## Implementation and submission record
+
+The decision and eight-node audit were committed as `05cc07b`; the harness
+changes are `2387f66`. No solver source or binaries changed. SHA-256 checks
+confirm the exact completed one-node binaries:
+
+| Binary | SHA-256 |
+|---|---|
+| acic_r1_batch | 00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1 |
+| acic_r1_batch_diag | 66bba62a1c69011715edd93653e8aa978b83c84cfd0665eceda2ca1a02b16616 |
+
+The verification script now accepts one or two allocated nodes, checks the
+actual worker layout and source order, and requires positive inter-node work
+in all 90 connected diagnostic solves at two nodes. It records node layout,
+hosts and binary hashes in a manifest. The performance audit adds the explicit
+batch-8 repeated-control comparisons and exposes queue cost, idle share and
+offered inter-node fraction in its saved metrics. Each performance job runs
+that full audit after both graph matrices complete.
+
+Shell and embedded Python syntax checks passed, along with seven report-parser
+tests. Reauditing the completed eight-node data with the extended reporter
+still passes all 160 solves, 32 diagnostic records and 80 launches, with
+identical original metrics, comparisons and raw hashes. The eight-arm config
+was checked for unique labels and an exact repeated candidate. Distributed
+solver verification remains gated on the new compute-node job.
+
+| Job | Role | Reservation | Initial status |
+|---|---|---|---|
+| 22284699 | Two-node correctness, 224 planned solves | 32 total cores, 5 min | Pending, priority |
+| 22284705 | Two-node performance A | 256 total cores, 10 min | Pending, afterok:22284699 |
+| 22284706 | Two-node performance B | 256 total cores, 10 min | Pending, afterok:22284699 |
+
+Both performance jobs use `--kill-on-invalid-dep=yes`. A failed correctness
+gate prevents their execution. A failed/missing/slow performance cell remains
+part of the outcome; it does not justify discarding an allocation or retuning.
+
+Campaign root: `/u/rao1/.tmp/ipdps27-onenode`.
+Frozen harness: `build/r1-batch-2n-harness`, with revision and source-file hash
+inventory. Frozen configuration: `configs/r1-batch-2n.json`, copied from
+[r1-batch-scaling-variants.json](../benchmarks/r1-batch-scaling-variants.json).
+Job logs use the `r1-batch-2n-` prefix; extracted solve logs use the existing
+`AB-GRAPH-2n-JOB` convention. Full per-job audit output is
+`logs/R1-batch-audit-JOB.json`. Preserve all earlier frozen harnesses and logs.

@@ -140,10 +140,12 @@ to improve beyond control variation, inspect the cause before spending on
 larger allocations. Otherwise proceed toward the eight-node scaling/C6 test
 when scheduling permits. Do not retune batch size at each node count.
 
-The original eight-node nearest-1 jobs **22281608/22281609 are still pending**.
-They can measure R1 ordering at scale, but cannot establish scaling for the
-new batching implementation. No new jobs were submitted during this analysis.
-This is the requested results update before expanding the batching campaign.
+The original eight-node nearest-1 jobs **22281608/22281609 were pending when
+this analysis was completed**. They subsequently finished: see the
+[eight-node sanity check](ipdps27-r1-eight-node-check.md). They measure R1
+ordering at scale, but cannot establish scaling for the batching implementation.
+After receiving this results update, the author authorized the
+[bounded two-node batching experiment](ipdps27-r1-batch-scaling.md).
 
 R1 now has a credible one-node candidate. It has **not yet passed its distributed
 performance gate**. Prioritize establishing that scaling before the small RMAT

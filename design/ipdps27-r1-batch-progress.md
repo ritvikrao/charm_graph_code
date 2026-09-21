@@ -61,8 +61,10 @@ comparison with the previous nearest/1 diagnostic costs spans allocations.
 
 The reservation cap is **52 SU**, within the existing R0–R2 2,000-SU budget;
 actual allocated CPU time was **35.627 hours**.
-Existing eight-node jobs 22281608/22281609 remain pending; no new multi-node
-jobs were submitted and one-node progress does not depend on them.
+The original eight-node jobs 22281608/22281609 subsequently completed;
+their [sanity check](ipdps27-r1-eight-node-check.md) confirms correct results
+but severe road work growth and regression for the unbatched policy. The
+author authorized the [two-node batching experiment](ipdps27-r1-batch-scaling.md).
 
 Frozen campaign root: `/u/rao1/.tmp/ipdps27-onenode`.
 Configuration: `configs/r1-batch.json`, copied from
