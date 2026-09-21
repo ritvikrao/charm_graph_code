@@ -70,6 +70,12 @@ The intra-process/intra-node/inter-node counters classify offered edge
 updates **before** transport aggregation or absorption. They are not measured
 network bytes. The final interpretation must preserve this distinction.
 
+2026-09-21 correction: the R1 dense verification exposed that the original
+implementation classified destinations after sender filtering. The diagnostic
+fix moves that classification before the filter. All 96 R0 ACIC diagnostic
+solves were rechecked and had zero sender-filter drops, so their counts and
+the reported R0 results are unaffected. See the [R1 verification audit](ipdps27-r1-progress.md).
+
 The GAPBS diagnostic adds counters to a private copy of the pinned upstream
 `sssp.cc`; bucket fusion, scheduling and distance tests are retained. The
 builder checks every insertion's context, records source/binary hashes and

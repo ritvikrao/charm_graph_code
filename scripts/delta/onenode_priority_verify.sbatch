@@ -19,7 +19,7 @@ import os, re, struct, subprocess, sys
 from pathlib import Path
 root, app = map(Path, sys.argv[1:])
 sys.path.insert(0, str(app/'benchmarks'))
-from work_cost_report import counters, production_attempts
+from work_cost_report import check_work_accounting
 out = root/'logs'/f'R1-verify-{os.environ["SLURM_JOB_ID"]}'
 out.mkdir(exist_ok=False)
 
@@ -65,12 +65,13 @@ def run(binary, share, tile, queue, graph=sparse, sources='0,512,1024,0', extra=
     assert len(chunks)==expected, log
     if 'diag' in binary:
         for chunk in chunks:
-            c = counters(chunk)
-            assert c['edge_attempts']==production_attempts(chunk,n if graph==sparse else 65), log
-            assert sum(c[k] for k in ['intra_process','intra_node','inter_node'])==c['edge_attempts'], log
+            try:
+                check_work_accounting(chunk,n if graph==sparse else 65)
+            except ValueError as error:
+                raise ValueError(f'{log}: {error}') from error
     solves += expected
 
-for binary in ['acic_r1_priority','acic_r1_priority_diag']:
+for binary in ['acic_r1_priority','acic_r1_priority_diag_v2']:
     for share in ['off','on']:
         for tile in ['off','auto']:
             for queue in ['local','nearest']:

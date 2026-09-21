@@ -21,7 +21,7 @@
   },
   {
     "label": "nearest_diag",
-    "binary": "acic_r1_priority_diag",
+    "binary": "acic_r1_priority_diag_v2",
     "work_cost": true,
     "flags": ["--process-share", "auto", "--reader-tile", "auto", "--slack-control", "off", "--process-queue", "nearest"]
   }

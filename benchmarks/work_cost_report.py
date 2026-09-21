@@ -46,6 +46,18 @@ def counters(text):
     return result
 
 
+def check_work_accounting(text, vertices):
+    """Require the direct, retirement and offered-update ledgers to agree."""
+    c = counters(text)
+    ledger = production_attempts(text, vertices)
+    if c['edge_attempts'] != ledger:
+        raise ValueError(f"edge attempts {c['edge_attempts']} != retirement ledger {ledger}")
+    offered = sum(c[k] for k in ('intra_process', 'intra_node', 'inter_node'))
+    if offered != c['edge_attempts']:
+        raise ValueError(f"offered-update topology sum {offered} != edge attempts {c['edge_attempts']}")
+    return c
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('directory', type=Path)
@@ -66,11 +78,9 @@ def main():
         check(reference, row['source'], log)
         ref = next(line.split() for line in reference.read_text().splitlines()
                    if line.split() and line.split()[0] == str(row['source']))
-        c = counters(text)
         meta = (root / 'graphs' / f"{row['graph']}.meta").read_text()
         vertices = int(re.search(r'vertices=(\d+)', meta)[1])
-        if c['edge_attempts'] != production_attempts(text, vertices):
-            raise ValueError(f'{log}: edge scans disagree with existing retirement ledger')
+        c = check_work_accounting(text, vertices)
         comm = fields(text, 'COMM_SHARE')
         times = re.findall(r'Compute time: ([\d.eE+-]+)', text)
         if (len(times) != 1 or not row['valid'] or float(times[0]) != row['seconds']

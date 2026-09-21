@@ -4202,6 +4202,17 @@ public:
       Update new_update;
       new_update.dest_vertex = adjacency[i].end;
       new_update.distance = source_distance + adjacency[i].distance;
+#ifdef ACIC_WORK_COST
+      // Classify every SSSP edge attempt, including those the sender cache
+      // filters below. Production still defers this lookup until after the
+      // filter. Match EDGE_ATTEMPTS by excluding BFS-only scans here too.
+      const int dest_pe = get_dest_proc_fast(update_vertex(new_update));
+      if (!bfs) {
+        if (CkNodeOf(dest_pe) == CkMyNode()) COST_ADD(INTRA_PROCESS, 1);
+        else if (CmiPhysicalNodeID(dest_pe) == CmiPhysicalNodeID(my_pe)) COST_ADD(INTRA_NODE, 1);
+        else COST_ADD(INTER_NODE, 1);
+      }
+#endif
       if (send_filter_on) {
         // The table is read at random; the targets a few edges on are
         // already known, so start those reads now.
@@ -4236,11 +4247,8 @@ public:
       // changeThreshold() admits that bucket.
       // The destination is looked up once here and handed to the library,
       // which would otherwise look it up again through get_dest_proc.
+#ifndef ACIC_WORK_COST
       const int dest_pe = get_dest_proc_fast(update_vertex(new_update));
-#ifdef ACIC_WORK_COST
-      if (CkNodeOf(dest_pe) == CkMyNode()) COST_ADD(INTRA_PROCESS, 1);
-      else if (CmiPhysicalNodeID(dest_pe) == CmiPhysicalNodeID(my_pe)) COST_ADD(INTRA_NODE, 1);
-      else COST_ADD(INTER_NODE, 1);
 #endif
 #ifdef ACIC_IPDPS_DIAG
       if (dest_pe != my_pe) new_update.dest_vertex |= UPDATE_CROSS_PE_BIT;

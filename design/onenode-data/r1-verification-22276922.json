@@ -1,0 +1,78 @@
+{
+  "job": 22276922,
+  "state": "FAILED",
+  "exit_code": "1:0",
+  "host": "cn033",
+  "elapsed_seconds": 30,
+  "allocated_cpu_hours": 0.13333333333333333,
+  "planned_solves": 88,
+  "correct_solves": 80,
+  "diagnostic_queue_and_edge_ledger_pass": 36,
+  "topology_failures": 4,
+  "unexecuted_solves": 8,
+  "performance_jobs_cancelled": [
+    22276940,
+    22276941,
+    22276942,
+    22276945
+  ],
+  "performance_allocated_cpu_hours": 0,
+  "reason": "Destination classification occurred after sender filtering, while edge attempts include filtered scans.",
+  "unaffected_r0_diagnostic_solves": 96,
+  "raw_sha256": {
+    "logs/R1-verify-22276922/acic_r1_priority-auto-auto-local-dense.out": "514afff61ca1397c4aa05b738f8fdcefa327cfa64e0932d54ef980c00372c2a3",
+    "logs/R1-verify-22276922/acic_r1_priority-auto-auto-nearest-dense.out": "ce717cdd75ace01f004bdfd269b2ee411ccc6635fa2dd8ea516676d65034b41f",
+    "logs/R1-verify-22276922/acic_r1_priority-off-auto-local-sparse.out": "17206971f33dc569fc0d06920b28c03bceee9daa6b2086f2a29b1381e748c6ba",
+    "logs/R1-verify-22276922/acic_r1_priority-off-auto-nearest-sparse.out": "25f0e271eea8d84f79781f676e4bd1f30d4b8551e2287ed3256aeb1af9fbb7d4",
+    "logs/R1-verify-22276922/acic_r1_priority-off-off-local-sparse.out": "1d43c5e7fb14711fb633b6d0d43a50e3ea36d617fa4492117f3bc787a3794cce",
+    "logs/R1-verify-22276922/acic_r1_priority-off-off-nearest-sparse.out": "7a0540e1b9608c66b72ebaecb4cad521d5665bb249474e4f2e381be213188f6a",
+    "logs/R1-verify-22276922/acic_r1_priority-on-auto-local-sparse.out": "8abf05f9a6d3b413f6dc60a9abc8cdb1a6ab695917b217532642abf5b8dd7c9f",
+    "logs/R1-verify-22276922/acic_r1_priority-on-auto-nearest-sparse-range.out": "73858350dba15d1a96bca1e9600c3220fc13146b6b7ccf2ec5e372ebcd382fa4",
+    "logs/R1-verify-22276922/acic_r1_priority-on-auto-nearest-sparse.out": "815c38f1fb9a087796d48c7526f8978acadb2b90081de9e37aac8c511ed4b4f5",
+    "logs/R1-verify-22276922/acic_r1_priority-on-off-local-sparse.out": "34e1ec0152faf867f797bd7be5dadc20c3466d4a5cc18f0ac9864d923482baec",
+    "logs/R1-verify-22276922/acic_r1_priority-on-off-nearest-sparse.out": "2739dfcd71808e32f916d2886f2fda95d9401cc1a88cdab19f65de46d8137c10",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-auto-auto-local-dense.out": "8e7b29f9c03c86c02ee42efbcea1cebdbfacff2c1a42a161ce7f89aaa60606a1",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-off-auto-local-sparse.out": "490feac9adb91a489fdad45c5d4d1201d6843e813c31e427470c6b5b57710a7c",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-off-auto-nearest-sparse.out": "698636ffc1bf67183849fd62538144ba0ba4c96fe259d398051e9a105e75c953",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-off-off-local-sparse.out": "e4001c91ce99910c0390eab3b318e56386bf3900027366b290edcd8daee9020f",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-off-off-nearest-sparse.out": "93d61b514ec21c79466de550026538ad9afb7e10fb378fd013d73798805da96a",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-on-auto-local-sparse.out": "ab2bc1b905b3656ee16e05d7d696e330ba30b20cea2dde8152667f08804a47ab",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-on-auto-nearest-sparse.out": "4296d4e5cc8e415646ebcc5b4467ea6a33788c5508a9e450e03d2dae80d0deb2",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-on-off-local-sparse.out": "d037835673ecf37c7b3b6a0387c7ef4842b61ec88694d3b452b62b8e5bfe1873",
+    "logs/R1-verify-22276922/acic_r1_priority_diag-on-off-nearest-sparse.out": "1e67bb7738678483d6513ee6ea0b1a5f6d741256a5ae61e99eab9d50688366ac"
+  },
+  "failing_dense_sources": [
+    {
+      "source": 0,
+      "correct": true,
+      "edge_attempts": 5504,
+      "retirement_ledger": 5504,
+      "offered_topology": 728,
+      "send_filtered": 4776
+    },
+    {
+      "source": 32,
+      "correct": true,
+      "edge_attempts": 6144,
+      "retirement_ledger": 6144,
+      "offered_topology": 854,
+      "send_filtered": 5290
+    },
+    {
+      "source": 64,
+      "correct": true,
+      "edge_attempts": 6784,
+      "retirement_ledger": 6784,
+      "offered_topology": 899,
+      "send_filtered": 5885
+    },
+    {
+      "source": 0,
+      "correct": true,
+      "edge_attempts": 5568,
+      "retirement_ledger": 5568,
+      "offered_topology": 728,
+      "send_filtered": 4840
+    }
+  ]
+}

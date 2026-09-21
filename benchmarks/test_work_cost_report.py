@@ -1,5 +1,5 @@
 import unittest
-from work_cost_report import counters, production_attempts
+from work_cost_report import check_work_accounting, counters, production_attempts
 
 
 class WorkCostRecords(unittest.TestCase):
@@ -27,6 +27,22 @@ class WorkCostRecords(unittest.TestCase):
                      self.line + ' queue_pops=3']:
             with self.subTest(text=text), self.assertRaises(ValueError):
                 counters(text)
+
+    def test_filtered_edges_must_be_in_topology_counts(self):
+        # R1 verification job 22276922, dense source 0: the old diagnostic
+        # counted only 728 unfiltered updates by destination, but scanned 5504.
+        text = ('WORK_COST edge_attempts=5504 queue_pushes=91 queue_pops=91 '
+                'expansions=86 stale_pops=5 cas_attempts=0 cas_failures=0 '
+                'intra_process=362 intra_node=366 inter_node=0\n'
+                'Wasted updates: 664\nSend-filtered updates: 4776\n'
+                'Absorbed updates: 0\nBatch-folded updates: 0\n')
+        self.assertEqual(production_attempts(text, 65), 5504)
+        with self.assertRaisesRegex(ValueError, 'topology sum 728 != edge attempts 5504'):
+            check_work_accounting(text, 65)
+        balanced = text.replace('intra_process=362', 'intra_process=5138')
+        self.assertEqual(check_work_accounting(balanced, 65)['edge_attempts'], 5504)
+        with self.assertRaisesRegex(ValueError, 'retirement ledger'):
+            check_work_accounting(balanced.replace('Wasted updates: 664', 'Wasted updates: 663'), 65)
 
 
 if __name__ == '__main__':
