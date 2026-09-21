@@ -82,7 +82,8 @@ def main():
                         raise ValueError(f'{launch}: unexpected runtime diagnostic; inspect raw log')
                     result['raw_sha256'][str(launch.relative_to(root))] = hashlib.sha256(launch.read_bytes()).hexdigest()
                     result['checked_launches'] += 1
-            diagnostic = json.loads((directory/'work-cost.json').read_text())
+            has_diag = any(v.get('work_cost') for v in expected_variants)
+            diagnostic = json.loads((directory/'work-cost.json').read_text()) if has_diag else []
             cells(diagnostic, {(v['label'], s, rep) for v in expected_variants if v.get('work_cost')
                                for s in sources for rep in range(-1,3)})
             diag_by_cell = {(r['variant'],str(r['source']),r['rep']): r for r in diagnostic}
