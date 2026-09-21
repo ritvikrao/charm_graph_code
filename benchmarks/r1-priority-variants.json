@@ -1,0 +1,28 @@
+[
+  {
+    "label": "frozen_r0",
+    "binary": "acic_r0_control",
+    "flags": ["--process-share", "auto", "--reader-tile", "auto", "--slack-control", "off"]
+  },
+  {
+    "label": "local",
+    "binary": "acic_r1_priority",
+    "flags": ["--process-share", "auto", "--reader-tile", "auto", "--slack-control", "off", "--process-queue", "local"]
+  },
+  {
+    "label": "nearest",
+    "binary": "acic_r1_priority",
+    "flags": ["--process-share", "auto", "--reader-tile", "auto", "--slack-control", "off", "--process-queue", "nearest"]
+  },
+  {
+    "label": "control",
+    "binary": "acic_r1_priority",
+    "flags": ["--process-share", "auto", "--reader-tile", "auto", "--slack-control", "off", "--process-queue", "local"]
+  },
+  {
+    "label": "nearest_diag",
+    "binary": "acic_r1_priority_diag",
+    "work_cost": true,
+    "flags": ["--process-share", "auto", "--reader-tile", "auto", "--slack-control", "off", "--process-queue", "nearest"]
+  }
+]

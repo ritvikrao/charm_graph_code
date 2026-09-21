@@ -11,8 +11,10 @@ All four full-node R0 allocations completed and their raw results passed
 validation: 288 solves and 120 diagnostic queue identities. R0 supports a
 bounded ordering counterfactual; it does not establish full runtime or
 critical-path attribution. The [R1 decision](ipdps27-r1-decision.md) selects
-process-wide shared-queue priority for implementation. R2 remains conditional
-on a promising R1. No defaults changed.
+process-wide shared-queue priority. The [R1 implementation](ipdps27-r1-progress.md)
+is built and locally checked; compute-node verification and its dependent
+performance comparisons are queued. R2 remains conditional on a promising
+R1. No defaults changed.
 
 [The one-node analysis](ipdps27-r0-one-node-results.md) confirms substantial
 repeated expansions in two independent allocations: production ACIC makes

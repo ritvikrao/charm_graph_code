@@ -118,6 +118,9 @@ measured solver cost per attempt. Preserve tiling's useful parallelism while
 testing whether ordering can reduce this rework. The decision records the
 counterfactual, disconfirmation criteria and bounded comparison before
 implementation; the acceptance gates remain unchanged.
+The [R1 implementation and job status](ipdps27-r1-progress.md) records the
+opt-in policy, completed local checks and queued comparisons gated on
+compute-node correctness verification.
 
 Each implementation step gets a separate commit, correctness checks and a
 paired comparison. Training sources select parameters; held-out sources

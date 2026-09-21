@@ -111,6 +111,8 @@ int initial_threshold = 3; // initial histo threshold
 bool verify_mode = false;  // --verify: check the result against serial Dijkstra
 enum { PROCESS_SHARE_OFF = 0, PROCESS_SHARE_ON = 1, PROCESS_SHARE_AUTO = 2 };
 int process_share_mode = PROCESS_SHARE_OFF;
+enum { PROCESS_QUEUE_LOCAL = 0, PROCESS_QUEUE_NEAREST = 1 };
+int process_queue_policy = PROCESS_QUEUE_LOCAL;
 long reader_tile_size = 0;
 int reader_tile_owners = 1;
 int slack_control_mode = PROCESS_SHARE_OFF;
@@ -704,6 +706,10 @@ struct ComparePairs {
   }
 };
 
+struct ProcessDistanceKey {
+  long operator()(const Update &u) const { return u.distance; }
+};
+
 struct histoInstance {
 public:
   int fnz;
@@ -979,6 +985,13 @@ public:
         else if (value == "on") process_share_mode = PROCESS_SHARE_ON;
         else if (value == "auto") process_share_mode = PROCESS_SHARE_AUTO;
         else CkAbort("--process-share must be off, on, or auto");
+      }
+      else if (arg == "--process-queue" || arg.rfind("--process-queue=", 0) == 0) {
+        const std::string value = arg == "--process-queue"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(16);
+        if (value == "local") process_queue_policy = PROCESS_QUEUE_LOCAL;
+        else if (value == "nearest") process_queue_policy = PROCESS_QUEUE_NEAREST;
+        else CkAbort("--process-queue must be local or nearest");
       }
       else if (arg.rfind("--timeout=", 0) == 0)
         timeout_seconds = std::stod(arg.substr(10));
@@ -1440,7 +1453,7 @@ public:
             << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
-            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|T] [--diag <prefix>]" << endl
+            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|T] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -1868,6 +1881,8 @@ public:
       CkAbort("process sharing currently requires --lazy-heavy off (auto sharing selects sparse graphs)");
     ckout << "Live slack: " << (slack_control_active() ? "on" : "off") << endl;
     ckout << "Process sharing: " << (process_share_active() ? "on" : "off") << endl;
+    ckout << "Process queue: " << (process_queue_policy == PROCESS_QUEUE_NEAREST ? "nearest" : "local")
+          << (process_share_active() ? "" : " (inactive)") << endl;
 #ifdef INFO_PRINTS
     ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
 #endif
@@ -2968,7 +2983,8 @@ class ControlNode : public CBase_ControlNode {
   }
 
 public:
-  ProcessWork<Update, ComparePairs> work{CkNodeSize(CkMyNode())};
+  ProcessWork<Update, ComparePairs, ProcessDistanceKey> work{
+      CkNodeSize(CkMyNode()), process_queue_policy == PROCESS_QUEUE_NEAREST};
   std::vector<ProcessPartition> partitions{(size_t)CkNodeSize(CkMyNode())};
   std::atomic<int> generation{0};
   std::unique_ptr<std::atomic<char>[]> fallback_queued;
