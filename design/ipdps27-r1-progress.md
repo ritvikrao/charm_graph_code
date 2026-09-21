@@ -4,9 +4,12 @@
 selects process-wide queue priority as the one R1 intervention. The first
 verification failed a diagnostic destination-accounting check after 80
 correct solves, cancelling all four dependent performance jobs before they
-ran. The diagnostic bug is fixed and replacement jobs are queued;
-**there are no R1 performance results yet**. R1 has not passed its performance
-gate. R2 remains conditional, and R3 still requires the author's decision.
+ran. The diagnostic bug is fixed: replacement verification passed all 88
+solves and both one-node jobs completed with 160 valid performance solves.
+The [one-node audit](ipdps27-r1-one-node-check.md) finds much less repeated
+work but substantial queue cost and no reproducible road speedup. Eight-node
+jobs remain queued. R1 has not passed its performance gate. R2 remains
+conditional, and R3 still requires the author's decision.
 
 ## Implementation
 
@@ -68,24 +71,24 @@ All 96 ACIC R0 diagnostic solves were rechecked: they had zero sender-filter
 drops, and their topology, edge and retirement counts already agree. This
 bug does not alter the R0 decision-driving work/cost results.
 
-Replacement verification **22281603** is queued with a two-minute limit
-(the first attempt reached 80 solves in 30 seconds). It checks all
-88 planned solves against serial distances across local/nearest, sharing on/off,
+Replacement verification **22281603 passed in 39 seconds** with a two-minute
+limit. It checked all 88 solves against serial distances across local/nearest, sharing on/off,
 reader tiling on/off, four successive sources including an isolated and a
 repeated source, dense auto-mode inactivity, and a narrow-width
 range-extension case. Diagnostic runs additionally require queue identities,
 direct-versus-production edge accounting and offered-update topology sums.
-These 88 replacement solves are planned checks, not completed results.
+Raw revalidation confirms all 88 serial/parallel digests and all 44 diagnostic
+accounting records, including the eight dense sender-filter cases.
 
 ## Queued experiment
 
-| Job | Role | Limit | Status at submission |
+| Job | Role | Limit | Current status |
 |---|---|---|---|
-| 22281603 | Correctness, 16 cores | 2 minutes | Pending, priority |
-| 22281605 | One node A | 12 minutes | Pending, after successful verification |
-| 22281606 | One node B | 12 minutes | Pending, after successful verification |
-| 22281608 | Eight nodes A | 6 minutes | Pending, after successful verification |
-| 22281609 | Eight nodes B | 6 minutes | Pending, after successful verification |
+| 22281603 | Correctness, 16 cores | 2 minutes | Completed, cn007, 39 s |
+| 22281605 | One node A | 12 minutes | Completed, cn130, 284 s |
+| 22281606 | One node B | 12 minutes | Completed, cn133, 284 s |
+| 22281608 | Eight nodes A | 6 minutes | Pending |
+| 22281609 | Eight nodes B | 6 minutes | Pending |
 
 Original performance jobs 22276940/22276941/22276942/22276945 were cancelled
 by the failed dependency, consuming zero allocated CPU time. No slow arm
