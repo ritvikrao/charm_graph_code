@@ -7,7 +7,6 @@
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=128
-#SBATCH --mem=0
 #SBATCH --exclusive
 #SBATCH --time=00:20:00
 #SBATCH --job-name=acic-R1-attrib
