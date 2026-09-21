@@ -1,0 +1,3817 @@
+{
+  "allocations": [
+    {
+      "job": 20833718,
+      "graph": "mesh26-z",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n1_8x15",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 8,
+            "workers": 120,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n1_16x7",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 16,
+            "workers": 112,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n2_8x7",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 2,
+            "rpn": 8,
+            "workers": 56,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n2_8x15",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 2,
+            "rpn": 8,
+            "workers": 120,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n1_8x15_control",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 8,
+            "workers": 120,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n1_8x15_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 8,
+            "workers": 120,
+            "work_cost": true,
+            "sha256": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+          },
+          {
+            "label": "n1_16x7_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 16,
+            "workers": 112,
+            "work_cost": true,
+            "sha256": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+          },
+          {
+            "label": "n2_8x7_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 2,
+            "rpn": 8,
+            "workers": 56,
+            "work_cost": true,
+            "sha256": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+          },
+          {
+            "label": "n2_8x15_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 2,
+            "rpn": 8,
+            "workers": 120,
+            "work_cost": true,
+            "sha256": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+          }
+        ],
+        "nodes": 2,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 3,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "a[857-858]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n1_16x7": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.940222,
+              "edge_attempts": 451514233,
+              "attempts_per_edge": 1.6822269417808513
+            },
+            "41856222": {
+              "seconds": 0.851968,
+              "edge_attempts": 413566652,
+              "attempts_per_edge": 1.5408439277627504
+            }
+          },
+          "medians": {
+            "seconds": 0.896095,
+            "edge_attempts": 432540442.5,
+            "attempts_per_edge": 1.6115354347718007
+          }
+        },
+        "n1_16x7_diag": {
+          "sources": {
+            "22442342": {
+              "seconds": 1.02046,
+              "edge_attempts": 450355667,
+              "attempts_per_edge": 1.677910420181783,
+              "expansions_per_vertex": 1.6778783053159714,
+              "stale_pop_fraction": 0.2615422983680725,
+              "cpu_ns_per_attempt": 221.5325119834878,
+              "work_ns_per_attempt": 227.26839608155186,
+              "queue_ns_per_attempt": 150.77701931705235,
+              "queue_work_fraction": 0.6644406804967633,
+              "lock_miss_fraction": 0.04568493924723299,
+              "work_share": 0.896244,
+              "idle_share": 0.092716,
+              "send_share": 0.000551,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.3696787132293857,
+              "pop_queue_time_fraction": 0.3925793946430129
+            },
+            "41856222": {
+              "seconds": 0.922037,
+              "edge_attempts": 411303724,
+              "attempts_per_edge": 1.5324128348520862,
+              "expansions_per_vertex": 1.5324016511440277,
+              "stale_pop_fraction": 0.2596936550857786,
+              "cpu_ns_per_attempt": 217.25269812511542,
+              "work_ns_per_attempt": 227.68654075154907,
+              "queue_ns_per_attempt": 149.1954513298222,
+              "queue_work_fraction": 0.65526688945845,
+              "lock_miss_fraction": 0.0555350983570109,
+              "work_share": 0.913116,
+              "idle_share": 0.076768,
+              "send_share": 0.000397,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.7675170007771235,
+              "pop_queue_time_fraction": 0.39712740758363624
+            }
+          },
+          "medians": {
+            "seconds": 0.9712485,
+            "edge_attempts": 430829695.5,
+            "attempts_per_edge": 1.6051616275169347,
+            "expansions_per_vertex": 1.6051399782299995,
+            "stale_pop_fraction": 0.26061797672692555,
+            "cpu_ns_per_attempt": 219.3926050543016,
+            "work_ns_per_attempt": 227.47746841655047,
+            "queue_ns_per_attempt": 149.98623532343726,
+            "queue_work_fraction": 0.6598537849776067,
+            "lock_miss_fraction": 0.050610018802121945,
+            "work_share": 0.90468,
+            "idle_share": 0.08474200000000001,
+            "send_share": 0.000474,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.5685978570032546,
+            "pop_queue_time_fraction": 0.39485340111332456
+          }
+        },
+        "n1_8x15": {
+          "sources": {
+            "22442342": {
+              "seconds": 1.08967,
+              "edge_attempts": 446844495,
+              "attempts_per_edge": 1.6648286883028534
+            },
+            "41856222": {
+              "seconds": 0.938322,
+              "edge_attempts": 389415833,
+              "attempts_per_edge": 1.4508641321803752
+            }
+          },
+          "medians": {
+            "seconds": 1.013996,
+            "edge_attempts": 418130164.0,
+            "attempts_per_edge": 1.5578464102416143
+          }
+        },
+        "n1_8x15_control": {
+          "sources": {
+            "22442342": {
+              "seconds": 1.156307,
+              "edge_attempts": 448704555,
+              "attempts_per_edge": 1.6717587977360346
+            },
+            "41856222": {
+              "seconds": 1.028251,
+              "edge_attempts": 408052682,
+              "attempts_per_edge": 1.5203002810463657
+            }
+          },
+          "medians": {
+            "seconds": 1.092279,
+            "edge_attempts": 428378618.5,
+            "attempts_per_edge": 1.5960295393912003
+          }
+        },
+        "n1_8x15_diag": {
+          "sources": {
+            "22442342": {
+              "seconds": 1.124239,
+              "edge_attempts": 435436685,
+              "attempts_per_edge": 1.6223260960784416,
+              "expansions_per_vertex": 1.6222944259643555,
+              "stale_pop_fraction": 0.266383912344125,
+              "cpu_ns_per_attempt": 275.6769972616728,
+              "work_ns_per_attempt": 289.9523584513466,
+              "queue_ns_per_attempt": 170.75136161751152,
+              "queue_work_fraction": 0.5866630949782818,
+              "lock_miss_fraction": 0.06979601645466155,
+              "work_share": 0.930448,
+              "idle_share": 0.055256,
+              "send_share": 0.000396,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 4.902756281385116,
+              "pop_queue_time_fraction": 0.4244651809329743
+            },
+            "41856222": {
+              "seconds": 0.993318,
+              "edge_attempts": 386971098,
+              "attempts_per_edge": 1.4417556727300733,
+              "expansions_per_vertex": 1.4417557418346405,
+              "stale_pop_fraction": 0.26478412509958377,
+              "cpu_ns_per_attempt": 272.26294765300537,
+              "work_ns_per_attempt": 289.5820452203384,
+              "queue_ns_per_attempt": 171.3816792707184,
+              "queue_work_fraction": 0.5870128962202417,
+              "lock_miss_fraction": 0.08438675500550655,
+              "work_share": 0.943123,
+              "idle_share": 0.045021,
+              "send_share": 0.000338,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 5.252971665579684,
+              "pop_queue_time_fraction": 0.42695991562861474
+            }
+          },
+          "medians": {
+            "seconds": 1.0587785,
+            "edge_attempts": 411203891.5,
+            "attempts_per_edge": 1.5320408844042575,
+            "expansions_per_vertex": 1.532025083899498,
+            "stale_pop_fraction": 0.2655840187218544,
+            "cpu_ns_per_attempt": 273.96997245733905,
+            "work_ns_per_attempt": 289.76720183584246,
+            "queue_ns_per_attempt": 171.06652044411496,
+            "queue_work_fraction": 0.5868379955992618,
+            "lock_miss_fraction": 0.07709138573008405,
+            "work_share": 0.9367855,
+            "idle_share": 0.0501385,
+            "send_share": 0.000367,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.0778639734824,
+            "pop_queue_time_fraction": 0.4257125482807945
+          }
+        },
+        "n2_8x15": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.757344,
+              "edge_attempts": 548571139,
+              "attempts_per_edge": 2.0438362338606684
+            },
+            "41856222": {
+              "seconds": 0.673715,
+              "edge_attempts": 507529514,
+              "attempts_per_edge": 1.8909256005662656
+            }
+          },
+          "medians": {
+            "seconds": 0.7155294999999999,
+            "edge_attempts": 528050326.5,
+            "attempts_per_edge": 1.9673809172134669
+          }
+        },
+        "n2_8x15_diag": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.769078,
+              "edge_attempts": 549687620,
+              "attempts_per_edge": 2.047995957477147,
+              "expansions_per_vertex": 2.047955945134163,
+              "stale_pop_fraction": 0.26413863260423964,
+              "cpu_ns_per_attempt": 302.68191798224234,
+              "work_ns_per_attempt": 298.15417230094664,
+              "queue_ns_per_attempt": 176.32605264575758,
+              "queue_work_fraction": 0.586260860246368,
+              "lock_miss_fraction": 0.038359421742786004,
+              "work_share": 0.877831,
+              "idle_share": 0.103529,
+              "send_share": 0.001233,
+              "inter_node_fraction": 0.0011551069678447552,
+              "pops_per_removal_call": 3.61729101715423,
+              "pop_queue_time_fraction": 0.41547130944444477
+            },
+            "41856222": {
+              "seconds": 0.686836,
+              "edge_attempts": 493165214,
+              "attempts_per_edge": 1.8374078802072207,
+              "expansions_per_vertex": 1.837385132908821,
+              "stale_pop_fraction": 0.2628739905886683,
+              "cpu_ns_per_attempt": 297.39386437341057,
+              "work_ns_per_attempt": 298.1441752702371,
+              "queue_ns_per_attempt": 173.75366550398286,
+              "queue_work_fraction": 0.5827840350947422,
+              "lock_miss_fraction": 0.04340694170835266,
+              "work_share": 0.8877,
+              "idle_share": 0.095419,
+              "send_share": 0.000768,
+              "inter_node_fraction": 0.0012051417722256461,
+              "pops_per_removal_call": 3.8394520997100985,
+              "pop_queue_time_fraction": 0.4207428995973874
+            }
+          },
+          "medians": {
+            "seconds": 0.727957,
+            "edge_attempts": 521426417.0,
+            "attempts_per_edge": 1.942701918842184,
+            "expansions_per_vertex": 1.942670539021492,
+            "stale_pop_fraction": 0.263506311596454,
+            "cpu_ns_per_attempt": 300.03789117782645,
+            "work_ns_per_attempt": 298.14917378559187,
+            "queue_ns_per_attempt": 175.0398590748702,
+            "queue_work_fraction": 0.5845224476705551,
+            "lock_miss_fraction": 0.04088318172556933,
+            "work_share": 0.8827655000000001,
+            "idle_share": 0.099474,
+            "send_share": 0.0010005,
+            "inter_node_fraction": 0.0011801243700352007,
+            "pops_per_removal_call": 3.728371558432164,
+            "pop_queue_time_fraction": 0.4181071045209161
+          }
+        },
+        "n2_8x7": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.883494,
+              "edge_attempts": 447306677,
+              "attempts_per_edge": 1.6665506606252767
+            },
+            "41856222": {
+              "seconds": 0.802284,
+              "edge_attempts": 416485293,
+              "attempts_per_edge": 1.5517180401710433
+            }
+          },
+          "medians": {
+            "seconds": 0.842889,
+            "edge_attempts": 431895985.0,
+            "attempts_per_edge": 1.6091343503981599
+          }
+        },
+        "n2_8x7_diag": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.974757,
+              "edge_attempts": 462136279,
+              "attempts_per_edge": 1.721801977631461,
+              "expansions_per_vertex": 1.721763476729393,
+              "stale_pop_fraction": 0.2607605740283796,
+              "cpu_ns_per_attempt": 209.7750069813454,
+              "work_ns_per_attempt": 211.0906012639618,
+              "queue_ns_per_attempt": 134.3817453251775,
+              "queue_work_fraction": 0.6359774051549439,
+              "lock_miss_fraction": 0.05092504920388048,
+              "work_share": 0.895038,
+              "idle_share": 0.092869,
+              "send_share": 0.000878,
+              "inter_node_fraction": 0.0012527836321499497,
+              "pops_per_removal_call": 3.4915120482189628,
+              "pop_queue_time_fraction": 0.39769824715262664
+            },
+            "41856222": {
+              "seconds": 0.863934,
+              "edge_attempts": 412184202,
+              "attempts_per_edge": 1.5356932714474156,
+              "expansions_per_vertex": 1.535668283700943,
+              "stale_pop_fraction": 0.2596851911104169,
+              "cpu_ns_per_attempt": 207.70012243985155,
+              "work_ns_per_attempt": 211.9892255499496,
+              "queue_ns_per_attempt": 134.9028736983085,
+              "queue_work_fraction": 0.6348310506992546,
+              "lock_miss_fraction": 0.05835624270483922,
+              "work_share": 0.907242,
+              "idle_share": 0.080562,
+              "send_share": 0.000702,
+              "inter_node_fraction": 0.001304229995694983,
+              "pops_per_removal_call": 3.779567103102569,
+              "pop_queue_time_fraction": 0.4020287820966963
+            }
+          },
+          "medians": {
+            "seconds": 0.9193454999999999,
+            "edge_attempts": 437160240.5,
+            "attempts_per_edge": 1.6287476245394383,
+            "expansions_per_vertex": 1.628715880215168,
+            "stale_pop_fraction": 0.26022288256939824,
+            "cpu_ns_per_attempt": 208.73756471059846,
+            "work_ns_per_attempt": 211.5399134069557,
+            "queue_ns_per_attempt": 134.642309511743,
+            "queue_work_fraction": 0.6354042279270993,
+            "lock_miss_fraction": 0.05464064595435985,
+            "work_share": 0.90114,
+            "idle_share": 0.0867155,
+            "send_share": 0.00079,
+            "inter_node_fraction": 0.0012785068139224663,
+            "pops_per_removal_call": 3.635539575660766,
+            "pop_queue_time_fraction": 0.39986351462466146
+          }
+        }
+      },
+      "comparisons": {
+        "n1_16x7/n1_8x15:seconds": {
+          "sources": {
+            "22442342": 0.8628502207090221,
+            "41856222": 0.9079697587821665
+          },
+          "median": 0.8854099897455943
+        },
+        "n1_16x7/n1_8x15:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.0104504767368792,
+            "41856222": 1.0620180715661862
+          },
+          "median": 1.0362342741515327
+        },
+        "n2_8x7/n1_16x7:seconds": {
+          "sources": {
+            "22442342": 0.939665313085633,
+            "41856222": 0.9416832557091347
+          },
+          "median": 0.9406742843973839
+        },
+        "n2_8x7/n1_16x7:attempts_per_edge": {
+          "sources": {
+            "22442342": 0.9906812328549564,
+            "41856222": 1.007057244547851
+          },
+          "median": 0.9988692387014037
+        },
+        "n2_8x15/n2_8x7:seconds": {
+          "sources": {
+            "22442342": 0.8572146500146012,
+            "41856222": 0.8397462743866261
+          },
+          "median": 0.8484804622006137
+        },
+        "n2_8x15/n2_8x7:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.2263871013041014,
+            "41856222": 1.2186012868406375
+          },
+          "median": 1.2224941940723695
+        },
+        "n2_8x15/n1_8x15:seconds": {
+          "sources": {
+            "22442342": 0.695021428505878,
+            "41856222": 0.7179997911164824
+          },
+          "median": 0.7065106098111802
+        },
+        "n2_8x15/n1_8x15:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.227655582956214,
+            "41856222": 1.303309909332834
+          },
+          "median": 1.265482746144524
+        },
+        "n1_8x15_control/n1_8x15:seconds": {
+          "sources": {
+            "22442342": 1.0611533767103802,
+            "41856222": 1.0958402339495397
+          },
+          "median": 1.07849680532996
+        },
+        "n1_8x15_control/n1_8x15:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.0041626561831092,
+            "41856222": 1.0478584778035978
+          },
+          "median": 1.0260105669933535
+        },
+        "n1_16x7_diag/n1_8x15_diag:seconds": {
+          "sources": {
+            "22442342": 0.9076895571137453,
+            "41856222": 0.9282394963143726
+          },
+          "median": 0.917964526714059
+        },
+        "n1_16x7_diag/n1_8x15_diag:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.0342621155128444,
+            "41856222": 1.0628796985763522
+          },
+          "median": 1.0485709070445983
+        },
+        "n2_8x7_diag/n1_16x7_diag:seconds": {
+          "sources": {
+            "22442342": 0.9552133351625738,
+            "41856222": 0.9369840906601362
+          },
+          "median": 0.9460987129113549
+        },
+        "n2_8x7_diag/n1_16x7_diag:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.026158462884403,
+            "41856222": 1.0021407002869733
+          },
+          "median": 1.0141495815856882
+        },
+        "n2_8x15_diag/n2_8x7_diag:seconds": {
+          "sources": {
+            "22442342": 0.7889945904466447,
+            "41856222": 0.7950098039896566
+          },
+          "median": 0.7920021972181506
+        },
+        "n2_8x15_diag/n2_8x7_diag:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.189449184100952,
+            "41856222": 1.1964680150453704
+          },
+          "median": 1.1929585995731613
+        },
+        "n2_8x15_diag/n1_8x15_diag:seconds": {
+          "sources": {
+            "22442342": 0.6840876361698892,
+            "41856222": 0.6914563110705736
+          },
+          "median": 0.6877719736202315
+        },
+        "n2_8x15_diag/n1_8x15_diag:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.2623824288024792,
+            "41856222": 1.27442389508893
+          },
+          "median": 1.2684031619457046
+        }
+      },
+      "rows": [
+        {
+          "variant": "n2_8x15_diag",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.804933,
+            "edge_attempts": 535124786,
+            "attempts_per_edge": 1.9937385500401545,
+            "expansions_per_vertex": 1.993710458278656,
+            "stale_pop_fraction": 0.2645291311080852,
+            "cpu_ns_per_attempt": 322.52547468619775,
+            "work_ns_per_attempt": 312.7429496416561,
+            "queue_ns_per_attempt": 178.68481758770938,
+            "queue_work_fraction": 0.5713472287463176,
+            "lock_miss_fraction": 0.03376317304450093,
+            "work_share": 0.866307,
+            "idle_share": 0.113747,
+            "send_share": 0.001151,
+            "inter_node_fraction": 0.0012284461815229766,
+            "pops_per_removal_call": 3.3208880922644273,
+            "pop_queue_time_fraction": 0.41695058772385646
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.715917,
+            "edge_attempts": 501066891,
+            "attempts_per_edge": 1.8668475145822683,
+            "expansions_per_vertex": 1.8668317645788193,
+            "stale_pop_fraction": 0.263083833730657,
+            "cpu_ns_per_attempt": 305.00855892511964,
+            "work_ns_per_attempt": 309.58105152471546,
+            "queue_ns_per_attempt": 175.72911927093645,
+            "queue_work_fraction": 0.5676352554701077,
+            "lock_miss_fraction": 0.04815687508180269,
+            "work_share": 0.90281,
+            "idle_share": 0.079817,
+            "send_share": 0.000723,
+            "inter_node_fraction": 0.0011743561799216944,
+            "pops_per_removal_call": 4.105226661024549,
+            "pop_queue_time_fraction": 0.4129923289862656
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.216636,
+            "edge_attempts": 439116509,
+            "attempts_per_edge": 1.636036182320201
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.10885,
+            "edge_attempts": 414002858,
+            "attempts_per_edge": 1.5424691201304213
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.951547,
+            "edge_attempts": 455642353,
+            "attempts_per_edge": 1.6976072646485567
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.853096,
+            "edge_attempts": 413223185,
+            "attempts_per_edge": 1.5395642572700314
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.888422,
+            "edge_attempts": 454113185,
+            "attempts_per_edge": 1.691909974463445
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.793564,
+            "edge_attempts": 408297435,
+            "attempts_per_edge": 1.5212121683371518
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.787692,
+            "edge_attempts": 554922500,
+            "attempts_per_edge": 2.0674997859932014
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.70695,
+            "edge_attempts": 504928182,
+            "attempts_per_edge": 1.8812337006103308
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.071396,
+            "edge_attempts": 441498777,
+            "attempts_per_edge": 1.6449119056512578
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.953385,
+            "edge_attempts": 394539905,
+            "attempts_per_edge": 1.469955118333241
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.194653,
+            "edge_attempts": 451967058,
+            "attempts_per_edge": 1.6839140523063614,
+            "expansions_per_vertex": 1.6838816851377487,
+            "stale_pop_fraction": 0.2665463657024046,
+            "cpu_ns_per_attempt": 281.1401617725865,
+            "work_ns_per_attempt": 296.01866249287576,
+            "queue_ns_per_attempt": 170.19555648820818,
+            "queue_work_fraction": 0.5749487382144505,
+            "lock_miss_fraction": 0.07074703131406959,
+            "work_share": 0.933261,
+            "idle_share": 0.053469,
+            "send_share": 0.000384,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.929550387156404,
+            "pop_queue_time_fraction": 0.4235251766109599
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.040351,
+            "edge_attempts": 399258437,
+            "attempts_per_edge": 1.4875351658177134,
+            "expansions_per_vertex": 1.4875372648239136,
+            "stale_pop_fraction": 0.2628247598260231,
+            "cpu_ns_per_attempt": 276.8039690166898,
+            "work_ns_per_attempt": 295.6375020823918,
+            "queue_ns_per_attempt": 170.94806082405307,
+            "queue_work_fraction": 0.5782353714259539,
+            "lock_miss_fraction": 0.08922652729144576,
+            "work_share": 0.945481,
+            "idle_share": 0.041845,
+            "send_share": 0.000293,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.370592452245625,
+            "pop_queue_time_fraction": 0.42674798121591195
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.022558,
+            "edge_attempts": 447945488,
+            "attempts_per_edge": 1.6689307075792028,
+            "expansions_per_vertex": 1.6689012050628662,
+            "stale_pop_fraction": 0.26191520761695586,
+            "cpu_ns_per_attempt": 223.14313973400263,
+            "work_ns_per_attempt": 228.36300116946373,
+            "queue_ns_per_attempt": 151.01736673270892,
+            "queue_work_fraction": 0.6613040026595285,
+            "lock_miss_fraction": 0.04422227903173844,
+            "work_share": 0.893192,
+            "idle_share": 0.095889,
+            "send_share": 0.000563,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.298487892400856,
+            "pop_queue_time_fraction": 0.39100156069847636
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.913731,
+            "edge_attempts": 408314034,
+            "attempts_per_edge": 1.5212740119800887,
+            "expansions_per_vertex": 1.521255612373352,
+            "stale_pop_fraction": 0.26007629532571686,
+            "cpu_ns_per_attempt": 217.7668857029783,
+            "work_ns_per_attempt": 229.41817865608803,
+            "queue_ns_per_attempt": 149.95758680531935,
+            "queue_work_fraction": 0.6536430011072271,
+            "lock_miss_fraction": 0.0570988316639632,
+            "work_share": 0.915347,
+            "idle_share": 0.074213,
+            "send_share": 0.000447,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.8221577414681396,
+            "pop_queue_time_fraction": 0.4006685745009992
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.952054,
+            "edge_attempts": 443874292,
+            "attempts_per_edge": 1.6537624690256456,
+            "expansions_per_vertex": 1.6537324786186218,
+            "stale_pop_fraction": 0.2612758283875261,
+            "cpu_ns_per_attempt": 213.66635735461787,
+            "work_ns_per_attempt": 212.34709398308655,
+            "queue_ns_per_attempt": 133.85088489825773,
+            "queue_work_fraction": 0.6303400832455892,
+            "lock_miss_fraction": 0.04573397879033518,
+            "work_share": 0.883948,
+            "idle_share": 0.102835,
+            "send_share": 0.000999,
+            "inter_node_fraction": 0.0012577862923406251,
+            "pops_per_removal_call": 3.260636751232141,
+            "pop_queue_time_fraction": 0.4041496321794656
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.864059,
+            "edge_attempts": 417150483,
+            "attempts_per_edge": 1.5541963685549975,
+            "expansions_per_vertex": 1.5541827827692032,
+            "stale_pop_fraction": 0.2598696363013252,
+            "cpu_ns_per_attempt": 205.40158534588105,
+            "work_ns_per_attempt": 212.21397698825152,
+            "queue_ns_per_attempt": 133.94214091882264,
+            "queue_work_fraction": 0.631165500122727,
+            "lock_miss_fraction": 0.06224206706874211,
+            "work_share": 0.914756,
+            "idle_share": 0.07378,
+            "send_share": 0.000696,
+            "inter_node_fraction": 0.0012855097185636005,
+            "pops_per_removal_call": 3.96002245168424,
+            "pop_queue_time_fraction": 0.399003687646492
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.050879,
+            "edge_attempts": 428360447,
+            "attempts_per_edge": 1.5959618370140913
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.929195,
+            "edge_attempts": 387188707,
+            "attempts_per_edge": 1.4425664283958288
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.940222,
+            "edge_attempts": 451514233,
+            "attempts_per_edge": 1.6822269417808513
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.851046,
+            "edge_attempts": 412508947,
+            "attempts_per_edge": 1.5369031885403472
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.883494,
+            "edge_attempts": 447306677,
+            "attempts_per_edge": 1.6665506606252767
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.802284,
+            "edge_attempts": 416485293,
+            "attempts_per_edge": 1.5517180401710433
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.767432,
+            "edge_attempts": 548571139,
+            "attempts_per_edge": 2.0438362338606684
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.703385,
+            "edge_attempts": 515863786,
+            "attempts_per_edge": 1.9219769736434233
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.113909,
+            "edge_attempts": 436265174,
+            "attempts_per_edge": 1.625412834911698
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.009731,
+            "edge_attempts": 409163715,
+            "attempts_per_edge": 1.5244397068035325
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.124239,
+            "edge_attempts": 435436685,
+            "attempts_per_edge": 1.6223260960784416,
+            "expansions_per_vertex": 1.6222944259643555,
+            "stale_pop_fraction": 0.266383912344125,
+            "cpu_ns_per_attempt": 274.7556260332085,
+            "work_ns_per_attempt": 287.93284378416575,
+            "queue_ns_per_attempt": 168.91957328031685,
+            "queue_work_fraction": 0.5866630949782818,
+            "lock_miss_fraction": 0.06921388186710553,
+            "work_share": 0.929343,
+            "idle_share": 0.056854,
+            "send_share": 0.000444,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.863859752346243,
+            "pop_queue_time_fraction": 0.4275893626666468
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.969469,
+            "edge_attempts": 380505509,
+            "attempts_per_edge": 1.4176665361861056,
+            "expansions_per_vertex": 1.417661428451538,
+            "stale_pop_fraction": 0.26549630535276275,
+            "cpu_ns_per_attempt": 270.80830922214056,
+            "work_ns_per_attempt": 288.4676894388933,
+            "queue_ns_per_attempt": 169.33425384348593,
+            "queue_work_fraction": 0.5870128962202417,
+            "lock_miss_fraction": 0.09061687068580154,
+            "work_share": 0.943503,
+            "idle_share": 0.042667,
+            "send_share": 0.000349,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.388966697450316,
+            "pop_queue_time_fraction": 0.42695991562861474
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.015949,
+            "edge_attempts": 448721823,
+            "attempts_per_edge": 1.6718231339024443,
+            "expansions_per_vertex": 1.671800583600998,
+            "stale_pop_fraction": 0.2615422983680725,
+            "cpu_ns_per_attempt": 221.5325119834878,
+            "work_ns_per_attempt": 227.26839608155186,
+            "queue_ns_per_attempt": 148.5761486557467,
+            "queue_work_fraction": 0.6537475127093006,
+            "lock_miss_fraction": 0.045682122196668014,
+            "work_share": 0.896244,
+            "idle_share": 0.092716,
+            "send_share": 0.000551,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.3696787132293857,
+            "pop_queue_time_fraction": 0.3966868013817321
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.914165,
+            "edge_attempts": 411303724,
+            "attempts_per_edge": 1.5324128348520862,
+            "expansions_per_vertex": 1.5324016511440277,
+            "stale_pop_fraction": 0.26047174126117617,
+            "cpu_ns_per_attempt": 216.88381528245048,
+            "work_ns_per_attempt": 227.67620990467861,
+            "queue_ns_per_attempt": 149.3941426928979,
+            "queue_work_fraction": 0.6561693149909903,
+            "lock_miss_fraction": 0.056700254728205786,
+            "work_share": 0.914613,
+            "idle_share": 0.075176,
+            "send_share": 0.000397,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.8118663813228784,
+            "pop_queue_time_fraction": 0.39620284619736534
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.977903,
+            "edge_attempts": 462136279,
+            "attempts_per_edge": 1.721801977631461,
+            "expansions_per_vertex": 1.721763476729393,
+            "stale_pop_fraction": 0.26202902817872925,
+            "cpu_ns_per_attempt": 210.60744652985792,
+            "work_ns_per_attempt": 211.0906012639618,
+            "queue_ns_per_attempt": 133.8570071751696,
+            "queue_work_fraction": 0.634121113747674,
+            "lock_miss_fraction": 0.048515010675082605,
+            "work_share": 0.890687,
+            "idle_share": 0.096942,
+            "send_share": 0.00095,
+            "inter_node_fraction": 0.0012554932957340923,
+            "pops_per_removal_call": 3.4028975051105297,
+            "pop_queue_time_fraction": 0.3982155711847992
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.859213,
+            "edge_attempts": 411076944,
+            "attempts_per_edge": 1.5315679103780064,
+            "expansions_per_vertex": 1.5315523743629456,
+            "stale_pop_fraction": 0.26012247282047657,
+            "cpu_ns_per_attempt": 207.70012243985155,
+            "work_ns_per_attempt": 211.9892255499496,
+            "queue_ns_per_attempt": 135.06095146743905,
+            "queue_work_fraction": 0.6371123396345233,
+            "lock_miss_fraction": 0.05695154075854973,
+            "work_share": 0.905562,
+            "idle_share": 0.083,
+            "send_share": 0.000702,
+            "inter_node_fraction": 0.001308017897496095,
+            "pops_per_removal_call": 3.7268888350294147,
+            "pop_queue_time_fraction": 0.4020287820966963
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.769078,
+            "edge_attempts": 543440485,
+            "attempts_per_edge": 2.0247207248535455,
+            "expansions_per_vertex": 2.024689346551895,
+            "stale_pop_fraction": 0.26413863260423964,
+            "cpu_ns_per_attempt": 302.68191798224234,
+            "work_ns_per_attempt": 298.15417230094664,
+            "queue_ns_per_attempt": 174.79612153919683,
+            "queue_work_fraction": 0.586260860246368,
+            "lock_miss_fraction": 0.038359421742786004,
+            "work_share": 0.877831,
+            "idle_share": 0.103529,
+            "send_share": 0.001198,
+            "inter_node_fraction": 0.0011610489417254218,
+            "pops_per_removal_call": 3.61729101715423,
+            "pop_queue_time_fraction": 0.41547130944444477
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.686836,
+            "edge_attempts": 493165214,
+            "attempts_per_edge": 1.8374078802072207,
+            "expansions_per_vertex": 1.837385132908821,
+            "stale_pop_fraction": 0.26194845781580517,
+            "cpu_ns_per_attempt": 297.39386437341057,
+            "work_ns_per_attempt": 298.1441752702371,
+            "queue_ns_per_attempt": 173.75366550398286,
+            "queue_work_fraction": 0.5827840350947422,
+            "lock_miss_fraction": 0.04479581172862853,
+            "work_share": 0.891979,
+            "idle_share": 0.090716,
+            "send_share": 0.000769,
+            "inter_node_fraction": 0.0012051417722256461,
+            "pops_per_removal_call": 3.9177371568381365,
+            "pop_queue_time_fraction": 0.4207428995973874
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.959968,
+            "edge_attempts": 456237420,
+            "attempts_per_edge": 1.6998243326087703
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.872483,
+            "edge_attempts": 419220923,
+            "attempts_per_edge": 1.5619103002425967
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.875631,
+            "edge_attempts": 435884994,
+            "attempts_per_edge": 1.623996381139074
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.805128,
+            "edge_attempts": 418450147,
+            "attempts_per_edge": 1.5590385853363733
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.748073,
+            "edge_attempts": 555483782,
+            "attempts_per_edge": 2.0695909796551666
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.673715,
+            "edge_attempts": 507529514,
+            "attempts_per_edge": 1.8909256005662656
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.156307,
+            "edge_attempts": 448704555,
+            "attempts_per_edge": 1.6717587977360346
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.039116,
+            "edge_attempts": 408052682,
+            "attempts_per_edge": 1.5203002810463657
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.237937,
+            "edge_attempts": 442959407,
+            "attempts_per_edge": 1.6503538407186145,
+            "expansions_per_vertex": 1.6503122299909592,
+            "stale_pop_fraction": 0.2674152961881029,
+            "cpu_ns_per_attempt": 299.1575421921224,
+            "work_ns_per_attempt": 313.3953468562414,
+            "queue_ns_per_attempt": 174.2377430801228,
+            "queue_work_fraction": 0.5559678687892197,
+            "lock_miss_fraction": 0.06979601645466155,
+            "work_share": 0.934494,
+            "idle_share": 0.051591,
+            "send_share": 0.000347,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.902756281385116,
+            "pop_queue_time_fraction": 0.4219470848258708
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.149086,
+            "edge_attempts": 415936134,
+            "attempts_per_edge": 1.5496720137169415,
+            "expansions_per_vertex": 1.5496613085269928,
+            "stale_pop_fraction": 0.2616726489450654,
+            "cpu_ns_per_attempt": 295.4145376078338,
+            "work_ns_per_attempt": 312.66225838412004,
+            "queue_ns_per_attempt": 173.35027779268057,
+            "queue_work_fraction": 0.5544330124415326,
+            "lock_miss_fraction": 0.0808689044164752,
+            "work_share": 0.943123,
+            "idle_share": 0.045021,
+            "send_share": 0.000265,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.156330273926256,
+            "pop_queue_time_fraction": 0.4258820740608358
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.02046,
+            "edge_attempts": 450355667,
+            "attempts_per_edge": 1.677910420181783,
+            "expansions_per_vertex": 1.6778783053159714,
+            "stale_pop_fraction": 0.2618298413737162,
+            "cpu_ns_per_attempt": 221.83225929518503,
+            "work_ns_per_attempt": 227.40610034335373,
+            "queue_ns_per_attempt": 152.26296442933275,
+            "queue_work_fraction": 0.6695641154719922,
+            "lock_miss_fraction": 0.04568493924723299,
+            "work_share": 0.896074,
+            "idle_share": 0.092937,
+            "send_share": 0.000553,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.364315255617202,
+            "pop_queue_time_fraction": 0.3925793946430129
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.922037,
+            "edge_attempts": 410822303,
+            "attempts_per_edge": 1.5306191829196585,
+            "expansions_per_vertex": 1.5305994153022766,
+            "stale_pop_fraction": 0.2596936550857786,
+            "cpu_ns_per_attempt": 219.345752927635,
+            "work_ns_per_attempt": 228.01813172251263,
+            "queue_ns_per_attempt": 149.03174482737455,
+            "queue_work_fraction": 0.6535960263403052,
+            "lock_miss_fraction": 0.05210852515837193,
+            "work_share": 0.907104,
+            "idle_share": 0.082727,
+            "send_share": 0.000403,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.607356672283696,
+            "pop_queue_time_fraction": 0.39712740758363624
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.960908,
+            "edge_attempts": 455872016,
+            "attempts_per_edge": 1.6984629304457637,
+            "expansions_per_vertex": 1.698426440358162,
+            "stale_pop_fraction": 0.2607605740283796,
+            "cpu_ns_per_attempt": 209.7750069813454,
+            "work_ns_per_attempt": 211.29955912889375,
+            "queue_ns_per_attempt": 134.3817453251775,
+            "queue_work_fraction": 0.6359774051549439,
+            "lock_miss_fraction": 0.05092504920388048,
+            "work_share": 0.895038,
+            "idle_share": 0.092869,
+            "send_share": 0.000878,
+            "inter_node_fraction": 0.0012527836321499497,
+            "pops_per_removal_call": 3.4915120482189628,
+            "pop_queue_time_fraction": 0.39769824715262664
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.863934,
+            "edge_attempts": 412184202,
+            "attempts_per_edge": 1.5356932714474156,
+            "expansions_per_vertex": 1.535668283700943,
+            "stale_pop_fraction": 0.2596851911104169,
+            "cpu_ns_per_attempt": 207.9680835657064,
+            "work_ns_per_attempt": 212.97571953036666,
+            "queue_ns_per_attempt": 134.9028736983085,
+            "queue_work_fraction": 0.6334190300931166,
+            "lock_miss_fraction": 0.05835624270483922,
+            "work_share": 0.907242,
+            "idle_share": 0.080562,
+            "send_share": 0.000768,
+            "inter_node_fraction": 0.001304229995694983,
+            "pops_per_removal_call": 3.779567103102569,
+            "pop_queue_time_fraction": 0.40401932242957267
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.7634,
+            "edge_attempts": 549687620,
+            "attempts_per_edge": 2.047995957477147,
+            "expansions_per_vertex": 2.047955945134163,
+            "stale_pop_fraction": 0.2641874798260018,
+            "cpu_ns_per_attempt": 295.8781173077902,
+            "work_ns_per_attempt": 294.19520126722153,
+            "queue_ns_per_attempt": 176.32605264575758,
+            "queue_work_fraction": 0.5993505396629437,
+            "lock_miss_fraction": 0.04094794621587235,
+            "work_share": 0.882649,
+            "idle_share": 0.097685,
+            "send_share": 0.001242,
+            "inter_node_fraction": 0.0011551069678447552,
+            "pops_per_removal_call": 3.7680436124983854,
+            "pop_queue_time_fraction": 0.4150249304758674
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.680016,
+            "edge_attempts": 493780381,
+            "attempts_per_edge": 1.8396998356439709,
+            "expansions_per_vertex": 1.839687317609787,
+            "stale_pop_fraction": 0.26332798715135797,
+            "cpu_ns_per_attempt": 294.0135482802829,
+            "work_ns_per_attempt": 293.40155375675,
+            "queue_ns_per_attempt": 173.43380250751875,
+            "queue_work_fraction": 0.5911141242670692,
+            "lock_miss_fraction": 0.04340694170835266,
+            "work_share": 0.8877,
+            "idle_share": 0.095419,
+            "send_share": 0.000721,
+            "inter_node_fraction": 0.0011970301428399603,
+            "pops_per_removal_call": 3.8394520997100985,
+            "pop_queue_time_fraction": 0.41977079796164574
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.08967,
+            "edge_attempts": 446844495,
+            "attempts_per_edge": 1.6648286883028534
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.938322,
+            "edge_attempts": 389415833,
+            "attempts_per_edge": 1.4508641321803752
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.884128,
+            "edge_attempts": 450478712,
+            "attempts_per_edge": 1.6783688544877762
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.789725,
+            "edge_attempts": 411251903,
+            "attempts_per_edge": 1.5322197630151901
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.757344,
+            "edge_attempts": 544892478,
+            "attempts_per_edge": 2.030130480660462
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.667975,
+            "edge_attempts": 488394230,
+            "attempts_per_edge": 1.8196324099406933
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.187066,
+            "edge_attempts": 463974132,
+            "attempts_per_edge": 1.728649349443177
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.028251,
+            "edge_attempts": 402429869,
+            "attempts_per_edge": 1.499351113055917
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.116116,
+            "edge_attempts": 429789765,
+            "attempts_per_edge": 1.6012871115508351,
+            "expansions_per_vertex": 1.601251021027565,
+            "stale_pop_fraction": 0.26624480132496114,
+            "cpu_ns_per_attempt": 275.6769972616728,
+            "work_ns_per_attempt": 289.9523584513466,
+            "queue_ns_per_attempt": 170.75136161751152,
+            "queue_work_fraction": 0.5888945429845961,
+            "lock_miss_fraction": 0.07092373457625631,
+            "work_share": 0.930448,
+            "idle_share": 0.055256,
+            "send_share": 0.000396,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.909108818347094,
+            "pop_queue_time_fraction": 0.4244651809329743
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.993318,
+            "edge_attempts": 386971098,
+            "attempts_per_edge": 1.4417556727300733,
+            "expansions_per_vertex": 1.4417557418346405,
+            "stale_pop_fraction": 0.26478412509958377,
+            "cpu_ns_per_attempt": 272.26294765300537,
+            "work_ns_per_attempt": 289.5820452203384,
+            "queue_ns_per_attempt": 171.3816792707184,
+            "queue_work_fraction": 0.5918242587875805,
+            "lock_miss_fraction": 0.08438675500550655,
+            "work_share": 0.940114,
+            "idle_share": 0.046232,
+            "send_share": 0.000338,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.252971665579684,
+            "pop_queue_time_fraction": 0.4284214784224262
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.046935,
+            "edge_attempts": 465050049,
+            "attempts_per_edge": 1.7326579419353654,
+            "expansions_per_vertex": 1.7326255142688751,
+            "stale_pop_fraction": 0.26056775995882847,
+            "cpu_ns_per_attempt": 220.08977135061005,
+            "work_ns_per_attempt": 226.9232209026173,
+            "queue_ns_per_attempt": 150.77701931705235,
+            "queue_work_fraction": 0.6644406804967633,
+            "lock_miss_fraction": 0.0480387327305147,
+            "work_share": 0.899996,
+            "idle_share": 0.088818,
+            "send_share": 0.000524,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.465398757763592,
+            "pop_queue_time_fraction": 0.3871762180886559
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.931832,
+            "edge_attempts": 418546936,
+            "attempts_per_edge": 1.5593991964789862,
+            "expansions_per_vertex": 1.5593789666891098,
+            "stale_pop_fraction": 0.25893600350714646,
+            "cpu_ns_per_attempt": 217.25269812511542,
+            "work_ns_per_attempt": 227.68654075154907,
+            "queue_ns_per_attempt": 149.1954513298222,
+            "queue_work_fraction": 0.65526688945845,
+            "lock_miss_fraction": 0.0555350983570109,
+            "work_share": 0.913116,
+            "idle_share": 0.076768,
+            "send_share": 0.000382,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.7675170007771235,
+            "pop_queue_time_fraction": 0.4006934840784084
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.974757,
+            "edge_attempts": 464599199,
+            "attempts_per_edge": 1.7309781897564305,
+            "expansions_per_vertex": 1.730947345495224,
+            "stale_pop_fraction": 0.2606523613440302,
+            "cpu_ns_per_attempt": 208.63572525875148,
+            "work_ns_per_attempt": 210.9613172191457,
+            "queue_ns_per_attempt": 135.53871679789023,
+            "queue_work_fraction": 0.6424813732893657,
+            "lock_miss_fraction": 0.05146056719508192,
+            "work_share": 0.897773,
+            "idle_share": 0.090603,
+            "send_share": 0.000837,
+            "inter_node_fraction": 0.001233002556252793,
+            "pops_per_removal_call": 3.5403763617314383,
+            "pop_queue_time_fraction": 0.39632278504302937
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.882039,
+            "edge_attempts": 426092105,
+            "attempts_per_edge": 1.5875105729194485,
+            "expansions_per_vertex": 1.5874895751476288,
+            "stale_pop_fraction": 0.25869135886708516,
+            "cpu_ns_per_attempt": 205.3266953937107,
+            "work_ns_per_attempt": 211.69341778815638,
+            "queue_ns_per_attempt": 134.3895548405716,
+            "queue_work_fraction": 0.6348310506992546,
+            "lock_miss_fraction": 0.06149693420057927,
+            "work_share": 0.913072,
+            "idle_share": 0.075537,
+            "send_share": 0.000691,
+            "inter_node_fraction": 0.0012833258198952078,
+            "pops_per_removal_call": 3.9125045155572433,
+            "pop_queue_time_fraction": 0.39930474534172766
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.804102,
+            "edge_attempts": 555746824,
+            "attempts_per_edge": 2.0705710070981107,
+            "expansions_per_vertex": 2.070539578795433,
+            "stale_pop_fraction": 0.2640649655715234,
+            "cpu_ns_per_attempt": 309.7360905997728,
+            "work_ns_per_attempt": 303.2919320830882,
+            "queue_ns_per_attempt": 177.30481049498601,
+            "queue_work_fraction": 0.584601144109605,
+            "lock_miss_fraction": 0.037332141425508183,
+            "work_share": 0.873404,
+            "idle_share": 0.107134,
+            "send_share": 0.001233,
+            "inter_node_fraction": 0.0011251058449593587,
+            "pops_per_removal_call": 3.5086485207473572,
+            "pop_queue_time_fraction": 0.421060343148803
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.689671,
+            "edge_attempts": 482881181,
+            "attempts_per_edge": 1.799092194635547,
+            "expansions_per_vertex": 1.799098163843155,
+            "stale_pop_fraction": 0.2628739905886683,
+            "cpu_ns_per_attempt": 305.5463369196821,
+            "work_ns_per_attempt": 303.2682360839405,
+            "queue_ns_per_attempt": 174.83205695557953,
+            "queue_work_fraction": 0.5764931376037299,
+            "lock_miss_fraction": 0.04095040652551146,
+            "work_share": 0.884737,
+            "idle_share": 0.097971,
+            "send_share": 0.000768,
+            "inter_node_fraction": 0.0012165891385193576,
+            "pops_per_removal_call": 3.709550070859664,
+            "pop_queue_time_fraction": 0.4232034397104436
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.162511,
+            "edge_attempts": 449907527,
+            "attempts_per_edge": 1.6762407647720727
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.025638,
+            "edge_attempts": 403360910,
+            "attempts_per_edge": 1.502819934500805
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.931929,
+            "edge_attempts": 443845046,
+            "attempts_per_edge": 1.653653505884412
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.851968,
+            "edge_attempts": 413566652,
+            "attempts_per_edge": 1.5408439277627504
+          }
+        }
+      ]
+    },
+    {
+      "job": 20833718,
+      "graph": "road-usa-z",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n1_8x15",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 8,
+            "workers": 120,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n1_16x7",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 16,
+            "workers": 112,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n2_8x7",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 2,
+            "rpn": 8,
+            "workers": 56,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n2_8x15",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 2,
+            "rpn": 8,
+            "workers": 120,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n1_8x15_control",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 8,
+            "workers": 120,
+            "sha256": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682"
+          },
+          {
+            "label": "n1_8x15_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 8,
+            "workers": 120,
+            "work_cost": true,
+            "sha256": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+          },
+          {
+            "label": "n1_16x7_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 1,
+            "rpn": 16,
+            "workers": 112,
+            "work_cost": true,
+            "sha256": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+          },
+          {
+            "label": "n2_8x7_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 2,
+            "rpn": 8,
+            "workers": 56,
+            "work_cost": true,
+            "sha256": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+          },
+          {
+            "label": "n2_8x15_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "nodes": 2,
+            "rpn": 8,
+            "workers": 120,
+            "work_cost": true,
+            "sha256": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+          }
+        ],
+        "nodes": 2,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 3,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "a[857-858]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n1_16x7": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.539944,
+              "edge_attempts": 194037062,
+              "attempts_per_edge": 3.362358145985252
+            },
+            "5620086": {
+              "seconds": 0.443555,
+              "edge_attempts": 161306594,
+              "attempts_per_edge": 2.7951904380877286
+            }
+          },
+          "medians": {
+            "seconds": 0.49174949999999995,
+            "edge_attempts": 177671828.0,
+            "attempts_per_edge": 3.0787742920364902
+          }
+        },
+        "n1_16x7_diag": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.569287,
+              "edge_attempts": 192321496,
+              "attempts_per_edge": 3.3326300762256955,
+              "expansions_per_vertex": 3.2710103962664423,
+              "stale_pop_fraction": 0.090306900001357,
+              "cpu_ns_per_attempt": 281.99792090826884,
+              "work_ns_per_attempt": 292.39942412938245,
+              "queue_ns_per_attempt": 218.35397253734087,
+              "queue_work_fraction": 0.7479209965232033,
+              "lock_miss_fraction": 0.04358292145130072,
+              "work_share": 0.884553,
+              "idle_share": 0.097299,
+              "send_share": 0.001625,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.1841030440787135,
+              "pop_queue_time_fraction": 0.36112012980960806
+            },
+            "5620086": {
+              "seconds": 0.465524,
+              "edge_attempts": 158220294,
+              "attempts_per_edge": 2.741709696630438,
+              "expansions_per_vertex": 2.7054758090739655,
+              "stale_pop_fraction": 0.0874412920955396,
+              "cpu_ns_per_attempt": 278.54433918587205,
+              "work_ns_per_attempt": 294.7984499016145,
+              "queue_ns_per_attempt": 219.20908793212584,
+              "queue_work_fraction": 0.7454316131632275,
+              "lock_miss_fraction": 0.05001039763577409,
+              "work_share": 0.898501,
+              "idle_share": 0.082268,
+              "send_share": 0.00158,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.520456635800979,
+              "pop_queue_time_fraction": 0.35769376484818594
+            }
+          },
+          "medians": {
+            "seconds": 0.5174055,
+            "edge_attempts": 175270895.0,
+            "attempts_per_edge": 3.0371698864280665,
+            "expansions_per_vertex": 2.9882431026702037,
+            "stale_pop_fraction": 0.08887409604844829,
+            "cpu_ns_per_attempt": 280.2711300470704,
+            "work_ns_per_attempt": 293.59893701549845,
+            "queue_ns_per_attempt": 218.78153023473334,
+            "queue_work_fraction": 0.7466763048432155,
+            "lock_miss_fraction": 0.04679665954353741,
+            "work_share": 0.891527,
+            "idle_share": 0.08978349999999999,
+            "send_share": 0.0016025,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.352279839939846,
+            "pop_queue_time_fraction": 0.359406947328897
+          }
+        },
+        "n1_8x15": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.590268,
+              "edge_attempts": 179420532,
+              "attempts_per_edge": 3.1090765913947283
+            },
+            "5620086": {
+              "seconds": 0.523988,
+              "edge_attempts": 158264802,
+              "attempts_per_edge": 2.742480950507501
+            }
+          },
+          "medians": {
+            "seconds": 0.5571280000000001,
+            "edge_attempts": 168842667.0,
+            "attempts_per_edge": 2.9257787709511147
+          }
+        },
+        "n1_8x15_control": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.611559,
+              "edge_attempts": 178432317,
+              "attempts_per_edge": 3.0919523743972825
+            },
+            "5620086": {
+              "seconds": 0.551054,
+              "edge_attempts": 163292690,
+              "attempts_per_edge": 2.829606368711893
+            }
+          },
+          "medians": {
+            "seconds": 0.5813065,
+            "edge_attempts": 170862503.5,
+            "attempts_per_edge": 2.9607793715545876
+          }
+        },
+        "n1_8x15_diag": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.622154,
+              "edge_attempts": 179592785,
+              "attempts_per_edge": 3.1120614658911294,
+              "expansions_per_vertex": 3.0467991297741666,
+              "stale_pop_fraction": 0.094751181160697,
+              "cpu_ns_per_attempt": 368.77357830061794,
+              "work_ns_per_attempt": 387.40053970990664,
+              "queue_ns_per_attempt": 250.83462631615615,
+              "queue_work_fraction": 0.6475152261703118,
+              "lock_miss_fraction": 0.06200689798247417,
+              "work_share": 0.911667,
+              "idle_share": 0.063905,
+              "send_share": 0.000956,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 4.421097611898157,
+              "pop_queue_time_fraction": 0.38330641921794434
+            },
+            "5620086": {
+              "seconds": 0.547974,
+              "edge_attempts": 159056184,
+              "attempts_per_edge": 2.7561943601358436,
+              "expansions_per_vertex": 2.7010441281867257,
+              "stale_pop_fraction": 0.09270274267925821,
+              "cpu_ns_per_attempt": 370.80346662058696,
+              "work_ns_per_attempt": 387.63687327256076,
+              "queue_ns_per_attempt": 246.1346112910215,
+              "queue_work_fraction": 0.6342075800360824,
+              "lock_miss_fraction": 0.06579965557744992,
+              "work_share": 0.918265,
+              "idle_share": 0.05984,
+              "send_share": 0.000787,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 4.611952323349473,
+              "pop_queue_time_fraction": 0.38193186795369866
+            }
+          },
+          "medians": {
+            "seconds": 0.585064,
+            "edge_attempts": 169324484.5,
+            "attempts_per_edge": 2.9341279130134863,
+            "expansions_per_vertex": 2.873921628980446,
+            "stale_pop_fraction": 0.0937269619199776,
+            "cpu_ns_per_attempt": 369.78852246060245,
+            "work_ns_per_attempt": 387.51870649123373,
+            "queue_ns_per_attempt": 248.48461880358883,
+            "queue_work_fraction": 0.6408614031031971,
+            "lock_miss_fraction": 0.06390327677996205,
+            "work_share": 0.914966,
+            "idle_share": 0.0618725,
+            "send_share": 0.0008715000000000001,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.516524967623814,
+            "pop_queue_time_fraction": 0.3826191435858215
+          }
+        },
+        "n2_8x15": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.581728,
+              "edge_attempts": 338215942,
+              "attempts_per_edge": 5.860752146854169
+            },
+            "5620086": {
+              "seconds": 0.46661,
+              "edge_attempts": 261665213,
+              "attempts_per_edge": 4.534248000784077
+            }
+          },
+          "medians": {
+            "seconds": 0.524169,
+            "edge_attempts": 299940577.5,
+            "attempts_per_edge": 5.197500073819123
+          }
+        },
+        "n2_8x15_diag": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.600091,
+              "edge_attempts": 331372666,
+              "attempts_per_edge": 5.742168900093684,
+              "expansions_per_vertex": 5.584710030718643,
+              "stale_pop_fraction": 0.09378030437853853,
+              "cpu_ns_per_attempt": 384.1300104034531,
+              "work_ns_per_attempt": 385.88262436829956,
+              "queue_ns_per_attempt": 253.91689069279673,
+              "queue_work_fraction": 0.6619628691523401,
+              "lock_miss_fraction": 0.048449135364684856,
+              "work_share": 0.876816,
+              "idle_share": 0.088661,
+              "send_share": 0.002552,
+              "inter_node_fraction": 0.0015904133188237171,
+              "pops_per_removal_call": 3.723640041011476,
+              "pop_queue_time_fraction": 0.3869313860803163
+            },
+            "5620086": {
+              "seconds": 0.490203,
+              "edge_attempts": 271406854,
+              "attempts_per_edge": 4.703055370025804,
+              "expansions_per_vertex": 4.603004666863515,
+              "stale_pop_fraction": 0.09261894752910434,
+              "cpu_ns_per_attempt": 376.3566393684369,
+              "work_ns_per_attempt": 385.56122462552105,
+              "queue_ns_per_attempt": 252.62103186854148,
+              "queue_work_fraction": 0.660912863298993,
+              "lock_miss_fraction": 0.054277339925398585,
+              "work_share": 0.889462,
+              "idle_share": 0.07647,
+              "send_share": 0.003571,
+              "inter_node_fraction": 0.0015928484989550043,
+              "pops_per_removal_call": 4.1028646950326655,
+              "pop_queue_time_fraction": 0.3850384177994619
+            }
+          },
+          "medians": {
+            "seconds": 0.545147,
+            "edge_attempts": 301389760.0,
+            "attempts_per_edge": 5.2226121350597445,
+            "expansions_per_vertex": 5.093857348791079,
+            "stale_pop_fraction": 0.09319962595382143,
+            "cpu_ns_per_attempt": 380.243324885945,
+            "work_ns_per_attempt": 385.72192449691033,
+            "queue_ns_per_attempt": 253.2689612806691,
+            "queue_work_fraction": 0.6614378662256666,
+            "lock_miss_fraction": 0.05136323764504172,
+            "work_share": 0.883139,
+            "idle_share": 0.0825655,
+            "send_share": 0.0030615,
+            "inter_node_fraction": 0.0015916309088893606,
+            "pops_per_removal_call": 3.9132523680220705,
+            "pop_queue_time_fraction": 0.3859849019398891
+          }
+        },
+        "n2_8x7": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.519603,
+              "edge_attempts": 210314274,
+              "attempts_per_edge": 3.6444167166418664
+            },
+            "5620086": {
+              "seconds": 0.389326,
+              "edge_attempts": 155989054,
+              "attempts_per_edge": 2.7030458047310226
+            }
+          },
+          "medians": {
+            "seconds": 0.45446450000000005,
+            "edge_attempts": 183151664.0,
+            "attempts_per_edge": 3.1737312606864445
+          }
+        },
+        "n2_8x7_diag": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.535274,
+              "edge_attempts": 198503852,
+              "attempts_per_edge": 3.439760615328482,
+              "expansions_per_vertex": 3.3758907823902162,
+              "stale_pop_fraction": 0.08980031266838569,
+              "cpu_ns_per_attempt": 263.18932381725267,
+              "work_ns_per_attempt": 265.86434203463256,
+              "queue_ns_per_attempt": 191.24042966782878,
+              "queue_work_fraction": 0.7193158292845342,
+              "lock_miss_fraction": 0.04887124285727036,
+              "work_share": 0.8805,
+              "idle_share": 0.098683,
+              "send_share": 0.002633,
+              "inter_node_fraction": 0.0018799987820891254,
+              "pops_per_removal_call": 3.315931491821412,
+              "pop_queue_time_fraction": 0.36632012305461326
+            },
+            "5620086": {
+              "seconds": 0.417602,
+              "edge_attempts": 156731421,
+              "attempts_per_edge": 2.7159098612366845,
+              "expansions_per_vertex": 2.679913227966338,
+              "stale_pop_fraction": 0.08748972575144752,
+              "cpu_ns_per_attempt": 259.709777894504,
+              "work_ns_per_attempt": 266.6949521236928,
+              "queue_ns_per_attempt": 191.7637240965524,
+              "queue_work_fraction": 0.7197763000028896,
+              "lock_miss_fraction": 0.05481622354222158,
+              "work_share": 0.892602,
+              "idle_share": 0.085544,
+              "send_share": 0.003182,
+              "inter_node_fraction": 0.0019006075526571407,
+              "pops_per_removal_call": 3.6314154633325715,
+              "pop_queue_time_fraction": 0.3694704865899727
+            }
+          },
+          "medians": {
+            "seconds": 0.47643800000000003,
+            "edge_attempts": 177617636.5,
+            "attempts_per_edge": 3.0778352382825833,
+            "expansions_per_vertex": 3.027902005178277,
+            "stale_pop_fraction": 0.0886450192099166,
+            "cpu_ns_per_attempt": 261.44955085587833,
+            "work_ns_per_attempt": 266.2796470791627,
+            "queue_ns_per_attempt": 191.50207688219058,
+            "queue_work_fraction": 0.719546064643712,
+            "lock_miss_fraction": 0.05184373319974597,
+            "work_share": 0.886551,
+            "idle_share": 0.0921135,
+            "send_share": 0.0029075,
+            "inter_node_fraction": 0.001890303167373133,
+            "pops_per_removal_call": 3.473673477576992,
+            "pop_queue_time_fraction": 0.367895304822293
+          }
+        }
+      },
+      "comparisons": {
+        "n1_16x7/n1_8x15:seconds": {
+          "sources": {
+            "1294456": 0.914743811285721,
+            "5620086": 0.8464983930929716
+          },
+          "median": 0.8806211021893463
+        },
+        "n1_16x7/n1_8x15:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.0814652026558476,
+            "5620086": 1.0192196367199828
+          },
+          "median": 1.0503424196879152
+        },
+        "n2_8x7/n1_16x7:seconds": {
+          "sources": {
+            "1294456": 0.9623275747114517,
+            "5620086": 0.8777400773297562
+          },
+          "median": 0.920033826020604
+        },
+        "n2_8x7/n1_16x7:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.0838871287383232,
+            "5620086": 0.9670345776441104
+          },
+          "median": 1.0254608531912168
+        },
+        "n2_8x15/n2_8x7:seconds": {
+          "sources": {
+            "1294456": 1.1195624351668485,
+            "5620086": 1.1985071636623292
+          },
+          "median": 1.1590347994145889
+        },
+        "n2_8x15/n2_8x7:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.6081454461811755,
+            "5620086": 1.677458810667574
+          },
+          "median": 1.6428021284243748
+        },
+        "n2_8x15/n1_8x15:seconds": {
+          "sources": {
+            "1294456": 0.9855319956358807,
+            "5620086": 0.8904974923089842
+          },
+          "median": 0.9380147439724325
+        },
+        "n2_8x15/n1_8x15:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.8850459210543418,
+            "5620086": 1.6533380113159968
+          },
+          "median": 1.7691919661851694
+        },
+        "n1_8x15_control/n1_8x15:seconds": {
+          "sources": {
+            "1294456": 1.0360700563134033,
+            "5620086": 1.0516538546684275
+          },
+          "median": 1.0438619554909154
+        },
+        "n1_8x15_control/n1_8x15:attempts_per_edge": {
+          "sources": {
+            "1294456": 0.9944921855431796,
+            "5620086": 1.0317688325923537
+          },
+          "median": 1.0131305090677667
+        },
+        "n1_16x7_diag/n1_8x15_diag:seconds": {
+          "sources": {
+            "1294456": 0.9150258617641291,
+            "5620086": 0.8495366568486826
+          },
+          "median": 0.8822812593064059
+        },
+        "n1_16x7_diag/n1_8x15_diag:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.0708754029289094,
+            "5620086": 0.9947446871980785
+          },
+          "median": 1.0328100450634938
+        },
+        "n2_8x7_diag/n1_16x7_diag:seconds": {
+          "sources": {
+            "1294456": 0.9402533344341255,
+            "5620086": 0.8970579390106632
+          },
+          "median": 0.9186556367223944
+        },
+        "n2_8x7_diag/n1_16x7_diag:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.0321459437898715,
+            "5620086": 0.9905898733824878
+          },
+          "median": 1.0113679085861795
+        },
+        "n2_8x15_diag/n2_8x7_diag:seconds": {
+          "sources": {
+            "1294456": 1.1210912541987843,
+            "5620086": 1.173852136723483
+          },
+          "median": 1.1474716954611337
+        },
+        "n2_8x15_diag/n2_8x7_diag:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.669351313142276,
+            "5620086": 1.7316684316924553
+          },
+          "median": 1.7005098724173657
+        },
+        "n2_8x15_diag/n1_8x15_diag:seconds": {
+          "sources": {
+            "1294456": 0.9645377189570429,
+            "5620086": 0.8945734651644057
+          },
+          "median": 0.9295555920607244
+        },
+        "n2_8x15_diag/n1_8x15_diag:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.8451335113490221,
+            "5620086": 1.7063583896870052
+          },
+          "median": 1.7757459505180138
+        }
+      },
+      "rows": [
+        {
+          "variant": "n2_8x15_diag",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.496842,
+            "edge_attempts": 268591568,
+            "attempts_per_edge": 4.654270876394488,
+            "expansions_per_vertex": 4.553625794122413,
+            "stale_pop_fraction": 0.09199283991074711,
+            "cpu_ns_per_attempt": 385.76529877140445,
+            "work_ns_per_attempt": 390.57471826516905,
+            "queue_ns_per_attempt": 257.068136667977,
+            "queue_work_fraction": 0.6581791515073135,
+            "lock_miss_fraction": 0.048696227822129304,
+            "work_share": 0.879765,
+            "idle_share": 0.08504,
+            "send_share": 0.003873,
+            "inter_node_fraction": 0.001582354215974494,
+            "pops_per_removal_call": 3.865905010782158,
+            "pop_queue_time_fraction": 0.3831083331077353
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.640392,
+            "edge_attempts": 346524481,
+            "attempts_per_edge": 6.004726104715302,
+            "expansions_per_vertex": 5.8439521087659525,
+            "stale_pop_fraction": 0.09418140246824964,
+            "cpu_ns_per_attempt": 386.55247409489664,
+            "work_ns_per_attempt": 389.68822523104797,
+            "queue_ns_per_attempt": 254.3992100113797,
+            "queue_work_fraction": 0.6528275517191858,
+            "lock_miss_fraction": 0.047770461733322396,
+            "work_share": 0.878606,
+            "idle_share": 0.088817,
+            "send_share": 0.002563,
+            "inter_node_fraction": 0.0016184137939737654,
+            "pops_per_removal_call": 3.7514465960896644,
+            "pop_queue_time_fraction": 0.3884578689586888
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.545819,
+            "edge_attempts": 165368034,
+            "attempts_per_edge": 2.865568827286542
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.611227,
+            "edge_attempts": 179542176,
+            "attempts_per_edge": 3.1111844912469233
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.436423,
+            "edge_attempts": 161272650,
+            "attempts_per_edge": 2.794602241772391
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.541404,
+            "edge_attempts": 194500178,
+            "attempts_per_edge": 3.3703832203658157
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.417832,
+            "edge_attempts": 165725044,
+            "attempts_per_edge": 2.8717552510002666
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.481383,
+            "edge_attempts": 190954491,
+            "attempts_per_edge": 3.3089420222530346
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.476968,
+            "edge_attempts": 266256630,
+            "attempts_per_edge": 4.613810060693875
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.651642,
+            "edge_attempts": 366243047,
+            "attempts_per_edge": 6.346417946128814
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.497075,
+            "edge_attempts": 151191130,
+            "attempts_per_edge": 2.6199053021953875
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.722603,
+            "edge_attempts": 219132153,
+            "attempts_per_edge": 3.7972167383509263
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.58007,
+            "edge_attempts": 169344414,
+            "attempts_per_edge": 2.934473260010497,
+            "expansions_per_vertex": 2.870930921909638,
+            "stale_pop_fraction": 0.09238067634368097,
+            "cpu_ns_per_attempt": 355.2753009851273,
+            "work_ns_per_attempt": 376.8216824677784,
+            "queue_ns_per_attempt": 251.30555758481393,
+            "queue_work_fraction": 0.6669084324952633,
+            "lock_miss_fraction": 0.06336834697909173,
+            "work_share": 0.916737,
+            "idle_share": 0.062375,
+            "send_share": 0.000719,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.54099640299975,
+            "pop_queue_time_fraction": 0.3815532767223739
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.638892,
+            "edge_attempts": 184220032,
+            "attempts_per_edge": 3.192244403540102,
+            "expansions_per_vertex": 3.125134905340454,
+            "stale_pop_fraction": 0.09458023834515697,
+            "cpu_ns_per_attempt": 360.2665920121,
+            "work_ns_per_attempt": 378.913586335714,
+            "queue_ns_per_attempt": 255.3113269604553,
+            "queue_work_fraction": 0.6737982911339889,
+            "lock_miss_fraction": 0.06133426939775257,
+            "work_share": 0.910475,
+            "idle_share": 0.06633,
+            "send_share": 0.000921,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.386318020518856,
+            "pop_queue_time_fraction": 0.3739891181615589
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.465649,
+            "edge_attempts": 158029304,
+            "attempts_per_edge": 2.7384001392928723,
+            "expansions_per_vertex": 2.7028127583402037,
+            "stale_pop_fraction": 0.08663718024742187,
+            "cpu_ns_per_attempt": 280.7923915237898,
+            "work_ns_per_attempt": 295.4126596672222,
+            "queue_ns_per_attempt": 222.55589891985989,
+            "queue_work_fraction": 0.7533729230513196,
+            "lock_miss_fraction": 0.048145014540522245,
+            "work_share": 0.895138,
+            "idle_share": 0.086663,
+            "send_share": 0.00147,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.419637353390268,
+            "pop_queue_time_fraction": 0.36261861646716975
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.549294,
+            "edge_attempts": 183773284,
+            "attempts_per_edge": 3.184502960943931,
+            "expansions_per_vertex": 3.13111164255481,
+            "stale_pop_fraction": 0.08990544130627083,
+            "cpu_ns_per_attempt": 286.4050031341879,
+            "work_ns_per_attempt": 293.10648331234046,
+            "queue_ns_per_attempt": 219.77895858791723,
+            "queue_work_fraction": 0.7498263296814085,
+            "lock_miss_fraction": 0.04057065395151703,
+            "work_share": 0.875557,
+            "idle_share": 0.105906,
+            "send_share": 0.001893,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.0116684779291,
+            "pop_queue_time_fraction": 0.3581077410509789
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.430867,
+            "edge_attempts": 159355942,
+            "attempts_per_edge": 2.7613886964277645,
+            "expansions_per_vertex": 2.726943364540548,
+            "stale_pop_fraction": 0.08745355768422157,
+            "cpu_ns_per_attempt": 263.9323373395138,
+            "work_ns_per_attempt": 266.3654236376074,
+            "queue_ns_per_attempt": 191.47788892049624,
+            "queue_work_fraction": 0.718854145202433,
+            "lock_miss_fraction": 0.04848260871206746,
+            "work_share": 0.8796,
+            "idle_share": 0.099376,
+            "send_share": 0.003044,
+            "inter_node_fraction": 0.0018691301765201827,
+            "pops_per_removal_call": 3.3272637181821896,
+            "pop_queue_time_fraction": 0.36783345109945004
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.552042,
+            "edge_attempts": 207289425,
+            "attempts_per_edge": 3.5920008246947632,
+            "expansions_per_vertex": 3.5270114889970903,
+            "stale_pop_fraction": 0.09070966499515634,
+            "cpu_ns_per_attempt": 259.4264187910213,
+            "work_ns_per_attempt": 265.44553828541905,
+            "queue_ns_per_attempt": 191.56290813804225,
+            "queue_work_fraction": 0.7216655792197386,
+            "lock_miss_fraction": 0.05380436732003591,
+            "work_share": 0.889943,
+            "idle_share": 0.0896,
+            "send_share": 0.002538,
+            "inter_node_fraction": 0.0018614794266518901,
+            "pops_per_removal_call": 3.5191508615736744,
+            "pop_queue_time_fraction": 0.36993242767326656
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.505383,
+            "edge_attempts": 154926628,
+            "attempts_per_edge": 2.6846356274237277
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.590268,
+            "edge_attempts": 177010402,
+            "attempts_per_edge": 3.067312816191909
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.443555,
+            "edge_attempts": 161306594,
+            "attempts_per_edge": 2.7951904380877286
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.539944,
+            "edge_attempts": 194037062,
+            "attempts_per_edge": 3.362358145985252
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.388618,
+            "edge_attempts": 155697786,
+            "attempts_per_edge": 2.6979985868316665
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.460579,
+            "edge_attempts": 182133565,
+            "attempts_per_edge": 3.1560892008099173
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.46661,
+            "edge_attempts": 255705143,
+            "attempts_per_edge": 4.430969329644734
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.629176,
+            "edge_attempts": 338274316,
+            "attempts_per_edge": 5.861763676777322
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.558087,
+            "edge_attempts": 163292690,
+            "attempts_per_edge": 2.829606368711893
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.611559,
+            "edge_attempts": 177109862,
+            "attempts_per_edge": 3.0690363020958533
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.585042,
+            "edge_attempts": 164376108,
+            "attempts_per_edge": 2.8483803044758096,
+            "expansions_per_vertex": 2.786468455148706,
+            "stale_pop_fraction": 0.09345936532440444,
+            "cpu_ns_per_attempt": 370.80346662058696,
+            "work_ns_per_attempt": 395.55523482767944,
+            "queue_ns_per_attempt": 246.1346112910215,
+            "queue_work_fraction": 0.6222509263421785,
+            "lock_miss_fraction": 0.06843439004970935,
+            "work_share": 0.926142,
+            "idle_share": 0.053571,
+            "send_share": 0.000718,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.758841560647761,
+            "pop_queue_time_fraction": 0.3817683589420439
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.665504,
+            "edge_attempts": 181642693,
+            "attempts_per_edge": 3.147583158454792,
+            "expansions_per_vertex": 3.06870314277402,
+            "stale_pop_fraction": 0.09659839892519163,
+            "cpu_ns_per_attempt": 383.229505466537,
+            "work_ns_per_attempt": 398.7845192319407,
+            "queue_ns_per_attempt": 250.69518589535983,
+            "queue_work_fraction": 0.6286482393504115,
+            "lock_miss_fraction": 0.05576794385610464,
+            "work_share": 0.907036,
+            "idle_share": 0.070339,
+            "send_share": 0.000924,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.200967039713637,
+            "pop_queue_time_fraction": 0.3870307800967039
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.475706,
+            "edge_attempts": 164337874,
+            "attempts_per_edge": 2.8477177691847237,
+            "expansions_per_vertex": 2.8034253648222496,
+            "stale_pop_fraction": 0.08785228442292553,
+            "cpu_ns_per_attempt": 275.24636912973574,
+            "work_ns_per_attempt": 292.98207910368853,
+            "queue_ns_per_attempt": 218.39810385417888,
+            "queue_work_fraction": 0.7454316131632275,
+            "lock_miss_fraction": 0.0531653139262879,
+            "work_share": 0.903696,
+            "idle_share": 0.077452,
+            "send_share": 0.001691,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.6631662965869216,
+            "pop_queue_time_fraction": 0.35577650208537537
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.556761,
+            "edge_attempts": 189701639,
+            "attempts_per_edge": 3.287232060844147,
+            "expansions_per_vertex": 3.2304533358121046,
+            "stale_pop_fraction": 0.090306900001357,
+            "cpu_ns_per_attempt": 280.346791964196,
+            "work_ns_per_attempt": 292.39942412938245,
+            "queue_ns_per_attempt": 218.01243192211612,
+            "queue_work_fraction": 0.7455980208280055,
+            "lock_miss_fraction": 0.046144091738658764,
+            "work_share": 0.889531,
+            "idle_share": 0.092525,
+            "send_share": 0.00155,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.2836321809841436,
+            "pop_queue_time_fraction": 0.36112012980960806
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.420397,
+            "edge_attempts": 158196725,
+            "attempts_per_edge": 2.7413012828030694,
+            "expansions_per_vertex": 2.7048040018796238,
+            "stale_pop_fraction": 0.087188132603556,
+            "cpu_ns_per_attempt": 258.788426953845,
+            "work_ns_per_attempt": 266.6949521236928,
+            "queue_ns_per_attempt": 191.96070586903943,
+            "queue_work_fraction": 0.7197763000028896,
+            "lock_miss_fraction": 0.05708520221851984,
+            "work_share": 0.896055,
+            "idle_share": 0.082137,
+            "send_share": 0.00315,
+            "inter_node_fraction": 0.0019228527012806365,
+            "pops_per_removal_call": 3.7043340144475847,
+            "pop_queue_time_fraction": 0.3694704865899727
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.535274,
+            "edge_attempts": 198503852,
+            "attempts_per_edge": 3.439760615328482,
+            "expansions_per_vertex": 3.3758907823902162,
+            "stale_pop_fraction": 0.0907922929593087,
+            "cpu_ns_per_attempt": 263.18932381725267,
+            "work_ns_per_attempt": 265.9224416461198,
+            "queue_ns_per_attempt": 191.51956972650936,
+            "queue_work_fraction": 0.7202083755735699,
+            "lock_miss_fraction": 0.04887124285727036,
+            "work_share": 0.8805,
+            "idle_share": 0.098683,
+            "send_share": 0.002633,
+            "inter_node_fraction": 0.0018799987820891254,
+            "pops_per_removal_call": 3.315931491821412,
+            "pop_queue_time_fraction": 0.36836883689752364
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.496186,
+            "edge_attempts": 274490907,
+            "attempts_per_edge": 4.756497174495098,
+            "expansions_per_vertex": 4.64327384574166,
+            "stale_pop_fraction": 0.09285409226539507,
+            "cpu_ns_per_attempt": 376.97201392175805,
+            "work_ns_per_attempt": 387.67276542242615,
+            "queue_ns_per_attempt": 252.62103186854148,
+            "queue_work_fraction": 0.6516347146369024,
+            "lock_miss_fraction": 0.056304193924050915,
+            "work_share": 0.893588,
+            "idle_share": 0.072882,
+            "send_share": 0.003246,
+            "inter_node_fraction": 0.0015852874864084295,
+            "pops_per_removal_call": 4.1832655317990906,
+            "pop_queue_time_fraction": 0.3855215133885303
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.586016,
+            "edge_attempts": 314664726,
+            "attempts_per_edge": 5.452646488330756,
+            "expansions_per_vertex": 5.321292751134395,
+            "stale_pop_fraction": 0.09374465641451149,
+            "cpu_ns_per_attempt": 390.408731012322,
+            "work_ns_per_attempt": 391.9049286763716,
+            "queue_ns_per_attempt": 259.4265110215542,
+            "queue_work_fraction": 0.6619628691523401,
+            "lock_miss_fraction": 0.048449135364684856,
+            "work_share": 0.876816,
+            "idle_share": 0.088661,
+            "send_share": 0.002545,
+            "inter_node_fraction": 0.0016071582170287496,
+            "pops_per_removal_call": 3.723640041011476,
+            "pop_queue_time_fraction": 0.3847345150922549
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.434546,
+            "edge_attempts": 158148769,
+            "attempts_per_edge": 2.740470280490486
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.524507,
+            "edge_attempts": 189166318,
+            "attempts_per_edge": 3.27795578698948
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.389326,
+            "edge_attempts": 155989054,
+            "attempts_per_edge": 2.7030458047310226
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.527897,
+            "edge_attempts": 211027418,
+            "attempts_per_edge": 3.656774384362379
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.446492,
+            "edge_attempts": 261665213,
+            "attempts_per_edge": 4.534248000784077
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.558904,
+            "edge_attempts": 325367587,
+            "attempts_per_edge": 5.6381102935325575
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.551054,
+            "edge_attempts": 163626933,
+            "attempts_per_edge": 2.8353982760011744
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.603826,
+            "edge_attempts": 178432317,
+            "attempts_per_edge": 3.0919523743972825
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.547974,
+            "edge_attempts": 159056184,
+            "attempts_per_edge": 2.7561943601358436,
+            "expansions_per_vertex": 2.7010441281867257,
+            "stale_pop_fraction": 0.09270274267925821,
+            "cpu_ns_per_attempt": 357.0509988470489,
+            "work_ns_per_attempt": 379.6283268055771,
+            "queue_ns_per_attempt": 248.8954487682616,
+            "queue_work_fraction": 0.6556292857875459,
+            "lock_miss_fraction": 0.06579965557744992,
+            "work_share": 0.918265,
+            "idle_share": 0.05984,
+            "send_share": 0.000787,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.611952323349473,
+            "pop_queue_time_fraction": 0.38193186795369866
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.622154,
+            "edge_attempts": 179592785,
+            "attempts_per_edge": 3.1120614658911294,
+            "expansions_per_vertex": 3.0467991297741666,
+            "stale_pop_fraction": 0.09431029132737791,
+            "cpu_ns_per_attempt": 358.71755946654537,
+            "work_ns_per_attempt": 380.6170108671125,
+            "queue_ns_per_attempt": 250.83462631615615,
+            "queue_work_fraction": 0.6590210609470941,
+            "lock_miss_fraction": 0.06653927951291908,
+            "work_share": 0.915584,
+            "idle_share": 0.059704,
+            "send_share": 0.000956,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.561930420063416,
+            "pop_queue_time_fraction": 0.38330641921794434
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.465524,
+            "edge_attempts": 158220294,
+            "attempts_per_edge": 2.741709696630438,
+            "expansions_per_vertex": 2.7054758090739655,
+            "stale_pop_fraction": 0.0874412920955396,
+            "cpu_ns_per_attempt": 279.8304347734305,
+            "work_ns_per_attempt": 295.6969666609266,
+            "queue_ns_per_attempt": 219.20908793212584,
+            "queue_work_fraction": 0.7413301881567532,
+            "lock_miss_fraction": 0.048854649370389115,
+            "work_share": 0.897323,
+            "idle_share": 0.084111,
+            "send_share": 0.0014,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.483822124134639,
+            "pop_queue_time_fraction": 0.36178065201264636
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.569287,
+            "edge_attempts": 192868354,
+            "attempts_per_edge": 3.342106268206984,
+            "expansions_per_vertex": 3.27693067628744,
+            "stale_pop_fraction": 0.09088254445113864,
+            "cpu_ns_per_attempt": 281.99792090826884,
+            "work_ns_per_attempt": 292.4237067943246,
+            "queue_ns_per_attempt": 219.35548237068303,
+            "queue_work_fraction": 0.7501289302955391,
+            "lock_miss_fraction": 0.04358292145130072,
+            "work_share": 0.884553,
+            "idle_share": 0.097299,
+            "send_share": 0.001821,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.1841030440787135,
+            "pop_queue_time_fraction": 0.36313289780897967
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.417602,
+            "edge_attempts": 156731421,
+            "attempts_per_edge": 2.7159098612366845,
+            "expansions_per_vertex": 2.679913227966338,
+            "stale_pop_fraction": 0.08748972575144752,
+            "cpu_ns_per_attempt": 259.709777894504,
+            "work_ns_per_attempt": 266.3683180668668,
+            "queue_ns_per_attempt": 191.7637240965524,
+            "queue_work_fraction": 0.7199194164240423,
+            "lock_miss_fraction": 0.05481622354222158,
+            "work_share": 0.892602,
+            "idle_share": 0.085544,
+            "send_share": 0.003333,
+            "inter_node_fraction": 0.0018824049327033155,
+            "pops_per_removal_call": 3.6314154633325715,
+            "pop_queue_time_fraction": 0.36053471210492155
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.552576,
+            "edge_attempts": 207785688,
+            "attempts_per_edge": 3.600600284629902,
+            "expansions_per_vertex": 3.538202331974394,
+            "stale_pop_fraction": 0.08978875514635769,
+            "cpu_ns_per_attempt": 258.8720118586801,
+            "work_ns_per_attempt": 265.63882012893976,
+            "queue_ns_per_attempt": 190.4710674016036,
+            "queue_work_fraction": 0.7170302416986714,
+            "lock_miss_fraction": 0.05401196948151158,
+            "work_share": 0.89186,
+            "idle_share": 0.087712,
+            "send_share": 0.002588,
+            "inter_node_fraction": 0.0018675299715541524,
+            "pops_per_removal_call": 3.568725638912598,
+            "pop_queue_time_fraction": 0.3659316905766469
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.490203,
+            "edge_attempts": 271406854,
+            "attempts_per_edge": 4.703055370025804,
+            "expansions_per_vertex": 4.603004666863515,
+            "stale_pop_fraction": 0.09261894752910434,
+            "cpu_ns_per_attempt": 376.3566393684369,
+            "work_ns_per_attempt": 385.56122462552105,
+            "queue_ns_per_attempt": 254.82237294431928,
+            "queue_work_fraction": 0.660912863298993,
+            "lock_miss_fraction": 0.054277339925398585,
+            "work_share": 0.889462,
+            "idle_share": 0.07647,
+            "send_share": 0.003571,
+            "inter_node_fraction": 0.0015928484989550043,
+            "pops_per_removal_call": 4.1028646950326655,
+            "pop_queue_time_fraction": 0.38397047342296253
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.608971,
+            "edge_attempts": 331372666,
+            "attempts_per_edge": 5.742168900093684,
+            "expansions_per_vertex": 5.584710030718643,
+            "stale_pop_fraction": 0.09451687638242688,
+            "cpu_ns_per_attempt": 384.1300104034531,
+            "work_ns_per_attempt": 385.88262436829956,
+            "queue_ns_per_attempt": 253.91689069279673,
+            "queue_work_fraction": 0.6580158697439814,
+            "lock_miss_fraction": 0.04667063579359093,
+            "work_share": 0.874911,
+            "idle_share": 0.091537,
+            "send_share": 0.002552,
+            "inter_node_fraction": 0.001582635062603504,
+            "pops_per_removal_call": 3.7208642658950395,
+            "pop_queue_time_fraction": 0.3895750621243771
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.523988,
+            "edge_attempts": 161207595,
+            "attempts_per_edge": 2.7934749405912016
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.583681,
+            "edge_attempts": 179420532,
+            "attempts_per_edge": 3.1090765913947283
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.396706,
+            "edge_attempts": 159671733,
+            "attempts_per_edge": 2.7668608594791655
+          }
+        },
+        {
+          "variant": "n2_8x7",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.519603,
+            "edge_attempts": 210314274,
+            "attempts_per_edge": 3.6444167166418664
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.485742,
+            "edge_attempts": 282003978,
+            "attempts_per_edge": 4.886686918752386
+          }
+        },
+        {
+          "variant": "n2_8x15",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.581728,
+            "edge_attempts": 338215942,
+            "attempts_per_edge": 5.860752146854169
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.539364,
+            "edge_attempts": 160659373,
+            "attempts_per_edge": 2.78397511262788
+          }
+        },
+        {
+          "variant": "n1_8x15_control",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.619131,
+            "edge_attempts": 181595753,
+            "attempts_per_edge": 3.146769761829705
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.542678,
+            "edge_attempts": 150781355,
+            "attempts_per_edge": 2.612804543736825,
+            "expansions_per_vertex": 2.5650608395159598,
+            "stale_pop_fraction": 0.09226754917477514,
+            "cpu_ns_per_attempt": 375.3709817105703,
+            "work_ns_per_attempt": 387.63687327256076,
+            "queue_ns_per_attempt": 245.8422433309443,
+            "queue_work_fraction": 0.6342075800360824,
+            "lock_miss_fraction": 0.04831826181856714,
+            "work_share": 0.89753,
+            "idle_share": 0.080393,
+            "send_share": 0.000872,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.020596073478758,
+            "pop_queue_time_fraction": 0.38855214335685595
+          }
+        },
+        {
+          "variant": "n1_8x15_diag",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.608311,
+            "edge_attempts": 171784136,
+            "attempts_per_edge": 2.9767498181900853,
+            "expansions_per_vertex": 2.914522222440757,
+            "stale_pop_fraction": 0.094751181160697,
+            "cpu_ns_per_attempt": 368.77357830061794,
+            "work_ns_per_attempt": 387.40053970990664,
+            "queue_ns_per_attempt": 250.84774808876102,
+            "queue_work_fraction": 0.6475152261703118,
+            "lock_miss_fraction": 0.06200689798247417,
+            "work_share": 0.911667,
+            "idle_share": 0.063905,
+            "send_share": 0.000973,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.421097611898157,
+            "pop_queue_time_fraction": 0.37792347656661424
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.449687,
+            "edge_attempts": 153504837,
+            "attempts_per_edge": 2.659998217943994,
+            "expansions_per_vertex": 2.6270075762463376,
+            "stale_pop_fraction": 0.08695108292323811,
+            "cpu_ns_per_attempt": 278.54433918587205,
+            "work_ns_per_attempt": 294.7984499016145,
+            "queue_ns_per_attempt": 223.7919357686638,
+            "queue_work_fraction": 0.759135388409782,
+            "lock_miss_fraction": 0.05001039763577409,
+            "work_share": 0.898501,
+            "idle_share": 0.082268,
+            "send_share": 0.00158,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.520456635800979,
+            "pop_queue_time_fraction": 0.35769376484818594
+          }
+        },
+        {
+          "variant": "n1_16x7_diag",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.570455,
+            "edge_attempts": 192321496,
+            "attempts_per_edge": 3.3326300762256955,
+            "expansions_per_vertex": 3.2710103962664423,
+            "stale_pop_fraction": 0.08990354492884346,
+            "cpu_ns_per_attempt": 283.9035691725276,
+            "work_ns_per_attempt": 291.94791101250587,
+            "queue_ns_per_attempt": 218.35397253734087,
+            "queue_work_fraction": 0.7479209965232033,
+            "lock_miss_fraction": 0.041881229027252144,
+            "work_share": 0.878807,
+            "idle_share": 0.103545,
+            "send_share": 0.001625,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.047749911625189,
+            "pop_queue_time_fraction": 0.3548337095858531
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.41175,
+            "edge_attempts": 153982867,
+            "attempts_per_edge": 2.6682817285679867,
+            "expansions_per_vertex": 2.631512000055789,
+            "stale_pop_fraction": 0.08792011189316118,
+            "cpu_ns_per_attempt": 260.6855221366933,
+            "work_ns_per_attempt": 266.8421870596811,
+            "queue_ns_per_attempt": 190.9998636280643,
+            "queue_work_fraction": 0.7157783622323026,
+            "lock_miss_fraction": 0.05440099840110921,
+            "work_share": 0.890995,
+            "idle_share": 0.086818,
+            "send_share": 0.003182,
+            "inter_node_fraction": 0.0019006075526571407,
+            "pops_per_removal_call": 3.5996563640126147,
+            "pop_queue_time_fraction": 0.37032925483376583
+          }
+        },
+        {
+          "variant": "n2_8x7_diag",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.508754,
+            "edge_attempts": 188290617,
+            "attempts_per_edge": 3.262781261254817,
+            "expansions_per_vertex": 3.213083729066105,
+            "stale_pop_fraction": 0.08980031266838569,
+            "cpu_ns_per_attempt": 264.1198564238599,
+            "work_ns_per_attempt": 265.86434203463256,
+            "queue_ns_per_attempt": 191.24042966782878,
+            "queue_work_fraction": 0.7193158292845342,
+            "lock_miss_fraction": 0.048367056705656365,
+            "work_share": 0.878543,
+            "idle_share": 0.100415,
+            "send_share": 0.002761,
+            "inter_node_fraction": 0.0018803964087068662,
+            "pops_per_removal_call": 3.2981054979161,
+            "pop_queue_time_fraction": 0.36632012305461326
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.458233,
+            "edge_attempts": 256563469,
+            "attempts_per_edge": 4.445842773863401,
+            "expansions_per_vertex": 4.355843718304161,
+            "stale_pop_fraction": 0.09169736976168673,
+            "cpu_ns_per_attempt": 371.5166105779463,
+            "work_ns_per_attempt": 379.2082964079348,
+            "queue_ns_per_attempt": 251.81578919239408,
+            "queue_work_fraction": 0.664056645325877,
+            "lock_miss_fraction": 0.053788206058669,
+            "work_share": 0.884657,
+            "idle_share": 0.07895,
+            "send_share": 0.003917,
+            "inter_node_fraction": 0.0015964392810731756,
+            "pops_per_removal_call": 4.057032927932339,
+            "pop_queue_time_fraction": 0.3850384177994619
+          }
+        },
+        {
+          "variant": "n2_8x15_diag",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.600091,
+            "edge_attempts": 335031148,
+            "attempts_per_edge": 5.805564658758802,
+            "expansions_per_vertex": 5.660365175315662,
+            "stale_pop_fraction": 0.09378030437853853,
+            "cpu_ns_per_attempt": 373.28752792561244,
+            "work_ns_per_attempt": 379.21990763676695,
+            "queue_ns_per_attempt": 252.6326733268848,
+            "queue_work_fraction": 0.6661904299836157,
+            "lock_miss_fraction": 0.052588349405694304,
+            "work_share": 0.882161,
+            "idle_share": 0.083135,
+            "send_share": 0.002663,
+            "inter_node_fraction": 0.0015904133188237171,
+            "pops_per_removal_call": 3.9386320229339704,
+            "pop_queue_time_fraction": 0.3869313860803163
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.545316,
+            "edge_attempts": 158264802,
+            "attempts_per_edge": 2.742480950507501
+          }
+        },
+        {
+          "variant": "n1_8x15",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.662997,
+            "edge_attempts": 192549741,
+            "attempts_per_edge": 3.3365852043188555
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.451768,
+            "edge_attempts": 165539974,
+            "attempts_per_edge": 2.868548277983547
+          }
+        },
+        {
+          "variant": "n1_16x7",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.545846,
+            "edge_attempts": 199623684,
+            "attempts_per_edge": 3.459165548636197
+          }
+        }
+      ]
+    }
+  ],
+  "checked_solves": 144,
+  "diagnostic_solves": 64,
+  "checked_launches": 72,
+  "raw_sha256": {
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-g0-r-1.launch.out": "8670077904b64dc745ab8cee9fc9363beff986748cb811c23bb2ad19b20b60df",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-g0-r0.launch.out": "300213d13e2925e3573cbc9a5ef6010f3d9a9849bc75c59174b8a8f731ec4695",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-g0-r1.launch.out": "0ed564662374a338089306a5916fdc07ec4b38e76f4e180ac9d60a918d7cdb00",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-g0-r2.launch.out": "415f4e225f7339cf21c5c305ddaa718d6389355bf95d10f1d3eb99dc633913a0",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-g0-r-1.launch.out": "10891d57977f4ab33eae9fb78763a44396dc4cbd7cf1d8b546c940230eb060bb",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-g0-r0.launch.out": "9ed5d2d9526b437d7ce9e1587bb240689e9e2fafa354aa440832cd15ce60d5c4",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-g0-r1.launch.out": "2e47abdd236a335dbbee9df27c15b31a316e5868b4f9fff1ceadb5496a0dba69",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-g0-r2.launch.out": "899b929e2bdc3e4bdf699013e399457c301effdf80661a99e667a7236b418eaf",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-g0-r-1.launch.out": "d93dca3fa1de892f9269c27a5830b0dbabc4a1e56c4418690ddd8b417df182d1",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-g0-r0.launch.out": "f8c1805ccd4fd358ca462c8fcbb843e7ac78b3febc92088c96439b0cdf0918b2",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-g0-r1.launch.out": "c8395e490ab1cad35c722a6d9c6b2e49a59ef2b4df375c27fcde0c046bbf8dbe",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-g0-r2.launch.out": "82159d81774b3f0d58a731ecfc0f2ec23f700412b6097fffe2789a35efca18ac",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-g0-r-1.launch.out": "8244225302b0576d163b407632c0e9ed3e207a0442d72714e9afd955aa6e0015",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-g0-r0.launch.out": "39bc12808c723095e4b23702f51cf9191b951b573d44d99c59d8b63f2d9cec2c",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-g0-r1.launch.out": "3df3ad52aed431a9ac2da0e2cd61714f7732ffef0bb0e36ce4f2d9e3a0f67198",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-g0-r2.launch.out": "9cd4378876abdb5689ea67b0923baed78813cbeb5264be4b6d97d41d550d3eab",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-g0-r-1.launch.out": "f14ef776dc992947cfe03808b4e8b18a4accb0ba43c0290ad7af8eb1839b05e8",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-g0-r0.launch.out": "9d4fd33c3c5d7dd929e26680d75cf986fd7526dc251667cf7d45f87f21312bb3",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-g0-r1.launch.out": "be3c05e0a6c9cfeb705caedca805f44e1c4f36ce2d3442c502962387251ae6a1",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-g0-r2.launch.out": "fdaa0da150c8ec4ae27197cb82b17c38393e28137a33f9f80adc0a14dd60598e",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-g0-r-1.launch.out": "324878b82dd1ba233fbe220e192a46e04bc15f76ebef15f95d4e319411fcf414",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-g0-r0.launch.out": "b7dca3b29f700bd198a984e7d610d266fcb93f3953360b6d81455da629e97e41",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-g0-r1.launch.out": "3a719513f1fd2295f6b354cb1c63e9f2e59fa0a4b0971b1cf152b665942b865a",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-g0-r2.launch.out": "b86f377159d1f8fdece098f7ddfc95ffa164d74f959ba4fbd0fde5a4d0b41a79",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-g0-r-1.launch.out": "48f4c2a3eb6b7833571a97ffe2c8c386eb3f32531b7a39102a4729827277d16b",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-g0-r0.launch.out": "f9c3c06544db6000675b541cfa8bf1752b1720acf78aaccf2243e01841885624",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-g0-r1.launch.out": "ac75178b11558e0f26b2fd5b7af38f42dfd79cc25418d9a0e091c1c1e59eeffa",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-g0-r2.launch.out": "f763da3e384412785ed88c76fd2911ea82695dac293fd38ba4da113619a6cf7f",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-g0-r-1.launch.out": "f235d1165d9ad2235493921d4d8935776e7bd98e5a751838853865012ade5fb4",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-g0-r0.launch.out": "032dc608cb2c9c59436889b35cf8bcf720a966adb95bd1df522dae2b1dcb3f07",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-g0-r1.launch.out": "231993eb16754b548d85d8b9ca90182256c50933e4a4dfd2a4976baf3544de13",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-g0-r2.launch.out": "529384f5eb3ec4c5fd372954983528d6101da775a48f0be332ce63b2f2826352",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-g0-r-1.launch.out": "e4368bc4fdb6590850de5651fd5aef71eb357925303b51c9f0dddd6f5457c817",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-g0-r0.launch.out": "be113705c113d46d6e3fb7538ae65a0abdc1d0ddce1936aad7ac2306544ac26c",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-g0-r1.launch.out": "bb46c3cd620e2de362e0aceca3d6548ad14f55093e119f70221378edd7cdbb24",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-g0-r2.launch.out": "b1ae8dd3780e3f8fb3ca08ea001de45f855988a05922387f901ef975a009b408",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-s0-r-1.out": "f0f15c8a0706ebbd390835ee8841ba355acf3e95454f03f26101a60c0128989b",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-s1-r-1.out": "7c4115c416eaa7fb12e4f3833f06770561d15731d599f4226cbc2fd57009c996",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-s0-r-1.out": "02414d8e6d065d1ba1c1161c2e66e673864fafe929114996b722d9d8a9e39b67",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-s1-r-1.out": "f403a0068be59e468683c0a89c32136f4796142dfe11cca493d59db54b1e16fe",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-s0-r-1.out": "84e3c5a81b416a8bd6d08db7c028752e2ee29139b1f4b5a61e3864401a6453ee",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-s1-r-1.out": "601b83c62eed9d12f3790c9f1cdbb3bc223e527771780c9e8b09fd3d2a3b789c",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-s0-r-1.out": "3163a0b8209358733a000a9014792121cf3e6fdef5af0e08046dee39e4f7562b",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-s1-r-1.out": "673debdbdfc7b3b554cbb5a6a5d1bd274d759ec680bfd1c9406d11609c33e1d9",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-s0-r-1.out": "64585f68a46fa971117a15ae153c92482d458b6acb001a641ee05e8bc9cfd359",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-s1-r-1.out": "ccb16c2d8d0def1c46ab0a3507a5bda4b63ce39d2c45726c5b727101a60eeeb7",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-s0-r-1.out": "8656e0b88b9597e02dea6401613dc27ae670b0155dde16504346a2f281531bc4",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-s1-r-1.out": "4e1de8ac014a0161d6327fa469361807c8ea0eed3648315252998832622d1735",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-s0-r-1.out": "5db908676428edf7ad807eac7908646d6f229f7230642816155979b2fa68ce0f",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-s1-r-1.out": "6ddaade8238917fde66522425d5c63afbe99c88e987ee8b4f7e0876f5d43a99b",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-s0-r-1.out": "9a11b6d0d97d638a83c66b4d6337decbe07768868f2074fa4496bea94262f381",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-s1-r-1.out": "5f511d50cb86033c578ae555c60caa88c34d012a009966fa1d707e33850a434e",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-s0-r-1.out": "e460cb177e441d2f0dcb4ed5b64833fa24b237338690b9356060f26443ad2743",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-s1-r-1.out": "3970adf5fbb1a2519404ffa9378d1be2af69598ed48f1709191fc9a6432d90fd",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-s0-r0.out": "d2061b2d160fabb6303ae6d69fe575ce82c3f2835843ea05f773749559954077",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-s1-r0.out": "c904b5ae9a309792dda45c0f8c80fa91965d8b9267f474701ede40d3d192ddf2",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-s0-r0.out": "ebdca391adc5c5417faf066575df4f0d7b977c050ed061268e0f7799660b671d",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-s1-r0.out": "82049f192ab94e0fc5e4f5a6ced84a22740fb663c05baeb5082d79d34d71d2dd",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-s0-r0.out": "355e4b2d9d0134a6232e9d66a3203122f4fb54ecdb6488fb04f99f2f1207c358",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-s1-r0.out": "57237785a5aa37bbe6b8e8b863f7cf43be792860068a87a3b918156fef301196",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-s0-r0.out": "66998532e6e8bb84daa1f82bd265cecf71a0a31bd4f5503ce097a4bb27071a2f",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-s1-r0.out": "25d726ce1fcbfee097901667f06f77b0a075d4033c99b40ee7a39343c7052a5a",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-s0-r0.out": "4409ef11f734b52cd0607db8824097bdd9e75949fbfd49d6c76f2af809e11c03",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-s1-r0.out": "4feb7f75096ce9528fa0d420fe842472b60ca9b14ea5aeef140b4452df11c4c2",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-s0-r0.out": "8f4706e36726daf61d04846d86a2df7d3741f86611ff96f470ed513624d0abad",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-s1-r0.out": "e6de6ea9160470e3ead515227a2abe7c21790a2cc6a5ff4ba44a3e41f99021c9",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-s0-r0.out": "95d588356628802a6df834dc8f8855a757fbdb160c6f7e277a4974ff1a24d957",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-s1-r0.out": "b8c92681d3be94f6fc7eaf08bcf89f392b7083bf4740f67a85a62db2a529fa77",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-s0-r0.out": "184b2f14d957438b7046881990b098d2dc8c2037bef2fe70295f69754e947fba",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-s1-r0.out": "95fa8ebb476e8a719f28bf7d0c4af7dac99d6f8dcff555c95e9e069e683f2a5f",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-s0-r0.out": "626ffb7cbbc466cabf962ecae500ca4ff5aec15ef5b341f4a6e30e338c37406f",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-s1-r0.out": "ffc6959dabfe693a71839e2b0b4ef7baeeb9695d9378ec956effa48859685619",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-s0-r1.out": "3e8667aebdbedc60480d631d0ac2d0675994a3d659aa76fceddfa969d4b38857",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-s1-r1.out": "6cf58f09f24aef54883b14c5f3c22ed143efeccdbceca378e418c9cdadc65edd",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-s0-r1.out": "47ca8f22c6880475a5050f58d0fb0d6f1cfbb0a31747c32da276b23c0a334348",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-s1-r1.out": "c29f9eb66b45d0d3199366693b62ab4a0120f1eb351c49beec125c561ee23dd2",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-s0-r1.out": "ef2e6a9eede1808ebcfeae918f04015800c20dcfd54cfc1a980cbb366ef3c171",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-s1-r1.out": "76f1a2e8509faa1b0f7fbf8d1878a6c0a5fc1827dac21e6939b470a2c759079e",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-s0-r1.out": "b65fe9feb9eae8f2f5784479e5b1c7ea945b25ae35731c9d91a50dbe894907b2",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-s1-r1.out": "8352d6355716b10681ce71ef9026197e6e7f87babd73a038dd5072834769e508",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-s0-r1.out": "a7f707e6f95c7eadcbb5c9e90085d28cd84739aa748f069ab424254e934cb915",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-s1-r1.out": "23adee6ea93f23069309752b209ded85bb38042a61017cd959b88b58bfbac423",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-s0-r1.out": "166291228d40ac433e6d580a3610635bf4924d5a26f9dc1479a6ce5d19f75f10",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-s1-r1.out": "72c6e73152db8b5d02a460f17df853d10f7a0365e575ced822b7308a62a9f8cb",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-s0-r1.out": "c24dba37e633559e5b3aea3f5a24a8ffd32056d92918d73336b0838a8b8487ff",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-s1-r1.out": "0f2ec9789424a9ca957f490f50b4f363e512bd71b56b9da602a485f84105023f",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-s0-r1.out": "71575ccc386a261a6402e06b5bfc4526eebd0c6a6b42616bbed0a59c697639b4",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-s1-r1.out": "b5284a13a6d6635be0c31fa18e59aa3bf25d5396896c8d75fe6f2708a9e8e334",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-s0-r1.out": "fc911120de7edd8170586cfe58c26a5128b5e316425af258b8a40f07c1152ad9",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-s1-r1.out": "3d5707a2baf5717e156a98064b08d8f12cc0f48e85471fc6d13baeb2bdfecfa0",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-s0-r2.out": "7385b3c0135eb67fba5d9b65e8f0f0e1719aff649d105ea41b2eb0bab7a4d443",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7-s1-r2.out": "1a43f72e448d782e417056a13e4b504b091774b4211c085e96fc60a7473df18d",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-s0-r2.out": "510d9625d6ac66f7eb7949291b366445ffd296d9459258c97200b6ebeb7e5146",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15-s1-r2.out": "28a249fcc31fa624708f5d8ed1dff296493434e6138c464c6ec2685109678551",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-s0-r2.out": "36234ac459dea514bec87d4544e849778f85aab1185cf039b9f1e8ce947ba57b",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_control-s1-r2.out": "e62a77d5d23f8d24b66c42a08a890c2e58eaafde0caa5b1e23b7156ebca245a6",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-s0-r2.out": "cf4e1ca1a21359f809830b467a8717e178e7f5f938cea4a115e772d8a0d10b92",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15_diag-s1-r2.out": "cf5db038687979759cca341c4911ccec9e0950e974f70cd8d5c44380c6237038",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-s0-r2.out": "48401bedfd757ffdb7f4ed88a7935817d62f184b74d60e73fc9e5da9864a138b",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7_diag-s1-r2.out": "05d71d2e4cf3ffe5376ccbe23a7d37639c311f3f8ef0e5a435ac52ae77ccf7ea",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-s0-r2.out": "a8f78edcd90606013eaea6ef668ba08241b8338cf81b425f3bff9bc2418b73b3",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x7_diag-s1-r2.out": "e616783fa4c10eea5098cabf792be9b6938f64c304dd1f867a06dedd15beb661",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-s0-r2.out": "727cdb21a5d327584096d451e213b81d0865aed6a58ea0ebd7a09a3de012f6fd",
+    "logs/AB-mesh26-z-2n-20833718/n2_8x15_diag-s1-r2.out": "342cde6c95f92efc6c7507d9b9a606c71aab0f46e1b39ecdc044850307ac9a75",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-s0-r2.out": "3eba4a4e68c3c55beca36e028f0e2756cb61caf727e4ecde7bc2e95761edf9df",
+    "logs/AB-mesh26-z-2n-20833718/n1_8x15-s1-r2.out": "6cbad12d64c27eba41f082ff336b17c9f7c0a130378bbac5b01008955bc8934d",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-s0-r2.out": "6a0ef79311b62248d32291c4221d8f4904b94cffe508a3f59e048e05d0104991",
+    "logs/AB-mesh26-z-2n-20833718/n1_16x7-s1-r2.out": "840cd71dc6b6d2a10a0e57b400756a0f902c986d36063ad05355ee3a8864645d",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-g0-r-1.launch.out": "0857455b3ddba856378081399c71cebcaf24cae42988ae383cd269604bd28025",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-g0-r0.launch.out": "e59a7b5cf0ca11a6624de903c085a76f33a7778c25dfc9df76d216df58b4fbbe",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-g0-r1.launch.out": "f7344c9c32210f1a32ba1dabfffe23d40f848558bed90019dbaf85286229720b",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-g0-r2.launch.out": "4b1e2f6361a29387b7943e6d2e8f31cdcfd34317b7d64bc67cf70493e4a775ab",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-g0-r-1.launch.out": "5896467e7437df0bbdd89296e77a2fb28329230dd50529bdbf3bc9c94648defc",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-g0-r0.launch.out": "5a537642e412f8e5f5558c0b8213d34ae8dfa9374ea005ca42684f00eba4e11e",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-g0-r1.launch.out": "a9b81280431d82bd1d3375f504ff5268f405a2f93c41dc0616aafa1a2dcc9e05",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-g0-r2.launch.out": "8c641cc73d90c297867020939140543e8355c2fb6971f77d9e208cdcea1ad6f4",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-g0-r-1.launch.out": "633a1f283c1a1dae244f271340ba140f50e0298eb04534c36d59f9c6f825af43",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-g0-r0.launch.out": "cbbf5ca2e1039453849156e19d5e8498858c40941fe8950b0e372d76a40a5309",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-g0-r1.launch.out": "0e1e5f9ed8f751c91258682037d9e5d67dc5791893a9aee2c52689f6a88c484e",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-g0-r2.launch.out": "675f489f96048ad40590c0c0cce5e7a02fab24d30f7f7118244009e42da4c431",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-g0-r-1.launch.out": "b87e1fde16446e04108dced784fec1fdcfb8cf6dc0fdc3b3e0398904a36abf85",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-g0-r0.launch.out": "17293e830031bf10aa2e9e603f1f8e7555a0c0b2bfc3a4f022564b9a9168ce98",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-g0-r1.launch.out": "c09f8f0649e1717a785470b6e19f581f281ba5fed0d394c51f8b90e46474109f",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-g0-r2.launch.out": "7d1a2d8254255dfb393126e4aaf0e35281b9fe3daf7342735669903a29927994",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-g0-r-1.launch.out": "ff149a4215104d5bbf6307bace2d2d2d212e18f01b1f23147df750f477920989",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-g0-r0.launch.out": "29420de6c9d9be0815bd74c9f84f6db194d21461a099620fa73969afa1edb5a8",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-g0-r1.launch.out": "e3fbfbc1b33be1b0afc256b3097842c08ad405a2a34a069ce3a86df8e3a380ba",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-g0-r2.launch.out": "970af624c38a42b8e7a5cad512fc5eafbd9a527f53936261c218fd693a729884",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-g0-r-1.launch.out": "7b0df89d8ce5b5beda7fa2060fef4d2ce04a8498cd45c17a2d598ef5f95bc1d6",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-g0-r0.launch.out": "622ff798992514dc44e5502519128d434aece1421bceaabcb73f9f068de82233",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-g0-r1.launch.out": "cfebcc87ead086cdbe7b562b8f489a75aef6af3c932b1939fb06fa0fa756c345",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-g0-r2.launch.out": "c43767bca4269eeed87a1b85366b1d4eaf978e57921b44c67839a0988caf6d13",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-g0-r-1.launch.out": "0d2abd14aaa48039c0dd73ef2865a95ec57f2fe706e563d99106c00b31c8cafd",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-g0-r0.launch.out": "6475020f16da86df451b729498e86162e0eb085b984faa0aa85464a330c11103",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-g0-r1.launch.out": "fd9c256329525befd9b1e07417195430d3e860d469d09886b5c8e61be5688cf2",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-g0-r2.launch.out": "23836ade3a4d37267ed83a59dacc1dffaf3a0e39076d4f184f25da26e0025255",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-g0-r-1.launch.out": "76b58854dd00c8d1d2591f805d39eed888949014f86a52c7e431d71f474bf807",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-g0-r0.launch.out": "071bc4875edb84290327b7320acf297b1f39df798685d624790a51bf254e4896",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-g0-r1.launch.out": "03e9f8eabb35ac0ea9dd90d3ca24a49b8ddff94a8d3cb36327d10d0ed8b25fa5",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-g0-r2.launch.out": "0454ea2e5cba63df709f7c628766e272393e61abba6447c7db64d2b563f9d988",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-g0-r-1.launch.out": "fb233666822737392ee45693e8b6d1b3b4c88df304656fa6be01e94785178ae3",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-g0-r0.launch.out": "ee5b018e83d0b2fbca95759f291b04ccf0da9ffce1e22dcebca69206971ac55c",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-g0-r1.launch.out": "34d561e92e242f88cdc8bda5fc3c44b698a02a41d0fbb5ca1e92b1784b766153",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-g0-r2.launch.out": "cf221b7b1205d2088ce02a60505adceb32620fb3d520daee7fef05fea3157313",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-s0-r-1.out": "738d650d178950482f2e473da9357aca847a8205b1864fc98b14818e2fde0d3c",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-s1-r-1.out": "71cb41b66c859afffa08c4e6bba531439593ab9cefd44c81d6d340a4bdf9f3c4",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-s0-r-1.out": "9a40f615c0cf62d9f2441fd7eeee73ab6a972d86bf428be1266b45cd44bd3972",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-s1-r-1.out": "f2bbb2e7bb5fb52cd8402248f9de9115d2f762527075a28287a686888a921fd4",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-s0-r-1.out": "fcb69f9451c26696c24386445d36d1ab7817ead7525507375dbd0a24e0521d5c",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-s1-r-1.out": "2410b85769a91d68392922e96c395a11bdafa97e5e4a69894b6a881d71661190",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-s0-r-1.out": "731117757de1244fb1105a0e1a56b6dbe3976a2ed99dd8df23df9e84db054017",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-s1-r-1.out": "9e1b277deb0a021a92c2bea71e92364ab1985efb3afe44c068791b1c74854bdc",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-s0-r-1.out": "f1345376b59e86999add882b0662fed18c8842459b942ecbc334811403fb291d",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-s1-r-1.out": "f55e13c34c9cf6b5a3ee7f2c11ad4c8944048c6bc258f25c2095552f623ef0f8",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-s0-r-1.out": "0aeda77e302189487a988c6e812a24e15e774555e814401b42e8368549d62968",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-s1-r-1.out": "712378f2ce8db352da9d1df0d48b89012dc96fd3502b375b446e2ca0bd3cf8d3",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-s0-r-1.out": "af34361a1d76f222e09c3ee9fea9795ce0d8ced05c48d2e24ab82d9e0033e7a8",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-s1-r-1.out": "3e4cba676bb7870855a9cb9b00fdc8d9e7ee5fb47838f3a4d31e6cf580dafe75",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-s0-r-1.out": "cd040aa8b7093355cae21974cbe65cd26aa81496391ab7255e22473946028803",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-s1-r-1.out": "81545bdd6fadac4d009e3b243cda94f01d56d30f422065ce5bb8305b59a5ca6a",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-s0-r-1.out": "4398e782c7c26f6df6d6d66ade586260eaf8c16ea945dcf551f7f7beae1cd981",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-s1-r-1.out": "22f8c9d29130dc92ee047545accc48ff016ba2509b9df8a457e143f3b502254f",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-s0-r0.out": "e7f522e6358e6e246ba7be326cb342a065509882b4ba347b385452dd05562e9b",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-s1-r0.out": "932e4f8ba409677f2a67c869cac580b507cf7d59e191efabcd6f646972fd181f",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-s0-r0.out": "ee6963ec440360a8767a6259daef597fd29309299f1aa019f2b9d903292877f7",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-s1-r0.out": "a917105437e7c0531c7b9ac2d47463b75d54e5ac735c118e5c0311ad64154d4a",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-s0-r0.out": "a0c2792fb93c9d82bb0b749a73bc092c4c86b41395071e95458eb4221dc9c2dc",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-s1-r0.out": "34fabd2eb2aa83f216b9caa27cd0a915935b818dce010d90b820c92352929823",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-s0-r0.out": "98b2f3fc2ec60a46da6b63863f286b99b28e2afb093cfec531dca12cc7ecf136",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-s1-r0.out": "3c22581ef2c451143a7f5fd2d7d942a054c39c9f29c4556474a9d0a21e34b617",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-s0-r0.out": "3409a7aad48143c1cf6ce13ccf80f56731173c1a989d444df6aa0b8bb97ef9c9",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-s1-r0.out": "129cf294246076175fc4a644d0642baf491b18315c4cbaf8def5095d315b4837",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-s0-r0.out": "7ad5b917421d2d74f14d655e14da35c660757460fd8908dfa22b94b2a03982cd",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-s1-r0.out": "be898031b2b3d326b82f9b7e49e44adbdaeacb1f133171d26c66910a42961552",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-s0-r0.out": "16a3a59e017ba9b6c02f05a93e83f420d006d4d3fbe2048f5bda093bc3d5c3c9",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-s1-r0.out": "4ff5efb1e36083bf6bb9f8bdd6d219b48ffade37db622f5cdaea7b86b8ba15f8",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-s0-r0.out": "e48a706a89ad4b0d65b116ed1b3c442b6087dfa69bb85295d056d5a5b30cd50d",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-s1-r0.out": "cc0677763ec4ffac22aaff2b31a7af2891392f3d47120c057676ec69fc19cf1f",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-s0-r0.out": "301caccea680ddd3df00e02f4f04264d607d7b5f2e9898c33d241ca12884a393",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-s1-r0.out": "43cb1bd49c8fa925a5b33e9f3c4d9ca48238360a68b54d13dc0d2fb0a2da50db",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-s0-r1.out": "6cd328b672858789f1ddb9afeeb54604c05ee57559d4254b99dddc00b7524984",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-s1-r1.out": "eff88a810b964dc8b99739ac0c8131bbd56437f3dc1fa29153dc1e7a10de4df6",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-s0-r1.out": "7da1e9fa5224df357172771ecaa721e5cc2b1bb3f81a08b1e47ec5782fe1b635",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-s1-r1.out": "797364d31e427c3d63af1bcbbd981df0c70e41bda8d8ba8bf67098d230b6aedf",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-s0-r1.out": "5cf944497ebf6f1c10cc4bca33c3dca2e4ff5dfc7d0acf70a32a939a87b1c1ba",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-s1-r1.out": "8142695bf9e1dc963506e9ae7f001c87e78d57963737065015fcf654f22ddf6f",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-s0-r1.out": "7c2ed899b56a53c79151c02612810603040e1583f25e08256a4c52aa3a3921d3",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-s1-r1.out": "c846385e10f84ec4d1a5df204a199107fb52427a4aa1ee52a4a4176ba1f05840",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-s0-r1.out": "8f66cefe2f06defba59f75d83580940332c2259d942f4de69228d30a63be2555",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-s1-r1.out": "e1668c4c022f0cddc01c1e51a737c6b3db147def0e8c33a449fd368975311e6c",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-s0-r1.out": "54953c35abfe96713bcc3abae56f4399edd6890e649e3327d0cf30dde1fe9c30",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-s1-r1.out": "c457150f0908a0b722633ac3d212bc3e470a5bd9435763e15166c7402aacae92",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-s0-r1.out": "6d2abe8b4c597f8ec96fd9d233e589340dc4ceca345845186f29c9e393e18d91",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-s1-r1.out": "7ffdb4d69376d0c4243dd3548b0d7325e2a6d00402339a9f7231d5f8674980fc",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-s0-r1.out": "433b1c5fa1cee1b0e19450c6cf1eb916d6cc80e0e31650e11a84c88c1d1a223a",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-s1-r1.out": "0c9d40c1fcfa5373feb8e170917f4adfff96ee17e4430277d23c71d791ff68d4",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-s0-r1.out": "58b76e52ca33ce884be4dab257b4b90388f962432861ac5a4d5decb6c1fa2335",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-s1-r1.out": "64499a5c1add5509f15cbcb222b9477ef78eea9b1633714d365f8e9669e57d6d",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-s0-r2.out": "96be9be6caea4a73a51d5d033aa90c9aa9bfd88395ceab04fa9e2b8be8d134da",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7-s1-r2.out": "3d745a83daa47c33f4833779b355f6d38c951e6cc798d4b3c29908c16ba474db",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-s0-r2.out": "6342bd839120cdaacd047bd79be723af704b4d384e13d890bf11c735712226c6",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15-s1-r2.out": "bc849194a551c2eb15bc4f15a6bd663b67efeeb5f5f10773d7fff1cb5edaffe4",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-s0-r2.out": "eb3d7795a1761905937c9bd4ff51dcb7819ac1760bd697d8fe802f21b02067ad",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_control-s1-r2.out": "13b2f9478e7c4f7fbe6b56d995dd68b4565568de4399d3444eff970316e9bb2c",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-s0-r2.out": "87f22b774755a5ee7504a532fd59cb2c5d60509462e3cea5a5ae54985e5dc78e",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15_diag-s1-r2.out": "be45bb2685cec1a46ebb28735d693e2e9dcba56c94324579f7705e4a67a25357",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-s0-r2.out": "b0045849442d26b4ac64148fba52060fe45874e7dba45f5f7a071c3341efa084",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7_diag-s1-r2.out": "982c647a68524cbf3a50c6892e4a194bd997f29ffc1250573b9f2fdd0dce4c84",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-s0-r2.out": "44b162df6b4d67820ca1833d1f0e8471442f5c703e25eb538ad0e7b623c023d7",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x7_diag-s1-r2.out": "0c7f8da31fc32add5e91ee4fed69bd264cc0d39497398c30b353d5e45df7d6ee",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-s0-r2.out": "7ffdb8a1146b2d6c8c336e5e7aea0d34680039129692ffdd7974f83dad1f4594",
+    "logs/AB-road-usa-z-2n-20833718/n2_8x15_diag-s1-r2.out": "bff411d7e3f40a3286fb4018024ae2f8f16f3db3a2640eebae8e63e37b87faf4",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-s0-r2.out": "8b9a51579f5828d96b3a18807bd551a16b7ce72f1dc8da041c11048e59ebe009",
+    "logs/AB-road-usa-z-2n-20833718/n1_8x15-s1-r2.out": "6bb6fc9bf9626ee00c3cc105a4c486fe6dfc9796f928bb4b36fe7b0fa79f1264",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-s0-r2.out": "4174704c23c00ae9555d92d037df4dcd271841b3412add9f1a4790f94c5f295e",
+    "logs/AB-road-usa-z-2n-20833718/n1_16x7-s1-r2.out": "582b1ab717ddde0d74838796c7090e1c672d847d8437c674184210985948371e"
+  }
+}

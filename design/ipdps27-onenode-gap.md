@@ -24,6 +24,16 @@ with its predictions and decision rule, is [recorded before submission](ipdps27-
 It runs on Anvil (same EPYC 7763 node shape) with the batch-8 binaries rebuilt
 from `48ca9c0`.
 
+**Attribution result, 2026-09-21:** [complete](ipdps27-r1-attribution-results.md).
+Road's work growth follows global worker concurrency (W: 1.59–1.84× work when
+workers per process go from 7 to 15 at fixed domains and placement). Physical
+placement and domain count are within noise. On road, 2 × 8 × 7 beats
+2 × 8 × 15 by 11–28%. One-node 16 × 7 beats one-node 8 × 15 by 8–20%, so
+scaling denominators must use the best training layout per node count.
+Proposed next step: a fixed-layout scaling baseline, then one
+concurrency-limiting admission intervention with its prediction recorded;
+awaiting the author's choice.
+
 | Step | Status | Evidence / next decision |
 |---|---|---|
 | D0, L1–L3 | Implemented and tested | Earlier candidate improved greatly but failed C6; no automatic L4 |

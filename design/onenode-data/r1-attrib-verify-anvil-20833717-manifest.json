@@ -1,0 +1,10 @@
+{
+  "nodes": 2,
+  "processes": 4,
+  "workers_per_process": 4,
+  "hosts": "a[871-872]",
+  "binaries": {
+    "acic_r1_batch": "bd07ed617baf908118a57d75e3d874120ce2474b032cc8ce578d798b9f162682",
+    "acic_r1_batch_diag": "6daa7dba9415570c0a3290b00c0dd642fe6a9ad63d4fd043fb2f8a6370cf94cb"
+  }
+}
