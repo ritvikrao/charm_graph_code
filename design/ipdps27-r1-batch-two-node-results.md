@@ -1,123 +1,160 @@
-# R1 batching: first two-node allocation
+# R1 batching: completed two-node comparison
 
-2026-09-21. **Job 22284705 completed and passes the full audit.** Batch 8
-improves time over optimized one-node execution on both training graphs in
-this allocation. Mesh gains are substantial; road gains are modest because
-edge work grows about 65%. The second allocation, **22284706**, remains pending.
-This is a preliminary result, not a completed reproducibility gate.
+2026-09-21. **Both allocations completed and pass validation.** Batch 8
+reproduces a useful mesh speedup and a modest aggregate road speedup over
+optimized one-node execution. Road scaling is sensitive to the source and
+extra work remains its main measured limitation. The author requested a
+status/plan update and **no further submissions**; no jobs are active or queued.
 
 ## Validation and accounting
 
-Job 22284705 completed with exit 0 in **345 seconds** on **cn016 and cn088**,
-using 256 allocated cores and 240 worker threads. Allocated CPU time was
-**24.533 hours**. All **128 solves**, **48 diagnostic records** and **64
-launches** pass a fresh raw-log audit, which agrees exactly with the audit
-produced inside the job. Digests, source ordering, binary hashes, effective
-flags, worker layout, complete matrices and queue/edge/topology accounting
-all pass. No new runtime errors, stalls or rescues were found; the existing
-UCX registration-cache warnings remain.
+| Job | Role | Hosts | Elapsed | Allocated CPU-hours |
+|---|---|---|---:|---:|
+| 22284699 | Distributed correctness | cn064, cn066 | 120 s | 1.067 |
+| 22284705 | Two-node A | cn016, cn088 | 345 s | 24.533 |
+| 22284706 | Two-node B | cn076, cn108 | 343 s | 24.391 |
 
-The distributed correctness gate **22284699** also received a full raw-log
-recheck: **224 serial/parallel digest matches**, **112 diagnostic accounting
-checks**, and **90 connected diagnostic solves with positive inter-node work**.
-It completed with exit 0 in 120 seconds on cn064/cn066, consuming 1.067 allocated
-CPU-hours. Both binary hashes match the completed one-node experiment.
+All jobs completed with exit 0, using **49.991 allocated CPU-hours** against
+an 88-SU reservation cap. The two performance allocations used disjoint node
+sets. A shares cn016 with the earlier one-node A allocation; all one/two-node
+comparisons retain both one-node allocations independently.
 
-Two-node A shares cn016 with one-node A, but ran in a separate allocation.
-All scaling comparisons retain both one-node allocations independently; they
-do not select a favorable machine or denominator. Warmups are validated and
-excluded from medians. Each source has three timed repetitions, and each graph
-has two training sources. Source medians are paired before aggregating ratios.
-Speedup below is the median of paired one-node/two-node time ratios.
+A fresh audit validates all **256 performance solves**, **96 diagnostic
+records** and **128 launches**. It agrees exactly with both audits produced
+inside the jobs. Reference digests, source order, binary/configuration hashes,
+complete matrices, 16 processes x 15 workers, queue conservation and edge/topology
+accounting all pass. There are no new runtime errors, stalls or rescues; the
+previously documented UCX registration-cache warnings remain.
+
+The correctness gate's preserved raw-log audit validates **224 serial/parallel
+solves**, **112 diagnostic accounting records**, and **90 connected diagnostic
+solves with positive inter-node work**. Thus the completed stage contains
+**480 validated solves**. No solver source, binary or flags changed between
+allocations. Warmups are validated and excluded from timing medians.
 
 ## Scaling from the optimized baseline
 
-| Graph | One-node batch 8 time, A / B | Two-node batch 8 | Speedup vs A / B | Two/one edge-work growth, A / B |
+Two training sources per graph, three timed repetitions per source. Take
+source medians first, then pair those medians before aggregating ratios.
+Speedup is the median of one-node/two-node source time ratios; its range below
+retains comparisons with both one-node allocations.
+
+| Graph / two-node allocation | One-node batch 8, A / B | Two-node batch 8 | Speedup vs one-node A / B | Two/one edge-work growth, A / B |
 |---|---:|---:|---:|---:|
-| mesh26-z | 1.116 / 1.150 s | 0.774 s | 1.448 / 1.488x | 1.230 / 1.228x |
-| road-usa-z | 0.748 / 0.729 s | 0.651 s | 1.151 / 1.123x | 1.648 / 1.650x |
+| mesh26-z A | 1.116 / 1.150 s | 0.774 s | 1.448 / 1.488x | 1.230 / 1.228x |
+| mesh26-z B | 1.116 / 1.150 s | 0.773 s | 1.451 / 1.491x | 1.222 / 1.220x |
+| road-usa-z A | 0.748 / 0.729 s | 0.651 s | 1.151 / 1.123x | 1.648 / 1.650x |
+| road-usa-z B | 0.748 / 0.729 s | 0.680 s | 1.104 / 1.079x | 1.720 / 1.724x |
 
-This corresponds to about **72–74% parallel efficiency on mesh** and
-**56–58% on road** when doubling nodes. Batch 8 attempts/edge rise from
-1.533–1.536 to **1.885** on mesh and from 2.929–2.932 to **4.845** on road.
-Every source median improves against both one-node allocations. The weakest
-case is road source 1294456 against one-node B: **0.715004 to 0.679384 s**,
-only a 5.0% time reduction. That source needs confirmation in the second
-allocation; the aggregate road improvement is not a uniform large win.
+Mesh reproduces **1.45–1.49x speedup**, or 72–75% parallel efficiency when
+nodes double. Road reproduces only **1.08–1.15x**, or 54–58% efficiency.
+Batch-8 attempts/edge rise from 1.533–1.536 to **1.885 / 1.872** on mesh and
+from 2.929–2.932 to **4.845 / 5.068** on road. Extra work is **22–23% / 65–72%**
+respectively. All source medians improve on mesh; road has one observed
+regression that must remain visible.
 
-The repeated batch-8 control takes **0.745 s on mesh** and **0.650 s on road**.
-Its paired control/candidate ratio is **0.965 / 1.001** respectively, with
-source-level differences of -5.2% to -1.8% on mesh and -2.8% to +3.0% on road.
-The corresponding speedups over the two one-node baselines are 1.501–1.543x
-on mesh and 1.121–1.150x on road. Keep the primary arm and repeated control
-separate; do not replace the primary time with the faster copy.
+For road source **1294456**, two-node B takes **0.732179 s**, versus
+**0.715004 s** in one-node B: **2.4% slower**. The repeated two-node control
+is 0.707216 s, only 1.1% faster than that one-node result. Primary timed values
+are 0.732179 / 0.733927 / 0.672456 s; control values are 0.707216 / 0.755122 /
+0.681030 s. This is within observed variation and does not prove a stable
+regression, but it also does not establish a reliable gain for this source.
+It corrects the first allocation's provisional observation that every source
+median improved.
 
-## Batching and ordering at two nodes
+Repeated batch-8 controls take mesh **0.745 / 0.754 s** and road **0.650 /
+0.678 s**. Paired control/candidate ratios are mesh **0.965 / 0.978** and road
+**1.001 / 1.000**. The largest source-level differences are 5.2% on mesh and
+3.4% on road. The graph-level gains exceed these observed control differences,
+but the weaker road source does not. Keep primary arms, controls and allocations
+separate; do not select the faster copy or remove a source.
 
-| Graph | Frozen R0 | Nearest / 1 | Nearest / 8 | Nearest / 32 |
+## Batching still helps; larger batches are not a general improvement
+
+| Graph / allocation | Frozen R0 | Nearest / 1 | Batch 8 | Batch 32 |
 |---|---:|---:|---:|---:|
-| mesh26-z | 1.759 s | 1.752 s | 0.774 s | 0.708 s |
-| road-usa-z | 0.923 s | 1.117 s | 0.651 s | 0.700 s |
+| mesh26-z A | 1.759 s | 1.752 s | 0.774 s | 0.708 s |
+| mesh26-z B | 1.886 s | 1.760 s | 0.773 s | 0.763 s |
+| road-usa-z A | 0.923 s | 1.117 s | 0.651 s | 0.700 s |
+| road-usa-z B | 0.937 s | 1.021 s | 0.680 s | 0.723 s |
 
-Batch 8 / nearest-1 paired time ratios are **0.440 on mesh** and **0.584 on
-road**. Against frozen R0 they are **0.440 and 0.705**. Batching's local timing
-benefit therefore survives crossing a node boundary in this allocation.
-Unbatched nearest remains 21% slower than frozen R0 on road at two nodes.
+Against same-binary nearest/1, batch 8 reduces paired time **56% on mesh**
+and **33–42% on road**. Against frozen R0 the reductions are **56–59% / 28–30%**.
+The queue-cost benefit therefore survives crossing a node boundary in both
+allocations. Unbatched nearest remains 9–21% slower than frozen R0 on road.
 
-Batch 32 is **8.6% faster on mesh** and **7.5% slower on road** than the primary
-batch-8 arm, while performing **35% / 69% more work**. Its attempts/edge are
-**2.551 / 8.189**. Against its own one-node baseline it achieves **1.36–1.37x
-speedup on mesh** and **1.11x on road**, with work growth **1.36–1.37x / 1.79–1.81x**.
-This does not justify replacing the common batch-8 candidate with graph-specific
-settings. The mesh timing advantage versus the repeated batch-8 control is
-smaller, about 5.2%; both controls remain visible.
+Batch 32 performs **35–37% more mesh work and 68–69% more road work** than
+batch 8. Its mesh time advantage drops from 8.6% in A to 2.0% in B; relative
+to the repeated batch-8 control, it is 5.2% faster in A but 0.4% slower in B.
+Mesh source 22442342 is itself 3.3% slower with batch 32 in B. Road is
+6.6–7.5% slower with batch 32 in both allocations. Retain batch 8 as the common
+candidate; these results do not justify a graph-name policy or another size sweep.
 
-The new experiment includes nearest-1 diagnostics in the same allocation and
-binary as both batching arms:
+## Why road scaling is weak
 
-| Diagnostic metric | Mesh nearest/1 | Mesh batch 8 | Road nearest/1 | Road batch 8 |
+The matched diagnostics confirm reduced per-attempt queue cost:
+
+| Diagnostic metric | Mesh nearest/1, A / B | Mesh batch 8, A / B | Road nearest/1, A / B | Road batch 8, A / B |
 |---|---:|---:|---:|---:|
-| Solver work ns / attempt | 774 | 318 | 1,024 | 457 |
-| Estimated queue ns / attempt | 551 | 183 | 765 | 294 |
-| Queue share of measured solver work | 71.2% | 57.4% | 74.6% | 64.6% |
-| Consumed entries per removal call | 0.89 | 5.35 | 0.90 | 5.39 |
-| Failed try-lock probes | 23.2% | 8.7% | 23.6% | 10.5% |
+| Solver work ns / attempt | 774 / 852 | 318 / 308 | 1,024 / 1,148 | 457 / 452 |
+| Estimated queue ns / attempt | 551 / 603 | 183 / 176 | 765 / 852 | 294 / 288 |
+| Queue share of solver work | 71.2% / 70.8% | 57.4% / 57.3% | 74.6% / 74.5% | 64.6% / 63.8% |
+| Consumed entries per removal call | 0.89 / 0.88 | 5.35 / 5.37 | 0.90 / 0.89 | 5.39 / 5.39 |
 
-This directly supports the coordination-cost mechanism. Compared with the
-same batch-8 diagnostics on one node, solver cost per attempt is broadly
-similar: **304–305 to 318 ns on mesh**, **464–474 to 457 ns on road**. Road
-queue cost per attempt also stays near 294–297 ns. Growing operation count,
-not a large rise in per-attempt cost, is the main measured obstacle to road
-scaling. At unchanged cost and perfect balance, 1.65x work on twice the
-workers would yield only about **2/1.65 = 1.21x speedup**; that is an explanatory
-counterfactual, not a forecast for further node counts.
+For batch 8, one-node solver cost was **304–305 ns/attempt on mesh** and
+**464–474 on road**. Two-node cost stays broadly similar. Road queue cost
+also stays near its one-node 293–297 ns/attempt. Thus the major measured road
+scaling loss is the increase in operation count, not a large increase in
+per-attempt cost. At constant cost and perfect balance, 1.65–1.72x work on twice
+as many workers would yield only **1.16–1.21x speedup**. This is an explanatory
+counterfactual, not a forecast for four/eight nodes.
 
-Batch-8 idle-window share rises from roughly 5.6–5.8% to **10.7% on mesh** and
-6.1–6.6% to **8.7% on road**. Offered inter-node attempts are **0.12% / 0.16%**
-of attempts. These counts do not measure network bytes or exclude remote delay
-as a cause of extra work. The sampled cost timers are aggregate estimates,
-not an additive critical-path breakdown. Diagnostic/production paired time
-ratios span **0.940–1.072**, so production timing drives the scaling conclusion.
+Batch-8 idle-window shares are **10.7% on mesh** and **8.7–8.9% on road**, above
+one-node levels. Offered inter-node attempts are about **0.12% / 0.16%**;
+these are not network bytes or evidence against remote-delay effects on work.
+Sampled timers are aggregate estimates, not critical-path decompositions.
+The measurements do not separate the effects of more process-local priority
+queues, changed partitioning, remote-update delay and admission/controller timing.
+
+Diagnostic/production time ratios across all arms span **0.940–1.112**;
+work ratios span **0.932–1.036**. In particular, nearest-1 road diagnostics
+are 11.2% slower in B, and batch-32 road diagnostics perform 6.8% less work.
+Production times and production work ledgers drive the decision.
 
 ## Decision and remaining gap
 
-Keep batch 8 fixed and wait for the already queued independent comparison
-22284706. There is no justification yet to enlarge the campaign or change
-batch sizes based on one allocation. The preregistered two-allocation gate
-is still incomplete. R2 remains conditional; R3 still needs the author's
-decision. No solver settings or binaries changed, and no new jobs were
-submitted during this analysis.
+The planned **two-allocation comparison is complete**. Positive graph-level
+scaling reproduces for both graphs, with mesh clearly stronger. This meets
+the limited aggregate direction of the training hypothesis; it does not
+establish robust per-source road scaling or a competitive distributed solver.
+The small road gain, one non-improving source and 65–72% work growth are material
+limitations, not a reason to relabel this stage a failure of correctness.
 
-Relative to the previously measured one-node GAPBS references, two-node batch 8
-remains **1.92–1.99x slower on mesh** and **2.70–3.34x slower on road**. Batch 32
-reduces the mesh gap to 1.76–1.82x while increasing road cost. These reference
-comparisons span allocations; both references are retained. This is early
-positive scaling evidence for the optimized implementation, but it does not
-close C6 or establish a strong distributed-performance paper. Road's growing
-work remains the central issue if the second allocation confirms this pattern.
+Two-node batch 8 remains **1.92–1.99x slower than one-node GAPBS on mesh** and
+**2.70–3.48x slower on road**, retaining both previous GAPBS allocations.
+These are cross-allocation comparisons. Batch 32's mesh gap is 1.76–1.96x;
+it worsens road performance. The existing eight-node results are for the older
+unbatched build; batched eight-node scaling and C6 remain unmeasured.
 
-Evidence: [fresh two-node audit](onenode-data/r1-batch-two-node-22284705.json),
-[all source-paired scaling/reference comparisons and accounting](onenode-data/r1-batch-two-node-scaling-22284705.json),
-[distributed correctness audit](onenode-data/r1-batch-verification-22284699.json).
-Frozen binaries, harness and configuration are described in the
-[experiment record](ipdps27-r1-batch-scaling.md).
+**Submissions are paused at the author's request.** No jobs were submitted,
+and Slurm showed no active/queued jobs at this review. Preserve the batch-8
+candidate and completed data. The recommended next research question is what
+causes road's distributed work growth, before spending on broad scaling or
+secondary RMAT cleanup. The [revised plan](ipdps27-onenode-gap.md) specifies a
+possible fixed-total-layout diagnostic if the author later resumes experiments.
+R2 remains deferred; R3 has not been authorized. No solver defaults change.
+
+The paper now has reproducible local execution gains and a modest two-node
+scaling result. It still lacks evidence for a strong large-scale/high-diameter
+performance claim. Conventional local batching can be credited infrastructure;
+the distributed contribution and its advantage over feasible alternatives
+still need to be demonstrated.
+
+## Evidence
+
+[Complete two-node audit](onenode-data/r1-batch-two-node-complete-22284705.json),
+[all source-paired scaling/reference comparisons and job accounting](onenode-data/r1-batch-two-node-complete-scaling-22284705.json),
+[distributed correctness audit](onenode-data/r1-batch-verification-22284699.json),
+and [frozen experiment record](ipdps27-r1-batch-scaling.md).
+The earlier first-allocation audit and scaling artifacts remain preserved;
+this report supersedes that allocation's provisional interpretation.

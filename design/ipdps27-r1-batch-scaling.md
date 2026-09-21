@@ -5,12 +5,14 @@ explicitly requested the eight-node unbatched sanity check and authorized
 continuing with the recommended batching scaling test. This is a training
 experiment, not R3 acceptance or a new batch-size search.
 
-**First result:** correctness job 22284699 and performance A (22284705)
-completed successfully. The [preliminary analysis](ipdps27-r1-batch-two-node-results.md)
-finds batch-8 speedups of 1.45–1.49x on mesh and 1.12–1.15x on road over the
-optimized one-node baselines. All 128 performance solves and 48 diagnostic
-records pass. Performance B (22284706) is still pending; the reproducibility
-gate is incomplete, so no larger allocation is triggered yet.
+**Completed result:** correctness job 22284699 and both performance allocations
+22284705/22284706 completed successfully. The
+[full analysis](ipdps27-r1-batch-two-node-results.md) finds batch-8 speedups of
+1.45–1.49x on mesh and 1.08–1.15x on road over the optimized one-node baselines.
+All 256 performance solves and 96 diagnostic records pass. Graph-level gains
+reproduce, but one road source does not reliably improve and road work grows
+65–72%. The author requested no further submissions; all jobs are done and
+the next proposed step is distributed-work attribution, not automatic expansion.
 
 The [one-node batching result](ipdps27-r1-batch-one-node-results.md) shows a
 large real timing gain. The [eight-node unbatched result](ipdps27-r1-eight-node-check.md)
@@ -114,10 +116,12 @@ recheck confirms those results and the original binary hashes.
 |---|---|---|---|
 | 22284699 | Two-node correctness, 224 solves | 32 total cores, 5 min | Completed, cn064/cn066, 120 s, exit 0 |
 | 22284705 | Two-node performance A | 256 total cores, 10 min | Completed, cn016/cn088, 345 s, exit 0 |
-| 22284706 | Two-node performance B | 256 total cores, 10 min | Pending; correctness prerequisite passed |
+| 22284706 | Two-node performance B | 256 total cores, 10 min | Completed, cn076/cn108, 343 s, exit 0 |
 
-Completed jobs consumed **25.600 allocated CPU-hours** (1.067 verification,
-24.533 performance A); B retains its original reservation.
+Completed jobs consumed **49.991 allocated CPU-hours** (1.067 verification,
+24.533 performance A, 24.391 performance B), below the 88-SU reservation cap.
+The performance allocations used disjoint node sets. No reservations remain
+active or queued, and no new jobs were submitted during the final analysis.
 
 Both performance jobs use `--kill-on-invalid-dep=yes`. A failed correctness
 gate prevents their execution. A failed/missing/slow performance cell remains

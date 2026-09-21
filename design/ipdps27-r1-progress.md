@@ -21,9 +21,11 @@ That follow-up is now [complete and validated](ipdps27-r1-batch-one-node-results
 batch 8 converts reduced work into 60–61% lower mesh time and 33–35% lower
 road time against frozen R0. The author authorized the
 [bounded two-node experiment](ipdps27-r1-batch-scaling.md); its
-[first allocation](ipdps27-r1-batch-two-node-results.md) now validates and
-shows 1.45–1.49x mesh and 1.12–1.15x road speedup. The independent second
-allocation is still pending.
+[completed comparison](ipdps27-r1-batch-two-node-results.md) validates all
+256 solves and shows 1.45–1.49x mesh and 1.08–1.15x road speedup. Road work
+grows 65–72% and one source does not reliably improve. All jobs are complete;
+further submissions are paused by the author. The proposed next research step
+is attribution of distributed work growth; R2 remains deferred and R3 unstarted.
 
 ## Implementation
 

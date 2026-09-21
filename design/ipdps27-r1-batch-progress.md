@@ -6,9 +6,12 @@
 commit `48ca9c0`. All three jobs completed and all 576 solves passed the
 raw-log recheck. The [results and decision](ipdps27-r1-batch-one-node-results.md)
 support batching on one node: batch 8 cuts time by 60–61% on mesh and 33–35%
-on road against frozen R0. Recommend a bounded scaling test with batch 8
-fixed across graphs and batch 32 retained as a comparison. R2 remains
-conditional and R3 still requires the author's decision.
+on road against frozen R0. The subsequent
+[two-node comparison](ipdps27-r1-batch-two-node-results.md) is also complete:
+batch 8 scales 1.45–1.49x on mesh and 1.08–1.15x on road, with weak road
+scaling and 65–72% extra road work. All jobs are finished and the author
+paused further submissions. R2 remains deferred and R3 still requires the
+author's decision.
 
 ## Implementation and local checks
 

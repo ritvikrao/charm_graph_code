@@ -1,36 +1,42 @@
 # Closing the one-node gap
 
-*Started 2026-09-18; revised 2026-09-19 after jobs 22222842–22222847.
+*Started 2026-09-18; updated 2026-09-21 after both two-node batching allocations.
 Part of the [IPDPS27 sprint](ipdps27-sprint.md). This revision replaces the
 original prospective L1–L3 schedule. Implementation history is in the
 [progress log](ipdps27-onenode-progress.md); the completed-job analysis and
 raw-data provenance are in [the results report](ipdps27-onenode-results-22222842.md).*
 
-**Decision:** D0 and L1–L3 are implemented; the measured candidate still fails
-C6 on every high-diameter graph. The performance-led IPDPS paper is **no-go
-as-is**. Continue only with a bounded attribution pass and, if justified,
-one targeted intervention. Do not start L4 merely because C6 failed.
-All three new feature defaults remain off.
+**Current decision:** R0 is complete. R1 nearest priority plus batch 8 produces
+large one-node gains and reproducible positive two-node graph-level scaling,
+but road work grows 65–72% and one road source does not reliably improve.
+The performance-led paper is **not ready**: C6 has not passed, and the new
+batched candidate has no eight-node result. Keep batch 8 as the common measured
+candidate; R2 is deferred and R3 still requires the author's decision.
 
-**2026-09-21 follow-up:** R0 is complete and R1 priority reduces work but
-leaves high queue cost. The author authorized a bounded one-node batching
-experiment; see the [pre-implementation decision](ipdps27-r1-batch-decision.md).
-This extends the original one-intervention limit for that experiment only.
-R2 remains conditional, R3 needs the author's decision, and C6 is unchanged.
-The [completed batching comparison](ipdps27-r1-batch-one-node-results.md)
-passes its one-node hypothesis: batch 8 reduces time 60–61% on mesh and
-33–35% on road against frozen R0, with all 576 solves valid. Recommend a
-bounded scaling test with batch 8 fixed across graphs before expanding the
-performance campaign or spending on the secondary RMAT auto-mode issue.
-The [unbatched eight-node sanity check](ipdps27-r1-eight-node-check.md) is
-complete: correctness passes, but road work grows about 8.7x over one node
-and loses scaling. The author authorized the
-[two-node batching comparison](ipdps27-r1-batch-scaling.md) to measure whether
-the optimized kernel provides net speedup while containing work growth.
-Its [first allocation is complete](ipdps27-r1-batch-two-node-results.md):
-batch 8 gives 1.45–1.49x mesh and 1.12–1.15x road speedup, with about 23% and
-65% more edge work respectively. All 128 solves validate. The second two-node
-allocation is pending; wait for that result before advancing the scale gate.
+**Submission hold, 2026-09-21:** the author requested a plan/status update and
+no further jobs. All submitted jobs have completed, Slurm shows no active or
+queued jobs, and no new jobs were submitted in this update. Future experiments
+below are proposals for a later resumption, not an active submission schedule.
+
+| Step | Status | Evidence / next decision |
+|---|---|---|
+| D0, L1–L3 | Implemented and tested | Earlier candidate improved greatly but failed C6; no automatic L4 |
+| R0 | Complete | Redundant work and queue cost quantified at one/eight nodes |
+| R1 ordering | Implemented and evaluated | Work falls, but unbatched road regresses at eight nodes |
+| R1 batching | Implemented; one/two-node comparisons complete | Batch 8 gives 1.45–1.49x mesh and 1.08–1.15x road speedup from one to two nodes; distributed road work remains unresolved |
+| R2 RMAT auto-mode cleanup | Deferred | Secondary to establishing useful high-diameter scaling |
+| R3 final acceptance | Not started; author decision required | Batched eight-node performance, held-out cases and full regression gate remain missing |
+
+The [one-node comparison](ipdps27-r1-batch-one-node-results.md) shows batch 8
+reducing time 60–61% on mesh and 33–35% on road against frozen R0. The
+[unbatched eight-node sanity check](ipdps27-r1-eight-node-check.md) passes
+correctness but shows about 8.7x road work growth and no road speedup.
+The [completed two-node comparison](ipdps27-r1-batch-two-node-results.md)
+validates all 256 performance solves and 96 diagnostic records, plus the
+224-solve distributed correctness gate. Mesh scales consistently; road's
+aggregate gain is small and one source/denominator comparison is 2.4% slower,
+within control variation. This supports the local-cost intervention, not a
+claim that large-scale performance has been solved. Defaults and C6 are unchanged.
 
 ## 1. Target
 
@@ -57,7 +63,7 @@ bucket fusion; ACIC does not get a deliberately weakened reference.
 within three times GAPBS. Meeting C6 alone does not establish paper novelty,
 live-feedback benefit, or a practical advantage over the best feasible system.
 
-## 2. Completed evidence and its limits
+## 2. Earlier L1–L3 candidate evidence and its limits
 
 Candidate: `acic_reader_final`, `--process-share auto --reader-tile auto
 --slack-control off`. Delta EPYC 7763, eight processes x fifteen workers per
@@ -128,7 +134,7 @@ use these same inputs, sources, layouts and executable variants.
 
 **Execution, 2026-09-20:** the author authorized R0–R2 and reserved the R3
 decision. [R0 implementation and measurement status](ipdps27-r0-progress.md)
-records completed checks and pending jobs. Stop with a results update after
+records the completed checks and job history. Stop with a results update after
 R0–R2; R3 requires the author's subsequent decision.
 
 All four R0 allocations have completed. The [R1 decision](ipdps27-r1-decision.md)
@@ -145,11 +151,13 @@ are [complete and valid](ipdps27-r1-one-node-check.md): attempts fall about
 eight-node jobs are now [complete](ipdps27-r1-eight-node-check.md): mesh
 improves, but road becomes substantially slower than frozen R0. The subsequent
 [batching follow-up](ipdps27-r1-batch-one-node-results.md) produces a real
-one-node timing gain, with a measured work/cost tradeoff. Carry batch 8 forward
-as the common training-selected scaling candidate; retain batch 32 as a fixed
-ablation. Establish scaling from the improved one-node baseline before
-declaring the candidate ready for R2 and final acceptance. The completed
-eight-node jobs use the older nearest-1 implementation.
+one-node timing gain, with a measured work/cost tradeoff. The completed
+[two-node comparison](ipdps27-r1-batch-two-node-results.md) reproduces that
+benefit but exposes weak road scaling. Preserve batch 8 as the common candidate
+and batch 32 as an ablation; avoid another batch-size search. The completed
+eight-node jobs use the older nearest-1 implementation. The proposed next
+research step is distributed-work attribution below, before secondary RMAT
+cleanup or a broad larger-node campaign. Submission remains paused.
 
 Each implementation step gets a separate commit, correctness checks and a
 paired comparison. Training sources select parameters; held-out sources
@@ -157,7 +165,7 @@ judge a frozen policy. Do not tune a graph-name table against these results.
 If these observed held-out sources guide another policy, freeze an additional
 unseen source set before evaluating that policy's final claim.
 
-### R0. Quantify redundant work, then cost per operation
+### R0. Completed: quantify redundant work, then cost per operation
 
 Start with the high-diameter gap: measure excess edge attempts, repeated
 vertex expansions and stale queue work against GAPBS, and how these grow
@@ -197,7 +205,7 @@ exact candidate and support a testable counterfactual with enough potential
 to address the measured gap. Report uncertainty and instrumentation overhead.
 If the evidence cannot identify such a path, stop the performance sprint.
 
-### R1. At most one intervention selected by R0
+### R1. Implemented: priority and the authorized batching follow-up
 
 | If R0 isolates… | Candidate intervention | Required causal check |
 |---|---|---|
@@ -211,6 +219,47 @@ cost and disconfirming result before implementation. A live controller must
 beat the same mechanism at a training-selected constant; comparing it only
 with a weaker old baseline does not establish C3c. If its plausible benefit
 cannot close the remaining gap, it does not trigger another C6 campaign.
+
+### R1 next. Attribute distributed road work before expanding scale
+
+**Proposed only; submissions are paused.** The two-node experiment meets the
+limited aggregate direction of its training hypothesis in both allocations.
+That does not establish uniformly useful road scaling: doubling workers adds
+65–72% work, and one source has no reliable gain. Batched eight-node behavior
+cannot be inferred from the older unbatched run or by multiplying observed
+one-node batching gains into old scaling curves.
+
+1. Preserve the current production/diagnostic binaries, batch 8, sharing auto,
+   reader tiles auto, slack off, and all completed results. Keep the original
+   8 processes x 15 workers per node as the main scaling baseline. No new
+   batch-size tuning, graph-name policy or default change.
+2. Review existing source-level work, controller and queue diagnostics. If
+   experiments resume, first separate increasing the number of process-local
+   priority domains from spreading the same domains across physical nodes.
+   A concrete diagnostic pair is **16 total processes x 7 workers** on both
+   layouts: 16 processes on one node versus 8 per node on two nodes. This
+   holds total workers, priority domains and logical partitioning fixed;
+   verify the resolved reader layout and use the same graph/source/flags.
+   It is an attribution experiment, not a replacement tuned performance
+   baseline. Physical placement also changes memory locality, so the pair
+   alone cannot prove a pure network-latency explanation.
+3. Measure edge attempts, repeated expansions and distance-order/arrival
+   diagnostics alongside delivery/controller behavior. If work grows when
+   only physical placement changes, investigate remote delivery and admission
+   timing. If it does not, investigate the extra priority domains and changed
+   partitions exposed by adding workers. These are hypotheses to distinguish,
+   not established causes and not evidence of an inherent Bellman–Ford limit.
+4. Select at most one targeted distributed-order intervention only after that
+   attribution, with a recorded prediction and a disconfirming test. Compare
+   against the unchanged batch-8 candidate at the same worker/node counts.
+   Favor a reduction in work that produces a repeatable time gain on both
+   training sources; do not exchange a large work increase for a noisy small
+   timing win. No new intervention is selected or implemented in this update.
+5. A later four/eight-node batching pilot should follow evidence of a credible
+   scaling path, with the same fixed candidate at one node as its denominator,
+   independent allocations, and all per-source regressions retained. A limited
+   scaling pilot is distinct from the full R3 acceptance campaign. Revisit
+   R2 only once that evidence justifies preparing a final candidate.
 
 ### R2. Address dense-mode cost after a promising intervention
 
@@ -295,17 +344,19 @@ robustness, or easier programming from performance ranks alone.
 
 ## 6. Schedule and stop rule
 
-Replace the old open-ended L1–L3 implementation schedule with these gates:
+**All submissions are paused by the author's latest instruction.** The dates
+below are research decision targets, not authorization to run jobs or resume
+work automatically.
 
-| When | Deliverable / decision |
+| When / state | Deliverable / decision |
 |---|---|
-| Completed review, 09-19 | Archive validated results; record C6 failure and incomplete acceptance; revise paper claims |
-| Next, before further performance changes | R0 redundant-work analysis and matched cost attribution on the high-diameter graphs |
-| By 09-24, only if justified | One R1 intervention, correctness gate and independent paired A/B |
-| Only after a promising R1, before final freeze | R2 isolate/address RMAT auto-mode cost; retain the full regression gate |
-| 09-25 | Freeze a promising candidate and its policy, or stop the sprint |
-| **09-26** | Initial C6 go/no-go; an incomplete or failed target does not authorize a submission claim |
-| 09-27–30, only after a promising first pass | R3 second allocations, full regression/claim checks, final paper decision |
+| Complete | R0 work/cost attribution; R1 priority and one/two-node batching comparisons; unbatched eight-node audit |
+| Current hold | Preserve the measured batch-8 candidate and raw evidence; no further submissions |
+| If the author resumes experiments | Focused distributed-work attribution on road, then one justified intervention or bounded scaling pilot |
+| Only after a credible scaling candidate | R2 isolate/address RMAT auto-mode cost; retain the full regression gate |
+| 09-25 target, conditional on evidence and resumption | Freeze a promising candidate and policy, or stop the performance sprint |
+| **09-26 decision target** | C6 go/no-go; current missing batched eight-node/held-out evidence does not support a submission claim |
+| 09-27–30 target, only after a promising first pass and the author's R3 decision | Full acceptance, regression/claim checks and final paper decision |
 
 Cap **R0–R2 combined at 2,000 additional SU**, not an automatic expenditure.
 Prioritize the R0 diagnosis and R1 intervention; spend on R2 only if that
