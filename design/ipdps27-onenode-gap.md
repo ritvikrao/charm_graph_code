@@ -27,6 +27,10 @@ complete: correctness passes, but road work grows about 8.7x over one node
 and loses scaling. The author authorized the
 [two-node batching comparison](ipdps27-r1-batch-scaling.md) to measure whether
 the optimized kernel provides net speedup while containing work growth.
+Its [first allocation is complete](ipdps27-r1-batch-two-node-results.md):
+batch 8 gives 1.45–1.49x mesh and 1.12–1.15x road speedup, with about 23% and
+65% more edge work respectively. All 128 solves validate. The second two-node
+allocation is pending; wait for that result before advancing the scale gate.
 
 ## 1. Target
 

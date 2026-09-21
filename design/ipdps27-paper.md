@@ -31,9 +31,11 @@ supports that infrastructure choice: all 576 solves validate, and batch 8
 reduces one-node time 60–61% on mesh and 33–35% on road against frozen R0.
 It remains 2.86–2.87 times slower than matched GAPBS on mesh and 3.04–3.85
 times on road. Batch 32 brings the mesh gap to 2.41–2.47 times but increases
-road work substantially. Distributed scaling of the batched build is not
-yet measured; the old slower one-node baseline cannot support a speedup claim
-for this optimized candidate.
+road work substantially. The [first two-node allocation](ipdps27-r1-batch-two-node-results.md)
+shows batch-8 speedups of 1.45–1.49x on mesh and 1.12–1.15x on road, but road
+work grows about 65% and the second allocation remains pending. These are
+preliminary training results; the old slower one-node baseline cannot support
+a speedup claim for this optimized candidate.
 
 **Provisional working title:** *Adaptive Message Flow for Asynchronous SSSP on
 High-Diameter Graphs*. "Adaptive" is used in the author's sense (sprint doc

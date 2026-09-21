@@ -19,8 +19,11 @@ Its implementation, checks and submitted jobs are recorded in the
 the original eight-node jobs or change the final performance gate.
 That follow-up is now [complete and validated](ipdps27-r1-batch-one-node-results.md):
 batch 8 converts reduced work into 60–61% lower mesh time and 33–35% lower
-road time against frozen R0. Its distributed scaling is still unmeasured;
-the author authorized the [bounded two-node experiment](ipdps27-r1-batch-scaling.md).
+road time against frozen R0. The author authorized the
+[bounded two-node experiment](ipdps27-r1-batch-scaling.md); its
+[first allocation](ipdps27-r1-batch-two-node-results.md) now validates and
+shows 1.45–1.49x mesh and 1.12–1.15x road speedup. The independent second
+allocation is still pending.
 
 ## Implementation
 

@@ -5,6 +5,13 @@ explicitly requested the eight-node unbatched sanity check and authorized
 continuing with the recommended batching scaling test. This is a training
 experiment, not R3 acceptance or a new batch-size search.
 
+**First result:** correctness job 22284699 and performance A (22284705)
+completed successfully. The [preliminary analysis](ipdps27-r1-batch-two-node-results.md)
+finds batch-8 speedups of 1.45–1.49x on mesh and 1.12–1.15x on road over the
+optimized one-node baselines. All 128 performance solves and 48 diagnostic
+records pass. Performance B (22284706) is still pending; the reproducibility
+gate is incomplete, so no larger allocation is triggered yet.
+
 The [one-node batching result](ipdps27-r1-batch-one-node-results.md) shows a
 large real timing gain. The [eight-node unbatched result](ipdps27-r1-eight-node-check.md)
 also shows a critical road scaling problem: roughly 8.7x as much work for eight
@@ -99,13 +106,18 @@ tests. Reauditing the completed eight-node data with the extended reporter
 still passes all 160 solves, 32 diagnostic records and 80 launches, with
 identical original metrics, comparisons and raw hashes. The eight-arm config
 was checked for unique labels and an exact repeated candidate. Distributed
-solver verification remains gated on the new compute-node job.
+verification subsequently passed all 224 solves, 112 diagnostic accounting
+checks and 90 connected diagnostic cases with inter-node work. A raw-log
+recheck confirms those results and the original binary hashes.
 
-| Job | Role | Reservation | Initial status |
+| Job | Role | Reservation | Current status |
 |---|---|---|---|
-| 22284699 | Two-node correctness, 224 planned solves | 32 total cores, 5 min | Pending, priority |
-| 22284705 | Two-node performance A | 256 total cores, 10 min | Pending, afterok:22284699 |
-| 22284706 | Two-node performance B | 256 total cores, 10 min | Pending, afterok:22284699 |
+| 22284699 | Two-node correctness, 224 solves | 32 total cores, 5 min | Completed, cn064/cn066, 120 s, exit 0 |
+| 22284705 | Two-node performance A | 256 total cores, 10 min | Completed, cn016/cn088, 345 s, exit 0 |
+| 22284706 | Two-node performance B | 256 total cores, 10 min | Pending; correctness prerequisite passed |
+
+Completed jobs consumed **25.600 allocated CPU-hours** (1.067 verification,
+24.533 performance A); B retains its original reservation.
 
 Both performance jobs use `--kill-on-invalid-dep=yes`. A failed correctness
 gate prevents their execution. A failed/missing/slow performance cell remains

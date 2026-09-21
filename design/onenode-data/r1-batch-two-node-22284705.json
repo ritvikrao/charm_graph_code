@@ -1,0 +1,3299 @@
+{
+  "allocations": [
+    {
+      "job": 22284705,
+      "graph": "mesh26-z",
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen_r0",
+            "binary": "acic_r0_control",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "4820a6b9c77b367981723d53dbb0787af646879778726830d875dd314357e93f"
+          },
+          {
+            "label": "nearest",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "1"
+            ],
+            "sha256": "00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1"
+          },
+          {
+            "label": "batch8",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "sha256": "00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1"
+          },
+          {
+            "label": "batch32",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "32"
+            ],
+            "sha256": "00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1"
+          },
+          {
+            "label": "batch8_control",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "sha256": "00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1"
+          },
+          {
+            "label": "nearest_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "1"
+            ],
+            "work_cost": true,
+            "sha256": "66bba62a1c69011715edd93653e8aa978b83c84cfd0665eceda2ca1a02b16616"
+          },
+          {
+            "label": "batch8_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "work_cost": true,
+            "sha256": "66bba62a1c69011715edd93653e8aa978b83c84cfd0665eceda2ca1a02b16616"
+          },
+          {
+            "label": "batch32_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "32"
+            ],
+            "work_cost": true,
+            "sha256": "66bba62a1c69011715edd93653e8aa978b83c84cfd0665eceda2ca1a02b16616"
+          }
+        ],
+        "nodes": 2,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 3,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "cn[016,088]"
+      },
+      "runtime_warnings": {
+        "warn:reg_cache": 1536
+      },
+      "summary": {
+        "batch32": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.805312,
+              "edge_attempts": 738210545,
+              "attempts_per_edge": 2.7503843217844377
+            },
+            "41856222": {
+              "seconds": 0.611113,
+              "edge_attempts": 631404358,
+              "attempts_per_edge": 2.3524516937773736
+            }
+          },
+          "medians": {
+            "seconds": 0.7082125,
+            "edge_attempts": 684807451.5,
+            "attempts_per_edge": 2.5514180077809057
+          }
+        },
+        "batch32_diag": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.843811,
+              "edge_attempts": 735348187,
+              "attempts_per_edge": 2.7397199054876826,
+              "expansions_per_vertex": 2.7396511882543564,
+              "stale_pop_fraction": 0.25956834762252695,
+              "cpu_ns_per_attempt": 256.6252979746586,
+              "work_ns_per_attempt": 222.6976021632593,
+              "queue_ns_per_attempt": 105.67643308873397,
+              "queue_work_fraction": 0.47156378738529897,
+              "lock_miss_fraction": 0.0432019774378059,
+              "work_share": 0.799459,
+              "idle_share": 0.116497,
+              "send_share": 0.0034,
+              "inter_node_fraction": 0.0010733487526276937,
+              "pops_per_removal_call": 11.881866692060811,
+              "pop_queue_time_fraction": 0.37940758398049057
+            },
+            "41856222": {
+              "seconds": 0.641818,
+              "edge_attempts": 619295415,
+              "attempts_per_edge": 2.307336858712831,
+              "expansions_per_vertex": 2.3073205947875977,
+              "stale_pop_fraction": 0.2595365151047835,
+              "cpu_ns_per_attempt": 233.30211694365605,
+              "work_ns_per_attempt": 202.82281275065048,
+              "queue_ns_per_attempt": 93.38456599236638,
+              "queue_work_fraction": 0.45909788120327394,
+              "lock_miss_fraction": 0.04596562836377481,
+              "work_share": 0.817795,
+              "idle_share": 0.105108,
+              "send_share": 0.002857,
+              "inter_node_fraction": 0.0010942402633757878,
+              "pops_per_removal_call": 12.412871343020399,
+              "pop_queue_time_fraction": 0.3813200597258371
+            }
+          },
+          "medians": {
+            "seconds": 0.7428144999999999,
+            "edge_attempts": 677321801.0,
+            "attempts_per_edge": 2.523528382100257,
+            "expansions_per_vertex": 2.523485891520977,
+            "stale_pop_fraction": 0.25955243136365524,
+            "cpu_ns_per_attempt": 244.96370745915732,
+            "work_ns_per_attempt": 212.7602074569549,
+            "queue_ns_per_attempt": 99.53049954055018,
+            "queue_work_fraction": 0.46533083429428646,
+            "lock_miss_fraction": 0.04458380290079035,
+            "work_share": 0.808627,
+            "idle_share": 0.1108025,
+            "send_share": 0.0031285,
+            "inter_node_fraction": 0.0010837945080017408,
+            "pops_per_removal_call": 12.147369017540605,
+            "pop_queue_time_fraction": 0.38036382185316386
+          }
+        },
+        "batch8": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.876723,
+              "edge_attempts": 530822214,
+              "attempts_per_edge": 1.9777082634880319
+            },
+            "41856222": {
+              "seconds": 0.671845,
+              "edge_attempts": 480978157,
+              "attempts_per_edge": 1.7920020122898321
+            }
+          },
+          "medians": {
+            "seconds": 0.774284,
+            "edge_attempts": 505900185.5,
+            "attempts_per_edge": 1.884855137888932
+          }
+        },
+        "batch8_control": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.830842,
+              "edge_attempts": 532084113,
+              "attempts_per_edge": 1.982409777505656
+            },
+            "41856222": {
+              "seconds": 0.65957,
+              "edge_attempts": 475903606,
+              "attempts_per_edge": 1.7730955287601293
+            }
+          },
+          "medians": {
+            "seconds": 0.745206,
+            "edge_attempts": 503993859.5,
+            "attempts_per_edge": 1.8777526531328927
+          }
+        },
+        "batch8_diag": {
+          "sources": {
+            "22442342": {
+              "seconds": 0.912963,
+              "edge_attempts": 531442345,
+              "attempts_per_edge": 1.9800187135234653,
+              "expansions_per_vertex": 1.979977399110794,
+              "stale_pop_fraction": 0.26545012308160226,
+              "cpu_ns_per_attempt": 377.786285048475,
+              "work_ns_per_attempt": 341.57467824661205,
+              "queue_ns_per_attempt": 197.02166659419944,
+              "queue_work_fraction": 0.5763930418295146,
+              "lock_miss_fraction": 0.08392879293121375,
+              "work_share": 0.817666,
+              "idle_share": 0.111982,
+              "send_share": 0.002986,
+              "inter_node_fraction": 0.0011819477760318588,
+              "pops_per_removal_call": 5.291353432454387,
+              "pop_queue_time_fraction": 0.4167926398018138
+            },
+            "41856222": {
+              "seconds": 0.705499,
+              "edge_attempts": 466389534,
+              "attempts_per_edge": 1.7376485216124213,
+              "expansions_per_vertex": 1.7376385182142258,
+              "stale_pop_fraction": 0.26399328515965315,
+              "cpu_ns_per_attempt": 322.2962546196416,
+              "work_ns_per_attempt": 294.279314916557,
+              "queue_ns_per_attempt": 169.0947995996465,
+              "queue_work_fraction": 0.5725885447932654,
+              "lock_miss_fraction": 0.08954385279873271,
+              "work_share": 0.835038,
+              "idle_share": 0.101859,
+              "send_share": 0.002308,
+              "inter_node_fraction": 0.0011991076120320644,
+              "pops_per_removal_call": 5.412840198648092,
+              "pop_queue_time_fraction": 0.4307050186071123
+            }
+          },
+          "medians": {
+            "seconds": 0.809231,
+            "edge_attempts": 498915939.5,
+            "attempts_per_edge": 1.8588336175679432,
+            "expansions_per_vertex": 1.85880795866251,
+            "stale_pop_fraction": 0.2647217041206277,
+            "cpu_ns_per_attempt": 350.0412698340583,
+            "work_ns_per_attempt": 317.9269965815845,
+            "queue_ns_per_attempt": 183.05823309692298,
+            "queue_work_fraction": 0.57449079331139,
+            "lock_miss_fraction": 0.08673632286497324,
+            "work_share": 0.826352,
+            "idle_share": 0.1069205,
+            "send_share": 0.002647,
+            "inter_node_fraction": 0.0011905276940319615,
+            "pops_per_removal_call": 5.352096815551239,
+            "pop_queue_time_fraction": 0.42374882920446305
+          }
+        },
+        "frozen_r0": {
+          "sources": {
+            "22442342": {
+              "seconds": 1.999774,
+              "edge_attempts": 3154771920,
+              "attempts_per_edge": 11.753876026755737
+            },
+            "41856222": {
+              "seconds": 1.518608,
+              "edge_attempts": 2319065541,
+              "attempts_per_edge": 8.640247079045647
+            }
+          },
+          "medians": {
+            "seconds": 1.759191,
+            "edge_attempts": 2736918730.5,
+            "attempts_per_edge": 10.197061552900692
+          }
+        },
+        "nearest": {
+          "sources": {
+            "22442342": {
+              "seconds": 1.846901,
+              "edge_attempts": 487344087,
+              "attempts_per_edge": 1.8157198448027465
+            },
+            "41856222": {
+              "seconds": 1.657878,
+              "edge_attempts": 463889701,
+              "attempts_per_edge": 1.7283347810585266
+            }
+          },
+          "medians": {
+            "seconds": 1.7523895,
+            "edge_attempts": 475616894.0,
+            "attempts_per_edge": 1.7720273129306365
+          }
+        },
+        "nearest_diag": {
+          "sources": {
+            "22442342": {
+              "seconds": 1.799382,
+              "edge_attempts": 485974708,
+              "attempts_per_edge": 1.8106178877016315,
+              "expansions_per_vertex": 1.8105746656656265,
+              "stale_pop_fraction": 0.2659013442326948,
+              "cpu_ns_per_attempt": 852.635440841269,
+              "work_ns_per_attempt": 774.4316229197582,
+              "queue_ns_per_attempt": 550.7274040533287,
+              "queue_work_fraction": 0.7116268716725005,
+              "lock_miss_fraction": 0.22860576398240198,
+              "work_share": 0.87086,
+              "idle_share": 0.099555,
+              "send_share": 0.001286,
+              "inter_node_fraction": 0.001189053649269336,
+              "pops_per_removal_call": 0.8918442091533236,
+              "pop_queue_time_fraction": 0.7482927842338215
+            },
+            "41856222": {
+              "seconds": 1.658609,
+              "edge_attempts": 457166364,
+              "attempts_per_edge": 1.7032853411661808,
+              "expansions_per_vertex": 1.7032595425844193,
+              "stale_pop_fraction": 0.26416573720530867,
+              "cpu_ns_per_attempt": 836.2246201930518,
+              "work_ns_per_attempt": 772.8031198537983,
+              "queue_ns_per_attempt": 550.9262559165874,
+              "queue_work_fraction": 0.7131805157292648,
+              "lock_miss_fraction": 0.2348826583637256,
+              "work_share": 0.880337,
+              "idle_share": 0.092848,
+              "send_share": 0.001031,
+              "inter_node_fraction": 0.0012375057409079204,
+              "pops_per_removal_call": 0.8967683006091486,
+              "pop_queue_time_fraction": 0.7440855936945907
+            }
+          },
+          "medians": {
+            "seconds": 1.7289955,
+            "edge_attempts": 471570536.0,
+            "attempts_per_edge": 1.7569516144339061,
+            "expansions_per_vertex": 1.7569171041250229,
+            "stale_pop_fraction": 0.26503354071900176,
+            "cpu_ns_per_attempt": 844.4300305171604,
+            "work_ns_per_attempt": 773.6173713867782,
+            "queue_ns_per_attempt": 550.8268299849581,
+            "queue_work_fraction": 0.7124036937008826,
+            "lock_miss_fraction": 0.2317442111730638,
+            "work_share": 0.8755985,
+            "idle_share": 0.0962015,
+            "send_share": 0.0011585,
+            "inter_node_fraction": 0.0012132796950886282,
+            "pops_per_removal_call": 0.8943062548812362,
+            "pop_queue_time_fraction": 0.746189188964206
+          }
+        }
+      },
+      "comparisons": {
+        "nearest/frozen_r0:seconds": {
+          "sources": {
+            "22442342": 0.923554861699372,
+            "41856222": 1.0917089861241347
+          },
+          "median": 1.0076319239117533
+        },
+        "nearest/frozen_r0:attempts_per_edge": {
+          "sources": {
+            "22442342": 0.15447838999403798,
+            "41856222": 0.20003302744085746
+          },
+          "median": 0.17725570871744772
+        },
+        "nearest_diag/nearest:seconds": {
+          "sources": {
+            "22442342": 0.9742709544258193,
+            "41856222": 1.0004409250861643
+          },
+          "median": 0.9873559397559919
+        },
+        "nearest_diag/nearest:attempts_per_edge": {
+          "sources": {
+            "22442342": 0.9971901187753613,
+            "41856222": 0.9855066042951447
+          },
+          "median": 0.991348361535253
+        },
+        "batch8/nearest:seconds": {
+          "sources": {
+            "22442342": 0.47469951015241213,
+            "41856222": 0.40524393230382455
+          },
+          "median": 0.43997172122811834
+        },
+        "batch8/nearest:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.089214434236072,
+            "41856222": 1.0368373256900565
+          },
+          "median": 1.0630258799630643
+        },
+        "batch32/nearest:seconds": {
+          "sources": {
+            "22442342": 0.43603419999231147,
+            "41856222": 0.3686115624913293
+          },
+          "median": 0.40232288124182036
+        },
+        "batch32/nearest:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.514762494697099,
+            "41856222": 1.3611088080612506
+          },
+          "median": 1.4379356513791748
+        },
+        "batch8/frozen_r0:seconds": {
+          "sources": {
+            "22442342": 0.4384110404475706,
+            "41856222": 0.4424084424683658
+          },
+          "median": 0.4404097414579682
+        },
+        "batch8/frozen_r0:attempts_per_edge": {
+          "sources": {
+            "22442342": 0.16826009215905538,
+            "41856222": 0.20740170922146436
+          },
+          "median": 0.18783090069025987
+        },
+        "batch32/frozen_r0:seconds": {
+          "sources": {
+            "22442342": 0.40270150527009557,
+            "41856222": 0.40241655516104224
+          },
+          "median": 0.40255903021556894
+        },
+        "batch32/frozen_r0:attempts_per_edge": {
+          "sources": {
+            "22442342": 0.23399807140416037,
+            "41856222": 0.27226671555290893
+          },
+          "median": 0.25313239347853467
+        },
+        "batch8_diag/batch8:seconds": {
+          "sources": {
+            "22442342": 1.0413357468664561,
+            "41856222": 1.0500919110806808
+          },
+          "median": 1.0457138289735686
+        },
+        "batch8_diag/batch8:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.0011682461352305,
+            "41856222": 0.9696688450656606
+          },
+          "median": 0.9854185456004456
+        },
+        "batch32_diag/batch32:seconds": {
+          "sources": {
+            "22442342": 1.0478063160613527,
+            "41856222": 1.050244390153703
+          },
+          "median": 1.049025353107528
+        },
+        "batch32_diag/batch32:attempts_per_edge": {
+          "sources": {
+            "22442342": 0.9961225723211525,
+            "41856222": 0.9808222055382141
+          },
+          "median": 0.9884723889296834
+        },
+        "batch8_control/batch8:seconds": {
+          "sources": {
+            "22442342": 0.9476676213581712,
+            "41856222": 0.9817294167553527
+          },
+          "median": 0.964698519056762
+        },
+        "batch8_control/batch8:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.0023772535638458,
+            "41856222": 0.9894495188063187
+          },
+          "median": 0.9959133861850822
+        },
+        "batch8/batch8_control:seconds": {
+          "sources": {
+            "22442342": 1.055222292565855,
+            "41856222": 1.0186106099428416
+          },
+          "median": 1.0369164512543483
+        },
+        "batch8/batch8_control:attempts_per_edge": {
+          "sources": {
+            "22442342": 0.9976283843678678,
+            "41856222": 1.0106629807717826
+          },
+          "median": 1.0041456825698252
+        },
+        "batch32/batch8:seconds": {
+          "sources": {
+            "22442342": 0.9185478195507589,
+            "41856222": 0.9096041497666872
+          },
+          "median": 0.9140759846587231
+        },
+        "batch32/batch8:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.390692637817904,
+            "41856222": 1.3127505871332115
+          },
+          "median": 1.3517216124755578
+        },
+        "batch32/batch8_control:seconds": {
+          "sources": {
+            "22442342": 0.9692721359777191,
+            "41856222": 0.9265324378003852
+          },
+          "median": 0.9479022868890521
+        },
+        "batch32/batch8_control:attempts_per_edge": {
+          "sources": {
+            "22442342": 1.3873944494185642,
+            "41856222": 1.3267484214019591
+          },
+          "median": 1.3570714354102615
+        }
+      },
+      "rows": [
+        {
+          "variant": "batch32_diag",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.800536,
+            "edge_attempts": 728396997,
+            "attempts_per_edge": 2.7138215433967634,
+            "expansions_per_vertex": 2.7137481421232224,
+            "stale_pop_fraction": 0.2592453838953288,
+            "cpu_ns_per_attempt": 245.7682875716194,
+            "work_ns_per_attempt": 211.20583093233154,
+            "queue_ns_per_attempt": 100.87028024820765,
+            "queue_work_fraction": 0.4775923079534939,
+            "lock_miss_fraction": 0.04289597867955992,
+            "work_share": 0.800722,
+            "idle_share": 0.112425,
+            "send_share": 0.00364,
+            "inter_node_fraction": 0.0010929300961958798,
+            "pops_per_removal_call": 11.622488576547285,
+            "pop_queue_time_fraction": 0.37266287818782745
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.659717,
+            "edge_attempts": 633080624,
+            "attempts_per_edge": 2.358697033615401,
+            "expansions_per_vertex": 2.3586895167827606,
+            "stale_pop_fraction": 0.25839894523584833,
+            "cpu_ns_per_attempt": 233.2294429942939,
+            "work_ns_per_attempt": 205.88058149130782,
+            "queue_ns_per_attempt": 94.76244464147402,
+            "queue_work_fraction": 0.4602786914387788,
+            "lock_miss_fraction": 0.047814789108325435,
+            "work_share": 0.8232,
+            "idle_share": 0.100542,
+            "send_share": 0.002769,
+            "inter_node_fraction": 0.001091436025374234,
+            "pops_per_removal_call": 12.650097171342257,
+            "pop_queue_time_fraction": 0.3808124468593995
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.031258,
+            "edge_attempts": 3170224214,
+            "attempts_per_edge": 11.811447335430561
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.515125,
+            "edge_attempts": 2287078612,
+            "attempts_per_edge": 8.521071935017282
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.876513,
+            "edge_attempts": 474851226,
+            "attempts_per_edge": 1.769174629130391
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.699493,
+            "edge_attempts": 466934546,
+            "attempts_per_edge": 1.7396790974015879
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.924029,
+            "edge_attempts": 577892105,
+            "attempts_per_edge": 2.153078679301453
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.677897,
+            "edge_attempts": 474768948,
+            "attempts_per_edge": 1.7688680822749436
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.803374,
+            "edge_attempts": 738088065,
+            "attempts_per_edge": 2.7499279925244267
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.605005,
+            "edge_attempts": 625765729,
+            "attempts_per_edge": 2.3314435994024025
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.850146,
+            "edge_attempts": 516333576,
+            "attempts_per_edge": 1.9237272914345775
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.654804,
+            "edge_attempts": 470236277,
+            "attempts_per_edge": 1.7519805055007496
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.858432,
+            "edge_attempts": 475363527,
+            "attempts_per_edge": 1.7710833320715476,
+            "expansions_per_vertex": 1.77105413377285,
+            "stale_pop_fraction": 0.26614020749461065,
+            "cpu_ns_per_attempt": 897.2046767399553,
+            "work_ns_per_attempt": 806.0162617398285,
+            "queue_ns_per_attempt": 574.6619334763401,
+            "queue_work_fraction": 0.7129656816549858,
+            "lock_miss_fraction": 0.21431274970088882,
+            "work_share": 0.859037,
+            "idle_share": 0.111122,
+            "send_share": 0.001334,
+            "inter_node_fraction": 0.0012082100695117066,
+            "pops_per_removal_call": 0.8790540402243858,
+            "pop_queue_time_fraction": 0.7418503889762612
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.614994,
+            "edge_attempts": 447177082,
+            "attempts_per_edge": 1.6660678226888697,
+            "expansions_per_vertex": 1.6660668849945068,
+            "stale_pop_fraction": 0.26468518948859127,
+            "cpu_ns_per_attempt": 830.3237973094516,
+            "work_ns_per_attempt": 752.3236175149066,
+            "queue_ns_per_attempt": 531.1896734429467,
+            "queue_work_fraction": 0.7060653966940255,
+            "lock_miss_fraction": 0.2172947813836238,
+            "work_share": 0.867965,
+            "idle_share": 0.10564,
+            "send_share": 0.001057,
+            "inter_node_fraction": 0.0012189242739412123,
+            "pops_per_removal_call": 0.8813152654312528,
+            "pop_queue_time_fraction": 0.7462548722961259
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "22442342",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.865661,
+            "edge_attempts": 536839001,
+            "attempts_per_edge": 2.0001252781790324,
+            "expansions_per_vertex": 2.000097945332527,
+            "stale_pop_fraction": 0.263948188657952,
+            "cpu_ns_per_attempt": 353.19967126047163,
+            "work_ns_per_attempt": 316.9101121250317,
+            "queue_ns_per_attempt": 182.29798070275362,
+            "queue_work_fraction": 0.5752356069686755,
+            "lock_miss_fraction": 0.0838567706256121,
+            "work_share": 0.818881,
+            "idle_share": 0.111803,
+            "send_share": 0.003036,
+            "inter_node_fraction": 0.0011529005881597638,
+            "pops_per_removal_call": 5.3142288818011965,
+            "pop_queue_time_fraction": 0.4227923342257672
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "41856222",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.694748,
+            "edge_attempts": 475736133,
+            "attempts_per_edge": 1.772471567050774,
+            "expansions_per_vertex": 1.7724552750587463,
+            "stale_pop_fraction": 0.26340213475635726,
+            "cpu_ns_per_attempt": 319.38805399925343,
+            "work_ns_per_attempt": 293.5766747824471,
+            "queue_ns_per_attempt": 169.155162943452,
+            "queue_work_fraction": 0.5761873386869146,
+            "lock_miss_fraction": 0.0898499686891172,
+            "work_share": 0.837624,
+            "idle_share": 0.100972,
+            "send_share": 0.002389,
+            "inter_node_fraction": 0.0011952949556598006,
+            "pops_per_removal_call": 5.440962477788574,
+            "pop_queue_time_fraction": 0.4265520526457807
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.999774,
+            "edge_attempts": 3140194742,
+            "attempts_per_edge": 11.699565177231012
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.529709,
+            "edge_attempts": 2333958040,
+            "attempts_per_edge": 8.695732734241469
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.815327,
+            "edge_attempts": 487961879,
+            "attempts_per_edge": 1.8180215803203879
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.618929,
+            "edge_attempts": 451914275,
+            "attempts_per_edge": 1.683717396302678
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.811627,
+            "edge_attempts": 523363598,
+            "attempts_per_edge": 1.9499193614633248
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.673706,
+            "edge_attempts": 479080857,
+            "attempts_per_edge": 1.7849331561090773
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.805312,
+            "edge_attempts": 748467147,
+            "attempts_per_edge": 2.7885978064422363
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.601716,
+            "edge_attempts": 621362269,
+            "attempts_per_edge": 2.3150374298784966
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.830842,
+            "edge_attempts": 532084113,
+            "attempts_per_edge": 1.982409777505656
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.695499,
+            "edge_attempts": 476146428,
+            "attempts_per_edge": 1.7740002216371247
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.799382,
+            "edge_attempts": 486150277,
+            "attempts_per_edge": 1.8112720130433269,
+            "expansions_per_vertex": 1.811230793595314,
+            "stale_pop_fraction": 0.2643266973367785,
+            "cpu_ns_per_attempt": 852.635440841269,
+            "work_ns_per_attempt": 774.4316229197582,
+            "queue_ns_per_attempt": 550.7274040533287,
+            "queue_work_fraction": 0.7111375462393683,
+            "lock_miss_fraction": 0.23149589523998623,
+            "work_share": 0.871804,
+            "idle_share": 0.098428,
+            "send_share": 0.001286,
+            "inter_node_fraction": 0.0012001885581564731,
+            "pops_per_removal_call": 0.8946924204738961,
+            "pop_queue_time_fraction": 0.7482927842338215
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.70967,
+            "edge_attempts": 469391031,
+            "attempts_per_edge": 1.7488313343568302,
+            "expansions_per_vertex": 1.7488217502832413,
+            "stale_pop_fraction": 0.26369731871857377,
+            "cpu_ns_per_attempt": 836.2246201930518,
+            "work_ns_per_attempt": 776.9998464244196,
+            "queue_ns_per_attempt": 550.9262559165874,
+            "queue_work_fraction": 0.709042940551182,
+            "lock_miss_fraction": 0.23822380647815913,
+            "work_share": 0.888857,
+            "idle_share": 0.085931,
+            "send_share": 0.000993,
+            "inter_node_fraction": 0.001224746452388009,
+            "pops_per_removal_call": 0.8996136174357143,
+            "pop_queue_time_fraction": 0.7507933979857033
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.88765,
+            "edge_attempts": 507096855,
+            "attempts_per_edge": 1.889313623416469,
+            "expansions_per_vertex": 1.8893006592988968,
+            "stale_pop_fraction": 0.2660700830110877,
+            "cpu_ns_per_attempt": 383.2584163157549,
+            "work_ns_per_attempt": 342.71215111361715,
+            "queue_ns_per_attempt": 197.53689925231404,
+            "queue_work_fraction": 0.5763930418295146,
+            "lock_miss_fraction": 0.08392879293121375,
+            "work_share": 0.815769,
+            "idle_share": 0.111982,
+            "send_share": 0.003064,
+            "inter_node_fraction": 0.0011819477760318588,
+            "pops_per_removal_call": 5.291353432454387,
+            "pop_queue_time_fraction": 0.4192476615529429
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.687873,
+            "edge_attempts": 466389534,
+            "attempts_per_edge": 1.7376485216124213,
+            "expansions_per_vertex": 1.7376385182142258,
+            "stale_pop_fraction": 0.26463594957228215,
+            "cpu_ns_per_attempt": 322.2962546196416,
+            "work_ns_per_attempt": 295.5812168803942,
+            "queue_ns_per_attempt": 169.2464188417675,
+            "queue_work_fraction": 0.5725885447932654,
+            "lock_miss_fraction": 0.08954385279873271,
+            "work_share": 0.835038,
+            "idle_share": 0.101859,
+            "send_share": 0.002503,
+            "inter_node_fraction": 0.0012095125616605282,
+            "pops_per_removal_call": 5.412840198648092,
+            "pop_queue_time_fraction": 0.4314003773974377
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "22442342",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.843811,
+            "edge_attempts": 735348187,
+            "attempts_per_edge": 2.7397199054876826,
+            "expansions_per_vertex": 2.7396511882543564,
+            "stale_pop_fraction": 0.2589748211888401,
+            "cpu_ns_per_attempt": 256.6252979746586,
+            "work_ns_per_attempt": 222.6976021632593,
+            "queue_ns_per_attempt": 106.20847970616974,
+            "queue_work_fraction": 0.4769179311967106,
+            "lock_miss_fraction": 0.04603405613815014,
+            "work_share": 0.808634,
+            "idle_share": 0.109181,
+            "send_share": 0.003256,
+            "inter_node_fraction": 0.0010626884159299628,
+            "pops_per_removal_call": 12.133329007025246,
+            "pop_queue_time_fraction": 0.3801420297468047
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "41856222",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.643061,
+            "edge_attempts": 617629439,
+            "attempts_per_edge": 2.301129856791896,
+            "expansions_per_vertex": 2.3011178970336914,
+            "stale_pop_fraction": 0.2594987892495534,
+            "cpu_ns_per_attempt": 234.7050063978573,
+            "work_ns_per_attempt": 202.63692773880229,
+            "queue_ns_per_attempt": 95.3763201071566,
+            "queue_work_fraction": 0.4706759087371087,
+            "lock_miss_fraction": 0.04326811109708388,
+            "work_share": 0.810929,
+            "idle_share": 0.114771,
+            "send_share": 0.002711,
+            "inter_node_fraction": 0.0010942402633757878,
+            "pops_per_removal_call": 11.758667067452654,
+            "pop_queue_time_fraction": 0.37572702119694595
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.891408,
+            "edge_attempts": 487344087,
+            "attempts_per_edge": 1.8157198448027465
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.658566,
+            "edge_attempts": 463889701,
+            "attempts_per_edge": 1.7283347810585266
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.876723,
+            "edge_attempts": 530822214,
+            "attempts_per_edge": 1.9777082634880319
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.668385,
+            "edge_attempts": 481584599,
+            "attempts_per_edge": 1.7942614606005733
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.78675,
+            "edge_attempts": 738143553,
+            "attempts_per_edge": 2.7501347266686094
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.614027,
+            "edge_attempts": 638148057,
+            "attempts_per_edge": 2.377576997291473
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.801763,
+            "edge_attempts": 518621042,
+            "attempts_per_edge": 1.932249806678538
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.645356,
+            "edge_attempts": 464360328,
+            "attempts_per_edge": 1.7300882172983305
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.839081,
+            "edge_attempts": 485974708,
+            "attempts_per_edge": 1.8106178877016315,
+            "expansions_per_vertex": 1.8105746656656265,
+            "stale_pop_fraction": 0.2659013442326948,
+            "cpu_ns_per_attempt": 868.9674015339909,
+            "work_ns_per_attempt": 790.9463016746131,
+            "queue_ns_per_attempt": 562.8586423216387,
+            "queue_work_fraction": 0.7116268716725005,
+            "lock_miss_fraction": 0.22860576398240198,
+            "work_share": 0.87086,
+            "idle_share": 0.099555,
+            "send_share": 0.00128,
+            "inter_node_fraction": 0.001189053649269336,
+            "pops_per_removal_call": 0.8918442091533236,
+            "pop_queue_time_fraction": 0.7484784335019574
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.658609,
+            "edge_attempts": 452768396,
+            "attempts_per_edge": 1.6868996334343715,
+            "expansions_per_vertex": 1.6868843883275986,
+            "stale_pop_fraction": 0.2650901562953213,
+            "cpu_ns_per_attempt": 840.6931922651245,
+            "work_ns_per_attempt": 772.8031198537983,
+            "queue_ns_per_attempt": 551.878510658962,
+            "queue_work_fraction": 0.7141256246006983,
+            "lock_miss_fraction": 0.2279990025632975,
+            "work_share": 0.879002,
+            "idle_share": 0.094947,
+            "send_share": 0.001063,
+            "inter_node_fraction": 0.0012379905597474608,
+            "pops_per_removal_call": 0.8909086063443681,
+            "pop_queue_time_fraction": 0.7418734642622927
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.918388,
+            "edge_attempts": 531442345,
+            "attempts_per_edge": 1.9800187135234653,
+            "expansions_per_vertex": 1.979977399110794,
+            "stale_pop_fraction": 0.26545012308160226,
+            "cpu_ns_per_attempt": 377.786285048475,
+            "work_ns_per_attempt": 341.57467824661205,
+            "queue_ns_per_attempt": 197.02166659419944,
+            "queue_work_fraction": 0.5768040757750568,
+            "lock_miss_fraction": 0.08719915113361086,
+            "work_share": 0.823577,
+            "idle_share": 0.1059,
+            "send_share": 0.002887,
+            "inter_node_fraction": 0.0012019234184283904,
+            "pops_per_removal_call": 5.392611881361201,
+            "pop_queue_time_fraction": 0.4167226343649607
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.705499,
+            "edge_attempts": 464720338,
+            "attempts_per_edge": 1.7314295227922605,
+            "expansions_per_vertex": 1.7314165383577347,
+            "stale_pop_fraction": 0.26399328515965315,
+            "cpu_ns_per_attempt": 334.0518339913929,
+            "work_ns_per_attempt": 293.8780871690621,
+            "queue_ns_per_attempt": 167.72500848235552,
+            "queue_work_fraction": 0.5707298904047471,
+            "lock_miss_fraction": 0.07054810544268618,
+            "work_share": 0.806587,
+            "idle_share": 0.133567,
+            "send_share": 0.002308,
+            "inter_node_fraction": 0.0011989059966641701,
+            "pops_per_removal_call": 4.918550381563804,
+            "pop_queue_time_fraction": 0.4307050186071123
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.863856,
+            "edge_attempts": 736620693,
+            "attempts_per_edge": 2.7444609384835967,
+            "expansions_per_vertex": 2.7444139420986176,
+            "stale_pop_fraction": 0.25956834762252695,
+            "cpu_ns_per_attempt": 263.49097193499557,
+            "work_ns_per_attempt": 224.09785466072972,
+            "queue_ns_per_attempt": 105.67643308873397,
+            "queue_work_fraction": 0.47156378738529897,
+            "lock_miss_fraction": 0.04282784127894168,
+            "work_share": 0.796213,
+            "idle_share": 0.11963,
+            "send_share": 0.003417,
+            "inter_node_fraction": 0.0010757232420023802,
+            "pops_per_removal_call": 11.574743792856884,
+            "pop_queue_time_fraction": 0.37940758398049057
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.641818,
+            "edge_attempts": 619295415,
+            "attempts_per_edge": 2.307336858712831,
+            "expansions_per_vertex": 2.3073205947875977,
+            "stale_pop_fraction": 0.2595365151047835,
+            "cpu_ns_per_attempt": 233.30211694365605,
+            "work_ns_per_attempt": 203.4088367988321,
+            "queue_ns_per_attempt": 93.38456599236638,
+            "queue_work_fraction": 0.45909788120327394,
+            "lock_miss_fraction": 0.04596562836377481,
+            "work_share": 0.817795,
+            "idle_share": 0.105108,
+            "send_share": 0.002857,
+            "inter_node_fraction": 0.0010998789648717163,
+            "pops_per_removal_call": 12.412871343020399,
+            "pop_queue_time_fraction": 0.3813200597258371
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "22442342",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.011578,
+            "edge_attempts": 3216523789,
+            "attempts_per_edge": 11.983947750180505
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "41856222",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.482513,
+            "edge_attempts": 2303343338,
+            "attempts_per_edge": 8.58167015823627
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.890624,
+            "edge_attempts": 533955795,
+            "attempts_per_edge": 1.989383187548405
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.671845,
+            "edge_attempts": 480978157,
+            "attempts_per_edge": 1.7920020122898321
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.856091,
+            "edge_attempts": 738210545,
+            "attempts_per_edge": 2.7503843217844377
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.611113,
+            "edge_attempts": 631404358,
+            "attempts_per_edge": 2.3524516937773736
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.872698,
+            "edge_attempts": 537617272,
+            "attempts_per_edge": 2.00302491754479
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.65957,
+            "edge_attempts": 475903606,
+            "attempts_per_edge": 1.7730955287601293
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.669484,
+            "edge_attempts": 465005300,
+            "attempts_per_edge": 1.732491218567826,
+            "expansions_per_vertex": 1.7324627190828323,
+            "stale_pop_fraction": 0.26653951011985744,
+            "cpu_ns_per_attempt": 828.1995621232704,
+            "work_ns_per_attempt": 736.8487176382721,
+            "queue_ns_per_attempt": 524.8556707225716,
+            "queue_work_fraction": 0.7122977324366189,
+            "lock_miss_fraction": 0.22022213067466506,
+            "work_share": 0.855151,
+            "idle_share": 0.112814,
+            "send_share": 0.001412,
+            "inter_node_fraction": 0.0011792575267421683,
+            "pops_per_removal_call": 0.8851155795860927,
+            "pop_queue_time_fraction": 0.7462526596920592
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.611196,
+            "edge_attempts": 457166364,
+            "attempts_per_edge": 1.7032853411661808,
+            "expansions_per_vertex": 1.7032595425844193,
+            "stale_pop_fraction": 0.26416573720530867,
+            "cpu_ns_per_attempt": 809.4412607945059,
+            "work_ns_per_attempt": 744.6191645017874,
+            "queue_ns_per_attempt": 531.047879761279,
+            "queue_work_fraction": 0.7131805157292648,
+            "lock_miss_fraction": 0.2348826583637256,
+            "work_share": 0.880337,
+            "idle_share": 0.092848,
+            "send_share": 0.001031,
+            "inter_node_fraction": 0.0012375057409079204,
+            "pops_per_removal_call": 0.8967683006091486,
+            "pop_queue_time_fraction": 0.7440855936945907
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.912963,
+            "edge_attempts": 534543770,
+            "attempts_per_edge": 1.9915738325243597,
+            "expansions_per_vertex": 1.9915418922901154,
+            "stale_pop_fraction": 0.2652525200415192,
+            "cpu_ns_per_attempt": 372.97212114734776,
+            "work_ns_per_attempt": 335.16393428362284,
+            "queue_ns_per_attempt": 193.02773812153262,
+            "queue_work_fraction": 0.575920373217091,
+            "lock_miss_fraction": 0.08177707277739046,
+            "work_share": 0.817666,
+            "idle_share": 0.112983,
+            "send_share": 0.002986,
+            "inter_node_fraction": 0.0011454440858977742,
+            "pops_per_removal_call": 5.285273194488339,
+            "pop_queue_time_fraction": 0.4167926398018138
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.709888,
+            "edge_attempts": 488121328,
+            "attempts_per_edge": 1.81861564665105,
+            "expansions_per_vertex": 1.818602740764618,
+            "stale_pop_fraction": 0.262027797216747,
+            "cpu_ns_per_attempt": 318.3399478131388,
+            "work_ns_per_attempt": 294.279314916557,
+            "queue_ns_per_attempt": 169.0947995996465,
+            "queue_work_fraction": 0.5746064742864901,
+            "lock_miss_fraction": 0.09149855932709841,
+            "work_share": 0.843114,
+            "idle_share": 0.098255,
+            "send_share": 0.002259,
+            "inter_node_fraction": 0.0011991076120320644,
+            "pops_per_removal_call": 5.496715275639282,
+            "pop_queue_time_fraction": 0.42531534211977107
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.833765,
+            "edge_attempts": 733029221,
+            "attempts_per_edge": 2.73108002927303,
+            "expansions_per_vertex": 2.731021896004677,
+            "stale_pop_fraction": 0.26038451851629746,
+            "cpu_ns_per_attempt": 255.24831981561618,
+            "work_ns_per_attempt": 218.23782929384748,
+            "queue_ns_per_attempt": 102.69112387627496,
+            "queue_work_fraction": 0.47054685344219566,
+            "lock_miss_fraction": 0.0432019774378059,
+            "work_share": 0.799459,
+            "idle_share": 0.116497,
+            "send_share": 0.0034,
+            "inter_node_fraction": 0.0010733487526276937,
+            "pops_per_removal_call": 11.881866692060811,
+            "pop_queue_time_fraction": 0.37741252442840434
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.639381,
+            "edge_attempts": 623112461,
+            "attempts_per_edge": 2.321558199148885,
+            "expansions_per_vertex": 2.3215420246124268,
+            "stale_pop_fraction": 0.2600103756966576,
+            "cpu_ns_per_attempt": 230.4958594577039,
+            "work_ns_per_attempt": 202.82281275065048,
+            "queue_ns_per_attempt": 92.95447352522861,
+            "queue_work_fraction": 0.4583038380377184,
+            "lock_miss_fraction": 0.04860472311538966,
+            "work_share": 0.823592,
+            "idle_share": 0.099383,
+            "send_share": 0.002934,
+            "inter_node_fraction": 0.0010797922399436656,
+            "pops_per_removal_call": 12.735393592989483,
+            "pop_queue_time_fraction": 0.385741488593888
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.980973,
+            "edge_attempts": 3154771920,
+            "attempts_per_edge": 11.753876026755737
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.518608,
+            "edge_attempts": 2319065541,
+            "attempts_per_edge": 8.640247079045647
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "22442342",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.846901,
+            "edge_attempts": 471106944,
+            "attempts_per_edge": 1.75522438881089
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "41856222",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.657878,
+            "edge_attempts": 464956097,
+            "attempts_per_edge": 1.7323079007316051
+          }
+        }
+      ]
+    },
+    {
+      "job": 22284705,
+      "graph": "road-usa-z",
+      "manifest": {
+        "variants": [
+          {
+            "label": "frozen_r0",
+            "binary": "acic_r0_control",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off"
+            ],
+            "sha256": "4820a6b9c77b367981723d53dbb0787af646879778726830d875dd314357e93f"
+          },
+          {
+            "label": "nearest",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "1"
+            ],
+            "sha256": "00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1"
+          },
+          {
+            "label": "batch8",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "sha256": "00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1"
+          },
+          {
+            "label": "batch32",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "32"
+            ],
+            "sha256": "00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1"
+          },
+          {
+            "label": "batch8_control",
+            "binary": "acic_r1_batch",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "sha256": "00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1"
+          },
+          {
+            "label": "nearest_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "1"
+            ],
+            "work_cost": true,
+            "sha256": "66bba62a1c69011715edd93653e8aa978b83c84cfd0665eceda2ca1a02b16616"
+          },
+          {
+            "label": "batch8_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8"
+            ],
+            "work_cost": true,
+            "sha256": "66bba62a1c69011715edd93653e8aa978b83c84cfd0665eceda2ca1a02b16616"
+          },
+          {
+            "label": "batch32_diag",
+            "binary": "acic_r1_batch_diag",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "32"
+            ],
+            "work_cost": true,
+            "sha256": "66bba62a1c69011715edd93653e8aa978b83c84cfd0665eceda2ca1a02b16616"
+          }
+        ],
+        "nodes": 2,
+        "workers": 120,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 3,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "cn[016,088]"
+      },
+      "runtime_warnings": {
+        "warn:reg_cache": 1536
+      },
+      "summary": {
+        "batch32": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.731369,
+              "edge_attempts": 528635046,
+              "attempts_per_edge": 9.160416751575987
+            },
+            "5620086": {
+              "seconds": 0.667941,
+              "edge_attempts": 416454346,
+              "attempts_per_edge": 7.216501055370857
+            }
+          },
+          "medians": {
+            "seconds": 0.699655,
+            "edge_attempts": 472544696.0,
+            "attempts_per_edge": 8.188458903473421
+          }
+        },
+        "batch32_diag": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.764363,
+              "edge_attempts": 552266600,
+              "attempts_per_edge": 9.569914541715637,
+              "expansions_per_vertex": 9.33302532426661,
+              "stale_pop_fraction": 0.08985615951961343,
+              "cpu_ns_per_attempt": 306.99715686590497,
+              "work_ns_per_attempt": 268.1363924264078,
+              "queue_ns_per_attempt": 141.51424493203,
+              "queue_work_fraction": 0.531627435964556,
+              "lock_miss_fraction": 0.08094962516167292,
+              "work_share": 0.808572,
+              "idle_share": 0.064338,
+              "send_share": 0.006009,
+              "inter_node_fraction": 0.001393003754992212,
+              "pops_per_removal_call": 13.969854027272662,
+              "pop_queue_time_fraction": 0.3656477688365414
+            },
+            "5620086": {
+              "seconds": 0.69626,
+              "edge_attempts": 413184171,
+              "attempts_per_edge": 7.159834048373775,
+              "expansions_per_vertex": 6.998206523670451,
+              "stale_pop_fraction": 0.08993328383156865,
+              "cpu_ns_per_attempt": 374.5363922375429,
+              "work_ns_per_attempt": 322.27882466484897,
+              "queue_ns_per_attempt": 170.45279703691455,
+              "queue_work_fraction": 0.531026961419637,
+              "lock_miss_fraction": 0.07439959637909811,
+              "work_share": 0.79688,
+              "idle_share": 0.073902,
+              "send_share": 0.006876,
+              "inter_node_fraction": 0.0013644956403714701,
+              "pops_per_removal_call": 13.785534310469995,
+              "pop_queue_time_fraction": 0.3612240317242797
+            }
+          },
+          "medians": {
+            "seconds": 0.7303115,
+            "edge_attempts": 482725385.5,
+            "attempts_per_edge": 8.364874295044705,
+            "expansions_per_vertex": 8.16561592396853,
+            "stale_pop_fraction": 0.08989472167559104,
+            "cpu_ns_per_attempt": 340.7667745517239,
+            "work_ns_per_attempt": 295.2076085456284,
+            "queue_ns_per_attempt": 155.98352098447228,
+            "queue_work_fraction": 0.5313271986920964,
+            "lock_miss_fraction": 0.07767461077038551,
+            "work_share": 0.802726,
+            "idle_share": 0.06912,
+            "send_share": 0.0064425,
+            "inter_node_fraction": 0.001378749697681841,
+            "pops_per_removal_call": 13.87769416887133,
+            "pop_queue_time_fraction": 0.3634359002804105
+          }
+        },
+        "batch8": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.679384,
+              "edge_attempts": 309313234,
+              "attempts_per_edge": 5.359913520031252
+            },
+            "5620086": {
+              "seconds": 0.621806,
+              "edge_attempts": 249934047,
+              "attempts_per_edge": 4.330965281722884
+            }
+          },
+          "medians": {
+            "seconds": 0.650595,
+            "edge_attempts": 279623640.5,
+            "attempts_per_edge": 4.845439400877068
+          }
+        },
+        "batch8_control": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.660195,
+              "edge_attempts": 317338118,
+              "attempts_per_edge": 5.498972181350226
+            },
+            "5620086": {
+              "seconds": 0.640197,
+              "edge_attempts": 258910304,
+              "attempts_per_edge": 4.486509745926362
+            }
+          },
+          "medians": {
+            "seconds": 0.650196,
+            "edge_attempts": 288124211.0,
+            "attempts_per_edge": 4.992740963638294
+          }
+        },
+        "batch8_diag": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.711434,
+              "edge_attempts": 302729582,
+              "attempts_per_edge": 5.24582915024971,
+              "expansions_per_vertex": 5.114823616996071,
+              "stale_pop_fraction": 0.09524656689574766,
+              "cpu_ns_per_attempt": 487.1297452018947,
+              "work_ns_per_attempt": 424.97393992221754,
+              "queue_ns_per_attempt": 275.8391764837825,
+              "queue_work_fraction": 0.6490731561899279,
+              "lock_miss_fraction": 0.10375334573137422,
+              "work_share": 0.789153,
+              "idle_share": 0.089091,
+              "send_share": 0.006075,
+              "inter_node_fraction": 0.0015889593505269003,
+              "pops_per_removal_call": 5.312683033634987,
+              "pop_queue_time_fraction": 0.3920259993059986
+            },
+            "5620086": {
+              "seconds": 0.681722,
+              "edge_attempts": 264926301,
+              "attempts_per_edge": 4.590757544314347,
+              "expansions_per_vertex": 4.490646082841661,
+              "stale_pop_fraction": 0.09301909262639109,
+              "cpu_ns_per_attempt": 556.3488550764916,
+              "work_ns_per_attempt": 488.05706330275007,
+              "queue_ns_per_attempt": 312.7222843479692,
+              "queue_work_fraction": 0.6429757180322347,
+              "lock_miss_fraction": 0.10626513552429293,
+              "work_share": 0.801117,
+              "idle_share": 0.085349,
+              "send_share": 0.006346,
+              "inter_node_fraction": 0.0015738138017710869,
+              "pops_per_removal_call": 5.464072910226188,
+              "pop_queue_time_fraction": 0.3931814778524181
+            }
+          },
+          "medians": {
+            "seconds": 0.696578,
+            "edge_attempts": 283827941.5,
+            "attempts_per_edge": 4.918293347282029,
+            "expansions_per_vertex": 4.802734849918865,
+            "stale_pop_fraction": 0.09413282976106938,
+            "cpu_ns_per_attempt": 521.7393001391931,
+            "work_ns_per_attempt": 456.51550161248383,
+            "queue_ns_per_attempt": 294.28073041587584,
+            "queue_work_fraction": 0.6460244371110813,
+            "lock_miss_fraction": 0.10500924062783357,
+            "work_share": 0.7951349999999999,
+            "idle_share": 0.08721999999999999,
+            "send_share": 0.0062105,
+            "inter_node_fraction": 0.0015813865761489937,
+            "pops_per_removal_call": 5.388377971930588,
+            "pop_queue_time_fraction": 0.39260373857920833
+          }
+        },
+        "frozen_r0": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.96076,
+              "edge_attempts": 1209629166,
+              "attempts_per_edge": 20.96097744420314
+            },
+            "5620086": {
+              "seconds": 0.885879,
+              "edge_attempts": 824643116,
+              "attempts_per_edge": 14.289772634329315
+            }
+          },
+          "medians": {
+            "seconds": 0.9233195,
+            "edge_attempts": 1017136141.0,
+            "attempts_per_edge": 17.625375039266228
+          }
+        },
+        "nearest": {
+          "sources": {
+            "1294456": {
+              "seconds": 1.077033,
+              "edge_attempts": 234807499,
+              "attempts_per_edge": 4.068845914607148
+            },
+            "5620086": {
+              "seconds": 1.15713,
+              "edge_attempts": 194500952,
+              "attempts_per_edge": 3.370396632572629
+            }
+          },
+          "medians": {
+            "seconds": 1.1170814999999998,
+            "edge_attempts": 214654225.5,
+            "attempts_per_edge": 3.7196212735898886
+          }
+        },
+        "nearest_diag": {
+          "sources": {
+            "1294456": {
+              "seconds": 1.050694,
+              "edge_attempts": 227124587,
+              "attempts_per_edge": 3.9357130920328305,
+              "expansions_per_vertex": 3.8573866240799033,
+              "stale_pop_fraction": 0.09069061667033183,
+              "cpu_ns_per_attempt": 1052.0101454546189,
+              "work_ns_per_attempt": 912.5678103433296,
+              "queue_ns_per_attempt": 682.3287782849842,
+              "queue_work_fraction": 0.7477020014855401,
+              "lock_miss_fraction": 0.2266091303945579,
+              "work_share": 0.840515,
+              "idle_share": 0.101304,
+              "send_share": 0.003209,
+              "inter_node_fraction": 0.001743496841229259,
+              "pops_per_removal_call": 0.8932363765844901,
+              "pop_queue_time_fraction": 0.7218304959916216
+            },
+            "5620086": {
+              "seconds": 1.045884,
+              "edge_attempts": 179991871,
+              "attempts_per_edge": 3.118977000733894,
+              "expansions_per_vertex": 3.080823859110573,
+              "stale_pop_fraction": 0.08710673059683338,
+              "cpu_ns_per_attempt": 1296.0116765350813,
+              "work_ns_per_attempt": 1134.8145552776355,
+              "queue_ns_per_attempt": 848.6378269016318,
+              "queue_work_fraction": 0.7433201733760251,
+              "lock_miss_fraction": 0.2453371744507605,
+              "work_share": 0.844906,
+              "idle_share": 0.092359,
+              "send_share": 0.003658,
+              "inter_node_fraction": 0.001732746324785153,
+              "pops_per_removal_call": 0.908239251099912,
+              "pop_queue_time_fraction": 0.7269147555937033
+            }
+          },
+          "medians": {
+            "seconds": 1.048289,
+            "edge_attempts": 203558229.0,
+            "attempts_per_edge": 3.5273450463833624,
+            "expansions_per_vertex": 3.469105241595238,
+            "stale_pop_fraction": 0.08889867363358261,
+            "cpu_ns_per_attempt": 1174.01091099485,
+            "work_ns_per_attempt": 1023.6911828104826,
+            "queue_ns_per_attempt": 765.483302593308,
+            "queue_work_fraction": 0.7455110874307826,
+            "lock_miss_fraction": 0.2359731524226592,
+            "work_share": 0.8427105,
+            "idle_share": 0.0968315,
+            "send_share": 0.0034335,
+            "inter_node_fraction": 0.001738121583007206,
+            "pops_per_removal_call": 0.9007378138422011,
+            "pop_queue_time_fraction": 0.7243726257926625
+          }
+        }
+      },
+      "comparisons": {
+        "nearest/frozen_r0:seconds": {
+          "sources": {
+            "1294456": 1.1210218993296972,
+            "5620086": 1.306194186790747
+          },
+          "median": 1.213608043060222
+        },
+        "nearest/frozen_r0:attempts_per_edge": {
+          "sources": {
+            "1294456": 0.19411527565630804,
+            "5620086": 0.23586075991689961
+          },
+          "median": 0.2149880177866038
+        },
+        "nearest_diag/nearest:seconds": {
+          "sources": {
+            "1294456": 0.9755448533146154,
+            "5620086": 0.9038604132638511
+          },
+          "median": 0.9397026332892333
+        },
+        "nearest_diag/nearest:attempts_per_edge": {
+          "sources": {
+            "1294456": 0.9672799547172896,
+            "5620086": 0.9254035476391911
+          },
+          "median": 0.9463417511782404
+        },
+        "batch8/nearest:seconds": {
+          "sources": {
+            "1294456": 0.6307921855690587,
+            "5620086": 0.537369180645217
+          },
+          "median": 0.5840806831071379
+        },
+        "batch8/nearest:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.3173056027482326,
+            "5620086": 1.285001664156379
+          },
+          "median": 1.301153633452306
+        },
+        "batch32/nearest:seconds": {
+          "sources": {
+            "1294456": 0.6790590446160889,
+            "5620086": 0.5772393767338155
+          },
+          "median": 0.6281492106749522
+        },
+        "batch32/nearest:attempts_per_edge": {
+          "sources": {
+            "1294456": 2.251355038707686,
+            "5620086": 2.1411429698297826
+          },
+          "median": 2.1962490042687346
+        },
+        "batch8/frozen_r0:seconds": {
+          "sources": {
+            "1294456": 0.7071318539489571,
+            "5620086": 0.7019084999192892
+          },
+          "median": 0.7045201769341232
+        },
+        "batch8/frozen_r0:attempts_per_edge": {
+          "sources": {
+            "1294456": 0.25570914020107216,
+            "5620086": 0.3030814690024042
+          },
+          "median": 0.27939530460173817
+        },
+        "batch32/frozen_r0:seconds": {
+          "sources": {
+            "1294456": 0.7612400599525376,
+            "5620086": 0.7539867182764238
+          },
+          "median": 0.7576133891144807
+        },
+        "batch32/frozen_r0:attempts_per_edge": {
+          "sources": {
+            "1294456": 0.4370224039389606,
+            "5620086": 0.5050116079547798
+          },
+          "median": 0.47101700594687024
+        },
+        "batch8_diag/batch8:seconds": {
+          "sources": {
+            "1294456": 1.0471750880209132,
+            "5620086": 1.0963580280666319
+          },
+          "median": 1.0717665580437725
+        },
+        "batch8_diag/batch8:attempts_per_edge": {
+          "sources": {
+            "1294456": 0.978715259237825,
+            "5620086": 1.0599848407208003
+          },
+          "median": 1.0193500499793127
+        },
+        "batch32_diag/batch32:seconds": {
+          "sources": {
+            "1294456": 1.0451126585895765,
+            "5620086": 1.0423974572604466
+          },
+          "median": 1.0437550579250114
+        },
+        "batch32_diag/batch32:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.0447029650773474,
+            "5620086": 0.9921475786447911
+          },
+          "median": 1.0184252718610693
+        },
+        "batch8_control/batch8:seconds": {
+          "sources": {
+            "1294456": 0.971755295974,
+            "5620086": 1.0295767490181826
+          },
+          "median": 1.0006660224960913
+        },
+        "batch8_control/batch8:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.0259441986888926,
+            "5620086": 1.0359145026767802
+          },
+          "median": 1.0309293506828365
+        },
+        "batch8/batch8_control:seconds": {
+          "sources": {
+            "1294456": 1.0290656548444022,
+            "5620086": 0.9712729050589115
+          },
+          "median": 1.0001692799516568
+        },
+        "batch8/batch8_control:attempts_per_edge": {
+          "sources": {
+            "1294456": 0.9747118812874539,
+            "5620086": 0.9653306304873831
+          },
+          "median": 0.9700212558874185
+        },
+        "batch32/batch8:seconds": {
+          "sources": {
+            "1294456": 1.0765178455777589,
+            "5620086": 1.0741951669813414
+          },
+          "median": 1.07535650627955
+        },
+        "batch32/batch8:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.709060550574438,
+            "5620086": 1.6662569625818127
+          },
+          "median": 1.6876587565781254
+        },
+        "batch32/batch8_control:seconds": {
+          "sources": {
+            "1294456": 1.1078075417111612,
+            "5620086": 1.04333666043421
+          },
+          "median": 1.0755721010726855
+        },
+        "batch32/batch8_control:attempts_per_edge": {
+          "sources": {
+            "1294456": 1.6658416244845822,
+            "5620086": 1.608488884243093
+          },
+          "median": 1.6371652543638375
+        }
+      },
+      "rows": [
+        {
+          "variant": "batch32_diag",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.763292,
+            "edge_attempts": 440688031,
+            "attempts_per_edge": 7.636432831945534,
+            "expansions_per_vertex": 7.45343832868,
+            "stale_pop_fraction": 0.09012260262774563,
+            "cpu_ns_per_attempt": 383.7704245591367,
+            "work_ns_per_attempt": 326.10193808508495,
+            "queue_ns_per_attempt": 173.9832521930152,
+            "queue_work_fraction": 0.5335241281136462,
+            "lock_miss_fraction": 0.0600293124932099,
+            "work_share": 0.784482,
+            "idle_share": 0.092014,
+            "send_share": 0.006313,
+            "inter_node_fraction": 0.0013722541967562537,
+            "pops_per_removal_call": 12.531211901834244,
+            "pop_queue_time_fraction": 0.3650659293440018
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.845304,
+            "edge_attempts": 551579994,
+            "attempts_per_edge": 9.558016735938809,
+            "expansions_per_vertex": 9.324549437564002,
+            "stale_pop_fraction": 0.0903362307434755,
+            "cpu_ns_per_attempt": 339.4253260661227,
+            "work_ns_per_attempt": 292.8727922644707,
+            "queue_ns_per_attempt": 154.565478162797,
+            "queue_work_fraction": 0.5277563578634539,
+            "lock_miss_fraction": 0.07346417445905612,
+            "work_share": 0.796276,
+            "idle_share": 0.074854,
+            "send_share": 0.006072,
+            "inter_node_fraction": 0.0014001813125948872,
+            "pops_per_removal_call": 13.293268993066118,
+            "pop_queue_time_fraction": 0.363651059932208
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.851526,
+            "edge_attempts": 799599415,
+            "attempts_per_edge": 13.855804550113689
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.952198,
+            "edge_attempts": 1203540356,
+            "attempts_per_edge": 20.855467910654045
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.096298,
+            "edge_attempts": 185197027,
+            "attempts_per_edge": 3.209174195524052
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.120238,
+            "edge_attempts": 221615961,
+            "attempts_per_edge": 3.840257237809032
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.661712,
+            "edge_attempts": 267804023,
+            "attempts_per_edge": 4.640623955961938
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.746249,
+            "edge_attempts": 343103291,
+            "attempts_per_edge": 5.945442244472853
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.677342,
+            "edge_attempts": 415841323,
+            "attempts_per_edge": 7.205878327648221
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.771436,
+            "edge_attempts": 532648257,
+            "attempts_per_edge": 9.229959407800123
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.692399,
+            "edge_attempts": 273372224,
+            "attempts_per_edge": 4.7371121515564125
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.697877,
+            "edge_attempts": 313500715,
+            "attempts_per_edge": 5.432476002200295
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 1.085313,
+            "edge_attempts": 182544504,
+            "attempts_per_edge": 3.163210129563997,
+            "expansions_per_vertex": 3.123561912724612,
+            "stale_pop_fraction": 0.0868248174968618,
+            "cpu_ns_per_attempt": 1374.4337476848934,
+            "work_ns_per_attempt": 1202.9035450993365,
+            "queue_ns_per_attempt": 897.3571455120109,
+            "queue_work_fraction": 0.7459926019570478,
+            "lock_miss_fraction": 0.23357094326785013,
+            "work_share": 0.843011,
+            "idle_share": 0.095453,
+            "send_share": 0.003615,
+            "inter_node_fraction": 0.0017294029296001155,
+            "pops_per_removal_call": 0.8992636593794643,
+            "pop_queue_time_fraction": 0.7305108269652417
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.964001,
+            "edge_attempts": 212862577,
+            "attempts_per_edge": 3.6885748133589185,
+            "expansions_per_vertex": 3.623368133430396,
+            "stale_pop_fraction": 0.08990637043957317,
+            "cpu_ns_per_attempt": 1048.8328196411903,
+            "work_ns_per_attempt": 916.8028629099985,
+            "queue_ns_per_attempt": 685.306977418435,
+            "queue_work_fraction": 0.7474965503960374,
+            "lock_miss_fraction": 0.23476088091662556,
+            "work_share": 0.843503,
+            "idle_share": 0.096023,
+            "send_share": 0.003349,
+            "inter_node_fraction": 0.0017617610633361824,
+            "pops_per_removal_call": 0.9003786378494324,
+            "pop_queue_time_fraction": 0.7258931996483069
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.67556,
+            "edge_attempts": 259155983,
+            "attempts_per_edge": 4.490766977913041,
+            "expansions_per_vertex": 4.401216092955933,
+            "stale_pop_fraction": 0.09323455476304575,
+            "cpu_ns_per_attempt": 564.420651943814,
+            "work_ns_per_attempt": 497.4616464864714,
+            "queue_ns_per_attempt": 321.56652328214886,
+            "queue_work_fraction": 0.6464147046377252,
+            "lock_miss_fraction": 0.10463275246316188,
+            "work_share": 0.795144,
+            "idle_share": 0.089995,
+            "send_share": 0.006329,
+            "inter_node_fraction": 0.0015946998221530544,
+            "pops_per_removal_call": 5.433265774239694,
+            "pop_queue_time_fraction": 0.38818078093148733
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.764355,
+            "edge_attempts": 340430892,
+            "attempts_per_edge": 5.899133758586932,
+            "expansions_per_vertex": 5.759168980179725,
+            "stale_pop_fraction": 0.09419906694440386,
+            "cpu_ns_per_attempt": 487.7673865508069,
+            "work_ns_per_attempt": 432.747719028977,
+            "queue_ns_per_attempt": 275.30598919718295,
+            "queue_work_fraction": 0.6361812600998328,
+            "lock_miss_fraction": 0.10745761978914435,
+            "work_share": 0.803077,
+            "idle_share": 0.084285,
+            "send_share": 0.005614,
+            "inter_node_fraction": 0.0015858196558730634,
+            "pops_per_removal_call": 5.4226099324889,
+            "pop_queue_time_fraction": 0.3985332484563124
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.856675,
+            "edge_attempts": 797824877,
+            "attempts_per_edge": 13.8250545880283
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.96076,
+            "edge_attempts": 1209629166,
+            "attempts_per_edge": 20.96097744420314
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.109117,
+            "edge_attempts": 194500952,
+            "attempts_per_edge": 3.370396632572629
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.215901,
+            "edge_attempts": 244285544,
+            "attempts_per_edge": 4.233085578335744
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.605212,
+            "edge_attempts": 248905133,
+            "attempts_per_edge": 4.313135814848055
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.679384,
+            "edge_attempts": 321522097,
+            "attempts_per_edge": 5.57147397934839
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.659272,
+            "edge_attempts": 413426193,
+            "attempts_per_edge": 7.164027910282526
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.715819,
+            "edge_attempts": 528635046,
+            "attempts_per_edge": 9.160416751575987
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.640197,
+            "edge_attempts": 263206361,
+            "attempts_per_edge": 4.560953679990706
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.660195,
+            "edge_attempts": 317338118,
+            "attempts_per_edge": 5.498972181350226
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.045884,
+            "edge_attempts": 187010957,
+            "attempts_per_edge": 3.2406067592254497,
+            "expansions_per_vertex": 3.196275729415872,
+            "stale_pop_fraction": 0.08710673059683338,
+            "cpu_ns_per_attempt": 1296.0116765350813,
+            "work_ns_per_attempt": 1134.8145552776355,
+            "queue_ns_per_attempt": 848.6378269016318,
+            "queue_work_fraction": 0.7478207104014544,
+            "lock_miss_fraction": 0.2453371744507605,
+            "work_share": 0.845468,
+            "idle_share": 0.092359,
+            "send_share": 0.003632,
+            "inter_node_fraction": 0.0017101297438951665,
+            "pops_per_removal_call": 0.908239251099912,
+            "pop_queue_time_fraction": 0.7269147555937033
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 1.050694,
+            "edge_attempts": 233542727,
+            "attempts_per_edge": 4.0469293982819625,
+            "expansions_per_vertex": 3.96200234623067,
+            "stale_pop_fraction": 0.09134046902754867,
+            "cpu_ns_per_attempt": 1041.5070844659615,
+            "work_ns_per_attempt": 912.5678103433296,
+            "queue_ns_per_attempt": 682.3287782849842,
+            "queue_work_fraction": 0.7477020014855401,
+            "lock_miss_fraction": 0.23526943850069965,
+            "work_share": 0.84517,
+            "idle_share": 0.096491,
+            "send_share": 0.003209,
+            "inter_node_fraction": 0.0017761075471213455,
+            "pops_per_removal_call": 0.9002227215655403,
+            "pop_queue_time_fraction": 0.7218304959916216
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.685522,
+            "edge_attempts": 270058536,
+            "attempts_per_edge": 4.679691132472678,
+            "expansions_per_vertex": 4.580831563513069,
+            "stale_pop_fraction": 0.09301909262639109,
+            "cpu_ns_per_attempt": 549.4274911347368,
+            "work_ns_per_attempt": 488.05706330275007,
+            "queue_ns_per_attempt": 310.0829746633018,
+            "queue_work_fraction": 0.6353416392848147,
+            "lock_miss_fraction": 0.10626513552429293,
+            "work_share": 0.801117,
+            "idle_share": 0.085349,
+            "send_share": 0.006305,
+            "inter_node_fraction": 0.001583801076371087,
+            "pops_per_removal_call": 5.464072910226188,
+            "pop_queue_time_fraction": 0.3966745483453094
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.727099,
+            "edge_attempts": 346521687,
+            "attempts_per_edge": 6.004677689074686,
+            "expansions_per_vertex": 5.845163850509203,
+            "stale_pop_fraction": 0.09524656689574766,
+            "cpu_ns_per_attempt": 455.4044964723954,
+            "work_ns_per_attempt": 406.6979911707517,
+            "queue_ns_per_attempt": 264.47983063739065,
+            "queue_work_fraction": 0.6503101475275029,
+            "lock_miss_fraction": 0.11152339804074311,
+            "work_share": 0.807602,
+            "idle_share": 0.079482,
+            "send_share": 0.005704,
+            "inter_node_fraction": 0.001596716802316618,
+            "pops_per_removal_call": 5.479104638247479,
+            "pop_queue_time_fraction": 0.387462631471161
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.679281,
+            "edge_attempts": 402144982,
+            "attempts_per_edge": 6.968542206100773,
+            "expansions_per_vertex": 6.804609796650961,
+            "stale_pop_fraction": 0.09009803017805607,
+            "cpu_ns_per_attempt": 373.85676527228185,
+            "work_ns_per_attempt": 320.9870861946998,
+            "queue_ns_per_attempt": 170.45279703691455,
+            "queue_work_fraction": 0.531026961419637,
+            "lock_miss_fraction": 0.07109520048996609,
+            "work_share": 0.791789,
+            "idle_share": 0.074493,
+            "send_share": 0.007067,
+            "inter_node_fraction": 0.0013681384192927714,
+            "pops_per_removal_call": 13.773176792947838,
+            "pop_queue_time_fraction": 0.35468745650865124
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.769859,
+            "edge_attempts": 564557844,
+            "attempts_per_edge": 9.782902534636763,
+            "expansions_per_vertex": 9.553459053313922,
+            "stale_pop_fraction": 0.08931753018343373,
+            "cpu_ns_per_attempt": 301.8604971504036,
+            "work_ns_per_attempt": 265.51134413075306,
+            "queue_ns_per_attempt": 141.3357994129395,
+            "queue_work_fraction": 0.5323154830753206,
+            "lock_miss_fraction": 0.08237619151055457,
+            "work_share": 0.811277,
+            "idle_share": 0.064104,
+            "send_share": 0.005892,
+            "inter_node_fraction": 0.0013772671981509125,
+            "pops_per_removal_call": 14.134210194810116,
+            "pop_queue_time_fraction": 0.36185586658159546
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.15713,
+            "edge_attempts": 193324281,
+            "attempts_per_edge": 3.350006768485764
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.077033,
+            "edge_attempts": 212816982,
+            "attempts_per_edge": 3.6877847234756453
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.621806,
+            "edge_attempts": 249934047,
+            "attempts_per_edge": 4.330965281722884
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.697945,
+            "edge_attempts": 306123902,
+            "attempts_per_edge": 5.304647395508859
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.736328,
+            "edge_attempts": 457289057,
+            "attempts_per_edge": 7.924102591668102
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.739189,
+            "edge_attempts": 521096707,
+            "attempts_per_edge": 9.029789152484385
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.652434,
+            "edge_attempts": 258910304,
+            "attempts_per_edge": 4.486509745926362
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.754207,
+            "edge_attempts": 339750253,
+            "attempts_per_edge": 5.88733935156728
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.068464,
+            "edge_attempts": 179991871,
+            "attempts_per_edge": 3.118977000733894,
+            "expansions_per_vertex": 3.080823859110573,
+            "stale_pop_fraction": 0.0866122651036069,
+            "cpu_ns_per_attempt": 1370.527041668454,
+            "work_ns_per_attempt": 1203.7231725870554,
+            "queue_ns_per_attempt": 894.7517173441489,
+            "queue_work_fraction": 0.7433201733760251,
+            "lock_miss_fraction": 0.24561201007799305,
+            "work_share": 0.844906,
+            "idle_share": 0.090813,
+            "send_share": 0.003658,
+            "inter_node_fraction": 0.0017521180164853112,
+            "pops_per_removal_call": 0.9085481140421025,
+            "pop_queue_time_fraction": 0.7277790661656857
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 1.089968,
+            "edge_attempts": 227124587,
+            "attempts_per_edge": 3.9357130920328305,
+            "expansions_per_vertex": 3.8573866240799033,
+            "stale_pop_fraction": 0.09069061667033183,
+            "cpu_ns_per_attempt": 1106.6583731509438,
+            "work_ns_per_attempt": 968.0693530551142,
+            "queue_ns_per_attempt": 722.7599430363041,
+            "queue_work_fraction": 0.7465993430691281,
+            "lock_miss_fraction": 0.2266091303945579,
+            "work_share": 0.840515,
+            "idle_share": 0.101304,
+            "send_share": 0.003206,
+            "inter_node_fraction": 0.001743496841229259,
+            "pops_per_removal_call": 0.8932363765844901,
+            "pop_queue_time_fraction": 0.7233521633705828
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.664911,
+            "edge_attempts": 253092837,
+            "attempts_per_edge": 4.385702161257562,
+            "expansions_per_vertex": 4.304859782588861,
+            "stale_pop_fraction": 0.0920206942889627,
+            "cpu_ns_per_attempt": 567.2897752297905,
+            "work_ns_per_attempt": 505.36348446716414,
+            "queue_ns_per_attempt": 324.936449292547,
+            "queue_work_fraction": 0.6429757180322347,
+            "lock_miss_fraction": 0.11304271764756918,
+            "work_share": 0.80151,
+            "idle_share": 0.080687,
+            "send_share": 0.006592,
+            "inter_node_fraction": 0.0015738138017710869,
+            "pops_per_removal_call": 5.602821440973546,
+            "pop_queue_time_fraction": 0.3931814778524181
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.711434,
+            "edge_attempts": 302729582,
+            "attempts_per_edge": 5.24582915024971,
+            "expansions_per_vertex": 5.114823616996071,
+            "stale_pop_fraction": 0.09533386680316104,
+            "cpu_ns_per_attempt": 510.83340390566786,
+            "work_ns_per_attempt": 445.0944836966742,
+            "queue_ns_per_attempt": 286.1858267903354,
+            "queue_work_fraction": 0.6429776986078468,
+            "lock_miss_fraction": 0.10375334573137422,
+            "work_share": 0.789153,
+            "idle_share": 0.089091,
+            "send_share": 0.006177,
+            "inter_node_fraction": 0.0015889593505269003,
+            "pops_per_removal_call": 5.312683033634987,
+            "pop_queue_time_fraction": 0.39275415720091433
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.726025,
+            "edge_attempts": 426598793,
+            "attempts_per_edge": 7.39228842122453,
+            "expansions_per_vertex": 7.221161074752874,
+            "stale_pop_fraction": 0.08942752542082719,
+            "cpu_ns_per_attempt": 376.11725220469623,
+            "work_ns_per_attempt": 325.9512504059054,
+            "queue_ns_per_attempt": 174.87246362472973,
+            "queue_work_fraction": 0.5364988273766765,
+            "lock_miss_fraction": 0.07439959637909811,
+            "work_share": 0.798012,
+            "idle_share": 0.073902,
+            "send_share": 0.006608,
+            "inter_node_fraction": 0.0013477698705068768,
+            "pops_per_removal_call": 13.785534310469995,
+            "pop_queue_time_fraction": 0.3612240317242797
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.764363,
+            "edge_attempts": 552266600,
+            "attempts_per_edge": 9.569914541715637,
+            "expansions_per_vertex": 9.33302532426661,
+            "stale_pop_fraction": 0.08985615951961343,
+            "cpu_ns_per_attempt": 306.99715686590497,
+            "work_ns_per_attempt": 268.58450610628995,
+            "queue_ns_per_attempt": 142.7868923210936,
+            "queue_work_fraction": 0.531627435964556,
+            "lock_miss_fraction": 0.0806177857012753,
+            "work_share": 0.808572,
+            "idle_share": 0.064338,
+            "send_share": 0.006009,
+            "inter_node_fraction": 0.0013961246253168308,
+            "pops_per_removal_call": 13.950238992538797,
+            "pop_queue_time_fraction": 0.3656477688365414
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.885879,
+            "edge_attempts": 838368010,
+            "attempts_per_edge": 14.527603534612089
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.9579,
+            "edge_attempts": 1221318113,
+            "attempts_per_edge": 21.163528574169433
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.624864,
+            "edge_attempts": 253859168,
+            "attempts_per_edge": 4.39898147632146
+          }
+        },
+        {
+          "variant": "batch8",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.658291,
+            "edge_attempts": 309313234,
+            "attempts_per_edge": 5.359913520031252
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.667941,
+            "edge_attempts": 416454346,
+            "attempts_per_edge": 7.216501055370857
+          }
+        },
+        {
+          "variant": "batch32",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.731369,
+            "edge_attempts": 540376493,
+            "attempts_per_edge": 9.363877624252487
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.608534,
+            "edge_attempts": 251404395,
+            "attempts_per_edge": 4.3564441079031795
+          }
+        },
+        {
+          "variant": "batch8_control",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.656572,
+            "edge_attempts": 299811335,
+            "attempts_per_edge": 5.195260503872004
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.978128,
+            "edge_attempts": 177118829,
+            "attempts_per_edge": 3.069191686150756,
+            "expansions_per_vertex": 3.0260020869952733,
+            "stale_pop_fraction": 0.08764502190762002,
+            "cpu_ns_per_attempt": 1278.1863170628799,
+            "work_ns_per_attempt": 1117.608433375539,
+            "queue_ns_per_attempt": 829.4808348361564,
+            "queue_work_fraction": 0.7421927126398428,
+            "lock_miss_fraction": 0.24358335403224343,
+            "work_share": 0.843233,
+            "idle_share": 0.093263,
+            "send_share": 0.0038,
+            "inter_node_fraction": 0.001732746324785153,
+            "pops_per_removal_call": 0.9068892902456157,
+            "pop_queue_time_fraction": 0.7249727444625634
+          }
+        },
+        {
+          "variant": "nearest_diag",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.93552,
+            "edge_attempts": 205803296,
+            "attempts_per_edge": 3.5662485385199965,
+            "expansions_per_vertex": 3.506429250805945,
+            "stale_pop_fraction": 0.08965180679711478,
+            "cpu_ns_per_attempt": 1052.0101454546189,
+            "work_ns_per_attempt": 905.0406461906227,
+            "queue_ns_per_attempt": 677.4722553907852,
+            "queue_work_fraction": 0.748554507736544,
+            "lock_miss_fraction": 0.21888423638742172,
+            "work_share": 0.829576,
+            "idle_share": 0.108369,
+            "send_share": 0.003471,
+            "inter_node_fraction": 0.001739112088855953,
+            "pops_per_removal_call": 0.8864422066338773,
+            "pop_queue_time_fraction": 0.7214121506522769
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.681722,
+            "edge_attempts": 264926301,
+            "attempts_per_edge": 4.590757544314347,
+            "expansions_per_vertex": 4.490646082841661,
+            "stale_pop_fraction": 0.09374231435527419,
+            "cpu_ns_per_attempt": 556.3488550764916,
+            "work_ns_per_attempt": 486.1872925180048,
+            "queue_ns_per_attempt": 312.7222843479692,
+            "queue_work_fraction": 0.6432136116276389,
+            "lock_miss_fraction": 0.09655837145502211,
+            "work_share": 0.787245,
+            "idle_share": 0.098867,
+            "send_share": 0.006346,
+            "inter_node_fraction": 0.0015328489412608376,
+            "pops_per_removal_call": 5.315933058087413,
+            "pop_queue_time_fraction": 0.3903690259324583
+          }
+        },
+        {
+          "variant": "batch8_diag",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.668976,
+            "edge_attempts": 298083339,
+            "attempts_per_edge": 5.165317041695536,
+            "expansions_per_vertex": 5.051325852504664,
+            "stale_pop_fraction": 0.09427125761965653,
+            "cpu_ns_per_attempt": 487.1297452018947,
+            "work_ns_per_attempt": 424.97393992221754,
+            "queue_ns_per_attempt": 275.8391764837825,
+            "queue_work_fraction": 0.6490731561899279,
+            "lock_miss_fraction": 0.10190600046691904,
+            "work_share": 0.789002,
+            "idle_share": 0.090879,
+            "send_share": 0.006075,
+            "inter_node_fraction": 0.0015856438054728044,
+            "pops_per_removal_call": 5.24232293482265,
+            "pop_queue_time_fraction": 0.3920259993059986
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.69626,
+            "edge_attempts": 413184171,
+            "attempts_per_edge": 7.159834048373775,
+            "expansions_per_vertex": 6.998206523670451,
+            "stale_pop_fraction": 0.08993328383156865,
+            "cpu_ns_per_attempt": 374.5363922375429,
+            "work_ns_per_attempt": 322.27882466484897,
+            "queue_ns_per_attempt": 169.28112218720818,
+            "queue_work_fraction": 0.5252629376542209,
+            "lock_miss_fraction": 0.07443869343458256,
+            "work_share": 0.79688,
+            "idle_share": 0.073368,
+            "send_share": 0.006876,
+            "inter_node_fraction": 0.0013644956403714701,
+            "pops_per_removal_call": 13.995017870944649,
+            "pop_queue_time_fraction": 0.3625767487856083
+          }
+        },
+        {
+          "variant": "batch32_diag",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.735249,
+            "edge_attempts": 527646101,
+            "attempts_per_edge": 9.14327988482276,
+            "expansions_per_vertex": 8.923753391137648,
+            "stale_pop_fraction": 0.09036176492622446,
+            "cpu_ns_per_attempt": 309.341906443842,
+            "work_ns_per_attempt": 268.1363924264078,
+            "queue_ns_per_attempt": 141.51424493203,
+            "queue_work_fraction": 0.5277696311621324,
+            "lock_miss_fraction": 0.08094962516167292,
+            "work_share": 0.801776,
+            "idle_share": 0.065214,
+            "send_share": 0.006419,
+            "inter_node_fraction": 0.001393003754992212,
+            "pops_per_removal_call": 13.969854027272662,
+            "pop_queue_time_fraction": 0.3658090854742603
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.893108,
+            "edge_attempts": 824643116,
+            "attempts_per_edge": 14.289772634329315
+          }
+        },
+        {
+          "variant": "frozen_r0",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.991451,
+            "edge_attempts": 1173497814,
+            "attempts_per_edge": 20.334877747215042
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.318111,
+            "edge_attempts": 225521447,
+            "attempts_per_edge": 3.90793318863399
+          }
+        },
+        {
+          "variant": "nearest",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 1.066729,
+            "edge_attempts": 234807499,
+            "attempts_per_edge": 4.068845914607148
+          }
+        }
+      ]
+    }
+  ],
+  "checked_solves": 128,
+  "diagnostic_solves": 48,
+  "checked_launches": 64,
+  "raw_sha256": {
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-g0-r-1.launch.out": "20f1e9d1f3cf0ef5306ce60683ef7093d342e06ceba4f69e48bdfd19049aaeb7",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-g0-r0.launch.out": "ba49e4b2e1695cc6d19046e9c6820c2c43711116aa1e39c27d3a0c6a1193ad46",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-g0-r1.launch.out": "4b188e6d5ed6b2311060372df5f957285832268c15cc333ccfe4e366157cb60a",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-g0-r2.launch.out": "4094e0a6e2ec91ce9026cc3c74fa211f44710900dd26038873d01b37e68220dc",
+    "logs/AB-mesh26-z-2n-22284705/nearest-g0-r-1.launch.out": "8feb62b2ace62a622c282c40d6144b71a0227a179120a39b85d2f643a817a314",
+    "logs/AB-mesh26-z-2n-22284705/nearest-g0-r0.launch.out": "93326ca3dbafe41cc5774b75ddaa49de672b39d2b381b63690433fe39b61661e",
+    "logs/AB-mesh26-z-2n-22284705/nearest-g0-r1.launch.out": "811f34c4be40ab3016da48bf48b4be0ea52b71415df5faf45d91502399bd4157",
+    "logs/AB-mesh26-z-2n-22284705/nearest-g0-r2.launch.out": "5269e60e005370037e0fedca6b1229b320dcf1ade064c6ceb7ae1bafd8a4bc5c",
+    "logs/AB-mesh26-z-2n-22284705/batch8-g0-r-1.launch.out": "276fbbebcec4d8dc65ca3af48dbaa16c82c7f7fe158bbcb7f9f1f009ee61f21e",
+    "logs/AB-mesh26-z-2n-22284705/batch8-g0-r0.launch.out": "acf43e3bc2cb0085cd692ca295eea11b72249f03f10e64fcd9753895399fb371",
+    "logs/AB-mesh26-z-2n-22284705/batch8-g0-r1.launch.out": "6ac4d5d721a4cf3d4a86c3e8c8daaca461bee4007b1894c49c1422daa626da39",
+    "logs/AB-mesh26-z-2n-22284705/batch8-g0-r2.launch.out": "b9106692573f53d3db4d7e1e391f24ff8e3db1376a84ee2be160698d5c3f8775",
+    "logs/AB-mesh26-z-2n-22284705/batch32-g0-r-1.launch.out": "175af13db5598c83e2392d60ee095e6b0e85cd52f47435089a9ad29884f3d587",
+    "logs/AB-mesh26-z-2n-22284705/batch32-g0-r0.launch.out": "a30dad7ef49726222b54619d8391d478af9bcdc7d54e50e5555a66fdf639721e",
+    "logs/AB-mesh26-z-2n-22284705/batch32-g0-r1.launch.out": "1e69502f55f173057afecff671b27ba3abe2de0a4859cadddce0798ba39a6ee0",
+    "logs/AB-mesh26-z-2n-22284705/batch32-g0-r2.launch.out": "8f0006983883d194b36b393cb3d5d7bd627f10e991472d6ef7081b2f6b34f7ee",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-g0-r-1.launch.out": "7b91c9d1f5478618e8e43e45943fcee87ab17ad0f2781abc5f9f563e1fdec965",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-g0-r0.launch.out": "2f1a24084b9613aba90e82ff17b2151035b2b83f37b016bb15c93c205511c9b8",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-g0-r1.launch.out": "c79628da29140145bee590c9729f593aca1f87df3a3afbd22930f04dc39e672b",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-g0-r2.launch.out": "e991cd936d9aa1b8d0250e60c2372bbcbf4dfea5af1cad50bbee8104a7c37bfd",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-g0-r-1.launch.out": "2fee03ae13f574e1c2a1876ea7f9b37ac02f828475ec1ecd9c2519506d304162",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-g0-r0.launch.out": "b690603ddf6488d771d8b42d75c3252931b9d74188ee880d09256e29cfe89d70",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-g0-r1.launch.out": "7cdad234e17dd6055e4bb294ac4421ae5bca6ee54fdda030a6298e162e6f681d",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-g0-r2.launch.out": "8ce8952a38598d576f0401fcbbd53df435e9c6a3b7763e4d9ef9ae5c0d1491b3",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-g0-r-1.launch.out": "70590db5a9a01270c81b96afdd916f09133891fbe364a50fba2d0b7063589d70",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-g0-r0.launch.out": "9d2d70ae54d8c634c500743efcd672ed674e4a1eeedf91fbd6b4fa41ab9ba1cf",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-g0-r1.launch.out": "a29a1f763bcf93e7f59589ba6b1b55e127b9be00a3ad0d5afe45b113382a9a7c",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-g0-r2.launch.out": "32fed427ca36b6552ebac0872144f3ef57077a8a3ed362677827ae5f24cf19c1",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-g0-r-1.launch.out": "326b507cd58edbecd059facf5323213414df66bdfe98c983c7af55e0183e3c12",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-g0-r0.launch.out": "92925d9e08ed376410ebb8b870b16a7c3f08246c00a62ec662e9499f738b1192",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-g0-r1.launch.out": "320d5cda0a7308f73bdbf050e65063002497a7ff32879b1d7167fd3f6546b389",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-g0-r2.launch.out": "d3d0fc1f85120493a1f7316a004c684b936344e3ebb8069e4b0266cd2ae3c13a",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-s0-r-1.out": "4a33c807a132d52cbf30075b81ac681cc6438cc35696e351082da6cddfb62a80",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-s1-r-1.out": "658420cef76ed09bfea78e08216a47ffe97de93c4801edfbe45fc9646b4445da",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-s0-r-1.out": "13248207fe856718ed209945633e07d57317ff331640207addcf7db35dd39a96",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-s1-r-1.out": "909f8c589bcb9f3839ee702304e85866ba04502e493f90076dae12e621c35338",
+    "logs/AB-mesh26-z-2n-22284705/nearest-s0-r-1.out": "159b8a784ef27e5db60a2f070493bbd3a08a93ccf87b249ec9f8db4bbf0d1a1b",
+    "logs/AB-mesh26-z-2n-22284705/nearest-s1-r-1.out": "bddf61d3aa2fe2f559e9c678f584ee801fbf431dc2a936f3dc0eacf44eb3e0cd",
+    "logs/AB-mesh26-z-2n-22284705/batch8-s0-r-1.out": "2c57c3b24b4a071b3dd12bff53507c9e56b18b8bfa8abf776ff43c77e08382a3",
+    "logs/AB-mesh26-z-2n-22284705/batch8-s1-r-1.out": "848fa6a0b731f869a9f0a5e98cb5a2279a7560bcea390e209503aee4dff9507b",
+    "logs/AB-mesh26-z-2n-22284705/batch32-s0-r-1.out": "13033003249828413c81dab338f002d3966f509a586798d77bbaaf42f54b859a",
+    "logs/AB-mesh26-z-2n-22284705/batch32-s1-r-1.out": "bb1d2a4a96ed53817dc54d391f89157319c78ce1d858e029b758c422c93734cc",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-s0-r-1.out": "1ae26f27404400f945a3118f038025f21e5f2120fb1d5e3d2848bd8057ca037f",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-s1-r-1.out": "3b7b0b6e84fd17714a73ca1dfa62cdd4d56e04e2fd01f0da201866620389b840",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-s0-r-1.out": "4e1d0fab6dc6ae1e1c74474c472046119b77a04087762543b55e4b411cac258e",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-s1-r-1.out": "35f26d871a18f5ee670fca488822906f580af24618ebdfadfd51856a42f63cae",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-s0-r-1.out": "a0b2257141adc6cdd3eb79a13096913197f7c0c433c5a2fd49a4548d6d1e818f",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-s1-r-1.out": "a2d2242b648ffff94813205d21cdb290109c4e2cbb45b62ce4de058a87d368a1",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-s0-r0.out": "c897c92d65c455827648010d155ca6adcc02d21e53aa436bcc942f5a1d438b4a",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-s1-r0.out": "aad50c650af20dd7c3ed3f3d2c9e242d762b8a50de8643a62fc9f65ac760870b",
+    "logs/AB-mesh26-z-2n-22284705/nearest-s0-r0.out": "6606b6aeda7ff26d5de5cfd35eac174dc838ca895880c4829649dea68375b837",
+    "logs/AB-mesh26-z-2n-22284705/nearest-s1-r0.out": "c20e899f006b60adf746e944a3e3cdc6e6609cf2121f3a02ee68251af2076ae3",
+    "logs/AB-mesh26-z-2n-22284705/batch8-s0-r0.out": "d88d7454ef485e4d258ea0b2ec107d0489da953a34af2fd3bf92c6f234835239",
+    "logs/AB-mesh26-z-2n-22284705/batch8-s1-r0.out": "dcd2d57d7443b483d52fba14a7c0b93dda457baad84f07bf32aec0336647cbb6",
+    "logs/AB-mesh26-z-2n-22284705/batch32-s0-r0.out": "cbcaf16e1c30f617732f5523a9bb5d79d793b7f2ded7a623167a7d2b9e6927f5",
+    "logs/AB-mesh26-z-2n-22284705/batch32-s1-r0.out": "e48d8d5a3f9960baac6249749c7e3e01ad335ff585a2f2e93331e8929d8ad373",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-s0-r0.out": "e36c922e50150889ca7b4c847849acd0158b8c051ccf3026efad8c08306a2283",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-s1-r0.out": "6be7f1fa7ddb443f028a18ff052820a2d037f543a421dd61bdc8eb3b8cd3eaa3",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-s0-r0.out": "b7535d9f576cfdb2840fa73c24522ad9bad2ce007a1e14e268f5c4d451130bfb",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-s1-r0.out": "7aefda0accc78eade70dd340afc6998b3ce469eedf5ab06146cb66d860eb31a7",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-s0-r0.out": "f5651e1443db7d9ed9d047cb6e72635f04a8bff46150d6c8a21d4e2f30157602",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-s1-r0.out": "626677759a5644dda39479bf1373c63814aa27d866a5fea13ea46e86fdf8d748",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-s0-r0.out": "cb5cd938338449afcdd8e0cb1b32d5d331a6a239d2ce93fac4b4f3b6f7882f25",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-s1-r0.out": "be64f309fa995e73b61dc387535b49e433a2a0f37a191ac474070eda3a126266",
+    "logs/AB-mesh26-z-2n-22284705/nearest-s0-r1.out": "bf4b43fae5309d25ade8c2fe6700f729602f03fd81d531863dd026836491fa86",
+    "logs/AB-mesh26-z-2n-22284705/nearest-s1-r1.out": "f4d4a1ca27c9b112e4a8a4c21eb95d0cee4eb92c28885552d5eed85650e3f6f6",
+    "logs/AB-mesh26-z-2n-22284705/batch8-s0-r1.out": "e2eb6e7a3c73d723dbaefb358e27d3046a6493fb72671420c59f1b6b6dbbb3fc",
+    "logs/AB-mesh26-z-2n-22284705/batch8-s1-r1.out": "22f26f98aea767b296c75c73007de6520ef2e7c7ca75f346466c61fb57461519",
+    "logs/AB-mesh26-z-2n-22284705/batch32-s0-r1.out": "a25d0a37424bfb80d45426bdde32ff37139e0a7cbc6cde3d7472e2cf004ed2a1",
+    "logs/AB-mesh26-z-2n-22284705/batch32-s1-r1.out": "271bfa46ea2e6474ad5bf3e7a06a2f8173364baa975d0ccf892e3a5a0cb1b5ff",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-s0-r1.out": "728a74d077a62b61f5b3dbcc230fd221217fee9e379b29e9c5fbeaa9870fc748",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-s1-r1.out": "b516382340620448133f1194153acb4062a0f7f6e218c25f0f2525fddca17e8c",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-s0-r1.out": "55377d168bda41dc0c4effac70c43a19f0f15c5cdf3090f845088a98013d43d3",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-s1-r1.out": "a2e8acb94ee1023969a623833212b452adc08e460403f94bc336f0290fd50ccb",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-s0-r1.out": "d331a3ccfe61b7620027809dae22661dc78a553bb327bfa5dc9739d44bd875ba",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-s1-r1.out": "b26545d3b5d8133c1cd00cb93e5541022a7fee84a514b2ff984866f214e0f2e5",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-s0-r1.out": "2cda3fa1c8a0f4d8ca920a79e238b9fe890df674af82e2921ed98e8855d10700",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-s1-r1.out": "7c99298ea820ba9dcffa0d44973d1a4f5f5911c14b468c45edea91150617d260",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-s0-r1.out": "e6768936b9e5b767861e5f54056f2081320f0abb349e0065a8169ef005118aea",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-s1-r1.out": "3946dcca5b1eb4f351674eba4760bfd9b6a1df03105ec8e23aa893a16988f91d",
+    "logs/AB-mesh26-z-2n-22284705/batch8-s0-r2.out": "a3609e1d9a63e242f0e9810bf9d0731dbc002de2d3d5b9e26367961280665853",
+    "logs/AB-mesh26-z-2n-22284705/batch8-s1-r2.out": "18ba70e59f2dbfa571c50e10f7923bf6a60c5034ebeb37ae00f7ab11c4ddbb4d",
+    "logs/AB-mesh26-z-2n-22284705/batch32-s0-r2.out": "e52bd62eafc5d9629558da15d7a951de50ed8ed67660e403c55ca0479b21bc40",
+    "logs/AB-mesh26-z-2n-22284705/batch32-s1-r2.out": "110561a940d6db1cfe295e5d292c72b92101abe2e73d1104c53a9ca7d25a2d90",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-s0-r2.out": "22509fbdf14bb8b8dcc564bab136940bee3cae6cc01476b7809b679ebb36cc09",
+    "logs/AB-mesh26-z-2n-22284705/batch8_control-s1-r2.out": "9670405183962f61322ae01afd612a1aa20f90d385ac0fed987aba1892a9920d",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-s0-r2.out": "e437ed947e118aa2df79233cb216cb73bcf1a78ac3d2868527c45bfdfb58aad0",
+    "logs/AB-mesh26-z-2n-22284705/nearest_diag-s1-r2.out": "3bdc9bd17c357f4652b2ffcdfe5c0375c4898a53b26f6dc060bc48aebb84a862",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-s0-r2.out": "62db8bf6048092ded7cddfae6136321c89a95e521c4485e772d76d787c9a01f0",
+    "logs/AB-mesh26-z-2n-22284705/batch8_diag-s1-r2.out": "3be12801ac89af20533253b174f904372d3d8841ac5e63fca0b16009a00e5511",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-s0-r2.out": "e6ef167041bfb9834a9a8ac23b54718a295fe34008cf7e094679b6e9c63d5161",
+    "logs/AB-mesh26-z-2n-22284705/batch32_diag-s1-r2.out": "532c9c55b7c4b58ef7013bae65fcdb30b535074c61b02d8668ae02cbd53cc468",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-s0-r2.out": "503fcf2f8066fa2aae0c27b29830c14258aad03e1c25174e323d99f45236b482",
+    "logs/AB-mesh26-z-2n-22284705/frozen_r0-s1-r2.out": "7b6a46b91443a16d23f972b3dd0db68e83d92b714316a20dd14d46318961c568",
+    "logs/AB-mesh26-z-2n-22284705/nearest-s0-r2.out": "fa43e2d10cddacddc92ba7c60d6a5c0cb8a5c50366f1775104b8461778011a4e",
+    "logs/AB-mesh26-z-2n-22284705/nearest-s1-r2.out": "bb491bb296e9679b967cf38983415e269c273057ecb72a4cb39b58165c06c5e3",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-g0-r-1.launch.out": "b46d5c148a080f7c59b05b152d4200d016e3b875c49606c3766a30fd2e79921a",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-g0-r0.launch.out": "3bbc01f6e06dffdd690aae72280f597c23fe896da0c0aae128a851114eaec7e6",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-g0-r1.launch.out": "df5dc5f46c997fa1bf79cc7fedd75b7c6d619e52ce978ac5705ff12e4c4f089b",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-g0-r2.launch.out": "7083353b1b4b7e5456bb3631873b7089f547a51c9169f7da9edd771a848a7fd6",
+    "logs/AB-road-usa-z-2n-22284705/nearest-g0-r-1.launch.out": "f7f46f5f6a934aba9dec86c63b23518660998dbd53f47799d65ecf488cad07f4",
+    "logs/AB-road-usa-z-2n-22284705/nearest-g0-r0.launch.out": "79c452731da397c504596edbf401409c1f52d2da606c0922796eb71d7479511a",
+    "logs/AB-road-usa-z-2n-22284705/nearest-g0-r1.launch.out": "5c968181e9482188761fbc7f3f1e7a2088251fb26c74305dbe4b0157df7a8c36",
+    "logs/AB-road-usa-z-2n-22284705/nearest-g0-r2.launch.out": "422146f3bb4d7d1611ae9233d3ee26a2745bee31c00e5ce411b9c9d954d1b2de",
+    "logs/AB-road-usa-z-2n-22284705/batch8-g0-r-1.launch.out": "84be95355b2d1c9e962341419d244c146919f7b1c6f44102da5d1bfbf668b4ee",
+    "logs/AB-road-usa-z-2n-22284705/batch8-g0-r0.launch.out": "e2d0de1c8fad6c56363b393256d0a4c9047cd09e2abf0214ba230f975a58cf0e",
+    "logs/AB-road-usa-z-2n-22284705/batch8-g0-r1.launch.out": "e6a1d6abc6db008c03219c65d461c52745fbc377b1760f99a10d734a8e676cdc",
+    "logs/AB-road-usa-z-2n-22284705/batch8-g0-r2.launch.out": "edb2c39c2fac3fcf1e4b1db5a29b8a59a85318451bdda428a12075e36d2471dd",
+    "logs/AB-road-usa-z-2n-22284705/batch32-g0-r-1.launch.out": "09512200fc5b6280f2942c19bbd7f0f0c204dcaa36938a58eada60345bb8fdbd",
+    "logs/AB-road-usa-z-2n-22284705/batch32-g0-r0.launch.out": "815569d6b868add9070ba640b2cb0f0cfc12eda30c2a912a22d8afe849a5c31a",
+    "logs/AB-road-usa-z-2n-22284705/batch32-g0-r1.launch.out": "674f66c516ee97b3817a2c4f9bec5bfebd760fc5e895bda5a45d5cab9ad9d5f1",
+    "logs/AB-road-usa-z-2n-22284705/batch32-g0-r2.launch.out": "03686541962ddfc372c78112ae1c43b13d490e0fd2d8cf7565fa9442f8e42217",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-g0-r-1.launch.out": "96bb1da156fde64003519fd1febc394d814d82286b659f178b124acd3354b050",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-g0-r0.launch.out": "cd15dc02eed19f3c287b6238fdf070a01b64a3fb6d41db10e1533439638d6dc5",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-g0-r1.launch.out": "5e02489088daf346e9f238ac58021a1cc67ad7747bd09df69f9896439c35d631",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-g0-r2.launch.out": "fe70f8b3f5bb33c1647daeb548b82f3ec0ec3e82985fe73a1195b39bf0f9895a",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-g0-r-1.launch.out": "272bdf13ba7f133377d2c82edb584a07608dc163652819efec91484b9ee1631a",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-g0-r0.launch.out": "f84df10089606561fe892c44e79c7495d8245e52bb7e603cc5ab87b4ba9447d6",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-g0-r1.launch.out": "e7d7efa662bcf8eba3ab8618753700775aede060aa6ea863032e5f27449052fd",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-g0-r2.launch.out": "6f2efaa6a5926b3633ea017f7b8b93c3ab42f2134e6c5c110748bc93017d7f21",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-g0-r-1.launch.out": "aa4b5f8c2872ba006b37d48120aef79c62ec74552326ebf7a309370f0691caab",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-g0-r0.launch.out": "8f910ef650ca8e00f0a7feaadfddd07dd7c6b6d6293da155bdbb3158e8292226",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-g0-r1.launch.out": "ddb6cd71f208d754d61ba98e2e7a55f8f1c84e7dd72c07a4cde28153c3d8f984",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-g0-r2.launch.out": "a20a06fb074670b93e0473aae7547c71b05667b2ba0be3b186d3a14c2e41a72c",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-g0-r-1.launch.out": "f1a34bafc90eca19f459e8f3382e467c310a9dd253606518da4833df9b4db49d",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-g0-r0.launch.out": "89b53805d2e9da1c40f146570cdee01f983baea980f10e2c5d2afde4bf26816b",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-g0-r1.launch.out": "ab0e8628c421e399b089af3e36f387198ccc57a6c9642a095a6c30c7e3073208",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-g0-r2.launch.out": "ff87933b1cf85d162bc3d0649bc7298e34eb06a1fe79e7849a3b267cfb1655a9",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-s0-r-1.out": "5adcaa217f8415b1e7b9aa8bf35ab83eb6ddd17232deb333fd0546ac7d495851",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-s1-r-1.out": "f11b727fb071178bae7916808fabc75c178208a747989320f4066ae5b40d5fa7",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-s0-r-1.out": "eefa378ef12043b776e5eef4f1c4761909435389916cda047fc714ac74dcfea4",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-s1-r-1.out": "fdc5bd551b774022c1980279860b164db86fef7c2b2f27110acb3538295d39e8",
+    "logs/AB-road-usa-z-2n-22284705/nearest-s0-r-1.out": "7271d065676cc90b7749ca56b8865ffba8c6d28e1adb5d59bc536ec88ecb0969",
+    "logs/AB-road-usa-z-2n-22284705/nearest-s1-r-1.out": "c1043d78dfab43defdf0e7d991a39cdadb8ae11933cb2767903c67c3f45ff93f",
+    "logs/AB-road-usa-z-2n-22284705/batch8-s0-r-1.out": "0f33eb4fcf0a7c057c99ec5d95bd5c359703f649079c3c2227d941724b37dbd2",
+    "logs/AB-road-usa-z-2n-22284705/batch8-s1-r-1.out": "a34d7609729a67327f213bf6924f76cac8b6c1100a492c2d0122e87526401dc7",
+    "logs/AB-road-usa-z-2n-22284705/batch32-s0-r-1.out": "2cdd2efcb7077c8150c7f35058211a2227152752c24876a52287715ece494a79",
+    "logs/AB-road-usa-z-2n-22284705/batch32-s1-r-1.out": "b7c0c5ae0ea200e1196d18ffc6ba634239fb8b267f565bd0976e740d9c652d06",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-s0-r-1.out": "0555b5093e60cceb8c935d2e179e9076be640430dd4d8487a6e86b113bdf6559",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-s1-r-1.out": "5cb5992aebbd56e1e445bdbcfe1363af7423906502a8c1ed86addf1640295280",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-s0-r-1.out": "3e258d8f1c9ceceed84e8a4b5f342171237da73278ca6e3a611b6f6c02092779",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-s1-r-1.out": "361724c95f7273d1942b9d77dafb3fdef89319e7f045f1dd502f6133f0f8e072",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-s0-r-1.out": "df39500d1732cdd88bbbb83c72ce9cf158f548c75fd68fda5de45d99967118f7",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-s1-r-1.out": "beab36767c959a2a24119f0e8b0c182dd7a1e236c602aa6ec050fe757277d648",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-s0-r0.out": "540facd7cd9d5487f4998caa6912f870c77a7eb5a4c720e3172b3b9a9a1e7476",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-s1-r0.out": "d473fc95620175ff438c7be4ccaca35c5134f1a4e28c11709deaf8e0f78f2b9c",
+    "logs/AB-road-usa-z-2n-22284705/nearest-s0-r0.out": "58549bae1fdf47270f1bc1b26e6260a640852a972390d8ceca4a8728d0584356",
+    "logs/AB-road-usa-z-2n-22284705/nearest-s1-r0.out": "05fc933fe14857d01e64f5ac2c535437e251f42caa81b1c9a205417f9e030688",
+    "logs/AB-road-usa-z-2n-22284705/batch8-s0-r0.out": "3b728b9c21b5c5670e4bcfb36e2b60b4d4927a59a8a3d0ffe01e850dca201a9d",
+    "logs/AB-road-usa-z-2n-22284705/batch8-s1-r0.out": "18c9b5dca98d94e42b155fbc5903303fbdfab749747b23e738d1881b10ad1914",
+    "logs/AB-road-usa-z-2n-22284705/batch32-s0-r0.out": "e762bbb35f18b04e086d49bef509896f9804f30c85f4afdc7278ffd1b752fc23",
+    "logs/AB-road-usa-z-2n-22284705/batch32-s1-r0.out": "c48f90f6f050a31df1a2d0c6a464615e68317dd633f5ce61b1ef6ccd6dba4400",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-s0-r0.out": "6f76037765c95b8147f15455af75fc8e8fde7123f41bfb9de57f483c4c05bafa",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-s1-r0.out": "0dd69396e3e0a232003b7d2252c644b3c5bda70687bed142dd2b2c80dcd07a3b",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-s0-r0.out": "cbb4417385e0c1944cbf6dbe46867c5100d9ad9e960b096a7d875aafef194392",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-s1-r0.out": "7e33eb3665ffabb427ca6ee013ebc7f3a353af4b464fdc4286878b92a7970160",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-s0-r0.out": "3dd3d1687bf93bfaae17b546609cae3d808f347069c3c6f8a257c5828f066e6f",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-s1-r0.out": "8ca7451c9661639da501b2b5565c5f459bb98723742dbfabc71f3c4f96bca476",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-s0-r0.out": "279609edb94e96908a71e1b98990eda22abde59883bfe2d2d5275094cd137b4d",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-s1-r0.out": "e2c32086e14685d694f113155a53c551b70f56489a7d5c45af9cd86b3944d1fb",
+    "logs/AB-road-usa-z-2n-22284705/nearest-s0-r1.out": "bd170f2b3a210cd0143a7601cc1777c0edf0538466c0d5ae2529c904a91fd77e",
+    "logs/AB-road-usa-z-2n-22284705/nearest-s1-r1.out": "bc5a93d65b05412306b273350ca9475bb9afccc98b2976385067b6c56fe77f05",
+    "logs/AB-road-usa-z-2n-22284705/batch8-s0-r1.out": "f4732b85ea4c42d90b78bc07e4fb22d6fe71d84e2f2be1895c28e9c034a9f4c3",
+    "logs/AB-road-usa-z-2n-22284705/batch8-s1-r1.out": "a857493ab1e37cd16d1ac75c14552e6e1531241d208707ec85577ae4814ae4a6",
+    "logs/AB-road-usa-z-2n-22284705/batch32-s0-r1.out": "f48a2d1532686a7d86fe6e0026f6b7216501cd148a1a3792901130ffbe71c754",
+    "logs/AB-road-usa-z-2n-22284705/batch32-s1-r1.out": "1f1ae28d3089fb87de25695958ff5ff98d3c281da37a2be9215631d2c156c956",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-s0-r1.out": "b604c864ea3171d6857bc0798bb2af768fd1c11943a36f204a4cf244691ba620",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-s1-r1.out": "e184b82f6cba072f450e685822128133843884d20e2e7cd575e8a316b324623c",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-s0-r1.out": "bb39bc74134a55d117fd4b18ff7371252a680b0a539e0efcc47200cc82247cd8",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-s1-r1.out": "776d1670d1c0896da3ce5adf0deea91249af683ce57b05ca68d394951d5c50ef",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-s0-r1.out": "d5248d9c659d94fa69fddc2d19011878e1186b813cd7173906d0eabb14d4a131",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-s1-r1.out": "def05fc371dddb592e59249983168bc4d9581fb5837f81d47d1de3584f424951",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-s0-r1.out": "1e7ed25251e9c0de75852b2157f668beb1e70eae8581576d47b9edf89403f4d1",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-s1-r1.out": "e787d4321f6863cfb256d0a0283fcc2c9df1df4c08f386314d88641297672ac7",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-s0-r1.out": "40ca15a4784e866fd658bc524f16943254559de156955e5fd5f2f938f23b9adc",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-s1-r1.out": "d92357c5afc672600e8a7e501a12c6c7ac088b8e9ae2dd65950518a965f85220",
+    "logs/AB-road-usa-z-2n-22284705/batch8-s0-r2.out": "92b4abb5bb9d129a785635840a6f22c39ce7cf9305987831635bfbf1200e9aad",
+    "logs/AB-road-usa-z-2n-22284705/batch8-s1-r2.out": "068980db762b73cf68466fabbcdb2bdbfb81416dbd284a979172caaf75322efc",
+    "logs/AB-road-usa-z-2n-22284705/batch32-s0-r2.out": "448f62a448191ee93ecfebb1ad4f087d7c44975e47b2c4d0df09c42ae5b1ee73",
+    "logs/AB-road-usa-z-2n-22284705/batch32-s1-r2.out": "cc352b3dba2c2f4aac0cc2d7b738c18be5ea0bd242223f74079a06521a093106",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-s0-r2.out": "4463bdf7e17537194ccbfb8ed25e8224ac71a56e56722b525357173f91098dca",
+    "logs/AB-road-usa-z-2n-22284705/batch8_control-s1-r2.out": "80892028931c599c1d2bd5ae266be23bdc2b17f8308c6efdada6b73d12159208",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-s0-r2.out": "c9f3a728f81da29f81a07f250bfe5117893afb3f7be2663bac46f1d7a4505587",
+    "logs/AB-road-usa-z-2n-22284705/nearest_diag-s1-r2.out": "3e8896396f5aa7a013164a0b25647fa5f743ab1b9c4eed82e2890fabfa20b307",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-s0-r2.out": "d2cbe4e078122551d910a0dea30a9f9c6aa75719e3634ddffb048bf6e628852b",
+    "logs/AB-road-usa-z-2n-22284705/batch8_diag-s1-r2.out": "1660bd1935c9f296bc2e215db89f0a1d3301fa594f12b97f3e6cc35ea67536d6",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-s0-r2.out": "a844897789e197e2545cc37922e99920225fe7c40bbb0f6d21b8cd3b264a41a8",
+    "logs/AB-road-usa-z-2n-22284705/batch32_diag-s1-r2.out": "ba3c2f6b3ad1a64efd01cf845437fead9bea3ecdd3115f1e7162074185fc813a",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-s0-r2.out": "66fa53ca5bf943b412dd17d0c0dd0194a6c59a9586d3f22053c57a3340cc2034",
+    "logs/AB-road-usa-z-2n-22284705/frozen_r0-s1-r2.out": "1f33ff8fe97540f4988db8540841b37cf78760c768b8a94a772edd5bc8aab92d",
+    "logs/AB-road-usa-z-2n-22284705/nearest-s0-r2.out": "1cb691ba523f2b57c973a6a947acf78fef106316612b48c8b7026297045be35a",
+    "logs/AB-road-usa-z-2n-22284705/nearest-s1-r2.out": "8a15b2146c63011e3764858b6fac66111f3071f36bc2c4c669e7319eb6d381b8"
+  }
+}
