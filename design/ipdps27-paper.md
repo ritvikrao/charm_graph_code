@@ -26,6 +26,15 @@ competitors, including an ablation of the claimed control mechanism. Show
 absolute times as well as speedup. Current slack-off results cannot support
 a live-feedback claim. The current submission gate is unchanged.
 
+The [completed local batching experiment](ipdps27-r1-batch-one-node-results.md)
+supports that infrastructure choice: all 576 solves validate, and batch 8
+reduces one-node time 60–61% on mesh and 33–35% on road against frozen R0.
+It remains 2.86–2.87 times slower than matched GAPBS on mesh and 3.04–3.85
+times on road. Batch 32 brings the mesh gap to 2.41–2.47 times but increases
+road work substantially. Distributed scaling of the batched build is not
+yet measured; the old slower one-node baseline cannot support a speedup claim
+for this optimized candidate.
+
 **Provisional working title:** *Adaptive Message Flow for Asynchronous SSSP on
 High-Diameter Graphs*. "Adaptive" is used in the author's sense (sprint doc
 §1b): real-time control of message flow, from the graph as read and from

@@ -1,0 +1,34 @@
+{
+  "audit_script": "/u/rao1/.tmp/ipdps27-onenode/build/r1-batch-reference-audit.py",
+  "audit_script_sha256": "a734f3bb224c35ca045067566de354361ade61423e5be83f1c2be3d731f0b00d",
+  "jobs": [
+    {
+      "job": 22282643,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 80,
+      "allocated_cpus": 16,
+      "cpu_time_seconds": 1280,
+      "host": "cn008"
+    },
+    {
+      "job": 22282647,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 491,
+      "allocated_cpus": 128,
+      "cpu_time_seconds": 62848,
+      "host": "cn016"
+    },
+    {
+      "job": 22282652,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 501,
+      "allocated_cpus": 128,
+      "cpu_time_seconds": 64128,
+      "host": "cn053"
+    }
+  ],
+  "allocated_cpu_hours": 35.626666666666665
+}

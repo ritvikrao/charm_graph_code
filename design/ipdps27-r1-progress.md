@@ -15,6 +15,9 @@ The author subsequently authorized a bounded one-node queue-batching follow-up.
 Its implementation, checks and submitted jobs are recorded in the
 [batching progress log](ipdps27-r1-batch-progress.md). This does not wait for
 the original eight-node jobs or change the final performance gate.
+That follow-up is now [complete and validated](ipdps27-r1-batch-one-node-results.md):
+batch 8 converts reduced work into 60–61% lower mesh time and 33–35% lower
+road time against frozen R0. Its distributed scaling is still unmeasured.
 
 ## Implementation
 

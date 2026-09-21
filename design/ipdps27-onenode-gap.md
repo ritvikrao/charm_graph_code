@@ -17,6 +17,11 @@ leaves high queue cost. The author authorized a bounded one-node batching
 experiment; see the [pre-implementation decision](ipdps27-r1-batch-decision.md).
 This extends the original one-intervention limit for that experiment only.
 R2 remains conditional, R3 needs the author's decision, and C6 is unchanged.
+The [completed batching comparison](ipdps27-r1-batch-one-node-results.md)
+passes its one-node hypothesis: batch 8 reduces time 60–61% on mesh and
+33–35% on road against frozen R0, with all 576 solves valid. Recommend a
+bounded scaling test with batch 8 fixed across graphs before expanding the
+performance campaign or spending on the secondary RMAT auto-mode issue.
 
 ## 1. Target
 
@@ -128,7 +133,13 @@ The [R1 implementation and job status](ipdps27-r1-progress.md) records the
 opt-in policy and passing repaired verification. Both one-node comparisons
 are [complete and valid](ipdps27-r1-one-node-check.md): attempts fall about
 80%, but higher queue cost leaves no reproducible road speedup. The two
-eight-node jobs remain queued; R2 is not triggered by the one-node results.
+eight-node jobs remain queued. The subsequent
+[batching follow-up](ipdps27-r1-batch-one-node-results.md) produces a real
+one-node timing gain, with a measured work/cost tradeoff. Carry batch 8 forward
+as the common training-selected scaling candidate; retain batch 32 as a fixed
+ablation. Establish scaling from the improved one-node baseline before
+declaring the candidate ready for R2 and final acceptance. The pending
+eight-node jobs use the older nearest-1 implementation.
 
 Each implementation step gets a separate commit, correctness checks and a
 paired comparison. Training sources select parameters; held-out sources

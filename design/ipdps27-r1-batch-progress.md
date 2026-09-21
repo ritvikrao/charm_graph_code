@@ -3,8 +3,12 @@
 2026-09-21. Authorized follow-up to R1; the
 [decision and predictions](ipdps27-r1-batch-decision.md) were committed as
 `7dbefbf` before implementation. Implementation and experiment harness are
-commit `48ca9c0`. Performance conclusions are pending; R2 remains conditional
-and R3 still requires the author's decision.
+commit `48ca9c0`. All three jobs completed and all 576 solves passed the
+raw-log recheck. The [results and decision](ipdps27-r1-batch-one-node-results.md)
+support batching on one node: batch 8 cuts time by 60–61% on mesh and 33–35%
+on road against frozen R0. Recommend a bounded scaling test with batch 8
+fixed across graphs and batch 32 retained as a comparison. R2 remains
+conditional and R3 still requires the author's decision.
 
 ## Implementation and local checks
 
@@ -26,15 +30,16 @@ consumers per case. The same suite passed AddressSanitizer and UndefinedBehavior
 with leak detection disabled because of the cluster's ptrace restriction.
 Seven existing report tests, Python and shell syntax checks passed. The
 extended audit still validates all 160 earlier R1 solves and 32 diagnostic
-records. Full parallel SSSP correctness awaits the compute-node job below.
+records. Compute-node verification subsequently passed all 224 solves against
+serial Dijkstra, including 112 diagnostic accounting records.
 
 ## Submitted jobs
 
-| Job | Role | Reservation | Status at submission check |
+| Job | Role | Reservation | Completed status |
 |---|---|---|---|
-| 22282643 | Serial-correctness comparison, 224 planned solves | 16 cores, 3 min | Pending, priority |
-| 22282647 | One-node comparison A | 128 cores, 12 min | Pending, dependency |
-| 22282652 | One-node comparison B | 128 cores, 12 min | Pending, dependency |
+| 22282643 | Serial-correctness comparison, 224 solves | 16 cores, 3 min | Exit 0, cn008, 80 s |
+| 22282647 | One-node comparison A | 128 cores, 12 min | Exit 0, cn016, 491 s |
+| 22282652 | One-node comparison B | 128 cores, 12 min | Exit 0, cn053, 501 s |
 
 Both comparisons require `afterok:22282643` with `--kill-on-invalid-dep=yes`.
 Verification covers capacities 1/8/32/64, local/nearest, reader tiling on/off,
@@ -54,7 +59,8 @@ diagnostic cost explains the outcome and does not replace production timing.
 The new batch diagnostic costs can be compared directly with each other;
 comparison with the previous nearest/1 diagnostic costs spans allocations.
 
-The reservation cap is **52 SU**, within the existing R0–R2 2,000-SU budget.
+The reservation cap is **52 SU**, within the existing R0–R2 2,000-SU budget;
+actual allocated CPU time was **35.627 hours**.
 Existing eight-node jobs 22281608/22281609 remain pending; no new multi-node
 jobs were submitted and one-node progress does not depend on them.
 
@@ -69,10 +75,12 @@ Each build has an isolated source snapshot, source inventory and manifest.
 | acic_r1_batch | 00579456983c3c0210a75a2b59ef508ce43db4c3357980d4c80f71f07935ffb1 |
 | acic_r1_batch_diag | 66bba62a1c69011715edd93653e8aa978b83c84cfd0665eceda2ca1a02b16616 |
 
-After completion, run `benchmarks/check_priority_runs.py` with the frozen
-configuration and both job IDs. Preserve the per-allocation source medians,
-repeated-control variation, raw digests and diagnostic conservation checks.
-Audit the GAPBS reference matrix separately; warmups never enter time medians.
+`benchmarks/check_priority_runs.py` revalidated all 288 ACIC performance solves,
+64 diagnostic records and 144 launches using the frozen configuration and both
+job IDs. Separate raw-log checks passed all 64 GAPBS solves and all 224 serial
+verification solves. The results report preserves per-allocation source
+medians, repeated-control variation, raw hashes and diagnostic conservation.
+Warmups never enter time medians.
 
 The paper outline now records the proposed division: credited local techniques
 provide a strong execution baseline; a narrower high-diameter contribution
