@@ -1,0 +1,1387 @@
+{
+  "one_node_audit": "r1-one-node-22281605.json",
+  "eight_node_audit": "r1-eight-node-22281608.json",
+  "comparisons": [
+    {
+      "graph": "mesh26-z",
+      "variant": "frozen_r0",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3404640698343273,
+        "41856222": 0.3505519165710463
+      },
+      "median": 0.34550799320268677
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "frozen_r0",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.5986861183154497,
+        "41856222": 2.5823508298753004
+      },
+      "median": 2.590518474095375
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "local",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3376248796819931,
+        "41856222": 0.32238161735727444
+      },
+      "median": 0.3300032485196338
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "local",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.5875066512897926,
+        "41856222": 2.584996704902998
+      },
+      "median": 2.5862516780963953
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "control",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3515440148377094,
+        "41856222": 0.34625867891412004
+      },
+      "median": 0.34890134687591473
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "control",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.7300710214181074,
+        "41856222": 2.53904310011367
+      },
+      "median": 2.634557060765889
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3124287582267748,
+        "41856222": 0.32428830628147065
+      },
+      "median": 0.3183585322541227
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.9148031533727439,
+        "41856222": 1.9901389293795912
+      },
+      "median": 1.9524710413761674
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.32545743492503115,
+        "41856222": 0.3204950222378353
+      },
+      "median": 0.32297622858143327
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.9343559613379322,
+        "41856222": 1.912175914956494
+      },
+      "median": 1.923265938147213
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "work_ns_per_attempt",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.033534149473304,
+        "41856222": 1.0871020493132642
+      },
+      "median": 1.060318099393284
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "queue_work_fraction",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.006171069855083,
+        "41856222": 1.0052927143240495
+      },
+      "median": 1.0057318920895661
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "lock_miss_fraction",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.4091404252196143,
+        "41856222": 0.4407303259500306
+      },
+      "median": 0.4249353755848224
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "frozen_r0",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.33715031484797287,
+        "41856222": 0.3457981203205362
+      },
+      "median": 0.34147421758425456
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "frozen_r0",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.566112019720265,
+        "41856222": 2.531786410963943
+      },
+      "median": 2.548949215342104
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "local",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.34324762095069844,
+        "41856222": 0.35463649096915756
+      },
+      "median": 0.348942055959928
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "local",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.6151183730522596,
+        "41856222": 2.6018296751647934
+      },
+      "median": 2.6084740241085265
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "control",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3551673830045362,
+        "41856222": 0.31751215738076854
+      },
+      "median": 0.3363397701926524
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "control",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.7539595577263483,
+        "41856222": 2.490515246005922
+      },
+      "median": 2.622237401866135
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3150365152099404,
+        "41856222": 0.3243834055333355
+      },
+      "median": 0.31970996037163796
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.925723069654528,
+        "41856222": 1.9744148979246219
+      },
+      "median": 1.950068983789575
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3351085537926747,
+        "41856222": 0.3160405157010316
+      },
+      "median": 0.32557453474685316
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.960187322162089,
+        "41856222": 1.8944759129141513
+      },
+      "median": 1.92733161753812
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "work_ns_per_attempt",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.0412257422383675,
+        "41856222": 1.0847284414746916
+      },
+      "median": 1.0629770918565296
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "queue_work_fraction",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.008623646804833,
+        "41856222": 1.009006755693664
+      },
+      "median": 1.0088152012492486
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "lock_miss_fraction",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.42740637809625925,
+        "41856222": 0.4421220360759632
+      },
+      "median": 0.4347642070861112
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "frozen_r0",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.7276034802421426,
+        "5620086": 0.5564286777843955
+      },
+      "median": 0.6420160790132691
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "frozen_r0",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 4.981478196748253,
+        "5620086": 4.197148845269268
+      },
+      "median": 4.58931352100876
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "local",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.5408562148916677,
+        "5620086": 0.48432947900790907
+      },
+      "median": 0.5125928469497883
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "local",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 3.8746242872863843,
+        "5620086": 3.8095434940832953
+      },
+      "median": 3.84208389068484
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "control",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.7098836961312612,
+        "5620086": 0.5778987274494831
+      },
+      "median": 0.6438912117903721
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "control",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 4.913368603763022,
+        "5620086": 4.274399423631312
+      },
+      "median": 4.593884013697167
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.2333458718481565,
+        "5620086": 0.9126331568329983
+      },
+      "median": 1.0729895143405774
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 9.548510843356214,
+        "5620086": 7.762716421711941
+      },
+      "median": 8.655613632534077
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.33442194298763,
+        "5620086": 0.8862844182457232
+      },
+      "median": 1.1103531806166766
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 10.40473840721488,
+        "5620086": 7.704246038054839
+      },
+      "median": 9.05449222263486
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "work_ns_per_attempt",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.9714374239563589,
+        "5620086": 0.825901545603547
+      },
+      "median": 0.898669484779953
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "queue_work_fraction",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.0208452375310355,
+        "5620086": 1.020998806496311
+      },
+      "median": 1.0209220220136732
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "lock_miss_fraction",
+      "numerator_job": 22281608,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.0732697211365783,
+        "5620086": 0.8189129769558373
+      },
+      "median": 0.9460913490462077
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "frozen_r0",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.6868480705700428,
+        "5620086": 0.5262214805974773
+      },
+      "median": 0.60653477558376
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "frozen_r0",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 4.781783385643005,
+        "5620086": 4.172041120860758
+      },
+      "median": 4.476912253251882
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "local",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.7235959194062885,
+        "5620086": 0.5234190351645451
+      },
+      "median": 0.6235074772854168
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "local",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 5.001513776167582,
+        "5620086": 4.044635893668532
+      },
+      "median": 4.523074834918057
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "control",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.711385704820865,
+        "5620086": 0.6072273400048601
+      },
+      "median": 0.6593065224128626
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "control",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 4.900317466951388,
+        "5620086": 4.269780212741453
+      },
+      "median": 4.58504883984642
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.239712787745752,
+        "5620086": 0.907034912909878
+      },
+      "median": 1.073373850327815
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 9.647887668719731,
+        "5620086": 7.741038934048391
+      },
+      "median": 8.694463301384062
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "seconds",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.3760206473275118,
+        "5620086": 0.8904753217433513
+      },
+      "median": 1.1332479845354315
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 10.780866936324886,
+        "5620086": 7.586478143826865
+      },
+      "median": 9.183672540075875
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "work_ns_per_attempt",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.9775696353236715,
+        "5620086": 0.8286286162849065
+      },
+      "median": 0.903099125804289
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "queue_work_fraction",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.0053084378849402,
+        "5620086": 1.0027370287915036
+      },
+      "median": 1.004022733338222
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "lock_miss_fraction",
+      "numerator_job": 22281608,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.1116364697811774,
+        "5620086": 0.8193684686733009
+      },
+      "median": 0.9655024692272391
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "frozen_r0",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3468991119270399,
+        "41856222": 0.34754400301468813
+      },
+      "median": 0.34722155747086403
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "frozen_r0",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.6364596970460163,
+        "41856222": 2.5217470996228744
+      },
+      "median": 2.5791033983344454
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "local",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.34514674510706767,
+        "41856222": 0.3191401181859731
+      },
+      "median": 0.3321434316465204
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "local",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.638847915792169,
+        "41856222": 2.5454558937114133
+      },
+      "median": 2.592151904751791
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "control",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.349953413883037,
+        "41856222": 0.3426679557283602
+      },
+      "median": 0.3463106848056986
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "control",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.703942652477366,
+        "41856222": 2.5736199781330167
+      },
+      "median": 2.6387813153051916
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3175966015150621,
+        "41856222": 0.3407123793918254
+      },
+      "median": 0.32915449045344375
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.8951903923507432,
+        "41856222": 2.0843080067807196
+      },
+      "median": 1.9897491995657313
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.32077239920743206,
+        "41856222": 0.3214218336293318
+      },
+      "median": 0.3210971164183819
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.051913002451592,
+        "41856222": 1.949023993978666
+      },
+      "median": 2.0004684982151293
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "work_ns_per_attempt",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.9970288555469068,
+        "41856222": 1.0290596885891834
+      },
+      "median": 1.013044272068045
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "queue_work_fraction",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.0053312163947064,
+        "41856222": 1.0062492935612621
+      },
+      "median": 1.0057902549779842
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "lock_miss_fraction",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.41455214191212103,
+        "41856222": 0.4351602124943115
+      },
+      "median": 0.4248561772032163
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "frozen_r0",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3435227243321036,
+        "41856222": 0.3428309967513672
+      },
+      "median": 0.3431768605417354
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "frozen_r0",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.603412112919359,
+        "41856222": 2.4723693484441203
+      },
+      "median": 2.5378907306817395
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "local",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.35089475410836146,
+        "41856222": 0.35107067384529916
+      },
+      "median": 0.35098271397683034
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "local",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.6670075088846157,
+        "41856222": 2.562031382291451
+      },
+      "median": 2.6145194455880336
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "control",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3535603877076989,
+        "41856222": 0.3142195373406207
+      },
+      "median": 0.3338899625241598
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "control",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.7276025615868202,
+        "41856222": 2.5244312680941703
+      },
+      "median": 2.6260169148404953
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.32024749306592704,
+        "41856222": 0.34081229508953526
+      },
+      "median": 0.33052989407773115
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.9059984591674595,
+        "41856222": 2.0678399481056995
+      },
+      "median": 1.9869192036365795
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.3302845879669952,
+        "41856222": 0.31695444549651147
+      },
+      "median": 0.3236195167317534
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 2.0793142182595887,
+        "41856222": 1.9309829087395067
+      },
+      "median": 2.0051485634995476
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "work_ns_per_attempt",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.00444877479756,
+        "41856222": 1.0268128120013438
+      },
+      "median": 1.0156307933994517
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "queue_work_fraction",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 1.0077817461724599,
+        "41856222": 1.0099668690009136
+      },
+      "median": 1.0088743075866868
+    },
+    {
+      "graph": "mesh26-z",
+      "variant": "nearest_diag",
+      "metric": "lock_miss_fraction",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "22442342": 0.433059699274644,
+        "41856222": 0.43653433367107847
+      },
+      "median": 0.43479701647286123
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "frozen_r0",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.7744367130550034,
+        "5620086": 0.603991401131626
+      },
+      "median": 0.6892140570933147
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "frozen_r0",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 5.191572560344127,
+        "5620086": 4.344211726070567
+      },
+      "median": 4.767892143207347
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "local",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.5280994846842325,
+        "5620086": 0.513124319043624
+      },
+      "median": 0.5206119018639283
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "local",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 3.747565736510961,
+        "5620086": 3.8412442470563417
+      },
+      "median": 3.7944049917836513
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "control",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.7020477585201825,
+        "5620086": 0.5596783471307905
+      },
+      "median": 0.6308630528254865
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "control",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 4.853708296488672,
+        "5620086": 4.186364564003261
+      },
+      "median": 4.520036430245966
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.291287024222825,
+        "5620086": 0.9148709485275002
+      },
+      "median": 1.1030789863751624
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 9.916104072224272,
+        "5620086": 7.695089405128675
+      },
+      "median": 8.805596738676474
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.3372922075576588,
+        "5620086": 0.9789032203675602
+      },
+      "median": 1.1580977139626094
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 10.099665823072588,
+        "5620086": 8.75187684218557
+      },
+      "median": 9.425771332629079
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "work_ns_per_attempt",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.9751235757568785,
+        "5620086": 0.8366386251507015
+      },
+      "median": 0.90588110045379
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "queue_work_fraction",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.0234534082924545,
+        "5620086": 1.0249993209351134
+      },
+      "median": 1.024226364613784
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "lock_miss_fraction",
+      "numerator_job": 22281609,
+      "denominator_job": 22281605,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.0952565185022092,
+        "5620086": 0.8446434076319878
+      },
+      "median": 0.9699499630670985
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "frozen_r0",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.7310580234764884,
+        "5620086": 0.571202136160895
+      },
+      "median": 0.6511300798186916
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "frozen_r0",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 4.983455599709059,
+        "5620086": 4.318224258193811
+      },
+      "median": 4.650839928951434
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "local",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.7065290582537067,
+        "5620086": 0.5545378665437213
+      },
+      "median": 0.630533462398714
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "local",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 4.837501721071464,
+        "5620086": 4.0782929456303325
+      },
+      "median": 4.457897333350898
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "control",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.7035331875271607,
+        "5620086": 0.5880822674354387
+      },
+      "median": 0.6458077274812997
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "control",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 4.8408156323859375,
+        "5620086": 4.181840489655868
+      },
+      "median": 4.511328061020903
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.297953050412675,
+        "5620086": 0.9092589776170783
+      },
+      "median": 1.1036060140148767
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 10.019306651017756,
+        "5620086": 7.673600766798023
+      },
+      "median": 8.84645370890789
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "seconds",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.3789803883092957,
+        "5620086": 0.9835320831181861
+      },
+      "median": 1.1812562357137408
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "attempts_per_edge",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 10.464766059316945,
+        "5620086": 8.618094756157204
+      },
+      "median": 9.541430407737074
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "work_ns_per_attempt",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 0.9812790560053515,
+        "5620086": 0.8394011489378123
+      },
+      "median": 0.9103401024715818
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "queue_work_fraction",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.0078769134750705,
+        "5620086": 1.0066659892726313
+      },
+      "median": 1.007271451373851
+    },
+    {
+      "graph": "road-usa-z",
+      "variant": "nearest_diag",
+      "metric": "lock_miss_fraction",
+      "numerator_job": 22281609,
+      "denominator_job": 22281606,
+      "ratio": "eight/one",
+      "sources": {
+        "1294456": 1.134409240990488,
+        "5620086": 0.8451132110020806
+      },
+      "median": 0.9897612259962842
+    }
+  ],
+  "jobs": [
+    {
+      "job": 22281608,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 261,
+      "allocated_cpus": 1024,
+      "cpu_time_seconds": 267264,
+      "hosts": "cn[026,087,108,113,124,130-131,135]"
+    },
+    {
+      "job": 22281609,
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "elapsed_seconds": 267,
+      "allocated_cpus": 1024,
+      "cpu_time_seconds": 273408,
+      "hosts": "cn[014,026,055,087,124,130-131,135]"
+    }
+  ],
+  "allocated_cpu_hours": 150.18666666666667,
+  "shared_physical_hosts": [
+    "cn026",
+    "cn087",
+    "cn124",
+    "cn130",
+    "cn131",
+    "cn135"
+  ]
+}
