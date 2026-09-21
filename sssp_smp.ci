@@ -17,6 +17,7 @@ mainmodule sssp_smp
   readonly bool verify_mode;
   readonly int process_share_mode;
   readonly int process_queue_policy;
+  readonly int process_queue_batch;
   readonly long reader_tile_size;
   readonly int reader_tile_owners;
   readonly int flush_round_interval;

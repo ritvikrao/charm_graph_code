@@ -39,21 +39,27 @@ template <class Item, class Compare, class Key = ProcessWorkIntegerKey> class Pr
   }
 
   template <class Admitted>
-  bool pop_bin(int rank, Admitted &admitted, Item &item) {
+  int pop_bin(int rank, Admitted &admitted, Item *items, int capacity) {
     COST_ADD(QUEUE_PROBES, 1);
     Bin &bin = bins[rank];
-    if (!bin.nonempty.load(std::memory_order_acquire)) return false;
+    if (!bin.nonempty.load(std::memory_order_acquire)) return 0;
     std::unique_lock<std::mutex> guard(bin.lock, std::try_to_lock);
     if (!guard) COST_ADD(LOCK_MISSES, 1);
-    if (!guard || bin.buckets.empty()) return false;
-    auto first = bin.buckets.begin();
-    if (!admitted(first->second.top())) return false;
-    item = first->second.top();
-    first->second.pop();
-    if (first->second.empty()) bin.buckets.erase(first);
-    publish_head(rank);
-    bin.nonempty.store(!bin.buckets.empty(), std::memory_order_release);
-    return true;
+    if (!guard || bin.buckets.empty()) return 0;
+    int taken = 0;
+    while (taken < capacity && !bin.buckets.empty()) {
+      auto first = bin.buckets.begin();
+      // Never skip an ineligible head to reach a later original bucket.
+      if (!admitted(first->second.top())) break;
+      items[taken++] = first->second.top();
+      first->second.pop();
+      if (first->second.empty()) bin.buckets.erase(first);
+    }
+    if (taken) {
+      publish_head(rank);
+      bin.nonempty.store(!bin.buckets.empty(), std::memory_order_release);
+    }
+    return taken;
   }
 public:
   explicit ProcessWork(int n, bool nearest = false)
@@ -67,8 +73,9 @@ public:
     bin.nonempty.store(true, std::memory_order_release);
   }
   template <class Admitted>
-  bool pop(int rank, Admitted admitted, Item &item) {
+  int pop_batch(int rank, Admitted admitted, Item *items, int capacity) {
     COST_SCOPE(POP_CALLS);
+    if (capacity <= 0) return 0;
     int best = -1;
     if (hints) {
       long distance = std::numeric_limits<long>::max();
@@ -82,15 +89,25 @@ public:
           best = peer;
         }
       }
-      if (best >= 0 && pop_bin(best, admitted, item)) return true;
+      if (best >= 0) {
+        const int taken = pop_bin(best, admitted, items, capacity);
+        if (taken) return taken;
+      }
     }
     // Contention, stale hints and generation-specific admission must not
     // strand eligible work in another bin. Keep the existing bounded scan.
     for (int k = 0; k < count; ++k) {
       const int peer = (rank + k) % count;
-      if (peer != best && pop_bin(peer, admitted, item)) return true;
+      if (peer != best) {
+        const int taken = pop_bin(peer, admitted, items, capacity);
+        if (taken) return taken;
+      }
     }
-    return false;
+    return 0;
+  }
+  template <class Admitted>
+  bool pop(int rank, Admitted admitted, Item &item) {
+    return pop_batch(rank, admitted, &item, 1) != 0;
   }
   bool empty() const {
     for (int i = 0; i < count; ++i)

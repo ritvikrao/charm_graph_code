@@ -11,9 +11,18 @@ from work_cost_report import counters
 
 
 def main():
-    import sys
-    root = Path(sys.argv[1])
-    graphs = set(sys.argv[2].split(',')) if len(sys.argv) > 2 else {'mesh26-z', 'road-usa-z'}
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('root', type=Path)
+    parser.add_argument('graphs', nargs='?', default='mesh26-z,road-usa-z')
+    parser.add_argument('--reps', type=int, default=2)
+    args = parser.parse_args()
+    if args.reps < 1:
+        parser.error('--reps must be positive')
+    root = args.root
+    graphs = set(args.graphs.split(','))
+    if graphs - {'mesh26-z', 'road-usa-z'}:
+        parser.error('unknown reference graph')
     out = root / 'logs' / f'GAP-R0-{os.environ["SLURM_JOB_ID"]}'
     out.mkdir(exist_ok=False)
     env = dict(os.environ, SLURM_MPI_TYPE='cray_shasta', OMP_PROC_BIND='close', OMP_PLACES='cores')
@@ -24,7 +33,7 @@ def main():
             ref = root / 'graphs' / f'{graph}.reference.txt'
             sources = [r for l in ref.read_text().splitlines() for r in [l.split()] if len(r) > 1 and r[1] == 'tune']
             for index, source in enumerate(sources):
-                for rep in range(-1, 2):
+                for rep in range(-1, args.reps):
                     labels = ['production', 'diagnostic'] if rep % 2 else ['diagnostic', 'production']
                     for label in labels:
                         binary = root / ('bin/gap_sssp' if label == 'production' else 'build/gap_r0/gap_work_cost')

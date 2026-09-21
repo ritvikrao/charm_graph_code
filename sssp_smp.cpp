@@ -113,6 +113,7 @@ enum { PROCESS_SHARE_OFF = 0, PROCESS_SHARE_ON = 1, PROCESS_SHARE_AUTO = 2 };
 int process_share_mode = PROCESS_SHARE_OFF;
 enum { PROCESS_QUEUE_LOCAL = 0, PROCESS_QUEUE_NEAREST = 1 };
 int process_queue_policy = PROCESS_QUEUE_LOCAL;
+int process_queue_batch = 1;
 long reader_tile_size = 0;
 int reader_tile_owners = 1;
 int slack_control_mode = PROCESS_SHARE_OFF;
@@ -993,6 +994,17 @@ public:
         else if (value == "nearest") process_queue_policy = PROCESS_QUEUE_NEAREST;
         else CkAbort("--process-queue must be local or nearest");
       }
+      else if (arg == "--process-queue-batch" || arg.rfind("--process-queue-batch=", 0) == 0) {
+        const std::string value = arg == "--process-queue-batch"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(22);
+        // Avoid conversion exceptions and overflow for malformed CLI input.
+        if (value.empty() || value.size() > 2 ||
+            value.find_first_not_of("0123456789") != std::string::npos)
+          CkAbort("--process-queue-batch must be an integer from 1 to 64");
+        process_queue_batch = std::atoi(value.c_str());
+        if (process_queue_batch < 1 || process_queue_batch > 64)
+          CkAbort("--process-queue-batch must be an integer from 1 to 64");
+      }
       else if (arg.rfind("--timeout=", 0) == 0)
         timeout_seconds = std::stod(arg.substr(10));
       else if (arg == "--timeout") {
@@ -1453,7 +1465,7 @@ public:
             << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
-            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|T] [--diag <prefix>]" << endl
+            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--process-queue-batch 1..64] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|T] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -1882,6 +1894,8 @@ public:
     ckout << "Live slack: " << (slack_control_active() ? "on" : "off") << endl;
     ckout << "Process sharing: " << (process_share_active() ? "on" : "off") << endl;
     ckout << "Process queue: " << (process_queue_policy == PROCESS_QUEUE_NEAREST ? "nearest" : "local")
+          << (process_share_active() ? "" : " (inactive)") << endl;
+    ckout << "Process queue batch: " << process_queue_batch
           << (process_share_active() ? "" : " (inactive)") << endl;
 #ifdef INFO_PRINTS
     ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
@@ -4363,40 +4377,59 @@ public:
   }
 
   void process_shared_heap() {
-    Update u;
+    Update batch[64];
     int processed = 0;
-    while (processed < 100 && control_local->work.pop(CkMyRank(),
-           [this](const Update &v) {
-             return !created_beyond_my_clamp(v) && bucket_of(v) <= heap_threshold;
-           }, u)) {
+    const auto admitted = [this](const Update &v) {
+      return !created_beyond_my_clamp(v) && bucket_of(v) <= heap_threshold;
+    };
+    while (processed < 100) {
+      const int taken = control_local->work.pop_batch(CkMyRank(), admitted,
+          batch, std::min(process_queue_batch, 100 - processed));
+      if (!taken) break;
+      // All locks are released before expansion, which may deliver updates
+      // inline. Drain the batch before yielding; its histogram charges remain
+      // live, so a temporarily empty shared queue does not retire this work.
+      for (int i = 0; i < taken; ++i) {
+        const Update &u = batch[i];
 #ifdef ACIC_WORK_COST
-      work_cost::ensure_start(CkMyPe());
+        work_cost::ensure_start(CkMyPe());
 #endif
-      ++processed;
-      COST_ADD(QUEUE_POPS, 1);
-      const int bucket = bucket_of(u);
-      auto &part = process_partition(update_vertex(u));
-      const long index = update_vertex(u) - part.first;
-      if (u.distance == __atomic_load_n(part.distances + index, __ATOMIC_RELAXED)) {
-        COST_ADD(EXPANSIONS, 1);
+        ++processed;
+        // An inline callback may have applied a new controller generation.
+        // Return newly ineligible work with its original charge, not a new
+        // update. Logical QUEUE_POPS counts consumption, not private transfer.
+        if (!admitted(u)) {
+          const long original_bucket = update_overflowed(u)
+              ? std::numeric_limits<long>::max()
+              : (long)((double)u.distance * bucket_multiplier);
+          control_local->work.push(CkMyRank(), u, original_bucket);
+          continue;
+        }
+        COST_ADD(QUEUE_POPS, 1);
+        const int bucket = bucket_of(u);
+        auto &part = process_partition(update_vertex(u));
+        const long index = update_vertex(u) - part.first;
+        if (u.distance == __atomic_load_n(part.distances + index, __ATOMIC_RELAXED)) {
+          COST_ADD(EXPANSIONS, 1);
 #ifdef ACIC_DIAG
-        expansions++;
-        const double lead = (double)u.distance * bucket_multiplier -
-                            (double)frontier_bucket * bucket_scale;
-        const int lc = lead < 1.0 ? 0 : std::min(LEAD_CLASSES - 1, 1 + (int)std::log2(lead));
-        lead_expansions[lc]++;
-        __atomic_store_n(part.last_lead + index, (unsigned char)lc, __ATOMIC_RELAXED);
+          expansions++;
+          const double lead = (double)u.distance * bucket_multiplier -
+                              (double)frontier_bucket * bucket_scale;
+          const int lc = lead < 1.0 ? 0 : std::min(LEAD_CLASSES - 1, 1 + (int)std::log2(lead));
+          lead_expansions[lc]++;
+          __atomic_store_n(part.last_lead + index, (unsigned char)lc, __ATOMIC_RELAXED);
 #endif
-        // Expand the accepted snapshot, not a distance that can change halfway
-        // through the adjacency scan. A concurrent improvement queues new work.
-        send_relaxations(part.graph->edges(index), 0, part.graph->degree(index), u.distance, false);
-      } else {
-        COST_ADD(STALE_POPS, 1);
-        rejected_updates++;
+          // Expand the accepted snapshot, not a distance that can change halfway
+          // through the adjacency scan. A concurrent improvement queues new work.
+          send_relaxations(part.graph->edges(index), 0, part.graph->degree(index), u.distance, false);
+        } else {
+          COST_ADD(STALE_POPS, 1);
+          rejected_updates++;
+        }
+        wasted_updates++;
+        histogram[bucket]--;
+        updates_processed_locally++;
       }
-      wasted_updates++;
-      histogram[bucket]--;
-      updates_processed_locally++;
     }
     if (processed == 100 && !heap_queued) {
       heap_yielded = true;

@@ -12,6 +12,12 @@ as-is**. Continue only with a bounded attribution pass and, if justified,
 one targeted intervention. Do not start L4 merely because C6 failed.
 All three new feature defaults remain off.
 
+**2026-09-21 follow-up:** R0 is complete and R1 priority reduces work but
+leaves high queue cost. The author authorized a bounded one-node batching
+experiment; see the [pre-implementation decision](ipdps27-r1-batch-decision.md).
+This extends the original one-intervention limit for that experiment only.
+R2 remains conditional, R3 needs the author's decision, and C6 is unchanged.
+
 ## 1. Target
 
 The author's requirement is unchanged: a one-node GAPBS or ACIC run must not

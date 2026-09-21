@@ -61,6 +61,10 @@ def main():
                         policy = variant['flags'][variant['flags'].index('--process-queue')+1]
                         if re.findall(r'Process queue: ([^\r\n]*)',text) != [policy]:
                             raise ValueError(f'{launch}: wrong queue policy')
+                    if '--process-queue-batch' in variant['flags']:
+                        batch = variant['flags'][variant['flags'].index('--process-queue-batch')+1]
+                        if re.findall(r'Process queue batch: ([^\r\n]*)',text) != [batch]:
+                            raise ValueError(f'{launch}: wrong queue batch size')
                     chunks = re.split(r'^SOURCE_RUN index=\d+ source=(\d+)\n',text,flags=re.M)
                     if chunks[1::2] != sources:
                         raise ValueError(f'{launch}: missing or reordered sources')
@@ -104,7 +108,11 @@ def main():
                         stale_pop_fraction=c['stale_pops']/c['queue_pops'],
                         cpu_ns_per_attempt=d['cpu_ns_per_attempt'],work_ns_per_attempt=d['work_ns_per_attempt'],
                         queue_work_fraction=d['queue_estimated_seconds']/work,
-                        lock_miss_fraction=c['lock_misses']/c['queue_probes'])
+                        lock_miss_fraction=c['lock_misses']/c['queue_probes'],
+                        pops_per_removal_call=c['queue_pops']/c['pop_calls'],
+                        pop_queue_time_fraction=(c['pop_ticks']*c['pop_calls']/max(1,c['pop_samples'])) /
+                            max(1, c['pop_ticks']*c['pop_calls']/max(1,c['pop_samples']) +
+                                   c['push_ticks']*c['push_calls']/max(1,c['push_samples'])))
                     result['diagnostic_solves'] += 1
                 elif 'WORK_COST ' in text:
                     raise ValueError(f'{path}: unexpected diagnostic build')
@@ -114,7 +122,13 @@ def main():
             summary = summarize(output)
             comparisons = {f'{a}/{b}:{metric}': ratio(summary,a,b,metric)
                 for a,b in [('nearest','local'),('nearest','control'),('nearest','frozen_r0'),
-                            ('control','local'),('local','frozen_r0'),('nearest_diag','nearest')]
+                            ('control','local'),('control','nearest'),('local','frozen_r0'),
+                            ('nearest_diag','nearest'),('nearest','frozen_nearest'),
+                            ('batch8','nearest'),('batch32','nearest'),
+                            ('batch8','control'),('batch32','control'),
+                            ('batch8','frozen_r0'),('batch32','frozen_r0'),
+                            ('batch8_diag','batch8'),('batch32_diag','batch32')]
+                if a in labels and b in labels
                 for metric in ('seconds','attempts_per_edge')}
             result['allocations'].append(dict(job=job,graph=graph,manifest=manifest,
                 runtime_warnings=dict(warnings),summary=summary,comparisons=comparisons,rows=output))
