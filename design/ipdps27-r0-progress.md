@@ -7,11 +7,12 @@ then conditional dense-mode cleanup.
 
 ## Status
 
-R0 instrumentation and its correctness checks are implemented. Both one-node
-allocations completed and their raw results passed validation; the two
-eight-node allocations remain queued. R0's final attribution is not yet complete.
-R1 has a leading hypothesis but has not been selected or implemented. R2
-remains conditional on a promising R1. No defaults changed.
+All four full-node R0 allocations completed and their raw results passed
+validation: 288 solves and 120 diagnostic queue identities. R0 supports a
+bounded ordering counterfactual; it does not establish full runtime or
+critical-path attribution. The [R1 decision](ipdps27-r1-decision.md) selects
+process-wide shared-queue priority for implementation. R2 remains conditional
+on a promising R1. No defaults changed.
 
 [The one-node analysis](ipdps27-r0-one-node-results.md) confirms substantial
 repeated expansions in two independent allocations: production ACIC makes
@@ -35,8 +36,8 @@ the aggregate wall-time-limit exposure from 537.6 to **256 SU**.
 |---|---|---|---:|---|
 | 22237670 | One node, allocation A, plus full-node GAPBS | 12 minutes | 25.6 | Completed, cn132 |
 | 22237671 | One node, allocation B, plus full-node GAPBS | 12 minutes | 25.6 | Completed, cn112 |
-| 22237672 | Eight nodes, allocation A | 6 minutes | 102.4 | Pending, priority |
-| 22237673 | Eight nodes, allocation B | 6 minutes | 102.4 | Pending, priority |
+| 22237672 | Eight nodes, allocation A | 6 minutes | 102.4 | Completed, 220 s |
+| 22237673 | Eight nodes, allocation B | 6 minutes | 102.4 | Completed, 202 s |
 
 Graphs: `mesh26-z`, `road-usa-z`. Two training sources, warmup and two timed
 repetitions. ACIC uses eight processes of fifteen workers per physical node.
@@ -145,7 +146,7 @@ Data and job IDs are in [r0-initial-work.json](onenode-data/r0-initial-work.json
 The main campaign remains `/u/rao1/.tmp/ipdps27-onenode` with graph files in
 the work filesystem via compatibility links.
 
-## Decision still to make
+## Decision recorded after the complete panel
 
 The leading R1 hypothesis is tighter priority selection across a process's
 shared producer bins: the current queue tries its own bin before peers even
@@ -153,9 +154,10 @@ when peers hold lower-priority-key work. The observed excess scans provide
 substantial headroom, but they do not show how much a new queue policy can
 remove or whether its synchronization cost will outweigh that reduction.
 
-Finish both R0 allocations, check instrumentation-induced work changes using
-the production ledger, and inspect queue/CPU cost before selecting R1. Any
-intervention must reduce production work and time reproducibly, with its
-prediction and disconfirming result recorded first. R2 must not displace this
+The complete panel confirms eight/one work growth of 2.58× on mesh and
+4.5× on road, with broadly similar measured solver cost per attempt.
+The [decision and bounded comparison](ipdps27-r1-decision.md) records the
+prediction and disconfirming result before implementation. Any intervention
+must reduce production work and time reproducibly. R2 must not displace this
 analysis. Report the resulting R0–R2 evidence to the author and wait for the
 R3 decision; do not launch R3 acceptance jobs automatically.
