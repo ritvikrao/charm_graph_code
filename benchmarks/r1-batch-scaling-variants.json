@@ -1,0 +1,129 @@
+[
+  {
+    "label": "frozen_r0",
+    "binary": "acic_r0_control",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off"
+    ]
+  },
+  {
+    "label": "nearest",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "1"
+    ]
+  },
+  {
+    "label": "batch8",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8"
+    ]
+  },
+  {
+    "label": "batch32",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "32"
+    ]
+  },
+  {
+    "label": "batch8_control",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8"
+    ]
+  },
+  {
+    "label": "nearest_diag",
+    "binary": "acic_r1_batch_diag",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "1"
+    ],
+    "work_cost": true
+  },
+  {
+    "label": "batch8_diag",
+    "binary": "acic_r1_batch_diag",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8"
+    ],
+    "work_cost": true
+  },
+  {
+    "label": "batch32_diag",
+    "binary": "acic_r1_batch_diag",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "32"
+    ],
+    "work_cost": true
+  }
+]

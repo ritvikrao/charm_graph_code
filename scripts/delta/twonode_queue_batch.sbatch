@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Fixed batch-8 scaling candidate with batch-32 ablation; submit twice.
+# Two performance allocations reserve at most 85.334 SU together.
+#SBATCH --account=mzu-delta-cpu
+#SBATCH --partition=cpu
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=128
+#SBATCH --mem=0
+#SBATCH --exclusive
+#SBATCH --time=00:10:00
+#SBATCH --job-name=acic-R1-batch-2n
+set -euo pipefail
+ulimit -c 0
+ROOT=${1:?campaign}
+VARIANTS=${2:?variants JSON}
+APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
+test "$SLURM_NNODES" -eq 2
+for graph in mesh26-z road-usa-z; do
+  python3 "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$VARIANTS" \
+    --sources 2 --reps 3 --source-role tune --batch
+  python3 "$APP/benchmarks/work_cost_report.py" "$ROOT/logs/AB-$graph-${SLURM_NNODES}n-$SLURM_JOB_ID"
+done
+python3 "$APP/benchmarks/check_priority_runs.py" "$ROOT" "$SLURM_JOB_ID" \
+  --config "$VARIANTS" --output "$ROOT/logs/R1-batch-audit-$SLURM_JOB_ID.json"

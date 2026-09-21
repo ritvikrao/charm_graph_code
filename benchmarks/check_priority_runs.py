@@ -107,8 +107,12 @@ def main():
                     metrics.update(expansions_per_vertex=d['expansions_per_vertex'],
                         stale_pop_fraction=c['stale_pops']/c['queue_pops'],
                         cpu_ns_per_attempt=d['cpu_ns_per_attempt'],work_ns_per_attempt=d['work_ns_per_attempt'],
+                        queue_ns_per_attempt=1e9*d['queue_estimated_seconds']/c['edge_attempts'],
                         queue_work_fraction=d['queue_estimated_seconds']/work,
                         lock_miss_fraction=c['lock_misses']/c['queue_probes'],
+                        work_share=d['comm']['compute_share'],idle_share=d['comm']['idle_share'],
+                        send_share=d['comm']['send_share'],
+                        inter_node_fraction=c['inter_node']/c['edge_attempts'],
                         pops_per_removal_call=c['queue_pops']/c['pop_calls'],
                         pop_queue_time_fraction=(c['pop_ticks']*c['pop_calls']/max(1,c['pop_samples'])) /
                             max(1, c['pop_ticks']*c['pop_calls']/max(1,c['pop_samples']) +
@@ -127,7 +131,9 @@ def main():
                             ('batch8','nearest'),('batch32','nearest'),
                             ('batch8','control'),('batch32','control'),
                             ('batch8','frozen_r0'),('batch32','frozen_r0'),
-                            ('batch8_diag','batch8'),('batch32_diag','batch32')]
+                            ('batch8_diag','batch8'),('batch32_diag','batch32'),
+                            ('batch8_control','batch8'),('batch8','batch8_control'),
+                            ('batch32','batch8'),('batch32','batch8_control')]
                 if a in labels and b in labels
                 for metric in ('seconds','attempts_per_edge')}
             result['allocations'].append(dict(job=job,graph=graph,manifest=manifest,
