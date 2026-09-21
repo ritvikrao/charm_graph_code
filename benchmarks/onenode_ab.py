@@ -5,6 +5,9 @@ Run inside a Slurm allocation. JSON variants specify binary, optional graph,
 and flags. Reference row index pairs the same physical source after relabeling.
 Two copies of the baseline estimate the allocation's timing floor. Run in two
 allocations; this script records evidence and never silently adopts a default.
+A variant may set its own nodes, rpn (processes per node) and workers (per
+node), so layouts interleave within one allocation; the defaults use them all.
+ACIC_SRUN_MPI selects the srun PMI plugin (cray_shasta on Delta, pmi2 on Anvil).
 """
 import argparse
 import hashlib
@@ -42,6 +45,11 @@ def main():
             raise ValueError('unsafe variant label')
         binary = args.campaign / 'bin' / v['binary']
         v['sha256'] = hashlib.sha256(binary.read_bytes()).hexdigest()
+        v.setdefault('nodes', nodes)
+        v.setdefault('rpn', args.rpn)
+        v.setdefault('workers', args.workers)
+        if not 1 <= v['nodes'] <= nodes or v['rpn'] < 1 or v['workers'] % v['rpn']:
+            raise ValueError(f"{v['label']}: invalid layout")
     (out / 'manifest.json').write_text(json.dumps(dict(variants=variants, nodes=nodes,
         workers=args.workers, rpn=args.rpn, sources=args.sources, reps=args.reps,
         source_role=args.source_role, batch=args.batch,
@@ -60,7 +68,7 @@ def main():
     for path, rows in references.values():
         if [r[4:7] for r in rows] != [r[4:7] for r in base_rows]:
             raise ValueError(f'{path}: sources are not paired with the baseline')
-    env = dict(os.environ, SLURM_MPI_TYPE='cray_shasta', PMI_MAX_KVS_ENTRIES='100000',
+    env = dict(os.environ, SLURM_MPI_TYPE=os.environ.get('ACIC_SRUN_MPI', 'cray_shasta'), PMI_MAX_KVS_ENTRIES='100000',
                FI_CXI_RX_MATCH_MODE='hybrid')
     env.pop('LCT_PMI_BACKEND', None)
     records = []
@@ -74,10 +82,11 @@ def main():
                     refpath, refs = references[graph]
                     sources = [refs[i][0] for i in group]
                     log = out / f'{variant["label"]}-g{group[0]}-r{rep}.launch.out'
-                    command = ['srun', '-N', str(nodes), '-n', str(nodes * args.rpn),
-                        '--ntasks-per-node', str(args.rpn), '-c', str(128 // args.rpn),
+                    vn, rpn = variant['nodes'], variant['rpn']
+                    command = ['srun', '-N', str(vn), '-n', str(vn * rpn),
+                        '--ntasks-per-node', str(rpn), '-c', str(128 // rpn),
                         '--cpu-bind=none', '--unbuffered', '--kill-on-bad-exit=1', '--time=00:06:00',
-                        'bash', str(app / 'benchmarks/launch_acic.sh'), str(args.rpn), str(args.workers),
+                        'bash', str(app / 'benchmarks/launch_acic.sh'), str(rpn), str(variant['workers']),
                         str(args.campaign / 'bin' / variant['binary']), '0',
                         str(args.campaign / 'graphs' / f'{graph}.wsg'), '1', sources[0], '4', '0.999', '0.005',
                         '--result-digest', '--timeout', '300'] + variant.get('flags', [])
@@ -99,7 +108,8 @@ def main():
                         check(refpath, source, result_log)
                         seconds = float(re.search(r'^Compute time: ([\d.eE+-]+)', output, re.M)[1])
                         row = dict(variant=variant['label'], graph=graph, source=source,
-                                   source_index=source_index, rep=rep, seconds=seconds, valid=True)
+                                   source_index=source_index, rep=rep, seconds=seconds, valid=True,
+                                   nodes=vn, rpn=rpn, workers=variant['workers'])
                         stream.write(json.dumps(row) + '\n')
                         if rep >= 0:
                             records.append(row)

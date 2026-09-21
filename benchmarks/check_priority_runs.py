@@ -23,8 +23,8 @@ def main():
     args = ap.parse_args()
     root = args.campaign
     config = json.loads(args.config.read_text())
-    expected_variants = [{**v, 'sha256': hashlib.sha256((root/'bin'/v['binary']).read_bytes()).hexdigest()}
-                         for v in config]
+    hashed = [{**v, 'sha256': hashlib.sha256((root/'bin'/v['binary']).read_bytes()).hexdigest()}
+              for v in config]
     result = dict(allocations=[], checked_solves=0, diagnostic_solves=0,
                   checked_launches=0, raw_sha256={})
     for job in args.jobs:
@@ -34,6 +34,9 @@ def main():
                 raise ValueError(f'{job}/{graph}: expected one result directory')
             directory = directories[0]
             manifest = json.loads((directory/'manifest.json').read_text())
+            # Variants without an explicit layout use the whole allocation, 8 x 15.
+            expected_variants = [{**v, 'nodes': v.get('nodes', manifest['nodes']),
+                                  'rpn': v.get('rpn', 8), 'workers': v.get('workers', 120)} for v in hashed]
             if (manifest['variants'] != expected_variants or manifest['workers'] != 120
                     or manifest['rpn'] != 8 or manifest['sources'] != 2 or manifest['reps'] != 3
                     or manifest['source_role'] != 'tune' or not manifest['batch']):
@@ -51,8 +54,9 @@ def main():
                 for rep in range(-1,3):
                     launch = directory/f"{variant['label']}-g0-r{rep}.launch.out"
                     text = launch.read_text()
-                    nodes = manifest['nodes']
-                    if f'Starting Reconverse with {8*nodes} processes, {120*nodes} PEs (1 PE = 1 thread), and 15 PEs per process' not in text:
+                    n, rpn, workers = variant['nodes'], variant['rpn'], variant['workers']
+                    if (f'Starting Reconverse with {rpn*n} processes, {workers*n} PEs (1 PE = 1 thread), '
+                            f'and {workers//rpn} PEs per process') not in text:
                         raise ValueError(f'{launch}: wrong worker layout')
                     for marker in ['Process sharing: on','Live slack: off','Reader tiles:']:
                         if marker not in text:
@@ -133,7 +137,12 @@ def main():
                             ('batch8','frozen_r0'),('batch32','frozen_r0'),
                             ('batch8_diag','batch8'),('batch32_diag','batch32'),
                             ('batch8_control','batch8'),('batch8','batch8_control'),
-                            ('batch32','batch8'),('batch32','batch8_control')]
+                            ('batch32','batch8'),('batch32','batch8_control'),
+                            # Layout attribution chain, see ipdps27-r1-attribution.md.
+                            ('n1_16x7','n1_8x15'),('n2_8x7','n1_16x7'),('n2_8x15','n2_8x7'),
+                            ('n2_8x15','n1_8x15'),('n1_8x15_control','n1_8x15'),
+                            ('n1_16x7_diag','n1_8x15_diag'),('n2_8x7_diag','n1_16x7_diag'),
+                            ('n2_8x15_diag','n2_8x7_diag'),('n2_8x15_diag','n1_8x15_diag')]
                 if a in labels and b in labels
                 for metric in ('seconds','attempts_per_edge')}
             result['allocations'].append(dict(job=job,graph=graph,manifest=manifest,

@@ -18,6 +18,12 @@ no further jobs. All submitted jobs have completed, Slurm shows no active or
 queued jobs, and no new jobs were submitted in this update. Future experiments
 below are proposals for a later resumption, not an active submission schedule.
 
+**Resumed, 2026-09-21 evening:** the author lifted the hold and directed work
+to continue from "R1 next". The fixed-total-layout attribution experiment,
+with its predictions and decision rule, is [recorded before submission](ipdps27-r1-attribution.md).
+It runs on Anvil (same EPYC 7763 node shape) with the batch-8 binaries rebuilt
+from `48ca9c0`.
+
 | Step | Status | Evidence / next decision |
 |---|---|---|
 | D0, L1–L3 | Implemented and tested | Earlier candidate improved greatly but failed C6; no automatic L4 |

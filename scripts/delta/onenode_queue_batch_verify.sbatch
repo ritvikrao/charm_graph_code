@@ -12,7 +12,7 @@ set -euo pipefail
 ulimit -c 0
 ROOT=${1:?campaign}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
-export SLURM_MPI_TYPE=cray_shasta PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
+export SLURM_MPI_TYPE=${ACIC_SRUN_MPI:-cray_shasta} PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
 unset LCT_PMI_BACKEND
 python3 - "$ROOT" "$APP" <<'PY'
 import hashlib, json, os, re, struct, subprocess, sys
