@@ -1,0 +1,62 @@
+[
+  {
+    "label": "n8_16x7_os",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 8,
+    "rpn": 16,
+    "workers": 112
+  },
+  {
+    "label": "n8_8x7_os",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 8,
+    "rpn": 8,
+    "workers": 56
+  },
+  {
+    "label": "n8_16x7_os_control",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 8,
+    "rpn": 16,
+    "workers": 112
+  }
+]
