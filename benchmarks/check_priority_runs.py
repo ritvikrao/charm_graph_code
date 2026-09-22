@@ -21,6 +21,8 @@ def main():
     ap.add_argument('--config', type=Path, required=True)
     ap.add_argument('--output', type=Path, required=True)
     ap.add_argument('--graphs', default='mesh26-z,road-usa-z')
+    ap.add_argument('--sources', type=int, default=2)
+    ap.add_argument('--source-role', default='tune')
     args = ap.parse_args()
     root = args.campaign
     config = json.loads(args.config.read_text())
@@ -39,12 +41,12 @@ def main():
             expected_variants = [{**v, 'nodes': v.get('nodes', manifest['nodes']),
                                   'rpn': v.get('rpn', 8), 'workers': v.get('workers', 120)} for v in hashed]
             if (manifest['variants'] != expected_variants or manifest['workers'] != 120
-                    or manifest['rpn'] != 8 or manifest['sources'] != 2 or manifest['reps'] != 3
-                    or manifest['source_role'] != 'tune' or not manifest['batch']):
+                    or manifest['rpn'] != 8 or manifest['sources'] != args.sources or manifest['reps'] != 3
+                    or manifest['source_role'] != args.source_role or not manifest['batch']):
                 raise ValueError(f'{directory}: unexpected experiment settings')
             refpath = root/'graphs'/f'{graph}.reference.txt'
             references = [l.split() for l in refpath.read_text().splitlines() if l[:1].isdigit()]
-            references = [r for r in references if r[1] == 'tune'][:2]
+            references = [r for r in references if r[1] == args.source_role][:args.sources]
             sources = [r[0] for r in references]
             vertices = int(re.search(r'vertices=(\d+)',(root/'graphs'/f'{graph}.meta').read_text())[1])
             rows = read_rows(directory/'runs.jsonl')

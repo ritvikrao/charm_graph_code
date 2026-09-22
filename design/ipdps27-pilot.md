@@ -115,3 +115,55 @@ mesh's remaining gap to GAPBS is rework, which is the thing slices reduce.
 - **Budget:** 8 nodes × 12 min reserved per allocation (205 SU each); about
   60 SU each expected. Spend so far is about 770 SU of the 2,000-SU cap,
   with about 170 SU more queued.
+
+### Result: 8-node heap-slice test (jobs 20861039/20861040)
+
+- **Validation:** both allocations validate 80 of 80 solves, with no
+  runtime warnings.
+- **Cost:** 128 SU.
+
+Medians in seconds for the two training sources (attempts per edge):
+
+| Graph | Arm | Allocation A | Allocation B |
+|---|---|---|---|
+| mesh | 8 × 7 | 0.383 / 0.339 (2.4 / 2.3) | 0.382 / 0.342 |
+| mesh | 8 × 7 slice 8 | 0.345 / 0.304 (1.9 / 1.8) | 0.346 / 0.303 |
+| mesh | **16 × 7 slice 8** | **0.296 / 0.255** (3.0 / 2.5) | **0.292 / 0.238** |
+| mesh | 16 × 7 slice 8, control | 0.296 / 0.239 | 0.294 / 0.244 |
+| mesh | 8 × 15 slice 8 cap 9 | 0.472 / 0.425 | 0.482 / 0.433 |
+| road | 8 × 7 | 0.581 / 0.453 (16 / 12) | 0.636 / 0.455 |
+| road | 8 × 7 slice 8 | 0.282 / 0.243 (6.8 / 5.1) | 0.297 / 0.247 |
+| road | 16 × 7 slice 8 | 0.292 / 0.236 (13 / 9.6) | 0.336 / 0.229 |
+| road | 16 × 7 slice 8, control | 0.278 / 0.219 | 0.299 / 0.238 |
+| road | 8 × 15 slice 8 cap 9 | **0.275** / 0.240 (4.7 / 3.7) | **0.274** / 0.234 |
+
+The repeated controls agree with their primary arms within 0–6% on mesh
+and 4–11% on road.
+
+**Mesh: faster than one-node GAPBS on training sources, in both
+allocations.** The GAPBS reference is the fastest per-source median across
+both one-node allocations and both timed settings: 0.356 s on 22442342 and
+0.331 s on 41856222.
+
+- 8-node ACIC with 16 × 7 and slice 8 takes **0.72–0.83 of GAPBS's time**
+  (1.20–1.39× faster), including the control arms.
+- It is 3.2–3.6× faster than one-node ACIC, and 23–30% faster than the
+  pre-slice 8-node best, 8 × 7.
+- **Prediction met:** 0.24–0.30 s, at or below GAPBS on both sources in both
+  allocations. The disconfirmation did not occur: slice 8 is faster than
+  8 × 7 by far more than control noise.
+- Adding the cap costs mesh 60% against 16 × 7 slice 8, so slice, not cap,
+  is the mesh setting.
+
+**Road: prediction met, still behind GAPBS.**
+
+- The best arms take 0.27–0.28 s on 1294456 and 0.22–0.24 s on 5620086.
+  That is 1.9–2.1× faster than one-node ACIC.
+- It is still 1.9× slower than GAPBS (0.142 / 0.117 s).
+- 8 × 15 with slice 8 and cap 9 is the steadiest road arm, with work at
+  3.7–4.7 attempts per edge. It is no faster than the capped arms of the
+  8-node cap sweep (0.18–0.25 s).
+
+**Status:** the win is on training sources, which were also used to choose
+the setting. The C6 claim needs held-out sources; see
+[ipdps27-c6-mesh.md](ipdps27-c6-mesh.md).

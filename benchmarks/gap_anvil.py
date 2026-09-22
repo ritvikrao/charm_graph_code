@@ -5,6 +5,8 @@ Training sources select threads and delta from a grid centred on the setting
 selected on Delta; the grid edges are reported so a boundary winner is
 visible. The selected and the Delta setting are then timed (one warmup, three
 repetitions) on training and held-out sources. Every run is digest-checked.
+--settings graph=threads:delta[,...] skips the grid and times only the given
+settings, on the sources of --roles.
 """
 import argparse
 import hashlib
@@ -27,6 +29,8 @@ def main():
     ap.add_argument('--graphs', default='mesh26-z,road-usa-z')
     ap.add_argument('--threads', default='32,64,96,112,128')
     ap.add_argument('--reps', type=int, default=3)
+    ap.add_argument('--settings', default='', help='graph=threads:delta,... (skips tuning)')
+    ap.add_argument('--roles', default='tune,test')
     args = ap.parse_args()
     job = os.environ['SLURM_JOB_ID']
     out = args.root / 'logs' / f'GAP-anvil-{job}'
@@ -61,6 +65,21 @@ def main():
         tune = [r[0] for r in rows if r[1] == 'tune']
         test = [r[0] for r in rows if r[1] == 'test']
         t0, d0 = DELTA_SELECTED[graph]
+        fixed = [tuple(map(int, v.split('=')[1].split(':'))) for v in args.settings.split(',')
+                 if v.split('=')[0] == graph]
+        if fixed:
+            timed = {}
+            for t, d in fixed:
+                label = f'fixed-t{t}-d{d}'
+                run(graph, (test + tune)[0], t, d, 'warmup', -1, 'warmup')
+                for role, sources in [('tune', tune), ('test', test)]:
+                    if role not in args.roles.split(','):
+                        continue
+                    for s in sources:
+                        values = [run(graph, s, t, d, label, rep, role) for rep in range(args.reps)]
+                        timed.setdefault(label, {})[s] = dict(role=role, median=statistics.median(values))
+            summary[graph] = dict(fixed=[dict(threads=t, delta=d) for t, d in fixed], timed=timed)
+            continue
         deltas = [d0 // 4, d0 // 2, d0, d0 * 2, d0 * 4]
         threads = sorted(set(map(int, args.threads.split(','))) | {t0})
         grid = [(t, d) for t in threads for d in deltas]
@@ -89,9 +108,7 @@ def main():
                               grid_scores={f't{t}-d{d}': v for (t, d), v in score.items()},
                               timed=timed)
     (out / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
-    print(json.dumps({g: dict(selected=s['selected'], boundary=s['boundary'],
-                              tune_medians={k: v['median'] for k, v in s['timed']['selected'].items()
-                                            if v['role'] == 'tune'})
+    print(json.dumps({g: {label: {k: v['median'] for k, v in t.items()} for label, t in s['timed'].items()}
                       for g, s in summary.items()}, indent=2))
 
 
