@@ -179,7 +179,7 @@ The repeated cap 7 controls agree with their primary arms within 1–3%.
   turned into rework. A and B share five of their eight nodes, so the node
   set alone does not explain it.
 - **The cap makes road robust to that latency.** Capped arms differ between
-  A and B by only 1.12–1.40× (cap 7: 1.18–1.21×), against 1.56–1.81× for
+  A and B by only 1.15–1.41× (cap 7: 1.18–1.21×), against 1.56–1.81× for
   8 × 7. The cap bounds speculative expansion, so a slow network adds less
   rework.
 - **Predictions:**
@@ -194,4 +194,4 @@ The repeated cap 7 controls agree with their primary arms within 1–3%.
   constant for road, so a live cap has little room to beat it on road
   alone.
 - **Scaling from 4 to 8 nodes is small:** cap 7 goes from 0.262–0.264 /
-  0.226–0.228 s to 0.215–0.254 / 0.191–0.231 s, a 1.0–1.2× gain.
+  0.226–0.228 s to 0.215–0.254 / 0.191–0.231 s, a 0.98–1.23× gain.
