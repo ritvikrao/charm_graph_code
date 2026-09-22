@@ -118,6 +118,9 @@ int process_queue_batch = 1;
 // queues at once (0 = no cap). The others keep receiving and relaxing, and
 // retry on their next idle pass, so work is never stranded in their bins.
 int process_drain_cap = 0;
+// --heap-slice N: shared-queue entries one process_heap() call expands before
+// yielding to the scheduler (1-100; default 100, the long-standing constant).
+int heap_slice = 100;
 long reader_tile_size = 0;
 int reader_tile_owners = 1;
 int slack_control_mode = PROCESS_SHARE_OFF;
@@ -1017,6 +1020,16 @@ public:
           CkAbort("--process-drain-cap must be an integer from 0 to 64");
         process_drain_cap = std::atoi(value.c_str());
       }
+      else if (arg == "--heap-slice" || arg.rfind("--heap-slice=", 0) == 0) {
+        const std::string value = arg == "--heap-slice"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(13);
+        if (value.empty() || value.size() > 3 ||
+            value.find_first_not_of("0123456789") != std::string::npos)
+          CkAbort("--heap-slice must be an integer from 1 to 100");
+        heap_slice = std::atoi(value.c_str());
+        if (heap_slice < 1 || heap_slice > 100)
+          CkAbort("--heap-slice must be an integer from 1 to 100");
+      }
       else if (arg.rfind("--timeout=", 0) == 0)
         timeout_seconds = std::stod(arg.substr(10));
       else if (arg == "--timeout") {
@@ -1913,6 +1926,8 @@ public:
     if (process_drain_cap) ckout << process_drain_cap;
     else ckout << "off";
     ckout << (process_share_active() ? "" : " (inactive)") << endl;
+    ckout << "Heap slice: " << heap_slice
+          << (process_share_active() ? "" : " (inactive)") << endl;
 #ifdef INFO_PRINTS
     ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
 #endif
@@ -4414,9 +4429,9 @@ public:
     const auto admitted = [this](const Update &v) {
       return !created_beyond_my_clamp(v) && bucket_of(v) <= heap_threshold;
     };
-    while (processed < 100) {
+    while (processed < heap_slice) {
       const int taken = control_local->work.pop_batch(CkMyRank(), admitted,
-          batch, std::min(process_queue_batch, 100 - processed));
+          batch, std::min(process_queue_batch, heap_slice - processed));
       if (!taken) break;
       // All locks are released before expansion, which may deliver updates
       // inline. Drain the batch before yielding; its histogram charges remain
@@ -4463,7 +4478,7 @@ public:
         updates_processed_locally++;
       }
     }
-    if (processed == 100 && !heap_queued) {
+    if (processed == heap_slice && !heap_queued) {
       heap_yielded = true;
       heap_queued = true;
       thisProxy[thisIndex].process_heap();
