@@ -1,0 +1,138 @@
+[
+  {
+    "label": "n1_16x7_new",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8"
+    ],
+    "nodes": 1,
+    "rpn": 16,
+    "workers": 112
+  },
+  {
+    "label": "n1_16x7_oldsched",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 1,
+    "rpn": 16,
+    "workers": 112
+  },
+  {
+    "label": "n1_16x7_rc0916",
+    "binary": "acic_r1_batch_rc0916",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8"
+    ],
+    "nodes": 1,
+    "rpn": 16,
+    "workers": 112
+  },
+  {
+    "label": "n2_8x15_new",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8"
+    ],
+    "nodes": 2,
+    "rpn": 8,
+    "workers": 120
+  },
+  {
+    "label": "n2_8x15_oldsched",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 2,
+    "rpn": 8,
+    "workers": 120
+  },
+  {
+    "label": "n2_8x15_rc0916",
+    "binary": "acic_r1_batch_rc0916",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8"
+    ],
+    "nodes": 2,
+    "rpn": 8,
+    "workers": 120
+  },
+  {
+    "label": "n1_16x7_oldsched_control",
+    "binary": "acic_r1_batch",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 1,
+    "rpn": 16,
+    "workers": 112
+  }
+]

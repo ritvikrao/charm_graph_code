@@ -152,3 +152,21 @@ measure that already drives the auto modes, never on graph names.
 - Raw logs: `/anvil/scratch/x-rrao/acic/ipdps27-layout/logs/`
 
 The failed first attempts (20840040/41/43/44) are kept there as well.
+
+## Follow-up: `+old-scheduler` (recorded before submission)
+
+The author pointed out that the new Reconverse can fall back to its original
+scheduler with `+old-scheduler`. That flag disables the queue registration
+from `146ec42`; the runtime prints "Using the original scheduler". The
+follow-up runs the new-runtime binary with and without the flag, beside the
+v0916 binary, at the two regressed cells: 1 node 16 × 7 and 2 nodes 8 × 15.
+It covers mesh and road, with a repeated `+old-scheduler` control, in two
+2-node allocations.
+
+- **Prediction:** if queue registration causes the regression, the
+  `+old-scheduler`/v0916 ratios for time and attempts fall within control
+  noise, about 5%, on road in both allocations.
+- **Otherwise:** a remaining gap points to the other commits (collective
+  fan-out, header size, message manager), and bisection proceeds over those.
+
+Config: [oldsched-variants.json](../benchmarks/oldsched-variants.json).
