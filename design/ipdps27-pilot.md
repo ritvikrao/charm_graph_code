@@ -48,3 +48,64 @@ requires held-out sources, two allocations and the regression suite (R3).
   256 SU per allocation. That totals 618 SU at the caps; about 300 SU is
   expected.
 - **Spend so far:** about 480 SU of the R0–R2 2,000-SU cap had been used.
+
+## Partial result: one-node jobs and 8-node allocation A
+
+**One node (20853639/20853641; 64 solves each, plus GAPBS, all digest-checked).**
+
+- ACIC's best one-node layout is 16 × 7 on both graphs:
+  - mesh: 0.94–0.96 / 0.85 s;
+  - road: 0.52–0.57 / 0.43 s.
+- **GAPBS on Anvil**, tuned on training sources:
+  - mesh: 0.33–0.37 s. The selection differs between allocations (128
+    threads with Δ 8192, and 64 with Δ 4096), but the top settings are
+    within 3%.
+  - road: 0.12–0.14 s, with 64 threads and Δ 65536 in both allocations.
+- **GAPBS prediction:** holds for mesh (Delta measured 0.41 s). Road is
+  faster than predicted, beyond the ±25% band (Delta measured 0.17–0.20 s).
+- **Held-out sources:** GAPBS takes 0.34–0.39 s on mesh and 0.12–0.15 s on road.
+
+**8 nodes, allocation A (20853640; 48 solves).** Medians in seconds for
+the two training sources, with attempts per edge:
+
+| Graph | 16 × 7 | 16 × 7 control | 8 × 7 | GAPBS, 1 node |
+|---|---|---|---|---|
+| mesh | 0.467 / 0.338 (5.8 / 4.2) | 0.461 / 0.355 | **0.386 / 0.336** (2.5 / 2.3) | 0.357–0.367 / 0.331–0.332 |
+| road | 0.979 / 0.548 (50 / 26) | 0.908 / 0.585 | 0.600 / 0.485 (17 / 13) | 0.14 / 0.12 |
+
+- **Mesh prediction: partly met.** The time lies within the predicted
+  0.33–0.45 s, but there is no win over GAPBS. The best ACIC setting, 8 × 7,
+  is 1.02–1.08× GAPBS's time: parity, not a win. At 8 nodes, 16 × 7's work
+  jumps to 4–6 attempts per edge, so 8 × 7 is best there.
+- **Road prediction: confirmed.** Without a limit, 8 nodes are no faster
+  than one.
+- Allocation B (20853642) is still queued.
+
+## 8-node heap-slice test (recorded before submission)
+
+The [round-cadence check](ipdps27-round-cadence.md) found that
+`--heap-slice 8` cuts work and time on both graphs at 2 nodes. At 8 nodes,
+mesh's remaining gap to GAPBS is rework, which is the thing slices reduce.
+
+- **Arms** (`acic_slice`, `+old-scheduler`, batch 8, mesh and road,
+  training sources, one warmup and three repetitions, two allocations):
+  - `n8_8x7` (the pilot's best, as the baseline);
+  - `n8_16x7_s8` and `n8_8x7_s8`;
+  - `n8_8x15_s8_cap9` (slice and cap combined);
+  - a repeated `n8_16x7_s8_control`.
+
+  See the [config](../benchmarks/slice-8n-variants.json).
+- **Mesh prediction (the win category):** the best slice-8 arm is at or
+  below one-node tuned GAPBS on both training sources in both allocations.
+  That is at most 0.357 s on 22442342 and 0.331 s on 41856222; expected
+  0.28–0.33 s. If it holds, C6 acceptance on held-out sources follows (R3).
+- **Road prediction:** the best slice arm is at least 1.8× faster than
+  one-node ACIC (at most 0.24 s on 5620086 and 0.32 s on 1294456). It is
+  still slower than GAPBS.
+- **Disconfirmation:** if mesh with slice 8 is not faster than 8 × 7 by more
+  than control noise at 8 nodes, then the slice's benefit does not survive
+  scaling. Mesh then has no route to a GAPBS win at 8 nodes without a new
+  mechanism.
+- **Budget:** 8 nodes × 12 min reserved per allocation (205 SU each); about
+  60 SU each expected. Spend so far is about 770 SU of the 2,000-SU cap,
+  with about 170 SU more queued.

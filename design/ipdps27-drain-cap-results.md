@@ -129,3 +129,31 @@ and eight-node road with a cap has not been measured.
 - Audits: `onenode-data/drain-anvil-{20853755,20853760,20853759,20853761}.json`
 - Gate log: `logs/slurm/drain-verify-20853753.out`
 - Raw logs: `/anvil/scratch/x-rrao/acic/ipdps27-layout/logs/`
+
+### Cap sweep result: 4 nodes (jobs 20857149/20857151)
+
+Both allocations validate 48 of 48 road solves (32 SU in total).
+Medians in seconds for sources 1294456 / 5620086, allocation A then B:
+
+| Arm | A | B | Attempts per edge |
+|---|---|---|---|
+| 8 × 7 | 0.497 / 0.375 | 0.533 / 0.410 | 5.2–7.4 |
+| cap 7 | 0.262 / 0.226 | 0.264 / 0.228 | 2.2–2.7 |
+| cap 9 | **0.254** / 0.231 | **0.254** / **0.220** | 2.6–3.1 |
+| cap 11 | 0.255 / **0.216** | 0.256 / 0.226 | 3.0–3.6 |
+| cap 13 | 0.269 / 0.227 | 0.272 / 0.227 | 3.5–4.3 |
+
+The repeated cap 7 control agrees with its primary arm within 0–2%.
+
+- **The optimum is broad.** Caps 7–11 lie within 3–7% of each other. Cap 9
+  or 11 is best in every cell, and cap 13 is 3–7% slower than the best.
+- **Prediction partly confirmed:** the best cap is 7–11, not just 7 or 9.
+  Cap 11 is not reliably slower than the best.
+- **Work rises steadily with the cap** (2.4 → 3.9 attempts per edge from
+  cap 7 to 13) while time stays flat. Time is insensitive to the cap across
+  a wide range, so a live cap has little to gain on road at 4 nodes.
+
+The [round-cadence check](ipdps27-round-cadence.md) then found that 16 × 7
+with `--heap-slice 8` beats every capped arm at 2 nodes, on road and on
+mesh. It supersedes the cap as the baseline. The 8-node cap-sweep jobs
+remain queued as a record of the cap curve.

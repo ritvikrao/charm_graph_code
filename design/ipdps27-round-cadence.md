@@ -64,3 +64,64 @@ broadcast sooner without limiting how many workers drain.
 
 Gate about 7 SU (reservation 43 SU); two 2-node jobs, about 20 SU each
 (reservation 85 SU each).
+
+## Result (jobs 20857228–30, 2026-09-22)
+
+- **Validation:** the gate passes 112 serial-verified solves with slice 8
+  and cap 3. Both allocations validate 112 of 112 solves with no runtime
+  warnings.
+- **Cost:** 39 SU for the gate and both allocations.
+
+Medians in seconds per training source, with edge attempts per reachable
+edge in parentheses. Rounds are the mean over source 0's launches in
+allocation A.
+
+| Graph | Arm | Allocation A | Allocation B | Rounds |
+|---|---|---|---|---:|
+| road | 8 × 15 | 0.576 / 0.420 (5.7 / 4.4) | 0.587 / 0.452 | 132 |
+| road | 8 × 15 slice 25 | 0.440 / 0.359 (4.0 / 3.3) | 0.416 / 0.343 | 188 |
+| road | 8 × 15 slice 8 | 0.367 / 0.313 (3.1 / 2.7) | 0.378 / 0.308 | 275 |
+| road | 8 × 15 cap 7 | 0.351 / 0.307 (1.9 / 1.7) | 0.359 / 0.307 | 1,067 |
+| road | 16 × 7 | 0.526 / 0.438 (6.6 / 5.5) | 0.540 / 0.460 | 127 |
+| road | **16 × 7 slice 8** | **0.283 / 0.246** (3.1 / 2.8) | **0.292 / 0.247** | 334 |
+| mesh | 8 × 15 | 0.786 / 0.694 (2.0 / 1.8) | 0.785 / 0.680 | 199 |
+| mesh | 8 × 15 slice 8 | 0.704 / 0.589 (1.7 / 1.5) | 0.720 / 0.612 | 559 |
+| mesh | 8 × 15 cap 7 | 1.046 / 0.910 (1.6 / 1.4) | 0.998 / 0.892 | 3,448 |
+| mesh | 16 × 7 | 0.635 / 0.551 (2.1 / 1.9) | 0.626 / 0.541 | 223 |
+| mesh | **16 × 7 slice 8** | **0.550 / 0.495** (1.7 / 1.6) | **0.550 / 0.498** | 586 |
+
+The repeated cap 7 controls agree with their primary arms within 0–4%.
+
+**Against the recorded rule: breadth, for work.** Slice 8 raises road's
+round count only 2.1× (the cadence branch required 3×). It leaves road work
+at 1.6× cap 7's (the breadth branch starts at 1.3×). So the cap's much
+lower rework is not explained by round cadence alone.
+
+**But the time result is what matters, and it is new:**
+
+- **Short slices help both graphs.** At 8 × 15, slice 8 is within 0–5% of
+  cap 7's time on road. On mesh it is 8–15% *faster* than uncapped, where
+  cap 7 is 27–33% slower.
+- **16 × 7 with slice 8 is the best setting measured, on both graphs.** On
+  road it is 19–20% faster than cap 7 and 44–46% faster than 16 × 7. On mesh it
+  is 8–13% faster than 16 × 7, the previous best.
+- **It is one constant that does not hurt mesh**, which the cap failed to
+  achieve. The prior (breadth, slices only add overhead) was wrong about
+  time.
+- **Two-node road at 0.25–0.29 s** is 1.7–2.0× faster than one-node ACIC
+  (0.43–0.57 s).
+
+**Consequences:**
+
+- Slice length is now the primary fixed setting, and 16 × 7 slice 8 is the
+  new baseline at 2 nodes. The cap stays a candidate on top of it; a
+  combination is tested at 8 nodes.
+- The live controller's actuator is still open. Both knobs work through
+  how quickly workers return to the scheduler and how many expand at once.
+  A controller must beat 16 × 7 slice 8, not 8 × 7.
+- One-node and RMAT behaviour of short slices is unmeasured. A slice of 8
+  adds a scheduler round trip per queue batch. On RMAT graphs process
+  sharing resolves off, so `process_shared_heap()`, and with it the slice,
+  is inactive there.
+
+Audits: `onenode-data/slice-anvil-{20857229,20857230}.json`.
