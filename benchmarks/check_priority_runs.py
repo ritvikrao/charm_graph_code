@@ -20,6 +20,7 @@ def main():
     ap.add_argument('jobs', nargs='+', type=int)
     ap.add_argument('--config', type=Path, required=True)
     ap.add_argument('--output', type=Path, required=True)
+    ap.add_argument('--graphs', default='mesh26-z,road-usa-z')
     args = ap.parse_args()
     root = args.campaign
     config = json.loads(args.config.read_text())
@@ -28,7 +29,7 @@ def main():
     result = dict(allocations=[], checked_solves=0, diagnostic_solves=0,
                   checked_launches=0, raw_sha256={})
     for job in args.jobs:
-        for graph in ('mesh26-z', 'road-usa-z'):
+        for graph in args.graphs.split(','):
             directories = list((root/'logs').glob(f'AB-{graph}-*n-{job}'))
             if len(directories) != 1:
                 raise ValueError(f'{job}/{graph}: expected one result directory')
