@@ -34,6 +34,14 @@ Proposed next step: a fixed-layout scaling baseline, then one
 concurrency-limiting admission intervention with its prediction recorded;
 awaiting the author's choice.
 
+**Layout check, 2026-09-21:** [results](ipdps27-layout-check-results.md).
+The Reconverse update to `1233130` regresses road 1.28–1.53x with matching
+extra work (mesh 1.03–1.22x); the cause is not the spanning-tree default and
+is not yet bisected. On the new runtime, road's best fixed layout (8 x 7 per
+node) gets slower from one to four nodes (0.70–0.81x at four), while mesh
+scales 1.66–1.86x at four nodes with 16 x 7. Layout conclusions are
+high-diameter only and must pass the RMAT regression suite before adoption.
+
 | Step | Status | Evidence / next decision |
 |---|---|---|
 | D0, L1–L3 | Implemented and tested | Earlier candidate improved greatly but failed C6; no automatic L4 |
