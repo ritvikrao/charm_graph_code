@@ -79,7 +79,13 @@ the two training sources, with attempts per edge:
   jumps to 4–6 attempts per edge, so 8 × 7 is best there.
 - **Road prediction: confirmed.** Without a limit, 8 nodes are no faster
   than one.
-- Allocation B (20853642) is still queued.
+- **Allocation B (20853642; 48 solves) reproduces A.** Its results:
+  - mesh: 8 × 7 at 0.379 / 0.331 s, which is 1.00–1.06× GAPBS, and 16 × 7
+    at 0.450 / 0.345 s;
+  - road: 8 × 7 at 0.562 / 0.483 s, and 16 × 7 at 0.946 / 0.550 s.
+
+  The repeated 16 × 7 controls agree with their primary arms within 1–7% in
+  both allocations. The two 8-node pilot jobs together used 86 SU.
 
 ## 8-node heap-slice test (recorded before submission)
 
