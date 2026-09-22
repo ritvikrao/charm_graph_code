@@ -114,6 +114,10 @@ int process_share_mode = PROCESS_SHARE_OFF;
 enum { PROCESS_QUEUE_LOCAL = 0, PROCESS_QUEUE_NEAREST = 1 };
 int process_queue_policy = PROCESS_QUEUE_LOCAL;
 int process_queue_batch = 1;
+// --process-drain-cap N: at most N workers of a process drain the shared
+// queues at once (0 = no cap). The others keep receiving and relaxing, and
+// retry on their next idle pass, so work is never stranded in their bins.
+int process_drain_cap = 0;
 long reader_tile_size = 0;
 int reader_tile_owners = 1;
 int slack_control_mode = PROCESS_SHARE_OFF;
@@ -1004,6 +1008,14 @@ public:
         process_queue_batch = std::atoi(value.c_str());
         if (process_queue_batch < 1 || process_queue_batch > 64)
           CkAbort("--process-queue-batch must be an integer from 1 to 64");
+      }
+      else if (arg == "--process-drain-cap" || arg.rfind("--process-drain-cap=", 0) == 0) {
+        const std::string value = arg == "--process-drain-cap"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(20);
+        if (value.empty() || value.size() > 2 ||
+            value.find_first_not_of("0123456789") != std::string::npos)
+          CkAbort("--process-drain-cap must be an integer from 0 to 64");
+        process_drain_cap = std::atoi(value.c_str());
       }
       else if (arg.rfind("--timeout=", 0) == 0)
         timeout_seconds = std::stod(arg.substr(10));
@@ -1897,6 +1909,10 @@ public:
           << (process_share_active() ? "" : " (inactive)") << endl;
     ckout << "Process queue batch: " << process_queue_batch
           << (process_share_active() ? "" : " (inactive)") << endl;
+    ckout << "Process drain cap: ";
+    if (process_drain_cap) ckout << process_drain_cap;
+    else ckout << "off";
+    ckout << (process_share_active() ? "" : " (inactive)") << endl;
 #ifdef INFO_PRINTS
     ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
 #endif
@@ -3001,6 +3017,7 @@ public:
       CkNodeSize(CkMyNode()), process_queue_policy == PROCESS_QUEUE_NEAREST};
   std::vector<ProcessPartition> partitions{(size_t)CkNodeSize(CkMyNode())};
   std::atomic<int> generation{0};
+  std::atomic<int> drainers{0}; // workers inside process_shared_heap()
   std::unique_ptr<std::atomic<char>[]> fallback_queued;
   ControlNode() : fallback_queued(new std::atomic<char>[CkNodeSize(CkMyNode())]) {
     for (int i = 0; i < CkNodeSize(CkMyNode()); i++)
@@ -4377,6 +4394,21 @@ public:
   }
 
   void process_shared_heap() {
+    // Bound how many workers expand shared work at once. A worker that finds
+    // the cap reached returns without work; its idle loop retries.
+    struct DrainSlot {
+      std::atomic<int> *count = nullptr;
+      ~DrainSlot() { if (count) count->fetch_sub(1, std::memory_order_acq_rel); }
+    } slot;
+    if (process_drain_cap > 0) {
+      std::atomic<int> &drainers = control_local->drainers;
+      int current = drainers.load(std::memory_order_relaxed);
+      do {
+        if (current >= process_drain_cap) return;
+      } while (!drainers.compare_exchange_weak(current, current + 1,
+                                               std::memory_order_acq_rel));
+      slot.count = &drainers;
+    }
     Update batch[64];
     int processed = 0;
     const auto admitted = [this](const Update &v) {

@@ -24,10 +24,11 @@ out = root/'logs'/f'R1-batch-verify-{os.environ["SLURM_JOB_ID"]}'
 out.mkdir(exist_ok=False)
 nodes = int(os.environ['SLURM_NNODES'])
 assert nodes in (1,2), nodes
-binaries = ['acic_r1_batch','acic_r1_batch_diag']
+binaries = os.environ.get('VERIFY_BINARIES','acic_r1_batch,acic_r1_batch_diag').split(',')
+extra_flags = os.environ.get('VERIFY_EXTRA','').split()
 (out/'manifest.json').write_text(json.dumps(dict(nodes=nodes,processes=2*nodes,
     workers_per_process=4,hosts=os.environ['SLURM_JOB_NODELIST'],
-    binaries={b:hashlib.sha256((root/'bin'/b).read_bytes()).hexdigest() for b in binaries}),indent=2)+'\n')
+    extra_flags=extra_flags,binaries={b:hashlib.sha256((root/'bin'/b).read_bytes()).hexdigest() for b in binaries}),indent=2)+'\n')
 
 def graph_file(name, adj):
     offsets = [0]
@@ -58,7 +59,7 @@ def run(binary, share, tile, queue, batch, graph=sparse, sources='0,512,1024,0',
         '--kill-on-bad-exit=1',str(root/'bin'/binary),'0',str(graph),'1','0','4','0.999','0.005',
         '--sources',sources,'--verify','--timeout','30','--process-share',share,
         '--reader-tile',tile,'--process-queue',queue,'--process-queue-batch',str(batch),'--slack-control','off','--lazy-heavy','off',
-        '+ppn','4','+lci_ndevices','4'] + list(extra)
+        '+ppn','4','+lci_ndevices','4'] + list(extra) + extra_flags
     with log.open('w') as f:
         subprocess.run(command,stdout=f,stderr=subprocess.STDOUT,check=True,timeout=90)
     text = log.read_text()
@@ -96,8 +97,8 @@ for binary in binaries:
             run(binary,'on','auto',queue,batch,extra=['--bucket-width','1','--range-extend','on','--skew-defer','on'])
         for batch in [32,64]:
             run(binary,'on','auto',queue,batch,dense,'0,32,64,0')
-assert solves == 224, solves
-assert inter_node_checks == (90 if nodes > 1 else 0), inter_node_checks
+assert solves == 112*len(binaries), solves
+assert inter_node_checks == (90*sum('diag' in b for b in binaries) if nodes > 1 else 0), inter_node_checks
 (out/'complete').write_text(f'{solves} ACIC solves passed; full serial verification, source resets, queue and edge accounting.\n')
 print('R1 BATCH VERIFY PASS',solves,'nodes',nodes,'inter-node checks',inter_node_checks,out)
 PY
