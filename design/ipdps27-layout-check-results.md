@@ -170,3 +170,41 @@ It covers mesh and road, with a repeated `+old-scheduler` control, in two
   fan-out, header size, message manager), and bisection proceeds over those.
 
 Config: [oldsched-variants.json](../benchmarks/oldsched-variants.json).
+
+### Result (jobs 20841653/20841654, 2026-09-22)
+
+Both allocations validate 112 of 112 solves; together they used 38.8 SU.
+**Queue registration in the new scheduler (`146ec42`) causes the whole
+regression.** The table gives ratios against the v0916 binary, per source,
+across both allocations:
+
+| Cell | Graph | New runtime, time / work | New runtime + `+old-scheduler`, time / work |
+|---|---|---|---|
+| 1 node 16 × 7 | road | 1.26–1.43 / 1.29–1.46 | **0.96–1.03 / 0.97–1.04** |
+| 2 nodes 8 × 15 | road | 1.31–1.43 / 1.37–1.45 | **0.90–1.07 / 0.89–1.05** |
+| 1 node 16 × 7 | mesh | 1.01–1.06 / 1.03–1.07 | 0.99–1.01 / 0.99–1.03 |
+| 2 nodes 8 × 15 | mesh | 1.02–1.10 / 1.06–1.16 | 0.95–1.00 / 0.97–1.02 |
+
+- The repeated `+old-scheduler` control agrees with its primary arm within
+  1.2–5.9%.
+- The prediction holds: with `+old-scheduler`, every road ratio lies within
+  control noise of v0916, while the default scheduler reproduces the 1.3–1.4×
+  extra work and time.
+- The other suspect commits, collective fan-out, the 24-byte header and the
+  message-manager revert, have no measurable effect here. No bisection is needed.
+
+**Consequences:**
+
+- **Runtime:** all ACIC performance runs on Reconverse `1233130` use
+  `+old-scheduler` until the registered scheduler is fixed.
+- **Upstream:** the registered scheduler changes how often and in what order
+  the idle loop polls ACIC's message queues. That timing shift raises
+  asynchronous rework by 30–45% on road. This is worth reporting upstream as
+  a performance regression.
+- **Layout conclusions:** the section 2 tables, and especially the 4-node
+  road collapse, were measured with the regressing scheduler. The
+  old-runtime 2-node cells above (road 8 × 15, 0.45–0.66 s) sit where the
+  attribution experiment put them. The 1/2/4-node layout check should be
+  repeated with `+old-scheduler` before its road conclusions are used.
+  Mesh's preference for 16 × 7 was only weakly affected (mesh regressed
+  just 1–10%), but it should be re-measured in the same run.

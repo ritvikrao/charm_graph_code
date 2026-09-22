@@ -42,6 +42,11 @@ node) gets slower from one to four nodes (0.70–0.81x at four), while mesh
 scales 1.66–1.86x at four nodes with 16 x 7. Layout conclusions are
 high-diameter only and must pass the RMAT regression suite before adoption.
 
+**Cause found, 2026-09-22:** Reconverse's new registered-queue scheduler
+(`146ec42`) causes the whole regression. With `+old-scheduler`, road time
+and work return to v0916 within control noise. Use `+old-scheduler` for all
+performance runs; repeat the 1/2/4-node layout check with it.
+
 | Step | Status | Evidence / next decision |
 |---|---|---|
 | D0, L1–L3 | Implemented and tested | Earlier candidate improved greatly but failed C6; no automatic L4 |
