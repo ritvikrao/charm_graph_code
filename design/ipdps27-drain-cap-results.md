@@ -155,5 +155,43 @@ The repeated cap 7 control agrees with its primary arm within 0–2%.
 
 The [round-cadence check](ipdps27-round-cadence.md) then found that 16 × 7
 with `--heap-slice 8` beats every capped arm at 2 nodes, on road and on
-mesh. It supersedes the cap as the baseline. The 8-node cap-sweep jobs
-remain queued as a record of the cap curve.
+mesh. It supersedes the cap as the baseline.
+
+### Cap sweep result: 8 nodes (jobs 20857153/20857154)
+
+Both allocations validate 48 of 48 road solves (68 SU in total). Medians in
+seconds for sources 1294456 / 5620086, with attempts per edge:
+
+| Arm | A (20857153) | B (20857154) | Attempts per edge |
+|---|---|---|---|
+| 8 × 7 | 1.117 / 0.751 | 0.617 / 0.480 | 13–30 |
+| cap 5 | 0.257 / 0.229 | 0.219 / 0.197 | 2.7–3.8 |
+| cap 7 | 0.254 / 0.231 | **0.215** / 0.191 | 3.3–4.7 |
+| cap 9 | **0.251** / 0.252 | 0.216 / **0.179** | 4.1–5.7 |
+| cap 11 | 0.268 / 0.241 | 0.233 / 0.204 | 5.1–7.1 |
+
+The repeated cap 7 controls agree with their primary arms within 1–3%.
+
+- **Allocation A is uniformly slower, and not because of a transient.**
+  Repetitions inside A are tight: 8 × 7 on 1294456 runs 1.05–1.15 s. A's
+  8 × 7 does 1.8× the work of B's and of both 8-node pilot allocations
+  (30 against 16–17 attempts per edge), so higher messaging latency in A
+  turned into rework. A and B share five of their eight nodes, so the node
+  set alone does not explain it.
+- **The cap makes road robust to that latency.** Capped arms differ between
+  A and B by only 1.12–1.40× (cap 7: 1.18–1.21×), against 1.56–1.81× for
+  8 × 7. The cap bounds speculative expansion, so a slow network adds less
+  rework.
+- **Predictions:**
+  - *Best capped arm below 0.22 s on both sources:* holds in B
+    (0.215 / 0.179 s), fails in A (0.251 / 0.228 s).
+  - *At least 2.4× over one-node ACIC:* B reaches 2.4–2.7×, A only
+    1.9–2.3×. The claim is not met in both allocations.
+  - *Still slower than GAPBS:* confirmed. B's best is 1.5× GAPBS's time on
+    both sources (0.12–0.14 s).
+- **The best cap is 5–9 at 8 nodes and 7–11 at 4 nodes.** Cap 7 is within
+  8% of the best in every cell at both node counts. It is a sound single
+  constant for road, so a live cap has little room to beat it on road
+  alone.
+- **Scaling from 4 to 8 nodes is small:** cap 7 goes from 0.262–0.264 /
+  0.226–0.228 s to 0.215–0.254 / 0.191–0.231 s, a 1.0–1.2× gain.
