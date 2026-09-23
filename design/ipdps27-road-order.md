@@ -225,3 +225,93 @@ mesh and RMAT.
 **Budget:** two 8-node allocations × 12 min. Expect about 55 SU each (the
 previous screen ran 3 min), plus a 4-SU gate. Spend so far is about
 1,055 SU of the 2,000-SU cap.
+
+### Rounds screen result (jobs 20876828–30, 2026-09-23)
+
+The gate passes: 112 of 112 serial-verified solves with node control and
+width 131072. Both 8-node allocations validate 56 of 56 road solves, with
+no runtime warnings. About 105 SU in total. Spend so far is about 1,160 SU
+of the 2,000-SU cap.
+
+**These allocations are slower.** The `8x15_cap7` anchor ran 0.231–0.234 /
+0.243–0.249 s, against 0.177–0.181 / 0.214–0.215 s in 20868021/22. That is
+13–32% slower. `w32k` is 0–25% slower. So only comparisons within an
+allocation hold.
+
+Medians in seconds for 5620086 / 1294456 (A = 20876829, B = 20876830), with
+attempts per edge and rounds (1294456's rounds in brackets):
+
+| Arm | A | B | Attempts per edge | Rounds |
+|---|---|---|---|---|
+| `w32k` | 0.335 / 0.471 | 0.334 / 0.459 | 1.45–1.49 | 887–893 (1439–1444) |
+| `w32k_node` | 0.387 / 0.476 | 0.311 / 0.442 | 1.49–1.54 | 878–909 (1435–1443) |
+| `w128k` | 0.234 / 0.252 | 0.239 / 0.248 | 1.73–1.97 | 519–525 (784–799) |
+| `w128k_control` | 0.246 / 0.258 | 0.249 / 0.353 | 1.75–1.95 | 524–526 (793) |
+| `w128k_node` | **0.197** / 0.259 | **0.227** / 0.271 | 2.2–3.2 / 2.2–2.3 | 440–502 (791–798) |
+| `w512k` | 0.238 / 0.296 | 0.238 / 0.300 | 8.4–8.5 / 11.1–11.2 | 247–264 (295–345) |
+| `8x15_cap7` | 0.234 / **0.249** | 0.231 / **0.243** | 3.9–4.0 / 4.6–4.7 | 176–222 (261–300) |
+
+B's `w128k_control` on 1294456 spreads 0.246–0.379 s over its repetitions.
+Every other w128k cell agrees within 5%.
+
+**Against the predictions:**
+
+- *`w128k` needs at most 0.45× `w32k`'s rounds:* **disconfirmed.** It
+  needs 0.54–0.59×. Work stays at most 3 attempts per edge (1.7–2.0):
+  confirmed. It is at least 25% faster than `w32k`: confirmed, 28–30% on
+  5620086 and 46% on 1294456.
+- *`w128k` beats cap 7 on both sources in both allocations:*
+  **disconfirmed, a tie.** It is within 0–3% of cap 7 in every cell, while
+  doing 40–60% less work (1.7–2.0 against 3.9–4.7 attempts per edge).
+- *The curve turns by `w512k`:* confirmed. Work rises 4.3–6.1× to 8.4–11.2
+  attempts per edge. The threshold runs 9–11 buckets ahead of the frontier,
+  so the arm is effectively unordered. It is no faster on 5620086 and
+  17–21% slower on 1294456.
+- *Node control shortens rounds to at most 0.15 ms:* **disconfirmed.**
+  `w32k_node`'s median round is 0.24–0.30 ms, the same as the reduction
+  path, and the arm is 16% slower to 7% faster. `w128k_node` is 5–16% faster
+  on 5620086 and 5–9% slower on 1294456. It gains on 5620086 by doing more
+  work in fewer rounds (2.2–3.2 attempts per edge), so it orders less
+  rather than rounding faster.
+- *No GAPBS win:* confirmed. The best cell is 0.197 s against 0.117–0.119 s.
+
+**How the frontier moves.** Per round, the frontier bucket advances
+38–42K distance at width 32K, 68–83K at 128K and 133–176K at 512K. It does
+not move at all in 32–37%, 55–59% and 74–80% of rounds. A 4× wider bucket
+moves the frontier only about 1.7× as far per round: the lowest bucket needs
+2–3 rounds to settle. Settling it needs relaxations to chain across
+processes, so per-hop message latency also bounds the frontier.
+
+**Where a round's time goes.** Take the median length of the early rounds,
+those before 20,000 updates have been processed, across every road log on
+disk (jobs from 1 to 8 nodes):
+
+| Layout, nodes | Total PEs | Processes | Early round |
+|---|---:|---:|---:|
+| 8 × 7, 1 | 56 | 8 | 0.036 ms |
+| 16 × 7, 1 / 8 × 7, 2 | 112 | 16 | 0.045–0.048 ms |
+| 8 × 15, 1 | 120 | 8 | 0.057 ms |
+| 8 × 7, 4 / 16 × 7, 2 | 224 | 32 | 0.071–0.080 ms |
+| 8 × 7, 8 / 16 × 7, 4 | 448 | 64 | 0.115–0.125 ms |
+| 8 × 15, 4 | 480 | 32 | 0.109–0.138 ms |
+| 8 × 15, 8 | 960 | 64 | 0.144–0.194 ms |
+| 16 × 7, 8 | 896 | 128 | 0.215–0.244 ms |
+
+An idle round grows about linearly with the PE count, roughly 0.2 µs per PE
+at 8 nodes, not logarithmically. Every Reconverse build on Anvil has
+`SPANTREE 0` in its generated `converse_config.h`, carried over in the
+CMake cache. Without it, `CmiSyncBroadcast`/`CmiSyncBroadcastAll` loop
+over every PE from the sender. So each round's threshold broadcast is 895
+back-to-back sends from PE 0 at 16 × 7 on 8 nodes. Charm++'s reduction
+tree comes from the `CmiSpanTreeParent` macros, which do not depend on
+`SPANTREE`.
+
+One observation cuts against this: node control broadcasts to 128
+processes, not 896 PEs, and its rounds were no shorter. So the flat
+broadcast is the hypothesis to test, not a finding.
+
+**Consequence.** `w128k` matches the best road arm at half its work, and
+spends most of its time in 520–800 rounds of 0.28–0.37 ms. Road's limit is
+now the controller round, and that round costs a microsecond per few PEs.
+A cheaper round converts directly into road time: at 0.1 ms per round,
+`w128k` would be about 0.10–0.14 s.
