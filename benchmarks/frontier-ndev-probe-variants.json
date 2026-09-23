@@ -1,0 +1,96 @@
+[
+  {
+    "label": "ndev4",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ]
+  },
+  {
+    "label": "ndev7",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_LCI_NDEVICES": "7"
+    }
+  },
+  {
+    "label": "ndev7_pkt64k",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_LCI_NDEVICES": "7",
+      "LCI_ATTR_PACKET_SIZE": "65536",
+      "LCI_ATTR_NPACKETS": "32768"
+    }
+  },
+  {
+    "label": "r0_ndev4",
+    "binary": "acic_r0_control",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "+old-scheduler"
+    ]
+  },
+  {
+    "label": "r0_ndev7",
+    "binary": "acic_r0_control",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "+old-scheduler"
+    ],
+    "env": {
+      "ACIC_LCI_NDEVICES": "7"
+    }
+  }
+]

@@ -1,0 +1,153 @@
+[
+  {
+    "label": "hybrid",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ]
+  },
+  {
+    "label": "pkt64k",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "LCI_ATTR_PACKET_SIZE": "65536",
+      "LCI_ATTR_NPACKETS": "32768"
+    }
+  },
+  {
+    "label": "pkt64k_sends1024",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "LCI_ATTR_PACKET_SIZE": "65536",
+      "LCI_ATTR_NPACKETS": "32768",
+      "LCI_ATTR_NET_MAX_SENDS": "1024",
+      "FI_CXI_DEFAULT_TX_SIZE": "1024"
+    }
+  },
+  {
+    "label": "r0_hybrid",
+    "binary": "acic_r0_control",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "+old-scheduler"
+    ]
+  },
+  {
+    "label": "r0_pkt64k",
+    "binary": "acic_r0_control",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "+old-scheduler"
+    ],
+    "env": {
+      "LCI_ATTR_PACKET_SIZE": "65536",
+      "LCI_ATTR_NPACKETS": "32768"
+    }
+  },
+  {
+    "label": "pkt64k_log",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "LCI_ATTR_PACKET_SIZE": "65536",
+      "LCI_ATTR_NPACKETS": "32768",
+      "FI_LOG_LEVEL": "warn",
+      "FI_LOG_PROV": "cxi",
+      "ACIC_STDERR_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/cxi-stderr/pkt64k"
+    }
+  },
+  {
+    "label": "pkt64k_sends1024_log",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "LCI_ATTR_PACKET_SIZE": "65536",
+      "LCI_ATTR_NPACKETS": "32768",
+      "LCI_ATTR_NET_MAX_SENDS": "1024",
+      "FI_CXI_DEFAULT_TX_SIZE": "1024",
+      "FI_LOG_LEVEL": "warn",
+      "FI_LOG_PROV": "cxi",
+      "ACIC_STDERR_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/cxi-stderr/pkt64k_sends1024"
+    }
+  }
+]

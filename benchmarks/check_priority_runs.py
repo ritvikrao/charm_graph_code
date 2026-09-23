@@ -8,6 +8,8 @@ import math
 from pathlib import Path
 import re
 
+import machine
+
 from check_onenode_digest import check
 from onenode_report import fields
 from summarize_r0 import cells, ratio, read_rows, summarize
@@ -37,10 +39,12 @@ def main():
                 raise ValueError(f'{job}/{graph}: expected one result directory')
             directory = directories[0]
             manifest = json.loads((directory/'manifest.json').read_text())
-            # Variants without an explicit layout use the whole allocation, 8 x 15.
+            # Variants without an explicit layout use the whole allocation:
+            # 8 x 15 on Delta and Anvil, 8 x 7 on Frontier (machine.py).
+            default_workers = machine.acic_workers(8)
             expected_variants = [{**v, 'nodes': v.get('nodes', manifest['nodes']),
-                                  'rpn': v.get('rpn', 8), 'workers': v.get('workers', 120)} for v in hashed]
-            if (manifest['variants'] != expected_variants or manifest['workers'] != 120
+                                  'rpn': v.get('rpn', 8), 'workers': v.get('workers', default_workers)} for v in hashed]
+            if (manifest['variants'] != expected_variants or manifest['workers'] != default_workers
                     or manifest['rpn'] != 8 or manifest['sources'] != args.sources or manifest['reps'] != 3
                     or manifest['source_role'] != args.source_role or not manifest['batch']):
                 raise ValueError(f'{directory}: unexpected experiment settings')
@@ -48,7 +52,9 @@ def main():
             references = [l.split() for l in refpath.read_text().splitlines() if l[:1].isdigit()]
             references = [r for r in references if r[1] == args.source_role][:args.sources]
             sources = [r[0] for r in references]
-            vertices = int(re.search(r'vertices=(\d+)',(root/'graphs'/f'{graph}.meta').read_text())[1])
+            meta = (root/'graphs'/f'{graph}.meta').read_text()
+            vertices = int(re.search(r'vertices=(\d+)',meta)[1])
+            arcs = int(re.search(r'arcs=(\d+)',meta)[1])
             rows = read_rows(directory/'runs.jsonl')
             labels = [v['label'] for v in expected_variants]
             cells(rows, {(v, s, rep) for v in labels for s in sources for rep in range(-1,3)})
@@ -58,24 +64,42 @@ def main():
                     launch = directory/f"{variant['label']}-g0-r{rep}.launch.out"
                     text = launch.read_text()
                     n, rpn, workers = variant['nodes'], variant['rpn'], variant['workers']
-                    if (f'Starting Reconverse with {rpn*n} processes, {workers*n} PEs (1 PE = 1 thread), '
+                    # Reconverse writes "1 process" for a single-process layout.
+                    plural = 'process' if rpn*n == 1 else 'processes'
+                    if (f'Starting Reconverse with {rpn*n} {plural}, {workers*n} PEs (1 PE = 1 thread), '
                             f'and {workers//rpn} PEs per process') not in text:
                         raise ValueError(f'{launch}: wrong worker layout')
                     # The last --slack-control value on the command line wins.
                     slack = [variant['flags'][i+1] for i,f in enumerate(variant['flags'])
                              if f == '--slack-control'][-1:] or ['off']
-                    for marker in ['Process sharing: on',f'Live slack: {slack[0]}','Reader tiles:']:
-                        if marker not in text:
-                            raise ValueError(f'{launch}: missing effective setting {marker}')
+                    # Same rule as process_share_active() in sssp_smp.cpp: auto
+                    # shares only below 8 arcs per vertex (mesh and road, not
+                    # the RMAT regression graphs); the default is off.
+                    share = [variant['flags'][i+1] for i,f in enumerate(variant['flags'])
+                             if f == '--process-share'][-1:] or ['off']
+                    sharing = 'on' if share[0] == 'on' or (share[0] == 'auto' and arcs < 8*vertices) else 'off'
+                    if re.findall(r'Process sharing: ([^\r\n]*)',text) != [sharing]:
+                        raise ValueError(f'{launch}: expected Process sharing: {sharing}')
+                    if f'Live slack: {slack[0]}' not in text:
+                        raise ValueError(f'{launch}: missing effective setting Live slack: {slack[0]}')
+                    # Reader tiling prints its line only when active; auto tiles
+                    # under the same 8-arcs-per-vertex rule, and the default is off.
+                    tile = [variant['flags'][i+1] for i,f in enumerate(variant['flags'])
+                            if f == '--reader-tile'][-1:] or ['off']
+                    tiled = arcs < 8*vertices if tile[0] == 'auto' else tile[0] not in ('off','0')
+                    if len(re.findall(r'^Reader tiles: ',text,flags=re.M)) != tiled:
+                        raise ValueError(f'{launch}: expected reader tiles {"on" if tiled else "off"}')
                     if re.findall(r'Live slack: ([^\r\n]*)',text) != slack:
                         raise ValueError(f'{launch}: wrong live slack setting')
+                    # The binary marks queue settings "(inactive)" when not sharing.
+                    inactive = '' if sharing == 'on' else ' (inactive)'
                     if '--process-queue' in variant['flags']:
                         policy = variant['flags'][variant['flags'].index('--process-queue')+1]
-                        if re.findall(r'Process queue: ([^\r\n]*)',text) != [policy]:
+                        if re.findall(r'Process queue: ([^\r\n]*)',text) != [policy + inactive]:
                             raise ValueError(f'{launch}: wrong queue policy')
                     if '--process-queue-batch' in variant['flags']:
                         batch = variant['flags'][variant['flags'].index('--process-queue-batch')+1]
-                        if re.findall(r'Process queue batch: ([^\r\n]*)',text) != [batch]:
+                        if re.findall(r'Process queue batch: ([^\r\n]*)',text) != [batch + inactive]:
                             raise ValueError(f'{launch}: wrong queue batch size')
                     chunks = re.split(r'^SOURCE_RUN index=\d+ source=(\d+)\n',text,flags=re.M)
                     if chunks[1::2] != sources:
@@ -107,9 +131,14 @@ def main():
                 if (not row['valid'] or len(times) != 1 or float(times[0]) != row['seconds']
                         or not math.isfinite(row['seconds']) or row['seconds'] <= 0):
                     raise ValueError(f'{path}: inconsistent solve time')
-                attempts = production_attempts(text,vertices)
-                metrics = dict(seconds=row['seconds'],edge_attempts=attempts,
-                    attempts_per_edge=attempts/int(references[row['source_index']][7]))
+                metrics = dict(seconds=row['seconds'])
+                # The ledger formula holds only on the non-lazy path; auto
+                # lazy-heavy is on for the dense RMAT graphs, so those rows are
+                # timed and digest-checked but carry no work count.
+                if 'Lazy heavy:' not in text:
+                    attempts = production_attempts(text,vertices)
+                    metrics.update(edge_attempts=attempts,
+                        attempts_per_edge=attempts/int(references[row['source_index']][7]))
                 key = (row['variant'],source,row['rep'])
                 if key in diag_by_cell:
                     c = check_work_accounting(text,vertices)
@@ -153,7 +182,7 @@ def main():
                             ('n1_16x7_diag','n1_8x15_diag'),('n2_8x7_diag','n1_16x7_diag'),
                             ('n2_8x15_diag','n2_8x7_diag'),('n2_8x15_diag','n1_8x15_diag')]
                 if a in labels and b in labels
-                for metric in ('seconds','attempts_per_edge')}
+                for metric in ('seconds','attempts_per_edge') if metric in summary[a]['medians']}
             result['allocations'].append(dict(job=job,graph=graph,manifest=manifest,
                 runtime_warnings=dict(warnings),summary=summary,comparisons=comparisons,rows=output))
     args.output.write_text(json.dumps(result,indent=2)+'\n')

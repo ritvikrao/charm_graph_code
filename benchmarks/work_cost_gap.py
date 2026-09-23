@@ -8,6 +8,7 @@ import subprocess
 import re
 from check_onenode_digest import check
 from work_cost_report import counters
+import machine
 
 
 def main():
@@ -16,18 +17,25 @@ def main():
     parser.add_argument('root', type=Path)
     parser.add_argument('graphs', nargs='?', default='mesh26-z,road-usa-z')
     parser.add_argument('--reps', type=int, default=2)
+    # Training-selected GAPBS settings, graph:threads:delta. The default is
+    # Delta's frozen choice; another machine must re-select with onenode_gap_tune.py.
+    parser.add_argument('--settings', default='mesh26-z:128:4096,road-usa-z:64:32768')
     args = parser.parse_args()
     if args.reps < 1:
         parser.error('--reps must be positive')
+    settings = [(g, int(t), int(d)) for g, t, d in (x.split(':') for x in args.settings.split(','))]
+    if any(t > machine.NODE_CPUS for _, t, _ in settings):
+        parser.error(f'{machine.MACHINE} has {machine.NODE_CPUS} usable cores; re-select GAPBS '
+                     'settings with onenode_gap_tune.py and pass them with --settings')
     root = args.root
     graphs = set(args.graphs.split(','))
-    if graphs - {'mesh26-z', 'road-usa-z'}:
+    if graphs - {g for g, _, _ in settings}:
         parser.error('unknown reference graph')
     out = root / 'logs' / f'GAP-R0-{os.environ["SLURM_JOB_ID"]}'
     out.mkdir(exist_ok=False)
     env = dict(os.environ, SLURM_MPI_TYPE='cray_shasta', OMP_PROC_BIND='close', OMP_PLACES='cores')
     with (out / 'runs.jsonl').open('w', buffering=1) as stream:
-        for graph, threads, delta in [('mesh26-z', 128, 4096), ('road-usa-z', 64, 32768)]:
+        for graph, threads, delta in settings:
             if graph not in graphs:
                 continue
             ref = root / 'graphs' / f'{graph}.reference.txt'
@@ -36,7 +44,9 @@ def main():
                 for rep in range(-1, args.reps):
                     labels = ['production', 'diagnostic'] if rep % 2 else ['diagnostic', 'production']
                     for label in labels:
-                        binary = root / ('bin/gap_sssp' if label == 'production' else 'build/gap_r0/gap_work_cost')
+                        counted = root / 'build/gap_r0/gap_work_cost'  # Delta layout; bin/ elsewhere
+                        binary = root / ('bin/gap_sssp' if label == 'production' else
+                                         (counted if counted.exists() else 'bin/gap_work_cost'))
                         log = out / f'{graph}-{label}-s{index}-r{rep}.out'
                         command = ['srun', '-N', '1', '-n', '1', '-c', str(threads), '--cpu-bind=cores',
                                    '--kill-on-bad-exit=1', str(binary), str(root/'graphs'/f'{graph}.wsg'), source[0], str(delta)]

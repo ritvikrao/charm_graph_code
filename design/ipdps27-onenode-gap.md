@@ -67,6 +67,17 @@ aggregate gain is small and one source/denominator comparison is 2.4% slower,
 within control variation. This supports the local-cost intervention, not a
 claim that large-scale performance has been solved. Defaults and C6 are unchanged.
 
+**Second machine, 2026-09-23:** the campaign now also runs on Frontier
+(56 usable cores per node, so Anvil's 16 × 7 has no twin). Inputs regenerate
+bit-identically, the mesh C6 result replicates at equal PE count, and road's
+bucket-width lever was screened there ahead of Anvil's queued job. Port,
+layouts, results and scope are in [ipdps27-frontier.md](ipdps27-frontier.md).
+The RMAT regression gate is blocked there: at 8 nodes, whole launches run
+fast or about 18% slow at random, in R0 as well, so the frozen/control floor
+is a coin flip. The author froze R0 and asked for the cause to be removed
+first; nine candidate causes are ruled out
+([Frontier §7](ipdps27-frontier.md#7-rmat-launch-bimodality-what-it-is-and-is-not-jobs-55350175535803)).
+
 ## 1. Target
 
 The author's requirement is unchanged: a one-node GAPBS or ACIC run must not

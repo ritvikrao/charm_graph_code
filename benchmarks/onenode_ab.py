@@ -18,6 +18,7 @@ import re
 import statistics
 import subprocess
 from check_onenode_digest import check
+import machine
 
 
 def main():
@@ -26,12 +27,15 @@ def main():
     ap.add_argument('graph')
     ap.add_argument('variants', type=Path)
     ap.add_argument('--reps', type=int, default=3)
-    ap.add_argument('--workers', type=int, default=120)
+    ap.add_argument('--workers', type=int, default=None,
+                    help='ACIC workers per node (default: machine.py, 120 on Delta, 56 on Frontier)')
     ap.add_argument('--rpn', type=int, default=8)
     ap.add_argument('--sources', type=int, default=4)
     ap.add_argument('--source-role', choices=['tune', 'test'], default='test')
     ap.add_argument('--batch', action='store_true', help='all variants must support --sources')
     args = ap.parse_args()
+    if args.workers is None:
+        args.workers = machine.acic_workers(args.rpn)
     if args.reps < 1 or args.sources < 1 or args.rpn < 1 or args.workers < 1:
         ap.error('reps, sources, rpn and workers must be positive')
     nodes = int(os.environ['SLURM_NNODES'])
@@ -84,8 +88,8 @@ def main():
                     log = out / f'{variant["label"]}-g{group[0]}-r{rep}.launch.out'
                     vn, rpn = variant['nodes'], variant['rpn']
                     command = ['srun', '-N', str(vn), '-n', str(vn * rpn),
-                        '--ntasks-per-node', str(rpn), '-c', str(128 // rpn),
-                        '--cpu-bind=none', '--unbuffered', '--kill-on-bad-exit=1', '--time=00:06:00',
+                        '--ntasks-per-node', str(rpn), '-c', str(machine.cpus_per_rank(rpn)),
+                        *machine.acic_srun_extra(vn), '--cpu-bind=none', '--unbuffered', '--kill-on-bad-exit=1', '--time=00:06:00',
                         'bash', str(app / 'benchmarks/launch_acic.sh'), str(rpn), str(variant['workers']),
                         str(args.campaign / 'bin' / variant['binary']), '0',
                         str(args.campaign / 'graphs' / f'{graph}.wsg'), '1', sources[0], '4', '0.999', '0.005',
@@ -93,7 +97,9 @@ def main():
                     if args.batch:
                         command += ['--sources', ','.join(sources)]
                     with log.open('w') as output:
-                        subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT,
+                        # A variant's "env" overrides the launch environment (network probes).
+                        subprocess.run(command, env={**env, **variant.get('env', {})},
+                                       stdout=output, stderr=subprocess.STDOUT,
                                        check=True, timeout=420)
                     if args.batch:
                         chunks = re.split(r'^SOURCE_RUN index=\d+ source=(\d+)\n', log.read_text(), flags=re.M)

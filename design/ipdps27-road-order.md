@@ -169,6 +169,14 @@ Unordered and capped arms do 3–15 attempts per edge. A fully ordered arm at
 GAPBS-like work needs a round of at most about 0.1 ms, or at most about 500
 rounds on 1294456, to reach 0.14 s.
 
+**Frontier ran the width lever first (2026-09-23).** On a second machine at
+8 nodes, width 131072 is the fastest road arm measured anywhere: 20% faster
+than the capped arm and 8–12% faster than `w32k`, with 2.3 attempts per edge.
+`w512k` turns the curve as predicted. The ordered regime's round count matches
+Anvil's while its time is 1.5–1.8× lower at half the PEs, which supports the
+cheaper-rounds lever below. Live slack there loses to the fixed width.
+See [Frontier §4](ipdps27-frontier.md#4-road-at-8-nodes-fewer-rounds-cheaper-rounds-jobs-55340165534017).
+
 ## Next screen: fewer rounds or cheaper rounds (recorded before submission)
 
 This tests both levers on the ordered regime, road only, at 8 nodes, with

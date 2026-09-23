@@ -1,0 +1,90 @@
+[
+  {
+    "label": "base",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ]
+  },
+  {
+    "label": "base_numa",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_MEMLOG_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/memlog/base_numa",
+      "ACIC_MEMLOG_NUMA": "1"
+    }
+  },
+  {
+    "label": "prebind",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_PREBIND": "1"
+    }
+  },
+  {
+    "label": "prebind_numa",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_PREBIND": "1",
+      "ACIC_MEMLOG_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/memlog/prebind_numa",
+      "ACIC_MEMLOG_NUMA": "1"
+    }
+  }
+]

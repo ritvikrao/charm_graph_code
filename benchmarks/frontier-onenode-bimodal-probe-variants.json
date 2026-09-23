@@ -1,0 +1,86 @@
+[
+  {
+    "label": "n8",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ]
+  },
+  {
+    "label": "n8_diag",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_DIAG_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/diag-rounds/n8"
+    }
+  },
+  {
+    "label": "n1",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 1
+  },
+  {
+    "label": "n1_diag",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 1,
+    "env": {
+      "ACIC_DIAG_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/diag-rounds/n1"
+    }
+  }
+]

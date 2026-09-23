@@ -121,6 +121,12 @@ training-selected layout and a 8-entry drain slice solves mesh26-z SSSP
 1.2–1.4× faster than one-node GAPBS Δ-stepping tuned over threads and Δ.
 The claim holds on held-out sources, in two allocations for each system.
 
+**Replicated on Frontier (2026-09-23).** The same rule passes on a second
+machine at 16 nodes (896 PEs, Anvil's 8-node PE count), at 0.70–0.79 of that
+machine's tuned one-node GAPBS on all four held-out sources in two
+allocations, with the slice again carrying the win. At 8 Frontier nodes it is
+parity. See [Frontier §5](ipdps27-frontier.md#5-c6-on-mesh-at-8-and-16-nodes-jobs-55340225534023).
+
 **Not yet a C6 pass overall.** C6 also requires:
 
 - the RMAT regression suite (R2) with this binary, before R3 acceptance;

@@ -1,0 +1,192 @@
+[
+  {
+    "label": "n1_8x7",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 1,
+    "rpn": 8,
+    "workers": 56
+  },
+  {
+    "label": "n1_8x7_s8",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 1,
+    "rpn": 8,
+    "workers": 56
+  },
+  {
+    "label": "n1_4x14",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 1,
+    "rpn": 4,
+    "workers": 56
+  },
+  {
+    "label": "n1_4x14_s8",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 1,
+    "rpn": 4,
+    "workers": 56
+  },
+  {
+    "label": "n1_2x28",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 1,
+    "rpn": 2,
+    "workers": 56
+  },
+  {
+    "label": "n1_2x28_s8",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 1,
+    "rpn": 2,
+    "workers": 56
+  },
+  {
+    "label": "n1_1x56",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler"
+    ],
+    "nodes": 1,
+    "rpn": 1,
+    "workers": 56
+  },
+  {
+    "label": "n1_1x56_s8",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 1,
+    "rpn": 1,
+    "workers": 56
+  },
+  {
+    "label": "n1_8x7_s8_control",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 1,
+    "rpn": 8,
+    "workers": 56
+  }
+]

@@ -18,6 +18,7 @@ import subprocess
 import time
 
 from outcomes import classify
+import machine
 
 KEYS = ('h1', 'h2', 'reachable', 'distance_sum')
 VARIANTS = {
@@ -148,17 +149,18 @@ class Campaign:
                     per_graph_rule = rule
             args = [str(binary), '0', str(path), '1', str(source), '4', *pp,
                     '--result-digest', '--timeout', str(self.args.timeout),
-                    *flags, '+ppn', str(workers), '+pemap', f'0-{workers-1}',
+                    *flags, '+ppn', str(workers), '+pemap', machine.pemap(0, 1, workers),
                     '+lci_ndevices', '4']
             launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes),
-                      '--ntasks-per-node=1', '--cpu-bind=none']
+                      '--ntasks-per-node=1', *machine.acic_srun_extra(self.nodes), '--cpu-bind=none']
             if config.get('rpn', 1) != 1:
                 ranks = config['rpn']
                 # Replace the trailing runtime flags with per-process maps.
                 args = ['bash', str(Path(__file__).with_name('launch_acic.sh')),
                         str(ranks), str(workers), *args[:-6]]
                 launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
-                          '--ntasks-per-node', str(ranks), '-c', str(128//ranks), '--cpu-bind=none']
+                          '--ntasks-per-node', str(ranks), '-c', str(machine.cpus_per_rank(ranks)),
+                          *machine.acic_srun_extra(self.nodes), '--cpu-bind=none']
         elif engine == 'gluon':
             # `threads`/`cpus`, when a config states them, are per rank.
             ranks = config.get('rpn', 1)
@@ -1024,7 +1026,7 @@ class Campaign:
 
         def base(graph):
             r = int(rpn_map.get(graph, self.args.acic_rpn))
-            return dict(engine='acic-ipdps', per_graph_width=True, rpn=r, workers=r*(128//r-1))
+            return dict(engine='acic-ipdps', per_graph_width=True, rpn=r, workers=machine.acic_workers(r))
 
         def regime(graph):
             meta = dict(re.findall(r'(\w+)=(\d+)', (self.root/'graphs'/(graph+'.meta')).read_text()))
@@ -1176,12 +1178,12 @@ class Campaign:
         denominator = int(meta['riken_denominator'])
         deltas = sorted({max(1, denominator // k) for k in map(int, self.args.delta_divisors.split(','))})
         mid = max(1, denominator // 16)
-        stride = lambda rpn: 128 // rpn
+        stride = machine.cpus_per_rank  # machine.py: 128/rpn on Delta, 56/rpn on Frontier
         layouts = lambda arg: [int(x) for x in arg.split(',')]
         arms = {}
 
         def acic_layout(rpn):
-            return dict(rpn=rpn, workers=rpn*(stride(rpn)-1))
+            return dict(rpn=rpn, workers=machine.acic_workers(rpn))
         arms['adaptive'] = ([dict(engine='acic', name=f'adaptive-r{r}', per_graph_width=True, **acic_layout(r))
                              for r in layouts(self.args.acic_layouts)], None)
         fixed = [c for c in self.configs(graph) if c['engine'] == 'acic']
@@ -1192,7 +1194,7 @@ class Campaign:
         # RIKEN's binary32 distances are exact only below 2^24 (riken_driver.cpp).
         if max(int(r['max_distance']) for r in self.references(graph)) < 16777216:
             def riken(rpn, delta):
-                return dict(engine='riken', name=f'riken-r{rpn}-d{delta}', rpn=rpn, threads=stride(rpn)-1,
+                return dict(engine='riken', name=f'riken-r{rpn}-d{delta}', rpn=rpn, threads=machine.threads_per_rank(rpn),
                             cpus=stride(rpn), delta=delta, denominator=denominator, presolve=0)
             arms['riken'] = ([riken(r, mid) for r in layouts(self.args.riken_layouts)],
                              lambda layout: [riken(layout['rpn'], d) for d in deltas])
@@ -1201,7 +1203,7 @@ class Campaign:
 
         def gluon(model, rpn, partition, delta):
             return dict(engine='gluon', name=f'gluon-{model.lower()}-r{rpn}-{partition}-d{delta}', model=model,
-                        rpn=rpn, threads=stride(rpn)-1, cpus=stride(rpn), partition=partition, delta=delta)
+                        rpn=rpn, threads=machine.gluon_threads_per_rank(rpn), cpus=stride(rpn), partition=partition, delta=delta)
         for model in ['Async', 'Sync']:
             arms['gluon-'+model.lower()] = (
                 [gluon(model, r, p, mid) for r in layouts(self.args.gluon_layouts) for p in partitions],
@@ -1459,10 +1461,12 @@ if __name__ == '__main__':
     parser.add_argument('--acic-rpn', type=int, default=1,
                         help='ACIC processes per node; --workers is the per-node total, split among them')
     # 7.6f1 layout candidates, ranks per node except GAPBS (threads, one node).
-    parser.add_argument('--acic-layouts', default='8,16')
-    parser.add_argument('--riken-layouts', default='4,8,16')
-    parser.add_argument('--gluon-layouts', default='1,8')
-    parser.add_argument('--gap-threads', default='16,64,127')
+    # Defaults fit the machine (machine.py): Delta 8,16 / 4,8,16 / 1,8 / 16,64,127;
+    # Frontier 8,4 / 2,4,8,56 / 1,8 / 14,28,56.
+    parser.add_argument('--acic-layouts', default=machine.layout_defaults()['acic'])
+    parser.add_argument('--riken-layouts', default=machine.layout_defaults()['riken'])
+    parser.add_argument('--gluon-layouts', default=machine.layout_defaults()['gluon'])
+    parser.add_argument('--gap-threads', default=machine.layout_defaults()['gap'])
     # IPDPS sprint: RIKEN and GAPBS deltas are denominator / each divisor. 8g
     # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
     # fair-baseline re-take extends the grid downward.

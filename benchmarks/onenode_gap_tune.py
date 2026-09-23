@@ -10,13 +10,15 @@ import random
 import re
 import statistics
 from run import Campaign
+import machine
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('campaign')
     ap.add_argument('--graphs', default='road-usa-z,mesh24-z,mesh26-z')
-    ap.add_argument('--threads', default='1,2,4,8,16,32,64,96,120,127,128')
+    ap.add_argument('--threads', default=','.join(map(str, machine.gap_thread_candidates())),
+                    help='GAPBS thread counts (default: machine.py; at most the node\'s usable cores)')
     ap.add_argument('--sources', type=int, default=4)
     ap.add_argument('--reps', type=int, default=3)
     ap.add_argument('--timeout', type=int, default=120)
@@ -32,8 +34,8 @@ def main():
     if campaign.nodes != 1:
         ap.error('GAPBS tuning requires one node')
     threads = sorted(set(map(int, args.threads.split(','))))
-    if not threads or min(threads) < 1 or max(threads) > 128:
-        ap.error('thread counts must be between 1 and 128')
+    if not threads or min(threads) < 1 or max(threads) > machine.NODE_CPUS:
+        ap.error(f'thread counts must be between 1 and {machine.NODE_CPUS}')
     rng = random.Random(20260919 + int(campaign.job))
     for graph in args.graphs.split(','):
         refs = campaign.references(graph)

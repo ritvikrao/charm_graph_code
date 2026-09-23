@@ -1,0 +1,62 @@
+[
+  {
+    "label": "n8_candidate",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "binary": "acic_slice",
+    "nodes": 8,
+    "rpn": 8,
+    "workers": 56
+  },
+  {
+    "label": "n8_shared_off",
+    "flags": [
+      "--process-share",
+      "off",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "+old-scheduler"
+    ],
+    "binary": "acic_slice",
+    "nodes": 8,
+    "rpn": 8,
+    "workers": 56
+  },
+  {
+    "label": "n8_candidate_control",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "binary": "acic_slice",
+    "nodes": 8,
+    "rpn": 8,
+    "workers": 56
+  }
+]

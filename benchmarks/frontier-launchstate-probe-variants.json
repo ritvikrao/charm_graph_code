@@ -1,0 +1,89 @@
+[
+  {
+    "label": "base",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ]
+  },
+  {
+    "label": "base_mem",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_MEMLOG_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/memlog/base"
+    }
+  },
+  {
+    "label": "aslr_off",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_MEMLOG_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/memlog/aslr_off",
+      "ACIC_LAUNCH_PREFIX": "setarch x86_64 -R"
+    }
+  },
+  {
+    "label": "thp_off",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "env": {
+      "ACIC_MEMLOG_DIR": "/lustre/orion/csc710/scratch/rrao/acic/campaign/logs/memlog/thp_off",
+      "ACIC_LAUNCH_PREFIX": "/lustre/orion/csc710/scratch/rrao/acic/campaign/bin/nothp"
+    }
+  }
+]

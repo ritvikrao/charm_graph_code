@@ -55,8 +55,10 @@ def run(binary, share, tile, queue, batch, graph=sparse, sources='0,512,1024,0',
     global solves, inter_node_checks
     label = f'{binary}-{share}-{tile}-{queue}-b{batch}-{graph.stem}' + ('-range' if extra else '')
     log = out/(label+'.out')
+    # ACIC_SRUN_EXTRA carries machine-specific launcher flags, e.g. Frontier's
+    # --network=single_node_vni, which LCI needs when a job stays on one node.
     command = ['srun','-N',str(nodes),'-n',str(2*nodes),'--ntasks-per-node=2','-c','8','--cpu-bind=none',
-        '--kill-on-bad-exit=1',str(root/'bin'/binary),'0',str(graph),'1','0','4','0.999','0.005',
+        *os.environ.get('ACIC_SRUN_EXTRA','').split(),'--kill-on-bad-exit=1',str(root/'bin'/binary),'0',str(graph),'1','0','4','0.999','0.005',
         '--sources',sources,'--verify','--timeout','30','--process-share',share,
         '--reader-tile',tile,'--process-queue',queue,'--process-queue-batch',str(batch),'--slack-control','off','--lazy-heavy','off',
         '+ppn','4','+lci_ndevices','4'] + list(extra) + extra_flags
