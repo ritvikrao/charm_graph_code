@@ -65,3 +65,24 @@ that on the four held-out sources, which neither system was tuned on.
 - **Expected use:** about 110 SU.
 - **Spend so far:** about 700 SU on Anvil since 2026-09-21, plus about
   190 SU on Delta, of the 2,000-SU R0–R2 cap.
+
+## GAPBS reference (jobs 20866515/20866516)
+
+- **Validation:** both one-node jobs digest-check every run.
+- **Cost:** 4.8 SU.
+
+Held-out medians of three repetitions, in seconds. The pilot jobs
+20853639/20853641 timed 128/8192 in the first allocation and 64/4096 in the
+second.
+
+| Source | 128/8192: 20853639 | 128/8192: 20866515 | 128/8192: 20866516 | 64/4096: 20853641 | 64/4096: 20866515 | 64/4096: 20866516 | **Reference** |
+|---|---|---|---|---|---|---|---|
+| 35305828 | 0.358 | 0.358 | 0.361 | 0.346 | 0.346 | 0.344 | **0.344** |
+| 44514593 | 0.393 | 0.391 | 0.496 | 0.376 | 0.378 | 0.378 | **0.376** |
+| 41458868 | 0.344 | 0.446 | 0.344 | 0.336 | 0.335 | 0.335 | **0.335** |
+| 21824001 | 0.372 | 0.370 | 0.375 | 0.366 | 0.365 | 0.365 | **0.365** |
+
+- 64 threads with Δ 4096 is the faster setting on every held-out source.
+  It reproduces within 0.5% across three allocations.
+- 128/8192 has two slow cells (0.446 and 0.496 s). They do not affect the
+  reference, which takes the fastest median.
