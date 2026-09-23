@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Frontier build of the graph tools and the external SSSP baselines: GAPBS
 # (plus its work-cost diagnostic build), RIKEN Graph500-SSSP (plus the
-# RELAX_SENT counting build and the MPI-share preload), and Gluon (Galois
-# distributed sssp_push). Same revisions, adapters, patches and flags as
+# RELAX_SENT counting build and the MPI-share preload), Gluon (Galois
+# distributed sssp_push) and the Wasp SC25 artifact with a digest adapter.
+# Same revisions, adapters, patches and flags as
 # benchmarks/build.sh, benchmarks/build_gluon.sh and scripts/anvil/build_baselines.sh.
 # What differs on Frontier:
 #
@@ -140,6 +141,21 @@ cmake --build "$DEPS/galois-build" --target sssp-push-dist --parallel "$JOBS"
 cp "$DEPS/galois-build/lonestar/analytics/distributed/sssp/sssp-push-dist" "$OUT/gluon_sssp"
 echo "BUILT gluon_sssp"
 
+# --- Wasp (SC25 artifact, zenodo 15872863, $DEPS/wasp-ae.zip): the artifact's
+# own sssp with its serial verifier, and bin/wasp_sssp, which replaces only its
+# main (benchmarks/wasp_driver.cpp) to print the harness BENCH digest. The only
+# source change is -march=native -> znver3 in the artifact's CMakeLists.txt,
+# so the build does not depend on the login node's CPU.
+WASP=$DEPS/wasp-ae/wasp-ae/impl/wasp
+[ -d "$WASP" ] || unzip -q "$DEPS/wasp-ae.zip" -d "$DEPS/wasp-ae"
+sed -i 's/-march=native/-march=znver3/' "$WASP/CMakeLists.txt"
+cmake -S "$WASP" -B "$WASP/build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++
+cmake --build "$WASP/build" --target sssp --parallel "$JOBS"
+g++ -O3 -DNDEBUG -std=c++17 -march=znver3 -Wno-interference-size -fopenmp \
+  -I"$WASP/include" -I"$WASP/src" -I"$APP/benchmarks" \
+  "$APP/benchmarks/wasp_driver.cpp" -o "$OUT/wasp_sssp" -lnuma
+echo "BUILT wasp_sssp"
+
 {
   printf 'baselines built %s on %s\n' "$(date -Is)" "$(hostname)"
   printf 'app '; git -C "$APP" rev-parse HEAD
@@ -149,14 +165,15 @@ echo "BUILT gluon_sssp"
   printf 'galois '; git -C "$GALOIS" rev-parse HEAD
   printf 'llvm 19.1.7 '; sha256sum "$DEPS/llvm-project-19.1.7.src.tar.xz" | cut -d' ' -f1
   printf 'fmt 10.2.1 '; sha256sum "$DEPS/fmt-10.2.1.tar.gz" | cut -d' ' -f1
+  printf 'wasp-ae zenodo 15872863 '; sha256sum "$DEPS/wasp-ae.zip" | cut -d' ' -f1
   printf 'boost %s\n' "$BOOST_ROOT"
   g++ --version | head -1
   CC --version | head -1
   module list 2>&1
   ldd "$OUT/riken_sssp" "$OUT/gluon_sssp" | grep -E 'mpi|fabric|boost|numa|sci'
   sha256sum "$OUT"/{prepare_graph,reference_gap,graph_digest,graph_convert,gap_sssp,gap_work_cost} \
-    "$OUT"/{riken_sssp,riken_sssp_verbose,mpi_share.so,gluon_sssp} \
-    "$APP/benchmarks/"{prepare_graph,reference_gap,gap_driver,riken_driver}.cpp \
+    "$OUT"/{riken_sssp,riken_sssp_verbose,mpi_share.so,gluon_sssp,wasp_sssp} \
+    "$APP/benchmarks/"{prepare_graph,reference_gap,gap_driver,riken_driver,wasp_driver}.cpp \
     "$APP/benchmarks/common.h" "$APP/benchmarks/gluon.patch" "$APP/benchmarks/riken_count.patch"
 } > "$OUT/baselines-manifest.txt"
 echo "BASELINES COMPLETE"

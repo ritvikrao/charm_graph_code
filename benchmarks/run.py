@@ -109,7 +109,7 @@ class Campaign:
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
             if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'acic_ipdps', 'acic_ipdps_wide', 'acic_ipdps2', 'acic_ipdps2_wide', 'riken_sssp',
-                             'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp']:
+                             'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp', 'wasp_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -122,7 +122,7 @@ class Campaign:
         # its own per-node total; the record keeps the allocation's budget.
         workers = config.get('workers', self.args.workers)
         per_graph_rule = None
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': 'gluon_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -186,7 +186,7 @@ class Campaign:
             if engine.startswith('riken'):
                 args += [str(config['denominator']), str(config.get('presolve', 0))]
             elif self.nodes != 1:
-                raise ValueError('GAPBS is a single-node baseline')
+                raise ValueError('GAPBS and Wasp are single-node baselines')
         cmd = [*launch, '--unbuffered', '--kill-on-bad-exit=1', *args]
         self.count += 1
         record = dict(job=self.job, nodes=self.nodes, workers=self.args.workers,

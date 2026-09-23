@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Joint GAPBS thread/delta tuning using only designated training sources.
+"""Joint GAPBS or Wasp thread/delta tuning using only designated training sources.
 
 Preserves the external harness's records, digest checks, timing and upstream
 bucket fusion. Boundary winners are explicit: they do not prove a global optimum.
@@ -25,6 +25,8 @@ def main():
     ap.add_argument('--launch-timeout', type=int, default=60,
                     help='wall-clock cap per tuning launch, including startup and graph loading')
     ap.add_argument('--selection-job', help='reuse a frozen selection in a second allocation')
+    ap.add_argument('--engine', choices=['gap', 'wasp'], default='gap',
+                    help='single-node shared-memory baseline: GAPBS or Wasp (same .wsg, timer and digest)')
     args = ap.parse_args()
     if args.sources < 1 or args.reps < 1 or args.launch_timeout < 1:
         ap.error('sources, repetitions and launch timeout must be positive')
@@ -43,9 +45,11 @@ def main():
         test = [r for r in refs if r['role'] == 'test'][:args.sources]
         if len(train) < 2 or len(test) != args.sources:
             raise ValueError(f'{graph}: insufficient training/held-out sources')
-        selection_path = campaign.root/'logs'/f'{campaign.tag}-{graph}-selected.json'
+        # GAPBS keeps its original selection names; other engines are suffixed.
+        suffix = '' if args.engine == 'gap' else f'-{args.engine}'
+        selection_path = campaign.root/'logs'/f'{campaign.tag}-{graph}-selected{suffix}.json'
         if args.selection_job:
-            prior = campaign.root/'logs'/f'external-1n-120w-{args.selection_job}-{graph}-selected.json'
+            prior = campaign.root/'logs'/f'external-1n-120w-{args.selection_job}-{graph}-selected{suffix}.json'
             selection = json.loads(prior.read_text())
             winner = selection['arms'][0]
         else:
@@ -53,7 +57,7 @@ def main():
             denominator = int(re.search(r'\briken_denominator=(\d+)', meta)[1])
             deltas = sorted({max(1, denominator // d) for d in [256, 64, 16, 4, 1]}
                             | {4 * denominator, 16 * denominator})
-            candidates = [dict(engine='gap', name=f'gap-t{t}-d{d}',
+            candidates = [dict(engine=args.engine, name=f'{args.engine}-t{t}-d{d}',
                                threads=t, cpus=t, delta=d, launch_timeout_seconds=args.launch_timeout)
                           for t in threads for d in deltas]
             campaign.run(graph, int(train[0]['source']), candidates[0], train[0], 'external-warmup')
@@ -64,7 +68,7 @@ def main():
                 samples[c['name']].append(campaign.run(graph, int(row['source']), c, row, 'external-joint'))
             valid = [c for c in candidates if all(r['valid'] for r in samples[c['name']])]
             if not valid:
-                raise RuntimeError(f'{graph}: no valid GAPBS candidate')
+                raise RuntimeError(f'{graph}: no valid {args.engine} candidate')
             winner = min(valid, key=lambda c: statistics.geometric_mean(r['seconds'] for r in samples[c['name']]))
             # Repeat the top three on training data to reduce selection noise.
             finalists = sorted(valid, key=lambda c: statistics.geometric_mean(r['seconds'] for r in samples[c['name']]))[:3]
