@@ -133,7 +133,7 @@ The cumulative ablation at 16 nodes, same allocations and sources:
 | Nearest, batch 8, slice 8 (candidate) | 1.00× | 2.76–2.80 | 500 |
 
 Process-wide priority removes 78% of the local queue's work. Batching then
-trades 27–35% more work for a faster queue. The slice halves the remaining
+trades 25–35% more work for a 13–20% faster solve. The slice halves the remaining
 work while doubling the rounds, and is the step that crosses GAPBS. Every
 step is faster than the one before on every source in both allocations. 18 of
 20 recorded predictions were met in allocation A and 20 of 20 in B; the two
