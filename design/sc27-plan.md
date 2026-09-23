@@ -91,11 +91,14 @@ known runtime uncertainty before freezing the paper candidate.
 - Run one fixed-candidate strong-scaling curve for `mesh26-z`: 1, 2, 4 and 8
   Anvil nodes, plus the existing equal-PE Frontier point. Report time, attempts
   per edge, rounds, messages and parallel efficiency. Keep layout policy fixed
-  by the documented machine mapping.
+  by the documented machine mapping. *Frontier curve done at 1–16 nodes, jobs
+  5536321/5536322 ([current-state §8](current-state.md#8-the-fixed-mesh-candidate-strong-scales-and-each-mechanism-is-causal));
+  the Anvil curve remains.*
 - Produce the causal ablation at the scale where the win appears: local queue;
   nearest queue without batching; batch 8; batch 8 plus slice 8. Reuse accepted
   cells where protocols match. New cells use training sources for selection
-  and held-out sources once for confirmation.
+  and held-out sources once for confirmation. *Done at 16 Frontier nodes in the
+  same jobs; the arms are fixed, so no selection stage was needed.*
 
 ### P3. Draft in parallel — September 23–26
 

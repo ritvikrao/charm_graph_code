@@ -102,6 +102,44 @@ ASLR, huge pages, NUMA placement/prebinding, fabric congestion and adaptive
 solver state have been ruled out. Jobs 5535017–5535803 cover those probes. The
 remaining bounded hypothesis is Reconverse backend progress/polling.
 
+### 8. The fixed mesh candidate strong-scales, and each mechanism is causal
+
+On Frontier the unchanged candidate (nearest, batch 8, slice 8, 8 × 7 per
+node, `+old-scheduler`) ran `mesh26-z` at 1, 2, 4, 8 and 16 nodes on the four
+held-out sources, in two allocations (jobs 5536321/5536322). All 448 timed and
+160 work-cost solves passed the audit; allocations agree within 1.5%.
+
+| Nodes | PEs | Time (s) | Speedup | Efficiency | Attempts/edge | Rounds | ACIC/GAPBS |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 56 | 1.70–1.72 | 1.00× | 100% | 1.35 | 598–607 | 5.1–5.2 |
+| 2 | 112 | 0.98–0.99 | 1.71–1.72× | 85–86% | 1.54 | 612–630 | 3.0 |
+| 4 | 224 | 0.56–0.58 | 2.91–2.97× | 73–74% | 1.72–1.73 | 550–555 | 1.7–1.8 |
+| 8 | 448 | 0.364 | 4.68–4.70× | 59% | 1.94–1.95 | 586 | 1.09 |
+| 16 | 896 | 0.259–0.260 | 6.55–6.58× | 41% | 2.76–2.80 | 500 | 0.77–0.78 |
+
+Time falls at every doubling on every source. The loss of efficiency is
+extra work, not communication: attempts per edge double from one to sixteen
+nodes, updates crossing nodes stay below 0.5% of attempts, and the work-cost
+build's idle share rises from 5% to 20%. Queue operations stay about 48% of
+work time at every scale. ACIC passes one-node GAPBS between 8 and 16 nodes.
+
+The cumulative ablation at 16 nodes, same allocations and sources:
+
+| Arm | Time vs candidate | Attempts/edge | Rounds |
+|---|---:|---:|---:|
+| Local queue, no batch, no slice | 3.21–3.33× | 18.1–18.2 | 287–288 |
+| Nearest, unbatched | 1.83× | 4.00–4.06 | 254–255 |
+| Nearest, batch 8 | 1.47–1.56× | 5.09–5.41 | 250–252 |
+| Nearest, batch 8, slice 8 (candidate) | 1.00× | 2.76–2.80 | 500 |
+
+Process-wide priority removes 78% of the local queue's work. Batching then
+trades 27–35% more work for a faster queue. The slice halves the remaining
+work while doubling the rounds, and is the step that crosses GAPBS. Every
+step is faster than the one before on every source in both allocations. 18 of
+20 recorded predictions were met in allocation A and 20 of 20 in B; the two
+misses were a 2.5% control difference on one source and batch-8 work of 5.41
+against a predicted ceiling of 5.4 attempts per edge.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
@@ -111,6 +149,7 @@ remaining bounded hypothesis is Reconverse backend progress/polling.
 | Anvil road ordering/rounds | `design/onenode-data/road-order-8n-anvil-20868022.json`, road-round records 20876828–30; `benchmarks/road-order-8n-variants.json`, `benchmarks/road-rounds-8n-variants.json` |
 | Frontier road | `design/onenode-data/frontier-road-rounds-5534016.json` and 5534017; `benchmarks/frontier-road-rounds-8n-variants.json` |
 | Runtime scheduler | layout and old-scheduler JSON summaries under `design/onenode-data/`; `benchmarks/oldsched-variants.json` |
+| Frontier mesh strong scaling and ablation | `design/onenode-data/frontier-mesh-scaling-5536321.json`, `-5536322.json` and `frontier-mesh-scaling-report.json` (`benchmarks/mesh_scaling_report.py`); `benchmarks/frontier-mesh-scaling-variants.json`, predictions recorded in commit `026e502` |
 | Frontier RMAT behavior | `design/onenode-data/frontier-rmat-regression-5534333.json` and 5534334 plus probe configurations named `benchmarks/frontier-*-probe-variants.json` |
 
 Anvil raw logs are rooted at `/anvil/scratch/x-rrao/acic/`; Frontier raw logs
@@ -123,6 +162,11 @@ and paths are consolidated in [configurations.md](configurations.md).
    measured `mesh26-z` class on two machines and held-out sources.
 2. Process-wide priority plus batched removal reduces redundant sparse-graph
    work, and heap slicing converts that reduction to a distributed mesh gain.
+   At 16 Frontier nodes each step of the cumulative ablation is faster than the
+   previous one, from 3.2–3.3× the candidate's time with a local queue.
+5. The fixed mesh candidate strong-scales from 1 to 16 Frontier nodes at
+   6.6× (41% efficiency), with time falling at every doubling; the efficiency
+   loss is measured redundant work, not inter-node traffic.
 3. On road, a representable global ordering window approaches minimal edge
    work, after which controller round cost is the dominant measured limit.
 4. Runtime scheduling materially changes asynchronous SSSP work; registered
@@ -133,7 +177,8 @@ and paths are consolidated in [configurations.md](configurations.md).
 - ACIC is generally faster than GAPBS, RIKEN or GPU SSSP systems.
 - Live feedback or algorithm/communication co-design causes the current win.
 - High-diameter graphs generally favor ACIC; the real road graph still loses.
-- ACIC has demonstrated a fixed-candidate strong-scaling curve to many nodes.
+- ACIC has demonstrated a fixed-candidate strong-scaling curve beyond 16
+  Frontier nodes, or any strong-scaling curve on Anvil.
 - The current candidate is regression-free on RMAT; its formal frozen-binary
   gate is incomplete.
 - Frontier launch bimodality is caused by LCI, the network or ACIC. Evidence

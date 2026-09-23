@@ -1,0 +1,353 @@
+{
+  "graph": "mesh26-z",
+  "gap_seconds": {
+    "44514593": 0.35235769,
+    "41458868": 0.315844276,
+    "35305828": 0.322437489,
+    "21824001": 0.34068127
+  },
+  "allocations": [
+    {
+      "job": 5536321,
+      "sources": [
+        "21824001",
+        "35305828",
+        "41458868",
+        "44514593"
+      ],
+      "scaling": [
+        {
+          "nodes": 1,
+          "pes": 56,
+          "seconds": 1.7238764999999998,
+          "attempts_per_edge": 1.352653081477336,
+          "rounds": 607.0,
+          "speedup": 1.0,
+          "efficiency": 1.0,
+          "gap_ratio": 5.1582780855367485,
+          "inter_node_fraction": 0.0,
+          "intra_node_fraction": 0.004660908572271203,
+          "idle_share": 0.0497605,
+          "send_share": 0.000844
+        },
+        {
+          "nodes": 2,
+          "pes": 112,
+          "seconds": 0.9924275,
+          "attempts_per_edge": 1.5370679931491595,
+          "rounds": 629.5,
+          "speedup": 1.716179843900004,
+          "efficiency": 0.858089921950002,
+          "gap_ratio": 2.9935993653167037,
+          "inter_node_fraction": 0.001372374187247242,
+          "intra_node_fraction": 0.004482700725874311,
+          "idle_share": 0.087948,
+          "send_share": 0.0021115
+        },
+        {
+          "nodes": 4,
+          "pes": 224,
+          "seconds": 0.5770495,
+          "attempts_per_edge": 1.7279516850442271,
+          "rounds": 555.0,
+          "speedup": 2.913602982166811,
+          "efficiency": 0.7284007455417028,
+          "gap_ratio": 1.7723280844618756,
+          "inter_node_fraction": 0.002596638812577055,
+          "intra_node_fraction": 0.005420317276144312,
+          "idle_share": 0.1212345,
+          "send_share": 0.0029865
+        },
+        {
+          "nodes": 8,
+          "pes": 448,
+          "seconds": 0.363733,
+          "attempts_per_edge": 1.952575720851201,
+          "rounds": 585.5,
+          "speedup": 4.702622701943852,
+          "efficiency": 0.5878278377429815,
+          "gap_ratio": 1.0884137443018618,
+          "inter_node_fraction": 0.0037308118037776917,
+          "intra_node_fraction": 0.0065185875467810555,
+          "idle_share": 0.191733,
+          "send_share": 0.0043465
+        },
+        {
+          "nodes": 16,
+          "pes": 896,
+          "seconds": 0.26004150000000004,
+          "attempts_per_edge": 2.7586541979788217,
+          "rounds": 499.5,
+          "speedup": 6.580653582637871,
+          "efficiency": 0.41129084891486695,
+          "gap_ratio": 0.7723064669203321,
+          "inter_node_fraction": 0.00455522951414971,
+          "intra_node_fraction": 0.009331047680753837,
+          "idle_share": 0.20179,
+          "send_share": 0.005516
+        }
+      ],
+      "ablation": [
+        {
+          "arm": "n16_s8",
+          "seconds": 0.26004150000000004,
+          "attempts_per_edge": 2.7586541979788217,
+          "rounds": 499.5,
+          "vs_candidate": {
+            "21824001": 1.0,
+            "35305828": 1.0,
+            "41458868": 1.0,
+            "44514593": 1.0
+          },
+          "vs_candidate_median": 1.0
+        },
+        {
+          "arm": "n16_s8_control",
+          "seconds": 0.2623975,
+          "attempts_per_edge": 2.779977758643013,
+          "rounds": 498.5,
+          "vs_candidate": {
+            "21824001": 0.9945740281224151,
+            "35305828": 1.0249457788097946,
+            "41458868": 0.9987448658715984,
+            "44514593": 0.9960648656563438
+          },
+          "vs_candidate_median": 0.9974048657639711
+        },
+        {
+          "arm": "n16_local",
+          "seconds": 0.839278,
+          "attempts_per_edge": 18.1298327682918,
+          "rounds": 287.0,
+          "vs_candidate": {
+            "21824001": 3.5308740005514196,
+            "35305828": 3.0552290190197455,
+            "41458868": 3.0472632227705625,
+            "44514593": 3.370239402591698
+          },
+          "vs_candidate_median": 3.2127342108057215
+        },
+        {
+          "arm": "n16_b1",
+          "seconds": 0.469214,
+          "attempts_per_edge": 3.9971432141543977,
+          "rounds": 254.0,
+          "vs_candidate": {
+            "21824001": 1.8177446925834022,
+            "35305828": 1.789726596199276,
+            "41458868": 1.8652732728409667,
+            "44514593": 1.8355553115162166
+          },
+          "vs_candidate_median": 1.8266500020498095
+        },
+        {
+          "arm": "n16_b8",
+          "seconds": 0.406192,
+          "attempts_per_edge": 5.4078545293853395,
+          "rounds": 250.0,
+          "vs_candidate": {
+            "21824001": 1.6461832552155131,
+            "35305828": 1.5912689774165718,
+            "41458868": 1.4450597650784796,
+            "44514593": 1.5288710740171316
+          },
+          "vs_candidate_median": 1.5600700257168518
+        }
+      ],
+      "predictions": {
+        "n1_s8 1.50-1.80 s": true,
+        "n1_s8 1.25-1.40 attempts/edge": true,
+        "n2_s8 between n1 and n4 on every source": true,
+        "n4_s8 between n2 and n8 on every source": true,
+        "n8_s8 0.34-0.38 s": true,
+        "n8_s8 1.85-2.05 attempts/edge": true,
+        "n16_s8 0.25-0.27 s": true,
+        "n16_s8 2.7-2.9 attempts/edge": true,
+        "time falls at every doubling on every source": true,
+        "n1/n16 speedup 5.0-7.5x": true,
+        "attempts/edge do not fall with nodes": true,
+        "control within 2% on every source": false,
+        "n16_b8 0.37-0.42 s": true,
+        "n16_b8 5.0-5.4 attempts/edge": false,
+        "n16_b8 >= 1.3x n16_s8 on every source": true,
+        "n16_b1 slower than n16_b8 on every source": true,
+        "n16_b1 attempts/edge not above n16_b8": true,
+        "n16_local more attempts/edge than n16_b8": true,
+        "n16_local slower than n16_s8 on every source": true,
+        "inter-node share rises with nodes": true
+      },
+      "audit": "design/onenode-data/frontier-mesh-scaling-5536321.json"
+    },
+    {
+      "job": 5536322,
+      "sources": [
+        "21824001",
+        "35305828",
+        "41458868",
+        "44514593"
+      ],
+      "scaling": [
+        {
+          "nodes": 1,
+          "pes": 56,
+          "seconds": 1.6994535,
+          "attempts_per_edge": 1.35328407553057,
+          "rounds": 597.5,
+          "speedup": 1.0,
+          "efficiency": 1.0,
+          "gap_ratio": 5.117310122618347,
+          "inter_node_fraction": 0.0,
+          "intra_node_fraction": 0.0046573467554367025,
+          "idle_share": 0.049863500000000005,
+          "send_share": 0.0008025
+        },
+        {
+          "nodes": 2,
+          "pes": 112,
+          "seconds": 0.977765,
+          "attempts_per_edge": 1.535959686439504,
+          "rounds": 612.5,
+          "speedup": 1.7088937405765112,
+          "efficiency": 0.8544468702882556,
+          "gap_ratio": 2.945310190750786,
+          "inter_node_fraction": 0.0013838332220792744,
+          "intra_node_fraction": 0.004505859993087372,
+          "idle_share": 0.08784449999999999,
+          "send_share": 0.00214
+        },
+        {
+          "nodes": 4,
+          "pes": 224,
+          "seconds": 0.5622595,
+          "attempts_per_edge": 1.7220336705420776,
+          "rounds": 549.5,
+          "speedup": 2.973378657986231,
+          "efficiency": 0.7433446644965578,
+          "gap_ratio": 1.710950620236018,
+          "inter_node_fraction": 0.002582972840413123,
+          "intra_node_fraction": 0.005396190448017567,
+          "idle_share": 0.1129725,
+          "send_share": 0.003038
+        },
+        {
+          "nodes": 8,
+          "pes": 448,
+          "seconds": 0.36415050000000004,
+          "attempts_per_edge": 1.9414504596913722,
+          "rounds": 586.5,
+          "speedup": 4.681929840705775,
+          "efficiency": 0.5852412300882218,
+          "gap_ratio": 1.088576747137147,
+          "inter_node_fraction": 0.0037368109639385034,
+          "intra_node_fraction": 0.006525487987594544,
+          "idle_share": 0.188627,
+          "send_share": 0.004392500000000001
+        },
+        {
+          "nodes": 16,
+          "pes": 896,
+          "seconds": 0.259441,
+          "attempts_per_edge": 2.7966418186542157,
+          "rounds": 500.0,
+          "speedup": 6.546465311645523,
+          "efficiency": 0.4091540819778452,
+          "gap_ratio": 0.7758283138630087,
+          "inter_node_fraction": 0.004551363454349566,
+          "intra_node_fraction": 0.009313232122706978,
+          "idle_share": 0.1990825,
+          "send_share": 0.005503
+        }
+      ],
+      "ablation": [
+        {
+          "arm": "n16_s8",
+          "seconds": 0.259441,
+          "attempts_per_edge": 2.7966418186542157,
+          "rounds": 500.0,
+          "vs_candidate": {
+            "21824001": 1.0,
+            "35305828": 1.0,
+            "41458868": 1.0,
+            "44514593": 1.0
+          },
+          "vs_candidate_median": 1.0
+        },
+        {
+          "arm": "n16_s8_control",
+          "seconds": 0.26003600000000004,
+          "attempts_per_edge": 2.757712748763529,
+          "rounds": 501.0,
+          "vs_candidate": {
+            "21824001": 1.006750165390265,
+            "35305828": 0.9975490683674649,
+            "41458868": 1.0023193203936478,
+            "44514593": 0.9997941804522884
+          },
+          "vs_candidate_median": 1.0010567504229682
+        },
+        {
+          "arm": "n16_local",
+          "seconds": 0.8457075000000001,
+          "attempts_per_edge": 18.241604139597886,
+          "rounds": 288.5,
+          "vs_candidate": {
+            "21824001": 3.531921255545713,
+            "35305828": 2.9983090163249555,
+            "41458868": 3.207470030742364,
+            "44514593": 3.4468930436668224
+          },
+          "vs_candidate_median": 3.327181537204593
+        },
+        {
+          "arm": "n16_b1",
+          "seconds": 0.4758865,
+          "attempts_per_edge": 4.061571503337552,
+          "rounds": 255.0,
+          "vs_candidate": {
+            "21824001": 1.887295411307835,
+            "35305828": 1.7778365753800736,
+            "41458868": 1.7788368835610209,
+            "44514593": 1.8825321684927026
+          },
+          "vs_candidate_median": 1.8306845260268618
+        },
+        {
+          "arm": "n16_b8",
+          "seconds": 0.3831755,
+          "attempts_per_edge": 5.090485394095606,
+          "rounds": 251.5,
+          "vs_candidate": {
+            "21824001": 1.4988581530859768,
+            "35305828": 1.453581503423745,
+            "41458868": 1.4684481472722974,
+            "44514593": 1.4764354994615612
+          },
+          "vs_candidate_median": 1.4724418233669292
+        }
+      ],
+      "predictions": {
+        "n1_s8 1.50-1.80 s": true,
+        "n1_s8 1.25-1.40 attempts/edge": true,
+        "n2_s8 between n1 and n4 on every source": true,
+        "n4_s8 between n2 and n8 on every source": true,
+        "n8_s8 0.34-0.38 s": true,
+        "n8_s8 1.85-2.05 attempts/edge": true,
+        "n16_s8 0.25-0.27 s": true,
+        "n16_s8 2.7-2.9 attempts/edge": true,
+        "time falls at every doubling on every source": true,
+        "n1/n16 speedup 5.0-7.5x": true,
+        "attempts/edge do not fall with nodes": true,
+        "control within 2% on every source": true,
+        "n16_b8 0.37-0.42 s": true,
+        "n16_b8 5.0-5.4 attempts/edge": true,
+        "n16_b8 >= 1.3x n16_s8 on every source": true,
+        "n16_b1 slower than n16_b8 on every source": true,
+        "n16_b1 attempts/edge not above n16_b8": true,
+        "n16_local more attempts/edge than n16_b8": true,
+        "n16_local slower than n16_s8 on every source": true,
+        "inter-node share rises with nodes": true
+      },
+      "audit": "design/onenode-data/frontier-mesh-scaling-5536322.json"
+    }
+  ]
+}
