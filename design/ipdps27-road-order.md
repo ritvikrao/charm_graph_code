@@ -315,3 +315,55 @@ spends most of its time in 520–800 rounds of 0.28–0.37 ms. Road's limit is
 now the controller round, and that round costs a microsecond per few PEs.
 A cheaper round converts directly into road time: at 0.1 ms per round,
 `w128k` would be about 0.10–0.14 s.
+
+## Next screen: spanning-tree broadcast (recorded before submission)
+
+**Build.** Reconverse at the same commit (`1233130`, which is itself the
+upstream commit "spantree on by default"), configured with `SPANTREE=ON`,
+in `~/charm_reconverse/reconverse-linux-x86_64-mpicxx-v0923-span`. Its CMake
+cache differs from v0921-shm only in `SPANTREE` and the pinned tag. Building
+it re-pointed the root `bin`/`lib`/`include`/`tmp` links, and they were
+restored to v0921-shm.
+
+`acic_span` is built from the same sources as `acic_slice` (byte-identical
+application sources, htram `7db9c0a`) and links the v0923-span runtime
+through its own RPATH. `acic_slice` still resolves to v0921-shm.
+
+On the login node, road with width 131072 gives the reference digest at one
+process (6 PEs) and at four (lcrun, 2 PEs each).
+
+**Arms** (8 nodes, road, same protocol; see the
+[config](../benchmarks/road-span-8n-variants.json)): `w32k`, `w128k` and
+`8x15_cap7`, each on `acic_slice` (flat broadcast) and on `acic_span`
+(tree), plus `w64k_span` and a repeat of `w128k_span`.
+
+**Predictions:**
+
+- **Tree broadcast cuts the idle round.** At 16 × 7 the early-round median
+  falls from 0.215–0.244 ms to at most 0.12 ms. The ordered arms' median
+  round falls by at least 0.1 ms.
+- **The ordered arms gain most.** `w32k_span` is at least 30% faster than
+  `w32k`. `w128k_span` is at least 20% faster than `w128k`, and at least
+  10% faster than flat `8x15_cap7` on both sources in both allocations.
+  Work changes by less than 10%.
+- **The cap gains less.** It runs 176–300 rounds against 520–1440, so
+  `8x15_cap7_span` is within 10% of `8x15_cap7`.
+- **With cheaper rounds, the best width narrows or holds:** `w64k_span` is
+  within 10% of `w128k_span`.
+- **Against GAPBS:** `w128k_span` reaches 0.13–0.18 s on 5620086, still
+  not below GAPBS's 0.117–0.119 s.
+- **Disconfirmation:** node control already cut the broadcast to 128 sends
+  without shortening rounds, so this may fail. If the early round does not
+  shorten, the per-round cost lies in the reduction or in Main's
+  per-round work on PE 0. That is measured next, with timers around
+  `reduce_histogram` and the broadcast.
+
+Tree broadcast changes every Charm++ broadcast, so before it is adopted
+the C6 mesh and R2 RMAT checks must be repeated on it.
+
+**Gate:** the two-node 112-solve verification on `acic_span` with
+`--bucket-width 131072 --heap-slice 8 --process-drain-cap 3
++old-scheduler`.
+
+**Budget:** two 8-node allocations × 12 min, about 60 SU each, plus a 4-SU
+gate. Spend so far is about 1,160 SU.
