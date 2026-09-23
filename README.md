@@ -6,9 +6,9 @@ Asynchronous distributed graph algorithms in Charm++, over the
 Currently one kernel: **ACIC single-source shortest path** (`sssp_smp`). The
 algorithm and the plan for the rest are in [design/sc27-plan.md](design/sc27-plan.md).
 
-A non-SMP line, four CSV read-timing prototypes, and a stale copy of htram lived
-here until September 2026; see [design/graphlib.md](design/graphlib.md) §1 for what
-went and why. Recover any of it from history if it is ever needed.
+The maintained architecture, evidence and planning documents are indexed in
+[design/README.md](design/README.md). Older prototypes and experiment narratives
+remain recoverable from Git history.
 
 ## Build
 
@@ -93,49 +93,15 @@ solver option set; every step 7 mechanism is gated with its flag on and off.
 
 ## Measurements
 
-The [step 7.5 comparison report](design/step75-comparisons.md) covers nine
-matched weighted inputs, 1–16 CPU nodes, RIKEN/GAPBS/Gluon baselines, process
-layout, and timed-output sensitivity. It records progress failures under
-both current and fixed policies; resolving them is the next correctness gate.
-See [benchmarks/README.md](benchmarks/README.md) for reproduction and
-[design/step75-data](design/step75-data/) for compact measurements and provenance.
+Start with [design/README.md](design/README.md). The maintained documents separate:
 
-```
-scripts/diagnose.sh <h1|h2|h3|h4|all> [outdir]   # the step 6 experiment matrix
-scripts/diag_report.py <outdir>                  # turn it into tables
-sbatch scripts/diagnose_delta.sbatch all 20      # how the reported runs were taken
-```
+- accepted results and job IDs in [current evidence](design/current-state.md);
+- build/runtime/machine identity in [configurations](design/configurations.md);
+- algorithm structure and correctness in [implementation](design/implementation.md);
+- optimization decisions in the [ledger](design/optimization-ledger.md); and
+- remaining experiments and stop rules in the [forward plan](design/sc27-plan.md).
 
-The four knobs above exist for these A/Bs and are inert at their defaults.
-`--diag` writes the controller's own round-by-round series; `make sssp_smp_diag`
-adds counters on the relaxation path — bucket occupancy, per-vertex arrivals,
-reject rates by destination degree, per-PE idleness — which is why they are a
-separate binary. Every wall-clock number comes from `sssp_smp` and every
-structural number from `sssp_smp_diag`, deliberately.
-
-What this was for, and what it found, is in
-[design/scale-free-diagnosis.md](design/scale-free-diagnosis.md).
-
-Step 7 builds the mechanisms step 6 pointed at, one at a time, each as an A/B
-against the configuration it replaces:
-
-```
-scripts/stage_scratch.sh <dir>                    # a private copy per batch job
-sbatch [-N 2] scripts/ab_delta.sbatch scripts/ab/<variants>.txt 20
-scripts/diag_report.py <outdir> ab                # medians and speedups
-```
-
-| mechanism | flag | default | note |
-|---|---|---|---|
-| adaptive flush cadence | `--flush-policy` | `adaptive` | [design/step7-flush-cadence.md](design/step7-flush-cadence.md) |
-| source-side combining hold | `--combine` | `off` (a loss) | [design/step7-combining.md](design/step7-combining.md) |
-| batch-local fold at delivery | `--batch-fold` | `off` (a loss) | [design/step7-combining.md](design/step7-combining.md) |
-| adaptive bucketing | `--bucket-policy`, `--bucket-target` | `adaptive`, `8` | [design/step7-bucketing.md](design/step7-bucketing.md) |
-| idle flush | `--idle-flush` | `starved` | [design/step7-idle-flush.md](design/step7-idle-flush.md) |
-
-Ratio columns are named for their direction and always read above 1.00x as more
-of the named thing: `speedup` is baseline/variant, so above 1 is faster;
-`slowdown` is variant/baseline, used where the knob only ever adds time. Job
-outputs under `design/step7-data/` that predate 2026-09-13 print the reciprocal
-under a column headed "vs base", so a number quoted from one of those files is
-the inverse of what the same column prints now.
+Machine-readable summaries remain under `design/*-data/`. Experiment drivers,
+variant configurations and reporting tools live under `benchmarks/`; cluster
+launch and build scripts live under `scripts/`. Historical experiment narratives
+are available from Git history.

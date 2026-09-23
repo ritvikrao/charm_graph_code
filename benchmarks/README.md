@@ -429,7 +429,8 @@ use `DT_RPATH`, so `LD_LIBRARY_PATH` cannot substitute it).
 
 ## Buffer size, shared memory and the 7.6n re-take (steps 7.6k-n)
 
-Solver defaults since 7.6k ([design/step76-klm.md](../design/step76-klm.md)):
+Solver defaults since 7.6k (summarized in
+[the optimization ledger](../design/optimization-ledger.md)):
 
 - `--bufsize-policy acceptance`: the run starts at 256 items per unit of
   average degree (within `--bufsize-range`, default 512:6144), and the
@@ -522,9 +523,9 @@ GRAPHS="rmat25:26007212:16:16 orkut:2549343:8:64" PARTS=arms ROUNDS=3 \
 `papi_profile.sbatch` takes `WORKERS=112` for 16 × 7 layouts. The
 communication-share build also prints `idle_share`.
 
-The solver switches added in step 8 are below.
-[design/step8-scaling.md](../design/step8-scaling.md) has the measurements
-behind each default.
+The solver switches added in step 8 are below. The accepted conclusions are in
+[current evidence](../design/current-state.md); detailed chronology is available
+from Git history.
 
 | switch | default | what it does |
 |---|---|---|
