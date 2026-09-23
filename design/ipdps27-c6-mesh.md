@@ -86,3 +86,42 @@ second.
   It reproduces within 0.5% across three allocations.
 - 128/8192 has two slow cells (0.446 and 0.496 s). They do not affect the
   reference, which takes the fastest median.
+
+## Result: pass (jobs 20866513/20866514, 2026-09-22)
+
+- **Validation:** both 8-node allocations validate 48 of 48 held-out
+  solves, with layouts verified and no runtime warnings.
+- **Cost:** 49 SU.
+
+Per-source medians of three repetitions, in seconds, with the ratio to the
+GAPBS reference in parentheses:
+
+| Source | GAPBS reference | ACIC 16 × 7 slice 8, A | ACIC 16 × 7 slice 8, B | Control, A / B | 8 × 7, no slice, A / B |
+|---|---|---|---|---|---|
+| 35305828 | 0.344 | 0.276 (0.80) | 0.276 (0.80) | 0.271 / 0.273 | 0.367 / 0.373 |
+| 44514593 | 0.376 | 0.299 (0.79) | 0.303 (0.81) | 0.296 / 0.303 | 0.403 / 0.403 |
+| 41458868 | 0.335 | 0.244 (0.73) | 0.237 (0.71) | 0.238 / 0.263 | 0.330 / 0.337 |
+| 21824001 | 0.365 | 0.285 (0.78) | 0.301 (0.83) | 0.282 / 0.291 | 0.386 / 0.386 |
+
+- **The rule passes.** 8-node ACIC is below the GAPBS reference on all four
+  held-out sources in both allocations, at **0.71–0.83 of GAPBS's time
+  (1.21–1.41× faster)**. Every timed repetition is also below the
+  reference; the slowest is 0.316 s, against 0.365 s.
+- **Prediction met:** it was 0.70–0.90.
+- **The held-out ratio matches training** (0.72–0.83), so choosing the
+  setting on training sources did not overfit.
+- **The control arm agrees within 0–4%** on three sources, and within 11%
+  on 41458868 in allocation B (0.263 against 0.237 s). The control also
+  passes on every source.
+- **The slice is what makes the win.** Without it, the 8 × 7 arm is at
+  0.98–1.08 of GAPBS on held-out sources: parity, as on training.
+
+**Claim supported (mesh class only):** on Anvil, 8-node ACIC with a
+training-selected layout and a 8-entry drain slice solves mesh26-z SSSP
+1.2–1.4× faster than one-node GAPBS Δ-stepping tuned over threads and Δ.
+The claim holds on held-out sources, in two allocations for each system.
+
+**Not yet a C6 pass overall.** C6 also requires:
+
+- the RMAT regression suite (R2) with this binary, before R3 acceptance;
+- road, which remains 1.9× slower than GAPBS.
