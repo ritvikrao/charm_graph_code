@@ -1,0 +1,48 @@
+[
+  {
+    "label": "n16_8x7",
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices)."
+  },
+  {
+    "label": "n16_4x14",
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices)."
+  }
+]

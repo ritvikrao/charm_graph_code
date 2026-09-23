@@ -22,6 +22,8 @@ GRAPHS=${3:-mesh26-z,road-usa-z}
 # SOURCES and ROLE select the sources (default: the two training sources).
 SOURCES=${SOURCES:-2}
 ROLE=${ROLE:-tune}
+# REPS timed repetitions per arm (3; launch-mode runs, see launch_modes.py, use 8).
+REPS=${REPS:-3}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 PY=${ACIC_PYTHON:-$(dirname "$ROOT")/venv/bin/python}
 module swap PrgEnv-cray PrgEnv-gnu/8.6.0 >/dev/null 2>&1
@@ -30,13 +32,18 @@ export PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
 unset LCT_PMI_BACKEND ACIC_SRUN_MPI
 for graph in ${GRAPHS//,/ }; do
   "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$VARIANTS" \
-    --sources "$SOURCES" --reps 3 --source-role "$ROLE" --batch
+    --sources "$SOURCES" --reps "$REPS" --source-role "$ROLE" --batch
   # Work-cost arms ("work_cost": true) need work-cost.json for the audit.
   if grep -q '"work_cost": true' "$VARIANTS"; then
     "$PY" "$APP/benchmarks/work_cost_report.py" "$ROOT/logs/AB-$graph-${SLURM_NNODES}n-$SLURM_JOB_ID"
   fi
 done
 "$PY" "$APP/benchmarks/check_priority_runs.py" "$ROOT" "$SLURM_JOB_ID" \
-  --config "$VARIANTS" --graphs "$GRAPHS" --sources "$SOURCES" --source-role "$ROLE" \
+  --config "$VARIANTS" --graphs "$GRAPHS" --sources "$SOURCES" --source-role "$ROLE" --reps "$REPS" \
   --output "$ROOT/logs/onenode-audit-$SLURM_JOB_ID.json"
+# Launch-mode summary (fast-mode time and slow-launch rate) when asked for.
+if [ -n "${LAUNCH_MODES:-}" ]; then
+  "$PY" "$APP/benchmarks/launch_modes.py" $(for graph in ${GRAPHS//,/ }; do echo "$ROOT/logs/AB-$graph-${SLURM_NNODES}n-$SLURM_JOB_ID"; done) \
+    --output "$ROOT/logs/launch-modes-$SLURM_JOB_ID.json"
+fi
 echo "AB COMPLETE $SLURM_JOB_ID"

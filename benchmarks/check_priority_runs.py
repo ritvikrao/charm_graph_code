@@ -25,6 +25,7 @@ def main():
     ap.add_argument('--graphs', default='mesh26-z,road-usa-z')
     ap.add_argument('--sources', type=int, default=2)
     ap.add_argument('--source-role', default='tune')
+    ap.add_argument('--reps', type=int, default=3, help='timed repetitions per arm (launch-mode runs use more)')
     args = ap.parse_args()
     root = args.campaign
     config = json.loads(args.config.read_text())
@@ -45,7 +46,7 @@ def main():
             expected_variants = [{**v, 'nodes': v.get('nodes', manifest['nodes']),
                                   'rpn': v.get('rpn', 8), 'workers': v.get('workers', default_workers)} for v in hashed]
             if (manifest['variants'] != expected_variants or manifest['workers'] != default_workers
-                    or manifest['rpn'] != 8 or manifest['sources'] != args.sources or manifest['reps'] != 3
+                    or manifest['rpn'] != 8 or manifest['sources'] != args.sources or manifest['reps'] != args.reps
                     or manifest['source_role'] != args.source_role or not manifest['batch']):
                 raise ValueError(f'{directory}: unexpected experiment settings')
             refpath = root/'graphs'/f'{graph}.reference.txt'
@@ -57,10 +58,10 @@ def main():
             arcs = int(re.search(r'arcs=(\d+)',meta)[1])
             rows = read_rows(directory/'runs.jsonl')
             labels = [v['label'] for v in expected_variants]
-            cells(rows, {(v, s, rep) for v in labels for s in sources for rep in range(-1,3)})
+            cells(rows, {(v, s, rep) for v in labels for s in sources for rep in range(-1,args.reps)})
             warnings = Counter()
             for variant in expected_variants:
-                for rep in range(-1,3):
+                for rep in range(-1,args.reps):
                     launch = directory/f"{variant['label']}-g0-r{rep}.launch.out"
                     text = launch.read_text()
                     n, rpn, workers = variant['nodes'], variant['rpn'], variant['workers']
@@ -117,7 +118,7 @@ def main():
             has_diag = any(v.get('work_cost') for v in expected_variants)
             diagnostic = json.loads((directory/'work-cost.json').read_text()) if has_diag else []
             cells(diagnostic, {(v['label'], s, rep) for v in expected_variants if v.get('work_cost')
-                               for s in sources for rep in range(-1,3)})
+                               for s in sources for rep in range(-1,args.reps)})
             diag_by_cell = {(r['variant'],str(r['source']),r['rep']): r for r in diagnostic}
             output = []
             for row in rows:
