@@ -74,11 +74,13 @@ def main():
     ap.add_argument('--regressions', default='rmat25,orkut,uniform25,rmat26,rmat27')
     ap.add_argument('--sources', type=int, default=4)
     ap.add_argument('--reps', type=int, default=3)
+    ap.add_argument('--regression-reps', type=int, help='timed launches per regression arm (default --reps)')
     args = ap.parse_args()
     allocations = [a.split(',') for a in args.allocation]
     if len(allocations) != 2 or any(len(a) != 4 for a in allocations):
         ap.error('supply exactly two allocations, each with four comma-separated job IDs')
-    if args.sources < 4 or args.reps < 3:
+    args.regression_reps = args.regression_reps or args.reps
+    if args.sources < 4 or args.reps < 3 or args.regression_reps < 3:
         ap.error('acceptance requires at least four held-out sources and three repetitions')
     if any(a == b for a, b in zip(*allocations)):
         ap.error('the two allocations must use distinct jobs for every role')
@@ -102,10 +104,10 @@ def main():
                     worst_gap_ratio=max(ratios), own_one_node_ratio=statistics.median(own_ratios), passed=passed))
             for graph in args.regressions.split(','):
                 sources = references(root, graph, args.sources)
-                candidate, identity = acic(root, graph, 8, regression_job, args.variant, sources, args.reps)
+                candidate, identity = acic(root, graph, 8, regression_job, args.variant, sources, args.regression_reps)
                 identities.add(identity)
-                frozen, frozen_identity = acic(root, graph, 8, regression_job, 'frozen', sources, args.reps)
-                control, control_identity = acic(root, graph, 8, regression_job, 'control', sources, args.reps)
+                frozen, frozen_identity = acic(root, graph, 8, regression_job, 'frozen', sources, args.regression_reps)
+                control, control_identity = acic(root, graph, 8, regression_job, 'control', sources, args.regression_reps)
                 if frozen_identity != control_identity:
                     raise ValueError('repeated control differs from frozen configuration')
                 frozen_hashes.add(frozen_identity)
