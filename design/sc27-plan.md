@@ -13,6 +13,12 @@ is causal: without it the result falls to parity or worse. Road remains about
 1.5× behind GAPBS, scale-free graphs remain behind RIKEN, and a live adaptive
 policy has not caused the current win.
 
+Road does not have to beat a shared-memory implementation on the current graph
+to become a successful result. If ACIC remains close on the largest common
+input and then scales exact weighted SSSP beyond single-node memory, that is a
+capacity and scalability contribution. It must be claimed separately from a
+same-input performance win.
+
 The next work should close the current causal chain, freeze SSSP and write.
 Do not start BFS, PageRank, a generic payload refactor or a broad parameter
 sweep during the IPDPS decision window.
@@ -57,6 +63,10 @@ are true:
 If any item fails, skip IPDPS rather than submit an adaptivity claim the data
 does not establish. Continue toward SC27 with a real online policy and larger
 scale as the distinguishing contribution.
+
+The beyond-memory road result is an SC27 path, not a new dependency for the
+October IPDPS submission. Do not promise it in IPDPS unless the measured curve,
+memory audit and distributed comparison are complete before the data freeze.
 
 ## Work through September 26
 
@@ -149,10 +159,11 @@ Finish a small defensible matrix before adding another implementation.
 | Priority | Implementation | Role |
 |---|---|---|
 | P0 | GAPBS SSSP, one node | Primary optimized shared-memory reference on every graph that fits. Jointly tune thread count and delta on training sources. Multi-node ACIC must still report this comparison. |
+| P0 for road | Wasp | Modern multicore asynchronous SSSP comparator. Run the artifact on exactly the same topology, weights, sources and timing boundary. GAPBS proximity does not establish Wasp proximity. |
 | P0 | RIKEN Graph500 SSSP | Primary distributed CPU competitor on scale-free graphs and every high-diameter input its weight representation supports. Tune rank/thread geometry and delta. |
 | P0 | ACIC frozen predecessor / one-axis ablations | Establish novelty and causal gain over the workshop system. This is as important as an external baseline. |
 | P1 | Galois SSSP | Independent optimized shared-memory reference. Add after the P0 matrix is complete. |
-| P1 | Wasp, or one of GBBS/Julienne and GraphIt priority SSSP | Modern CPU scheduling comparison, especially for roads. Choose one based on build reliability and exact input semantics. |
+| P1 | GBBS/Julienne or GraphIt priority SSSP | Add one if it supplies a stable exact-input comparison after the GAPBS/Wasp matrix is complete. |
 | P2 | Gluon-Async | Retain existing distributed comparison for continuity, but do not spend deadline time extending it; GAPBS and RIKEN are stronger decision baselines. |
 | P2 | cuGraph multi-GPU or Gunrock | A clearly labeled cross-hardware context row if matching hardware and graph semantics are readily available. Literature coverage is required; a direct GPU run is optional for a CPU-cluster paper. |
 
@@ -169,7 +180,8 @@ with Graph500 leaderboard GTEPS.
 | Priority | Graph family | Required cells |
 |---|---|---|
 | P0 | Synthetic 2-D meshes | At least three sizes, including `mesh26-z`; training and held-out sources; strong scaling through the largest useful node count. This is the proven favorable regime. |
-| P0 | Real roads | `road-usa-z` plus a second held-out region such as Road-EU, using native positive weights in at least one row. Show the loss and round diagnosis. |
+| P0 | Real roads | `road-usa-z` plus a second held-out region such as Road-EU, using native positive weights in at least one row. Show the common-input loss and round diagnosis. |
+| P0 for scale | Road-like size series | A reproducible family with stable degree, weight and source rules, spanning comfortable one-node fit, the measured memory boundary, 2–4× beyond it and at least one 8×-beyond target. Keep the graph semantics fixed as size grows. |
 | P0 | Scale-free / small-world | RMAT or Kronecker at several scales, Orkut and one larger social/web graph. These are required counter-regimes, even when ACIC loses. |
 | P1 | Uniform random | Keep `uniform25` in regression and add a larger scale only when it tests a stated hypothesis. |
 | P1 | Directed and disconnected real graph | At least one of each before an SC27 generality claim; define loops, parallel edges and unreachable vertices. |
@@ -178,6 +190,79 @@ with Graph500 leaderboard GTEPS.
 A mesh-only result can support a characterization paper, but not a broad graph
 algorithm performance claim. For a stronger systems paper, the next meaningful
 target is a real high-diameter graph, not another synthetic mesh variant.
+
+## Road performance and capacity claim
+
+Treat the road result as three different questions. Do not combine their
+language or denominators.
+
+| Question | Evidence | Allowed claim |
+|---|---|---|
+| Who is faster on the same graph? | Same topology, weights, sources and timing boundary; tuned GAPBS/Wasp and ACIC | A performance win only if ACIC is faster. If ACIC is 1.5× slower, report it as within 50% rather than “matching.” |
+| Who can solve the larger graph? | Measured peak memory and completion beyond the shared-memory implementations' demonstrated limit | A capacity win. An out-of-memory or unsupported run is not an ACIC speedup. |
+| Does distribution pay at scale? | Fixed-graph strong scaling, size-proportional scaling and a distributed competitor at the largest common scale | A distributed scalability or performance win, depending on the measured result. |
+
+A defensible target claim is:
+
+> ACIC remains within 1.5× of optimized multicore SSSP on the largest common
+> road input, while scaling exact weighted SSSP to an input at least four times
+> beyond the measured single-node memory requirement with useful multi-node
+> scaling.
+
+Strengthen “capacity” to “distributed performance” only when a distributed
+baseline completes the same large graph and ACIC is faster. If ACIC alone
+completes it, call the cell a capacity demonstration.
+
+### Required experiment matrix
+
+1. **Common-input crossover.** Run GAPBS, Wasp and ACIC over several sizes that
+   fit one node, including the largest comfortable fit and a near-memory-limit
+   cell. Run ACIC on one and multiple nodes. This shows whether distributed
+   overhead stays bounded as the useful problem size grows.
+2. **Beyond-memory series.** Measure at least 2× and 4× the single-node memory
+   requirement; target 8× or more for the headline capacity cell. A few percent
+   beyond one node is not persuasive because a larger-memory server could erase
+   the distinction.
+3. **Distributed comparison.** Run RIKEN or another exact weighted distributed
+   SSSP implementation on every large graph it can represent. If RIKEN cannot
+   preserve the road weights, select or implement one alternative before making
+   a distributed performance claim.
+4. **Scaling axes.** Report fixed-graph strong scaling and size-proportional
+   scaling. Since road diameter and controller rounds may grow with size,
+   include work/edge and critical-path depth rather than requiring constant
+   weak-scaling time.
+
+### Memory and measurement audit
+
+The capacity claim requires evidence that ACIC distributes state rather than
+replicating the limiting structures. Report:
+
+- measured peak RSS per node and total memory;
+- bytes for CSR, distances, queues, aggregation and replicated metadata;
+- predicted versus measured memory at every size;
+- vertices, stored directed edges, reachable fraction and graph diameter or a
+  comparable shortest-path-depth measure;
+- solve time, graph construction/loading, preprocessing and end-to-end time as
+  separate quantities;
+- attempts per edge, rounds, messages, failures and out-of-memory outcomes.
+
+Use identical positive weights, direction, source set, distance type and graph
+conversion for all implementations. A Wasp result with regenerated weights is
+not directly comparable with ACIC on native road weights.
+
+### Road success gates
+
+- **Local-efficiency gate:** on the largest common input, ACIC is at most 1.5×
+  the faster of tuned GAPBS and Wasp, under the same solve boundary.
+- **Capacity gate:** ACIC completes a verified graph whose measured memory
+  requirement is at least 4× the available memory of the comparison node, with
+  no full graph or distance-vector replication per node.
+- **Scaling gate:** time decreases over a meaningful fixed-graph node range, or
+  the size-proportional curve retains useful throughput while work/edge and
+  rounds have an explained trend.
+- **Distributed-performance gate:** ACIC beats a distributed baseline on the
+  largest common graph. This gate is optional for a capacity claim and required
+  for a distributed performance claim.
 
 ## After the IPDPS decision: path to SC27
 
@@ -201,10 +286,14 @@ characterization and stop calling ACIC adaptive.
   graph copies before requesting large allocations.
 - Establish memory models for ACIC and RIKEN, then test a scale that exceeds
   one-node memory before attempting record-scale runs.
+- Port and validate Wasp on the exact road inputs while they still fit one node;
+  record its peak memory and failure boundary rather than assuming it from the
+  implementation model.
 
 ### Gate C — large-scale evidence, January–February 2027
 
-Progress through scales rather than jumping directly to a machine record:
+First run the road crossover and beyond-memory matrix above. Progress through
+larger synthetic scales rather than jumping directly to a machine record:
 
 1. scale 29–31 at 16/32/64 nodes;
 2. scale 33 at 128/256/512 nodes if memory and correctness gates pass;
@@ -213,6 +302,8 @@ Progress through scales rather than jumping directly to a machine record:
 
 If ACIC alone fits, label the run a capacity demonstration. Claim a speedup
 only on a graph and scale completed by the comparator under matching semantics.
+Do not use aggregate edge rate to hide increasing solve time or critical-path
+rounds.
 
 ### Gate D — broaden algorithms, after the SSSP mechanism is established
 
@@ -229,13 +320,17 @@ Stop SSSP optimization for the current submission when any one holds:
 - a gain moves cost to another required family or breaks the regression gate;
 - measurement variation is larger than the claimed gain and cannot be removed
   by the bounded runtime screens;
-- the candidate beats GAPBS on mesh and remains behind on road after the
-  spanning-tree screen. Record that boundary instead of tuning another width.
+- the candidate remains behind GAPBS/Wasp on the current road after the
+  spanning-tree screen. Freeze small-road tuning and move to the crossover and
+  capacity experiment rather than tuning another width.
 
 For the longer program, stop claiming a general adaptive advantage if Gate A
-fails. Stop the extreme-scale campaign if time does not fall from 64 to 256
-nodes or if no common distributed baseline can be validated. A clean negative
-characterization is more useful than an open-ended sequence of settings.
+fails. A missing distributed comparator limits the result to capacity; it does
+not invalidate a verified capacity result. Stop the extreme-scale performance
+campaign if fixed-graph time does not improve over a meaningful node range. A
+capacity-only endpoint may still be reported, but it must not be called a
+speedup. A clean negative characterization is more useful than an open-ended
+sequence of settings.
 
 ## Gate A checkpoints
 
@@ -243,8 +338,9 @@ characterization is more useful than an open-ended sequence of settings.
 |---|---|
 | Sep 26, 2026 | IPDPS go/no-go using the five conditions above. |
 | Nov 30, 2026 | Online-policy gate: live controller versus per-graph best fixed and one global fixed. |
-| Dec 31, 2026 | 64-bit/streaming readiness and verified memory model. |
-| Feb 15, 2027 | Strong-scaling, competitor and graph-family matrix sufficient for SC27 scope. |
+| Dec 31, 2026 | 64-bit/streaming readiness, verified memory model and GAPBS/Wasp common-input crossover. |
+| Jan 31, 2027 | Road capacity gate at 4× beyond single-node memory, with strong/size-proportional scaling and a distributed-baseline attempt. |
+| Feb 15, 2027 | Strong-scaling, capacity, competitor and graph-family matrix sufficient for SC27 scope. |
 
 ### Scaling entry condition
 
