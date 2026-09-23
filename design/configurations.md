@@ -139,6 +139,14 @@ Anvil road reference times are 0.117–0.142 seconds; consult the GAPBS tuning
 record for the exact selected grid cell before another road acceptance run.
 Do not infer baseline settings from the ACIC bucket width.
 
+**Known RIKEN failure.** RIKEN aborts (an uncaught internal exception) at
+delta equal to the weight denominator (`d1024` on the campaign graphs), at
+whichever layout the search chose: 16 ranks per node on Delta and Anvil
+(steps 7.6f1, 7.6n and 8), 8 on Frontier (job 5536474). It fails in seconds and
+is not a hang. `run.py --mode external` records it as an invalid candidate and
+selects among the valid deltas; keep those records rather than removing the
+setting from the grid.
+
 ## Result checklist
 
 Before accepting a cell, store:
