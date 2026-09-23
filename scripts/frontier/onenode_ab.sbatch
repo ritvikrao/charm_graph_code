@@ -31,6 +31,10 @@ unset LCT_PMI_BACKEND ACIC_SRUN_MPI
 for graph in ${GRAPHS//,/ }; do
   "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$VARIANTS" \
     --sources "$SOURCES" --reps 3 --source-role "$ROLE" --batch
+  # Work-cost arms ("work_cost": true) need work-cost.json for the audit.
+  if grep -q '"work_cost": true' "$VARIANTS"; then
+    "$PY" "$APP/benchmarks/work_cost_report.py" "$ROOT/logs/AB-$graph-${SLURM_NNODES}n-$SLURM_JOB_ID"
+  fi
 done
 "$PY" "$APP/benchmarks/check_priority_runs.py" "$ROOT" "$SLURM_JOB_ID" \
   --config "$VARIANTS" --graphs "$GRAPHS" --sources "$SOURCES" --source-role "$ROLE" \
