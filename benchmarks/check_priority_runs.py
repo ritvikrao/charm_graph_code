@@ -61,9 +61,14 @@ def main():
                     if (f'Starting Reconverse with {rpn*n} processes, {workers*n} PEs (1 PE = 1 thread), '
                             f'and {workers//rpn} PEs per process') not in text:
                         raise ValueError(f'{launch}: wrong worker layout')
-                    for marker in ['Process sharing: on','Live slack: off','Reader tiles:']:
+                    # The last --slack-control value on the command line wins.
+                    slack = [variant['flags'][i+1] for i,f in enumerate(variant['flags'])
+                             if f == '--slack-control'][-1:] or ['off']
+                    for marker in ['Process sharing: on',f'Live slack: {slack[0]}','Reader tiles:']:
                         if marker not in text:
                             raise ValueError(f'{launch}: missing effective setting {marker}')
+                    if re.findall(r'Live slack: ([^\r\n]*)',text) != slack:
+                        raise ValueError(f'{launch}: wrong live slack setting')
                     if '--process-queue' in variant['flags']:
                         policy = variant['flags'][variant['flags'].index('--process-queue')+1]
                         if re.findall(r'Process queue: ([^\r\n]*)',text) != [policy]:
