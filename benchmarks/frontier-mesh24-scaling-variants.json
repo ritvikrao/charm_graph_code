@@ -1,0 +1,140 @@
+[
+  {
+    "label": "n1_s8",
+    "nodes": 1,
+    "rpn": 8,
+    "workers": 56,
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "prediction": "Recorded 2026-09-24 before submission. mesh24-z (a quarter of mesh26-z), fixed mesh candidate at 1-16 nodes, four held-out sources, one warmup and three repetitions, two allocations. References: tuned GAPBS and Wasp selected on training sources in companion one-node jobs. Predictions (median over sources): time falls at every doubling from 1 to 8 nodes on every source; ACIC does not beat tuned GAPBS at any node count, the best ACIC/GAPBS lying in 1.05-2.0, because rounds follow diameter (half of mesh26-z) while GAPBS work follows size (a quarter); attempts per edge do not fall as nodes increase; the 16-node repeat within 2% on every source."
+  },
+  {
+    "label": "n2_s8",
+    "nodes": 2,
+    "rpn": 8,
+    "workers": 56,
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "prediction": "Recorded 2026-09-24 before submission. mesh24-z (a quarter of mesh26-z), fixed mesh candidate at 1-16 nodes, four held-out sources, one warmup and three repetitions, two allocations. References: tuned GAPBS and Wasp selected on training sources in companion one-node jobs. Predictions (median over sources): time falls at every doubling from 1 to 8 nodes on every source; ACIC does not beat tuned GAPBS at any node count, the best ACIC/GAPBS lying in 1.05-2.0, because rounds follow diameter (half of mesh26-z) while GAPBS work follows size (a quarter); attempts per edge do not fall as nodes increase; the 16-node repeat within 2% on every source."
+  },
+  {
+    "label": "n4_s8",
+    "nodes": 4,
+    "rpn": 8,
+    "workers": 56,
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "prediction": "Recorded 2026-09-24 before submission. mesh24-z (a quarter of mesh26-z), fixed mesh candidate at 1-16 nodes, four held-out sources, one warmup and three repetitions, two allocations. References: tuned GAPBS and Wasp selected on training sources in companion one-node jobs. Predictions (median over sources): time falls at every doubling from 1 to 8 nodes on every source; ACIC does not beat tuned GAPBS at any node count, the best ACIC/GAPBS lying in 1.05-2.0, because rounds follow diameter (half of mesh26-z) while GAPBS work follows size (a quarter); attempts per edge do not fall as nodes increase; the 16-node repeat within 2% on every source."
+  },
+  {
+    "label": "n8_s8",
+    "nodes": 8,
+    "rpn": 8,
+    "workers": 56,
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "prediction": "Recorded 2026-09-24 before submission. mesh24-z (a quarter of mesh26-z), fixed mesh candidate at 1-16 nodes, four held-out sources, one warmup and three repetitions, two allocations. References: tuned GAPBS and Wasp selected on training sources in companion one-node jobs. Predictions (median over sources): time falls at every doubling from 1 to 8 nodes on every source; ACIC does not beat tuned GAPBS at any node count, the best ACIC/GAPBS lying in 1.05-2.0, because rounds follow diameter (half of mesh26-z) while GAPBS work follows size (a quarter); attempts per edge do not fall as nodes increase; the 16-node repeat within 2% on every source."
+  },
+  {
+    "label": "n16_s8",
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "prediction": "Recorded 2026-09-24 before submission. mesh24-z (a quarter of mesh26-z), fixed mesh candidate at 1-16 nodes, four held-out sources, one warmup and three repetitions, two allocations. References: tuned GAPBS and Wasp selected on training sources in companion one-node jobs. Predictions (median over sources): time falls at every doubling from 1 to 8 nodes on every source; ACIC does not beat tuned GAPBS at any node count, the best ACIC/GAPBS lying in 1.05-2.0, because rounds follow diameter (half of mesh26-z) while GAPBS work follows size (a quarter); attempts per edge do not fall as nodes increase; the 16-node repeat within 2% on every source."
+  },
+  {
+    "label": "n16_s8_control",
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "prediction": "Recorded 2026-09-24 before submission. mesh24-z (a quarter of mesh26-z), fixed mesh candidate at 1-16 nodes, four held-out sources, one warmup and three repetitions, two allocations. References: tuned GAPBS and Wasp selected on training sources in companion one-node jobs. Predictions (median over sources): time falls at every doubling from 1 to 8 nodes on every source; ACIC does not beat tuned GAPBS at any node count, the best ACIC/GAPBS lying in 1.05-2.0, because rounds follow diameter (half of mesh26-z) while GAPBS work follows size (a quarter); attempts per edge do not fall as nodes increase; the 16-node repeat within 2% on every source."
+  }
+]
