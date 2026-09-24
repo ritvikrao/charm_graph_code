@@ -377,12 +377,24 @@ promote the prototype. The prediction and controls are in
 `benchmarks/delta-heap-coalesce-{road,mesh}-variants.json`.
 
 Eight-node attribution **22354948** is queued after successful correctness
-and one-node dependencies; the scheduler currently forecasts an overnight
-start. It is needed to explain the previously observed distributed road
+and one-node dependencies. It is needed to explain the previously observed distributed road
 round limit. Matched eight-node coalescing job **22355150** depends on both
 22354948 and successful completion of the one-node mesh/backlog checks. Raw one-node evidence is archived in
 `design/onenode-data/delta-road-rounds-22354907.json`; logs are under
 `/u/rao1/.tmp/road-rounds-20260924/logs/`.
+
+At the user's request, pending one-node continuation **22355144** was moved
+in place to `cpu-interactive`, preserving its ID and downstream dependencies.
+Four-node attribution **22355241** is also queued there, after successful
+completion of 22355144, using the same frozen binaries, source set, per-node
+layout, `+old-scheduler` and 20-minute limit. This is an intermediate scale;
+the eight-node jobs remain in `cpu` because `cpu-interactive` permits at most
+four nodes. Its other current limits are one hour, one running job and two
+submitted jobs per user. Its configured CPU billing weight is twice that of
+`cpu`. At the September 24 11:19 CDT check both interactive jobs were accepted
+but pending, with no start estimate; higher priority has not yet demonstrated
+a shorter wait. The four-node extension is recorded in the attribution
+protocol before execution.
 
 ## Evidence and provenance
 

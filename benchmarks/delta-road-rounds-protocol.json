@@ -18,8 +18,17 @@
   "repetitions": 3,
   "nodes": [
     1,
+    4,
     8
   ],
+  "interactive_extension": {
+    "recorded": "2026-09-24",
+    "partition": "cpu-interactive",
+    "nodes": 4,
+    "purpose": "Earlier distributed round-cost attribution while the eight-node cells wait in cpu; an intermediate scale, not a substitute for the eight-node endpoint.",
+    "parameters": "Same frozen binaries, sources, per-node layout, repetitions, old scheduler and acceptance checks as the original protocol.",
+    "limits": "At most four nodes, one hour, one running job and two submitted jobs per user; this campaign keeps its existing 20-minute limit."
+  },
   "empty_rpn": [
     8,
     16

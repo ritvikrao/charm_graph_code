@@ -441,3 +441,14 @@ one-node speedup prediction into a pass. The trace parser now computes
 per-process-pair minimum delays in one pass instead of rescanning every
 message for each pair; exact equivalence was checked for empty, sparse, dense
 and signed-delay inputs up to 128 processes before the large traces.
+
+At the user's request, use `cpu-interactive` for eligible pending tests.
+Its current limits are four nodes, one hour, one running job and two submitted
+jobs per user. Move continuation 22355144 in place so its existing downstream
+dependency remains valid. Four-node attribution cell 22355241 uses the same
+frozen binaries, per-node layout, sources, checks and 20-minute limit after
+that continuation succeeds. This intermediate scale gives earlier evidence
+of how the round floor changes with distribution; retain the eight-node
+endpoint and its coalescing comparison in `cpu`. The configured interactive
+CPU billing weight is twice that of `cpu`; queue priority is higher, but an
+earlier start is not guaranteed. Keep `+old-scheduler` on every run.
