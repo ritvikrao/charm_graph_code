@@ -353,7 +353,7 @@ fit the 8-byte one is not yet measured.
 Tuned Gluon (D-Galois sssp-push, Async and Sync each tuned over 1 or 8 ranks
 per node, oec/cvc and delta on the training sources) against ACIC in the same
 allocation, four held-out sources, two allocations (A: jobs 5539286, 5539899,
-5539900; B: 5539985); 215 + 131 Gluon runs, every one valid. Speedup = the
+5539900; B: 5539985); 215 Gluon runs in each, every one valid. Speedup = the
 faster Gluon mode's median / ACIC's median, per source
 (`benchmarks/gluon_speedup.py`, `design/onenode-data/frontier-gluon-scalefree-16n.json`).
 
