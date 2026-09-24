@@ -291,6 +291,36 @@ repeats within 2%, and `w64k` within 10% of `w128k`. By the plan's rule
 broadcast tree is not what makes road's rounds cost 0.16–0.31 ms. The
 remaining per-round cost is in the reduction or Main's per-round work.
 
+### 11. RMAT profile: the waste is updates to hubs that are already final
+
+A PC-sampling profile, a Projections trace and RIKEN's relaxation counter on
+`rmat26` at 16 Frontier nodes, 4 × 14 (jobs 5538732, 5538734, 5538765), give
+a work-versus-cost split. RIKEN sends 1.22B relaxations in 0.125 s. ACIC
+creates 1.81B updates plus 0.19B lazy tokens in 0.357 s: about 1.5× the work
+at about 1.9× the cost per relaxation. 89% of ACIC's arrivals (1.61B) find
+their target already final, and 1.33B of those land on vertices of degree
+≥ 128. The samples have no single hotspot. Two exact micro-fixes aimed at the
+largest entries (a lazy-range boundary table and a vector hold FIFO) are
+within the 0.94–1.11× control spread at 16 nodes (jobs 5538752/5538753).
+
+Hub-distance hints target the waste directly. Vertices of degree ≥ 256
+publish their current distance once per controller round to a per-process
+table, and senders drop updates no better than it. This is exact because
+distances only fall; it needs no settled test. With the auto gate (the
+lazy-heavy regime), at 16 nodes over two allocations (jobs 5538953/5538954),
+the speedup over frozen is 1.25–1.26× on `rmat25`, 1.30–1.34× on `rmat26`,
+1.23–1.30× on `rmat27` and 1.01–1.07× on orkut; `uniform25` is unchanged.
+`rmat26` updates fall from 1.81B to 0.68B, under RIKEN's count, yet ACIC stays
+about 2.2× slower than RIKEN. The remaining cost is the sender's edge scan
+and probe, heap and tokens, runtime polling and an idle tail, not update
+volume. Adding the initial-exec TLS runtime gives a further 1.00–1.07×.
+These are training-source results; held-out confirmation is pending.
+
+The same instruments on `road-usa-z` at 16 nodes (job 5538868) show PEs idle
+61.5% of the solve, with about 800 controller rounds of about 0.23 ms each.
+Road at this size is bound by round latency, not work, which is why larger
+road inputs are the next test (`road-eu`, `road-na`; `scripts/frontier/prepare_osm.sbatch`).
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
