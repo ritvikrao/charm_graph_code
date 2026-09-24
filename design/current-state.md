@@ -348,6 +348,37 @@ tuned at this size: 88 s (source 5e9) and 54 s (source 17) at 16 nodes, a
 partition and the default width rule. The 12-byte wire's cost on graphs that
 fit the 8-byte one is not yet measured.
 
+### 13. Gluon at 16 nodes, scale-free graphs: ACIC faster on every source
+
+Tuned Gluon (D-Galois sssp-push, Async and Sync each tuned over 1 or 8 ranks
+per node, oec/cvc and delta on the training sources) against ACIC in the same
+allocation, four held-out sources, two allocations (A: jobs 5539286, 5539899,
+5539900; B: 5539985); 215 + 131 Gluon runs, every one valid. Speedup = the
+faster Gluon mode's median / ACIC's median, per source
+(`benchmarks/gluon_speedup.py`, `design/onenode-data/frontier-gluon-scalefree-16n.json`).
+
+| Graph | Faster Gluon | Speedup, production (`acic_slice`) | Speedup, hub hints v2 + TLS |
+|---|---:|---:|---:|
+| orkut | 0.94-1.04 s | 14.2-16.2x | 15.0-16.9x |
+| uniform25 | 2.11-2.35 s | 8.9-10.8x | 9.1-11.2x |
+| rmat25 | 0.78-0.85 s | 3.8-4.2x | 4.6-5.3x |
+| rmat26 | 0.96-1.19 s | 2.5-3.5x | 3.2-4.4x (A only) |
+| rmat27 | 1.26-1.48 s | 1.5-2.1x | 2.2-2.7x |
+
+Gluon spends 78-85% of its time in its sync phase and relaxes each edge
+7.5-12.7 times (orkut); its cost grows more slowly with RMAT scale than
+ACIC's, so the speedup falls from about 4x at rmat25 to about 2x at rmat27.
+Hints v2 + TLS over production on held-out sources: 1.20-1.51x on RMAT,
+1.02-1.14x on orkut, 1.01-1.13x on uniform25. Predictions: speedup ranges met
+(RMAT) or exceeded (orkut, uniform25); "Async is the faster Gluon mode
+everywhere" missed (Sync on rmat25, rmat27, uniform25).
+
+rmat26 source 27797227 stalled twice (hints build, job 5539287; production
+`acic_slice`, job 5539985), answering correctly after 0.2-1.8 s with ~25-59K
+updates counted live but almost none held; the fallback reran production
+alone. It is a pre-existing liveness defect, not a hints one, and the
+192-solve probe (job 5539909) did not reproduce it.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
