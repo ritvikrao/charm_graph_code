@@ -1,0 +1,50 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 32,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Larger-input study (design/large-scale-plan.md), at most 64 nodes: ACIC production (frozen = acic_slice, 5ab6d5b) and candidate (tls = acic_tls, 7afd94d on the initial-exec TLS runtime, --hub-hints auto, which resolves off on meshes and roads), four held-out sources, one warmup and three repetitions, in the same allocation as Gluon-Async and RIKEN (run.py external); GAPBS and Wasp on one node in separate jobs. Speedup = baseline time / ACIC time per source. Predictions (mesh24-z, mesh26-z, mesh28-z, mesh30-z; 8 x 7): tls over frozen 1.00-1.25x; ACIC's speedup over Gluon-Async 20-100x and over RIKEN at least 30x at every point; weak scaling (mesh24-z@4, mesh26-z@16, mesh28-z@64, about 4.2M vertices per node): ACIC time grows 1.3-3x per step (the diameter doubles); ACIC's speedup over one-node GAPBS rises with size: mesh28-z@64 1.5-5x, mesh30-z@64 1.2-4x (mesh26-z@16 was 1.26-1.43x); every solve returns the reference digest."
+  },
+  {
+    "label": "tls",
+    "binary": "acic_tls",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--hub-hints",
+      "auto"
+    ],
+    "nodes": 32,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Larger-input study (design/large-scale-plan.md), at most 64 nodes: ACIC production (frozen = acic_slice, 5ab6d5b) and candidate (tls = acic_tls, 7afd94d on the initial-exec TLS runtime, --hub-hints auto, which resolves off on meshes and roads), four held-out sources, one warmup and three repetitions, in the same allocation as Gluon-Async and RIKEN (run.py external); GAPBS and Wasp on one node in separate jobs. Speedup = baseline time / ACIC time per source. Predictions (mesh24-z, mesh26-z, mesh28-z, mesh30-z; 8 x 7): tls over frozen 1.00-1.25x; ACIC's speedup over Gluon-Async 20-100x and over RIKEN at least 30x at every point; weak scaling (mesh24-z@4, mesh26-z@16, mesh28-z@64, about 4.2M vertices per node): ACIC time grows 1.3-3x per step (the diameter doubles); ACIC's speedup over one-node GAPBS rises with size: mesh28-z@64 1.5-5x, mesh30-z@64 1.2-4x (mesh26-z@16 was 1.26-1.43x); every solve returns the reference digest."
+  }
+]

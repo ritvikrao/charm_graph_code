@@ -1198,7 +1198,7 @@ class Campaign:
                             cpus=stride(rpn), delta=delta, denominator=denominator, presolve=0)
             arms['riken'] = ([riken(r, mid) for r in layouts(self.args.riken_layouts)],
                              lambda layout: [riken(layout['rpn'], d) for d in deltas])
-        partitions = ['oec'] if self.nodes == 1 else ['oec', 'cvc']
+        partitions = ['oec'] if self.nodes == 1 else self.args.gluon_partitions.split(',')
         # Gluon's -delta raises the priority threshold by delta every round
         # (sssp_push.cpp), so a solve takes at least max_distance/delta rounds.
         # On meshes and roads d/16 and d mean thousands of rounds; the optional
@@ -1207,13 +1207,20 @@ class Campaign:
         gluon_deltas = sorted({0, mid, denominator} |
                               {denominator * m for m in map(int, filter(None, self.args.gluon_delta_multipliers.split(',')))
                                if denominator * m <= max_distance // 4})
+        # --gluon-deltas pins the grid: the largest graphs reuse the delta their
+        # family's smaller members selected, since a full search would not fit.
+        if self.args.gluon_deltas:
+            gluon_deltas = sorted(int(d) for d in self.args.gluon_deltas.split(','))
+
+        layout_delta = (gluon_deltas[0] if self.args.gluon_deltas
+                        else max(1, denominator // self.args.gluon_layout_divisor))
 
         def gluon(model, rpn, partition, delta):
             return dict(engine='gluon', name=f'gluon-{model.lower()}-r{rpn}-{partition}-d{delta}', model=model,
                         rpn=rpn, threads=machine.gluon_threads_per_rank(rpn), cpus=stride(rpn), partition=partition, delta=delta)
         for model in ['Async', 'Sync']:
             arms['gluon-'+model.lower()] = (
-                [gluon(model, r, p, max(1, denominator // self.args.gluon_layout_divisor))
+                [gluon(model, r, p, layout_delta)
                  for r in layouts(self.args.gluon_layouts) for p in partitions],
                 lambda layout, model=model: [gluon(model, layout['rpn'], layout['partition'], d) for d in gluon_deltas])
         if self.nodes == 1:
@@ -1479,6 +1486,10 @@ if __name__ == '__main__':
     # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
     # fair-baseline re-take extends the grid downward.
     parser.add_argument('--delta-divisors', default='64,16,4,1')
+    parser.add_argument('--gluon-partitions', default='oec,cvc',
+                        help='Gluon partitioners tried beyond one node')
+    parser.add_argument('--gluon-deltas', default='',
+                        help='pin the Gluon delta grid (comma list); the layout stage uses the first')
     parser.add_argument('--gluon-layout-divisor', type=int, default=16,
                         help="Gluon layout stage's delta, denominator / this (16: the mid delta; 1 for meshes and roads)")
     parser.add_argument('--gluon-delta-multipliers', default='',

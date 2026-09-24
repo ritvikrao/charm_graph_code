@@ -10,7 +10,8 @@
 #    logs/external-<N>n-56w-<job>-<graph>-selected.json.
 #
 # Each graph is GRAPH:FAMILY, and FAMILY names
-# benchmarks/frontier-gluon-FAMILY-<N>n-variants.json. Extra arguments go to
+# benchmarks/$VARIANTS_PREFIX-FAMILY-<N>n-variants.json (VARIANTS_PREFIX
+# defaults to frontier-gluon; the larger-input study uses frontier-large). Extra arguments go to
 # run.py (e.g. --gluon-layout-divisor 1 --gluon-delta-multipliers 4,16,64 for
 # meshes and roads, whose max distance is thousands of mid deltas).
 #
@@ -29,6 +30,7 @@ shift 2
 SOURCES=${SOURCES:-4}
 REPS=${REPS:-3}
 TIMEOUT=${TIMEOUT:-240}
+VARIANTS_PREFIX=${VARIANTS_PREFIX:-frontier-gluon}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 PY=${ACIC_PYTHON:-$(dirname "$ROOT")/venv/bin/python}
 N=$SLURM_NNODES
@@ -43,7 +45,7 @@ GRAPHS=$(tr ',' '\n' <<< "$PAIRS" | cut -d: -f1 | paste -sd,)
   unset LCT_PMI_BACKEND ACIC_SRUN_MPI
   for pair in ${PAIRS//,/ }; do
     graph=${pair%%:*}
-    variants=$APP/benchmarks/frontier-gluon-${pair#*:}-${N}n-variants.json
+    variants=$APP/benchmarks/$VARIANTS_PREFIX-${pair#*:}-${N}n-variants.json
     # onenode_ab.py stops a graph at its first failed check (a stall is a
     # failure even when the answer is right), which also loses every other
     # arm. Keep that attempt aside and rerun the production arm alone.
@@ -53,7 +55,7 @@ GRAPHS=$(tr ',' '\n' <<< "$PAIRS" | cut -d: -f1 | paste -sd,)
       mv "$ROOT/logs/AB-$graph-${N}n-$SLURM_JOB_ID" "$ROOT/logs/AB-$graph-${N}n-$SLURM_JOB_ID.failed"
       variants=$ROOT/logs/gluon-variants-$SLURM_JOB_ID-$graph-frozen.json
       "$PY" -c 'import json,sys; json.dump([v for v in json.load(open(sys.argv[1])) if v["label"] == "frozen"], open(sys.argv[2], "w"), indent=2)' \
-        "$APP/benchmarks/frontier-gluon-${pair#*:}-${N}n-variants.json" "$variants"
+        "$APP/benchmarks/$VARIANTS_PREFIX-${pair#*:}-${N}n-variants.json" "$variants"
       "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$variants" \
         --sources "$SOURCES" --reps "$REPS" --source-role test --batch || echo "ACIC $graph frozen: exit $?"
     fi
