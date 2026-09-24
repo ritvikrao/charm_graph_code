@@ -1,0 +1,145 @@
+{
+ "job": 5536476,
+ "engine": "riken",
+ "nodes": 16,
+ "hosts": "frontier[03596-03597,03600,03604,03640,03646,03662-03663,03665,03668-03670,03672-03673,03676-03677]",
+ "binary_sha256": [
+  "a01b5f82326d89d97bc3479feb44259535328a94784258560bc59c290320dd9d"
+ ],
+ "raw_log_sha256": "4cc90ea837fcc9779b30337c578108490245ea562c0d209635e3b54c98c5cec3",
+ "records_sha256": "9a400654b5a36f2d4eb3ef20aa6e4dc2e0450ce0d608d5ce5d08900ad09ab60c",
+ "launches": 24,
+ "outcomes": {
+  "ok": 24
+ },
+ "graphs": {
+  "mesh26-z": {
+   "selected": {
+    "engine": "riken",
+    "name": "riken",
+    "rpn": 8,
+    "threads": 7,
+    "cpus": 7,
+    "delta": 1024,
+    "denominator": 1024,
+    "presolve": 0,
+    "chosen": "riken-r8-d1024"
+   },
+   "search": {
+    "riken": {
+     "layout": "riken-r8-d64",
+     "selected": "riken-r8-d1024"
+    },
+    "candidates": {
+     "riken-r2-d64": {
+      "valid": true,
+      "seconds": [
+       134.354085416
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r4-d64": {
+      "valid": true,
+      "seconds": [
+       94.847200194
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d64": {
+      "valid": true,
+      "seconds": [
+       56.53042638,
+       40.778540163
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r56-d64": {
+      "valid": true,
+      "seconds": [
+       58.147736112
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d16": {
+      "valid": true,
+      "seconds": [
+       63.125871868,
+       39.785025893
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d256": {
+      "valid": true,
+      "seconds": [
+       38.972098652,
+       60.079157174
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d1024": {
+      "valid": true,
+      "seconds": [
+       66.501669484,
+       32.635373205
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     }
+    }
+   },
+   "heldout": {
+    "21824001": {
+     "seconds": [
+      52.177524839,
+      51.708819514,
+      51.661291413
+     ],
+     "median": 51.708819514
+    },
+    "35305828": {
+     "seconds": [
+      51.816808787,
+      52.202954826,
+      52.02907136
+     ],
+     "median": 52.02907136
+    },
+    "41458868": {
+     "seconds": [
+      19.488665815,
+      19.157091829,
+      19.318919323
+     ],
+     "median": 19.318919323
+    },
+    "44514593": {
+     "seconds": [
+      55.229004934,
+      55.45078172,
+      55.785782684
+     ],
+     "median": 55.45078172
+    }
+   },
+   "heldout_median": 51.868945437,
+   "failures": []
+  }
+ }
+}

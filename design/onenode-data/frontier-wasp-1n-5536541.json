@@ -1,0 +1,606 @@
+{
+ "job": 5536541,
+ "engine": "wasp",
+ "nodes": 1,
+ "hosts": "frontier01453",
+ "binary_sha256": [
+  "a07266706a7dd589fdce128d28bc8a1990427bf2325af2d2c28dae60ce4c838c"
+ ],
+ "raw_log_sha256": "8908b7afdf270a660e034992d140bfac6f2215d08e13b48235ee2aee62901551",
+ "records_sha256": "b462827d6a791c6c6aed5254e69030609a7552c873c49959728bf5d41f4fb6a0",
+ "launches": 170,
+ "outcomes": {
+  "hang": 5,
+  "ok": 165
+ },
+ "graphs": {
+  "mesh26-z": {
+   "selected": {
+    "engine": "wasp",
+    "name": "wasp-t56-d4096",
+    "threads": 56,
+    "cpus": 56,
+    "delta": 4096,
+    "launch_timeout_seconds": 180
+   },
+   "search": {
+    "kind": "joint",
+    "threads": [
+     14,
+     28,
+     42,
+     56
+    ],
+    "deltas": [
+     4,
+     16,
+     64,
+     256,
+     1024,
+     4096,
+     16384
+    ],
+    "boundary_delta": false,
+    "boundary_threads": true,
+    "candidates": {
+     "wasp-t14-d4": {
+      "valid": false,
+      "seconds": [
+       50.731533315,
+       null
+      ]
+     },
+     "wasp-t14-d16": {
+      "valid": true,
+      "seconds": [
+       4.121236503,
+       6.768840061
+      ]
+     },
+     "wasp-t14-d64": {
+      "valid": true,
+      "seconds": [
+       1.761967783,
+       1.498083648
+      ]
+     },
+     "wasp-t14-d256": {
+      "valid": true,
+      "seconds": [
+       1.10838555,
+       1.116064264
+      ]
+     },
+     "wasp-t14-d1024": {
+      "valid": true,
+      "seconds": [
+       0.798655929,
+       0.793888856
+      ]
+     },
+     "wasp-t14-d4096": {
+      "valid": true,
+      "seconds": [
+       0.69381815,
+       0.747128101
+      ]
+     },
+     "wasp-t14-d16384": {
+      "valid": true,
+      "seconds": [
+       1.544125654,
+       1.920628694
+      ]
+     },
+     "wasp-t28-d4": {
+      "valid": false,
+      "seconds": [
+       50.901165756,
+       null
+      ]
+     },
+     "wasp-t28-d16": {
+      "valid": true,
+      "seconds": [
+       6.849037811,
+       3.496309959
+      ]
+     },
+     "wasp-t28-d64": {
+      "valid": true,
+      "seconds": [
+       1.023174551,
+       1.239591225
+      ]
+     },
+     "wasp-t28-d256": {
+      "valid": true,
+      "seconds": [
+       0.693437468,
+       0.707689013
+      ]
+     },
+     "wasp-t28-d1024": {
+      "valid": true,
+      "seconds": [
+       0.46691228,
+       0.468797921
+      ]
+     },
+     "wasp-t28-d4096": {
+      "valid": true,
+      "seconds": [
+       0.403933046,
+       0.452261305
+      ]
+     },
+     "wasp-t28-d16384": {
+      "valid": true,
+      "seconds": [
+       0.79717406,
+       0.976975105
+      ]
+     },
+     "wasp-t42-d4": {
+      "valid": false,
+      "seconds": [
+       60.181889253,
+       null
+      ]
+     },
+     "wasp-t42-d16": {
+      "valid": true,
+      "seconds": [
+       8.199185423,
+       4.031899514
+      ]
+     },
+     "wasp-t42-d64": {
+      "valid": true,
+      "seconds": [
+       0.868076324,
+       1.105706103
+      ]
+     },
+     "wasp-t42-d256": {
+      "valid": true,
+      "seconds": [
+       0.586284085,
+       0.569424916
+      ]
+     },
+     "wasp-t42-d1024": {
+      "valid": true,
+      "seconds": [
+       0.367893927,
+       0.360690043
+      ]
+     },
+     "wasp-t42-d4096": {
+      "valid": true,
+      "seconds": [
+       0.323372796,
+       0.308906991,
+       0.324674061,
+       0.306779907,
+       0.322459521,
+       0.308816742
+      ]
+     },
+     "wasp-t42-d16384": {
+      "valid": true,
+      "seconds": [
+       0.669881953,
+       0.566214256
+      ]
+     },
+     "wasp-t56-d4": {
+      "valid": false,
+      "seconds": [
+       66.742255739,
+       null
+      ]
+     },
+     "wasp-t56-d16": {
+      "valid": true,
+      "seconds": [
+       4.507197892,
+       9.375874881
+      ]
+     },
+     "wasp-t56-d64": {
+      "valid": true,
+      "seconds": [
+       1.063161071,
+       0.801361563
+      ]
+     },
+     "wasp-t56-d256": {
+      "valid": true,
+      "seconds": [
+       0.488903165,
+       0.51221994
+      ]
+     },
+     "wasp-t56-d1024": {
+      "valid": true,
+      "seconds": [
+       0.31327181,
+       0.316005155,
+       0.315023733,
+       0.314493744,
+       0.314555925,
+       0.314878101
+      ]
+     },
+     "wasp-t56-d4096": {
+      "valid": true,
+      "seconds": [
+       0.2655325,
+       0.279318942,
+       0.262948915,
+       0.278355307,
+       0.279242801,
+       0.262841747
+      ]
+     },
+     "wasp-t56-d16384": {
+      "valid": true,
+      "seconds": [
+       0.465946599,
+       0.541160876
+      ]
+     }
+    }
+   },
+   "heldout": {
+    "21824001": {
+     "seconds": [
+      0.262312134,
+      0.262282387,
+      0.263271217
+     ],
+     "median": 0.262312134
+    },
+    "35305828": {
+     "seconds": [
+      0.269197714,
+      0.270911632,
+      0.272276492
+     ],
+     "median": 0.270911632
+    },
+    "41458868": {
+     "seconds": [
+      0.272468576,
+      0.272156259,
+      0.274840202
+     ],
+     "median": 0.272468576
+    },
+    "44514593": {
+     "seconds": [
+      0.291436026,
+      0.293910741,
+      0.292674801
+     ],
+     "median": 0.292674801
+    }
+   },
+   "heldout_median": 0.27169010400000004,
+   "failures": [
+    {
+     "config": "wasp-t14-d4",
+     "phase": "external-warmup",
+     "outcome": "hang",
+     "source": 22442342,
+     "launch_wall_seconds": 180.2
+    },
+    {
+     "config": "wasp-t14-d4",
+     "phase": "external-joint",
+     "outcome": "hang",
+     "source": 22442342,
+     "launch_wall_seconds": 180.2
+    },
+    {
+     "config": "wasp-t42-d4",
+     "phase": "external-joint",
+     "outcome": "hang",
+     "source": 22442342,
+     "launch_wall_seconds": 183.5
+    },
+    {
+     "config": "wasp-t56-d4",
+     "phase": "external-joint",
+     "outcome": "hang",
+     "source": 22442342,
+     "launch_wall_seconds": 180.2
+    },
+    {
+     "config": "wasp-t28-d4",
+     "phase": "external-joint",
+     "outcome": "hang",
+     "source": 22442342,
+     "launch_wall_seconds": 180.8
+    }
+   ]
+  },
+  "road-usa-z": {
+   "selected": {
+    "engine": "wasp",
+    "name": "wasp-t56-d32768",
+    "threads": 56,
+    "cpus": 56,
+    "delta": 32768,
+    "launch_timeout_seconds": 180
+   },
+   "search": {
+    "kind": "joint",
+    "threads": [
+     14,
+     28,
+     42,
+     56
+    ],
+    "deltas": [
+     2048,
+     8192,
+     32768,
+     131072,
+     524288,
+     2097152,
+     8388608
+    ],
+    "boundary_delta": false,
+    "boundary_threads": true,
+    "candidates": {
+     "wasp-t14-d2048": {
+      "valid": true,
+      "seconds": [
+       0.356959798,
+       0.477181755
+      ]
+     },
+     "wasp-t14-d8192": {
+      "valid": true,
+      "seconds": [
+       0.216419542,
+       0.207779345
+      ]
+     },
+     "wasp-t14-d32768": {
+      "valid": true,
+      "seconds": [
+       0.172923219,
+       0.169419966
+      ]
+     },
+     "wasp-t14-d131072": {
+      "valid": true,
+      "seconds": [
+       0.223158076,
+       0.231726468
+      ]
+     },
+     "wasp-t14-d524288": {
+      "valid": true,
+      "seconds": [
+       0.501287473,
+       0.525272299
+      ]
+     },
+     "wasp-t14-d2097152": {
+      "valid": true,
+      "seconds": [
+       2.699132111,
+       3.790510053
+      ]
+     },
+     "wasp-t14-d8388608": {
+      "valid": true,
+      "seconds": [
+       61.456069756,
+       50.106890871
+      ]
+     },
+     "wasp-t28-d2048": {
+      "valid": true,
+      "seconds": [
+       0.245112475,
+       0.401564687
+      ]
+     },
+     "wasp-t28-d8192": {
+      "valid": true,
+      "seconds": [
+       0.132116626,
+       0.125657443
+      ]
+     },
+     "wasp-t28-d32768": {
+      "valid": true,
+      "seconds": [
+       0.103254914,
+       0.102693116
+      ]
+     },
+     "wasp-t28-d131072": {
+      "valid": true,
+      "seconds": [
+       0.134739723,
+       0.133723975
+      ]
+     },
+     "wasp-t28-d524288": {
+      "valid": true,
+      "seconds": [
+       0.283599197,
+       0.271528287
+      ]
+     },
+     "wasp-t28-d2097152": {
+      "valid": true,
+      "seconds": [
+       1.514737577,
+       1.192686733
+      ]
+     },
+     "wasp-t28-d8388608": {
+      "valid": true,
+      "seconds": [
+       17.679134685,
+       18.649693722
+      ]
+     },
+     "wasp-t42-d2048": {
+      "valid": true,
+      "seconds": [
+       0.473494759,
+       0.272350612
+      ]
+     },
+     "wasp-t42-d8192": {
+      "valid": true,
+      "seconds": [
+       0.100200529,
+       0.121402498
+      ]
+     },
+     "wasp-t42-d32768": {
+      "valid": true,
+      "seconds": [
+       0.07952558,
+       0.083548751,
+       0.079283181,
+       0.082124146,
+       0.084266413,
+       0.079843668
+      ]
+     },
+     "wasp-t42-d131072": {
+      "valid": true,
+      "seconds": [
+       0.107375582,
+       0.104133807
+      ]
+     },
+     "wasp-t42-d524288": {
+      "valid": true,
+      "seconds": [
+       0.201983902,
+       0.204626971
+      ]
+     },
+     "wasp-t42-d2097152": {
+      "valid": true,
+      "seconds": [
+       0.721817036,
+       0.876795632
+      ]
+     },
+     "wasp-t42-d8388608": {
+      "valid": true,
+      "seconds": [
+       8.926764968,
+       11.003548155
+      ]
+     },
+     "wasp-t56-d2048": {
+      "valid": true,
+      "seconds": [
+       0.280773983,
+       0.505283439
+      ]
+     },
+     "wasp-t56-d8192": {
+      "valid": true,
+      "seconds": [
+       0.120157599,
+       0.09397938
+      ]
+     },
+     "wasp-t56-d32768": {
+      "valid": true,
+      "seconds": [
+       0.073998651,
+       0.067183025,
+       0.066930957,
+       0.073913526,
+       0.067747737,
+       0.073352156
+      ]
+     },
+     "wasp-t56-d131072": {
+      "valid": true,
+      "seconds": [
+       0.093150581,
+       0.088018322,
+       0.089783429,
+       0.087438682,
+       0.086106626,
+       0.091346879
+      ]
+     },
+     "wasp-t56-d524288": {
+      "valid": true,
+      "seconds": [
+       0.171786816,
+       0.169570393
+      ]
+     },
+     "wasp-t56-d2097152": {
+      "valid": true,
+      "seconds": [
+       0.544529522,
+       0.673208206
+      ]
+     },
+     "wasp-t56-d8388608": {
+      "valid": true,
+      "seconds": [
+       6.10148126,
+       6.637932122
+      ]
+     }
+    }
+   },
+   "heldout": {
+    "3073839": {
+     "seconds": [
+      0.06710544,
+      0.066781261,
+      0.067756905
+     ],
+     "median": 0.06710544
+    },
+    "8718204": {
+     "seconds": [
+      0.07782557,
+      0.07661987,
+      0.077249271
+     ],
+     "median": 0.077249271
+    },
+    "10159848": {
+     "seconds": [
+      0.069626253,
+      0.070548143,
+      0.070138317
+     ],
+     "median": 0.070138317
+    },
+    "22613654": {
+     "seconds": [
+      0.070011451,
+      0.069656482,
+      0.070516281
+     ],
+     "median": 0.070011451
+    }
+   },
+   "heldout_median": 0.070074884,
+   "failures": []
+  }
+ }
+}

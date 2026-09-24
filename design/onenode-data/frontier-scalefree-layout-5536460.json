@@ -1,0 +1,2283 @@
+{
+  "allocations": [
+    {
+      "job": 5536460,
+      "graph": "orkut",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n16_8x7",
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_4x14",
+            "nodes": 16,
+            "rpn": 4,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          }
+        ],
+        "nodes": 16,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 8,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "frontier[02273-02274,02277,02279,04825,05463,06737,06975,08664-08666,08792,08798,09038,09177,09188]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n16_4x14": {
+          "sources": {
+            "189054": {
+              "seconds": 0.094395
+            },
+            "2515403": {
+              "seconds": 0.08864250000000001
+            }
+          },
+          "medians": {
+            "seconds": 0.09151875000000001
+          }
+        },
+        "n16_8x7": {
+          "sources": {
+            "189054": {
+              "seconds": 0.066914
+            },
+            "2515403": {
+              "seconds": 0.06562
+            }
+          },
+          "medians": {
+            "seconds": 0.06626699999999999
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.098027
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.096343
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.067109
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.062787
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.063733
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.065759
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.093919
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.088261
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.095222
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.081316
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.071513
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.071024
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.071887
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.066263
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.087375
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.095042
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.098666
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.095705
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.066688
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.065481
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.067371
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.066711
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.091136
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.086721
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.092054
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.090749
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.06645
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.063666
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.065544
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.064382
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.096563
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.087785
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "189054",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.094871
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "2515403",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.089024
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "189054",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.06714
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2515403",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.06461
+          }
+        }
+      ]
+    },
+    {
+      "job": 5536460,
+      "graph": "rmat25",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n16_8x7",
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_4x14",
+            "nodes": 16,
+            "rpn": 4,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          }
+        ],
+        "nodes": 16,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 8,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "frontier[02273-02274,02277,02279,04825,05463,06737,06975,08664-08666,08792,08798,09038,09177,09188]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n16_4x14": {
+          "sources": {
+            "29743083": {
+              "seconds": 0.19310899999999998
+            },
+            "9130980": {
+              "seconds": 0.203269
+            }
+          },
+          "medians": {
+            "seconds": 0.198189
+          }
+        },
+        "n16_8x7": {
+          "sources": {
+            "29743083": {
+              "seconds": 0.194216
+            },
+            "9130980": {
+              "seconds": 0.221491
+            }
+          },
+          "medians": {
+            "seconds": 0.2078535
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.201708
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.203778
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.212423
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.194323
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.189507
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.211085
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.18999
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.19566
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.18492
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.224646
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.188252
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.233555
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.190813
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.209644
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.195678
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.219492
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.19054
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.199
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.177721
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.252153
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.197619
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.229302
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.188055
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.241535
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.198918
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.194678
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.229655
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.21362
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.225129
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.221676
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.203004
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.207538
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.197765
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.198443
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.205813
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.221306
+          }
+        }
+      ]
+    },
+    {
+      "job": 5536460,
+      "graph": "uniform25",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n16_8x7",
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_4x14",
+            "nodes": 16,
+            "rpn": 4,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          }
+        ],
+        "nodes": 16,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 8,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "frontier[02273-02274,02277,02279,04825,05463,06737,06975,08664-08666,08792,08798,09038,09177,09188]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n16_4x14": {
+          "sources": {
+            "29743083": {
+              "seconds": 0.237128,
+              "edge_attempts": 1143117903.0,
+              "attempts_per_edge": 1.064697668617425
+            },
+            "31146309": {
+              "seconds": 0.231327,
+              "edge_attempts": 1168010025.5,
+              "attempts_per_edge": 1.0878821404231207
+            }
+          },
+          "medians": {
+            "seconds": 0.2342275,
+            "edge_attempts": 1155563964.25,
+            "attempts_per_edge": 1.076289904520273
+          }
+        },
+        "n16_8x7": {
+          "sources": {
+            "29743083": {
+              "seconds": 0.26203,
+              "edge_attempts": 1242814797.0,
+              "attempts_per_edge": 1.1575551510622595
+            },
+            "31146309": {
+              "seconds": 0.24410199999999999,
+              "edge_attempts": 1230254173.5,
+              "attempts_per_edge": 1.1458562121148996
+            }
+          },
+          "medians": {
+            "seconds": 0.253066,
+            "edge_attempts": 1236534485.25,
+            "attempts_per_edge": 1.1517056815885796
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.230191,
+            "edge_attempts": 1155124857,
+            "attempts_per_edge": 1.0758809209288855
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.263617,
+            "edge_attempts": 1174571180,
+            "attempts_per_edge": 1.093993186257724
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.259593,
+            "edge_attempts": 1224994331,
+            "attempts_per_edge": 1.1409572056061676
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.252035,
+            "edge_attempts": 1234876489,
+            "attempts_per_edge": 1.1501614272843483
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.242348,
+            "edge_attempts": 1231456301,
+            "attempts_per_edge": 1.1469758712010463
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.244217,
+            "edge_attempts": 1220762885,
+            "attempts_per_edge": 1.1370160454867635
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.229373,
+            "edge_attempts": 1162929016,
+            "attempts_per_edge": 1.083149698603536
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.236232,
+            "edge_attempts": 1156681337,
+            "attempts_per_edge": 1.0773306232062276
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.226286,
+            "edge_attempts": 1173282017,
+            "attempts_per_edge": 1.0927924624855168
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.238597,
+            "edge_attempts": 1138685576,
+            "attempts_per_edge": 1.0605694083469268
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.236765,
+            "edge_attempts": 1226911044,
+            "attempts_per_edge": 1.1427424281603356
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.261773,
+            "edge_attempts": 1264866709,
+            "attempts_per_edge": 1.1780942566377555
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.251323,
+            "edge_attempts": 1238462298,
+            "attempts_per_edge": 1.1535012424271154
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.241253,
+            "edge_attempts": 1301892454,
+            "attempts_per_edge": 1.212579959535826
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.237366,
+            "edge_attempts": 1141155004,
+            "attempts_per_edge": 1.0628694285176534
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.238024,
+            "edge_attempts": 1170081348,
+            "attempts_per_edge": 1.0898113659482542
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.222925,
+            "edge_attempts": 1141815350,
+            "attempts_per_edge": 1.0634844734267006
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.234338,
+            "edge_attempts": 1125200615,
+            "attempts_per_edge": 1.0480095433492593
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.24094,
+            "edge_attempts": 1228306142,
+            "attempts_per_edge": 1.1440418195741124
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.253397,
+            "edge_attempts": 1297513092,
+            "attempts_per_edge": 1.2085010307576178
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.245856,
+            "edge_attempts": 1220837987,
+            "attempts_per_edge": 1.1370859953354175
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.289957,
+            "edge_attempts": 1141559171,
+            "attempts_per_edge": 1.063245868831905
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.233001,
+            "edge_attempts": 1176522472,
+            "attempts_per_edge": 1.0958106156215188
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.247395,
+            "edge_attempts": 1168375505,
+            "attempts_per_edge": 1.088222547279278
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.254131,
+            "edge_attempts": 1164019176,
+            "attempts_per_edge": 1.0841650713899948
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.230722,
+            "edge_attempts": 1147550230,
+            "attempts_per_edge": 1.0688259288879232
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.237168,
+            "edge_attempts": 1229052046,
+            "attempts_per_edge": 1.1447365530287528
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.297634,
+            "edge_attempts": 1135262142,
+            "attempts_per_edge": 1.057380828945887
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.256799,
+            "edge_attempts": 1257379807,
+            "attempts_per_edge": 1.1711209714817385
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.262287,
+            "edge_attempts": 1217769189,
+            "attempts_per_edge": 1.1342277231768914
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.229696,
+            "edge_attempts": 1178837724,
+            "attempts_per_edge": 1.09796703658229
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.2305,
+            "edge_attempts": 1131690092,
+            "attempts_per_edge": 1.05405382890748
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "31146309",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.232958,
+            "edge_attempts": 1172000875,
+            "attempts_per_edge": 1.0915992094562463
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.238737,
+            "edge_attempts": 1132003945,
+            "attempts_per_edge": 1.0543461509475
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "31146309",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.249789,
+            "edge_attempts": 1248114247,
+            "attempts_per_edge": 1.1624910479151973
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.263458,
+            "edge_attempts": 1276735011,
+            "attempts_per_edge": 1.1891483687609978
+          }
+        }
+      ]
+    },
+    {
+      "job": 5536460,
+      "graph": "rmat26",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n16_8x7",
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_4x14",
+            "nodes": 16,
+            "rpn": 4,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          }
+        ],
+        "nodes": 16,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 8,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "frontier[02273-02274,02277,02279,04825,05463,06737,06975,08664-08666,08792,08798,09038,09177,09188]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n16_4x14": {
+          "sources": {
+            "21987187": {
+              "seconds": 0.3808365
+            },
+            "29743083": {
+              "seconds": 0.37399099999999996
+            }
+          },
+          "medians": {
+            "seconds": 0.37741375
+          }
+        },
+        "n16_8x7": {
+          "sources": {
+            "21987187": {
+              "seconds": 0.398909
+            },
+            "29743083": {
+              "seconds": 0.38514899999999996
+            }
+          },
+          "medians": {
+            "seconds": 0.39202899999999996
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.373896
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.34489
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.428771
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.347305
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.388719
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.34996
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.381787
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.355854
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.353697
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.377534
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.392803
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.40463
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.359649
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.395228
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.374749
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.388995
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.39571
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.396178
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.372313
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.371314
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.382428
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.411114
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.394369
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.384139
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.356391
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.353277
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.377723
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.40259
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.38787
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.38839
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.35315
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.44536
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "29743083",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.373233
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "21987187",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.371907
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "29743083",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.42513
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "21987187",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.423489
+          }
+        }
+      ]
+    },
+    {
+      "job": 5536460,
+      "graph": "rmat27",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n16_8x7",
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_4x14",
+            "nodes": 16,
+            "rpn": 4,
+            "workers": 56,
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "selection": "Selection recorded 2026-09-23 before submission: per graph, on the two training sources, 8 launches per arm, modes classified by benchmarks/launch_modes.py; choose the layout with the lower fast-mode time (median over sources of the fast-launch medians). If the two are within 3% of each other, keep 8 x 7, the campaign layout. The chosen layout then runs once on held-out sources. The candidate flags resolve process sharing, tiling, the queue settings and the slice inactive on these graphs (arcs >= 8 x vertices).",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          }
+        ],
+        "nodes": 16,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 8,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "frontier[02273-02274,02277,02279,04825,05463,06737,06975,08664-08666,08792,08798,09038,09177,09188]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n16_4x14": {
+          "sources": {
+            "7224676": {
+              "seconds": 0.7002095
+            },
+            "9130980": {
+              "seconds": 0.763556
+            }
+          },
+          "medians": {
+            "seconds": 0.73188275
+          }
+        },
+        "n16_8x7": {
+          "sources": {
+            "7224676": {
+              "seconds": 0.7503070000000001
+            },
+            "9130980": {
+              "seconds": 0.766691
+            }
+          },
+          "medians": {
+            "seconds": 0.758499
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.778763
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.693166
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.767112
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.711899
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.745637
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.740194
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.837064
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.712566
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.77769
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.70254
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.794688
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.824377
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.787212
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.76042
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.749422
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.703808
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.725033
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.686256
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.80676
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.736651
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.784478
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.806016
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.782972
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.771009
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.681608
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.67962
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.748904
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.80151
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.74536
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.713947
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.716909
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.669564
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "9130980",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.799776
+          }
+        },
+        {
+          "variant": "n16_4x14",
+          "source": "7224676",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.697879
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "9130980",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.691425
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "7224676",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.729443
+          }
+        }
+      ]
+    }
+  ],
+  "checked_solves": 180,
+  "diagnostic_solves": 0,
+  "checked_launches": 90,
+  "raw_sha256": {
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r-1.launch.out": "9d15d369d0b2e4df5752f15fdcdc12ec49b69f4f71ed88ff9e91b02fb16f7ba6",
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r0.launch.out": "4c793d494bea88a57a2943987c7f2639222a41b0ec667aa733f7a8ae08fba886",
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r1.launch.out": "b58499b6e811ae2b81c01b0a324044f67edad6d2f7690b5b6bc9d2de3e2adef8",
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r2.launch.out": "213912172711ef71b04ec4b65ed0a63a7ff66fe722c19e68142e2c17be31319d",
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r3.launch.out": "16d7c0067bb78cef6090173b4e8ac067ee321c41a1efd8e6816de0a5b3db4c4e",
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r4.launch.out": "acfa2e38021e7a1bb577a60b2722523627d1f27641d4e6b416636e001e46bbcd",
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r5.launch.out": "28eb4388633896e892d4833fab1891854d1cf37db7c493f54d3d3de8fbca5b7e",
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r6.launch.out": "df852320f0c9221cd1f0c42b605a383660b466d4ba05b25671047f89f906ce13",
+    "logs/AB-orkut-16n-5536460/n16_8x7-g0-r7.launch.out": "f27781f4753fc038f322d9678b68e51e27e4d77c83030d27aae971858b86f21e",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r-1.launch.out": "1e6a954712b430b04db66553733f1f7660811f6b85336599eb204f35101e6ced",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r0.launch.out": "56ee1a2e793453491d0b1311eded6c35c737ad2e97eaaa201a6de9bddc8cb57a",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r1.launch.out": "1f4781cbd811757b3d1e05d0e920ef4ffd902f209719012c88cd30d04d758b8e",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r2.launch.out": "5ba3d70d401e61b73b9d2385886759edd6566f6f1b8eb8f1a1f39f2442203413",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r3.launch.out": "e3ee2b7986896b040eb9ce522ad4b23ab9ad43566cf78e1f2a002d717283ed12",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r4.launch.out": "137e55498d36ee78d5990bd5a17912086701ff4e90fd4bb8bab5deb1f38270ee",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r5.launch.out": "65787a5ae8814bc8f12b70def625f15d09d13b4ddffab24ed01152d5be4539a9",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r6.launch.out": "882365c7c3d6acf73e740f0bbe565aa310c7d0d6d71563dd70c43f28f02ce80e",
+    "logs/AB-orkut-16n-5536460/n16_4x14-g0-r7.launch.out": "f8e165d4ef8a7ea1af9f579971b5535d280defbde9992ec013cf353ab7bd62e5",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r-1.out": "dba08c9aec0b937050fdfc71e7e345022c0f7371ee7209e741aab347c718cd74",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r-1.out": "d4ea2ec4556ddc7f2320ec90263006ec458e7cbd36002f99a03e50058c75a98c",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r-1.out": "ffae7767da412f1337008ed93a77f308c66fd812920640d2f86e2ce036cce62b",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r-1.out": "4f4b69a97efaf7fbaa36444e48248d4515ea8e0206d2c77a0142cee1aa48b817",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r0.out": "007dd7aead6d4bd8d5f39cf57f1fadc67bdc0d5c26fcde2722cf624959598161",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r0.out": "af06004c7a910ddc03ba3083ee4f1a978cfe5798ef159ce0fee579181d2dc675",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r0.out": "74e7ea7a01f959aeab1a4864704eec38c5ce10b37767700690ce8fef858bd3cd",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r0.out": "cc9a9976f31583e61495d1da45d704439b17ec08420bf99a2b734594f8b90148",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r1.out": "e996bf19f218443fbbe3a35484e9218877ac94fe1435eb6d221e8535fa45f52f",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r1.out": "e18cbbe3bd50d13a8d8f04f46d38afed05f84e91e8831145a34229c5af75c9cd",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r1.out": "6e012781f348b94effa2bf7b11e31c226d8c959a03dd2414a4d6e2d0b570bfbf",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r1.out": "68a0cb991c63880494bbbdc187bac5ffd498f562a640f47cff9a2827b34f28ad",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r2.out": "593143bf6db7cf7043892c97b30af3f9c9a491b78838ee1b1890a3378b268fd6",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r2.out": "27f390b504fa8e8eb27f8988d4db171cf51d49e02fe4935f440dfbabe0a99f2f",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r2.out": "5ffcacd5cc5bbe1fb2553ac637fbfa5a089b680ed1f0877e8795d4d6a8bc6ed2",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r2.out": "b56f4f08b19e13500673afa72dccd356c236ba9ca46a0e08b6f5c03492d1b672",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r3.out": "67dabce053a6c8f54d48192cb6c4f85f55fc17fd28532ef82fe2ab717387c729",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r3.out": "25364ed0c41fc5de97baaf03f971d37802e8236ed56b9811273f520fd1affe23",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r3.out": "10afc62a06b14bc674733163dee219bb82d22b85b30099cde401f276991071ca",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r3.out": "3602b51df50589632fc1758b4e2591fd488b026688f354cc3a0578344c1119cd",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r4.out": "ee4c0390d8b6f1dc536948efb7ecfef22d64e66d0d86e4a08c9753b27fc849a4",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r4.out": "26239defaf4e87beddae98303311b2be8ea090683c5d10a0f3bc0676e6624e53",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r4.out": "0418e67acafdd5360d3dbdd7375dd5206bf37e3719c8aa417908e13e0b3c2e53",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r4.out": "8d502598f2f8352175384efcf9874ccfd70b395a5f6b59e0d93921e10d6e8238",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r5.out": "97ed34d6c9cd54db12947c8e908f46e71074462532d7f6aa19d32488f42f51f9",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r5.out": "443135a0431b210ef376f7c00df4b4e889ab1bfd70619b880110f7a7e28d739c",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r5.out": "f242a5c7dd57822ca7ce06c08e39be76440170463222ed8c97e93047f018df7d",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r5.out": "7b4d06d3e70a956df3b96e5037d7928ce06ef7885be8fd9320e3998829172e51",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r6.out": "49396a19598ffa80a45cf0d7fe8ed2bff7515247e330dd5ca9ec8b56248957cb",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r6.out": "24bde256ea21e17f037f25829f77bd954ca58ad8929bed913e0726b8b2d486c8",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r6.out": "8c20b3f6d3fbdec46a798d09aff37b96e5e5b3ac61e545f5f5095849e5172a0d",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r6.out": "cf99554b8c63a4954f08c2c697da447d26f8457a53964113d74cca291fac051d",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s0-r7.out": "fda9cf678ac055d02b0b8c867585d46fa17c3c6c9d0d47c12237c42092b98816",
+    "logs/AB-orkut-16n-5536460/n16_4x14-s1-r7.out": "62ae0293132fbca9c2e2e52b7b252e19a0418e12da6df969027b3a8e4fdc4051",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s0-r7.out": "52321b887d2936d147c91c44d416f4c31c5ee5061406afc58aae341c2ca10f5f",
+    "logs/AB-orkut-16n-5536460/n16_8x7-s1-r7.out": "93b8f548e9c553fb3dda84aa6745776a1f8e26901518e65a0f74677fa6501971",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r-1.launch.out": "aa73e48240be768babb0c953dd10736d0ff65187f70a0ff4f3e1f307f991b6d0",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r0.launch.out": "1e86facfc26a499ff6bf2e36630d3e6d9b604bf6ff3685611705611c76b9c25d",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r1.launch.out": "168fabfc296cb51152c8f2ecc5cc372e26b5c46483533f3edc1dc880d081e238",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r2.launch.out": "2f2418a1f3fecf83ad94c843c3d19376fd7cd76b5f525a0acf38c0adf60ef957",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r3.launch.out": "3ced9f934d7099bb01987c2c407b56493b33bbb82814fbb4fc5a3fa17f29d184",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r4.launch.out": "1d6e73b6262ef6d54fa68ee7aca6df041bcbf54b76cb653646343b4b981f0a38",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r5.launch.out": "7bd995bca7309acc435b9dfcfae797e23c4a78a8a944e61855d6064292f9d594",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r6.launch.out": "2593074c1ec324e67d898cfd9051654bc8b9e9922e7ca6a41992ff7ca6c72fcb",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-g0-r7.launch.out": "174227f5924c818fd0581b9cfc5cbc80e477c275351d59e7ee2b7aa79a27fd76",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r-1.launch.out": "91c5c9a4fe1fe40a9c7156b9fb7788bce42c4007d7896c72a4f13418db7a9d7f",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r0.launch.out": "ec45135a0a8c4528cf212365d4a72c5c49a6978c3c0a49edd01f6c85326c6c04",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r1.launch.out": "f88fbcd3f4f5a0b7007743f1e2e68680cb13db50ec5724993d902972a954d640",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r2.launch.out": "4be5e275560f4040dbb11109a60d167313f787cc6fb47fc7f667326f9a98ccfb",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r3.launch.out": "eba7c41188b34a19a660efef870f5b8258ed849888a33b668c12e0fdfe00b4bd",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r4.launch.out": "c3ca54c119f21cc01a561b596345fab60a6ce63bc65849f00f425b8ed8ffec65",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r5.launch.out": "341a66e9b5354ad88140e1a8a8dc1a2180b4bce10928bf6b541a962cd55ffac0",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r6.launch.out": "8ec7e6bcc235d4f8b3c3c219086e209a22303bd0ee32f369bc540a0956fe76df",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-g0-r7.launch.out": "05b25eaed4cfed89cf38af4c4dea0058811bdb8c0550e93066ed93442eed221c",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r-1.out": "397d8b563ba3f726e37a6fde9c962e5e02685489486d1404b0bff5a01828d22b",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r-1.out": "b914f41337ca2048d29395e4e4715757581c7f91c99deea7bf6908109286fb29",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r-1.out": "0b8519b0228ce585012b67b7bbe2f273a5c2875afee253293f27ec4f8ae9caeb",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r-1.out": "5266b1fb3ee949fd871fbd631e6c8f1035d08832700a481e7eb857de5420f1b5",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r0.out": "3d18537f8ce4bae3ec3c82a01be41aefb2e5c6712e7a581a86405ac8d300e86b",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r0.out": "24168de0fc60c626eaef0cde78773bffd87e3bfc52bae9debb1bd96264732c38",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r0.out": "bdaa3105fd7efd6341b45fb60b6c88446337199a3318c07c2307046451ebf994",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r0.out": "39f3f17f426311f9f73cf06cdaa3c970eb7f9f5ef22e2516c3656a3dbdac7a09",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r1.out": "243a95012051014050341f7f0d24e210a9720ae609e831ff8e6fec861d82b8d6",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r1.out": "0fbcf494c38477fcade8ba1a4c534a3fcd7a8f5f5ae738b622b8957adb498857",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r1.out": "77713a980422bddfdff26072d31dd25f9db983d05b548f902025e356ccab328e",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r1.out": "ce0ede0293276150e937577d7be309d48431eb120ef0e86a63ef080fb0f9c2ca",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r2.out": "acc3dbdcc342d6cc88b643d25e2d524b27bc25dd04365c63192fd674b929b7fc",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r2.out": "3f9438721d68a4694396af00dc5e36f4bc4f6667095468ea84ed95a0cb9793be",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r2.out": "93d3de0e15ea18b95adc4158724a3102bc2f4edf7ed3c0d8e5ee4b3526a766ab",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r2.out": "455762ac252fba68fdfb20850ed99fe97bca015b0897f82275895a3da3fcf19d",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r3.out": "741f3ccc96e6d8691e1c8b5999b5b167a70d79a8a8d0c33269b88915bcb65828",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r3.out": "78f7566ac8e3681961449c69300994302d06084555d6afd3997de315e4ebcb32",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r3.out": "962bc3b2fe3b1947d8dc383331d890e254669b988ef3137e964952684854d2f4",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r3.out": "c84316c12adb39e0325d9b991eaf6e32f98b94ae05776221b81c60891cc149eb",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r4.out": "ec7f5f0a35fbb4ade02ca2145a4d3b81a34fd324d2eec10473eb0f431a0fd3e2",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r4.out": "9d6e37af3b99a5206bd06c07efdcb2af2c660bfe82b61b8aa7adb3e8372d368e",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r4.out": "cb6d2b686eddced302c808519ff3e76382bb9ccf1383eb7f2c0d75f8cb328fd5",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r4.out": "e1e8dd718c6ba6a02d2917b2f82911dcaff1657876b96544d964345ccd4dbc15",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r5.out": "cea607940200b79d4a16bf96b09bd77033f09f63c7c67665fb5773218cab462e",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r5.out": "58e0a023d08a43102754bb3c98166a07562148bd1516aaef76267562a75d2f84",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r5.out": "a0c4a954f6a4630826c3e27c575d6eb43619d42bee84cd8d38b9bf8b73de4326",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r5.out": "a44ac59b438a9ad3249250d68e345ca86a19550b2c331e1dce737ab3f8b9d94b",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r6.out": "de72c3135d11f5225e98a5fc0f346def4599d52fe4b3a46cc80a24254e78bd24",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r6.out": "b37e594f29ad7afe51a139e6709b291b9ea46a0e6a801e920eec2c471fd1ca57",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r6.out": "20b27337aee71fd7536b340ba39488f0b4ff4df8de87618b6332ce010566adfb",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r6.out": "f6e9e0c8908e2fca0001758284df2672929b6fe3c3f05f02d25095127e38969d",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s0-r7.out": "9a09ff928e1bfad4f75b516465a3aeefb2e9b5151428be0806009b439e86770d",
+    "logs/AB-rmat25-16n-5536460/n16_4x14-s1-r7.out": "29945fcf45054cc7f976c716f46bdb372e2f9de8524a9f1c0be0e1762057a51f",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s0-r7.out": "f844f3c3b7d2baf5bbbd8310ed037e4211fdde7f2025fb9c1568aa6eede2581e",
+    "logs/AB-rmat25-16n-5536460/n16_8x7-s1-r7.out": "1160be0d9618fab4a755b1254adffa00f912290c3de6a3c2692f4799e466cf0b",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r-1.launch.out": "3a3f589acd4249f335c62fbe910d93e4ae01816f30109697cae9a21f6cf8b67d",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r0.launch.out": "028c584bb73654a30bdae56399dc46f98e016ad08b1bc21c5e20c1b726ad99d4",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r1.launch.out": "deb875d2c85b54d7c7e62e44a7bac7c40cfde64c55ce48fdd643f245eca0b8d1",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r2.launch.out": "471575e0efbdc5b78f09fb8851ebd9cbeaf6244245e107925dc5e55b660b5630",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r3.launch.out": "b1687b60f835cf72d5b08f2f0800a83141954f403ef6076523e9793911aef5f2",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r4.launch.out": "6aad5908954185462c6ba676fcccdb1b1f26f388ad6170c0ee913df295c3681c",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r5.launch.out": "a1dc29d070bd27638bbc9a3e1d2fe20f63b022a33684871bdf994b7f7c6c9c36",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r6.launch.out": "b0bb9fcf4e325bd5b679178ca0b569247052b2a214d1d75a0447e936936580d1",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-g0-r7.launch.out": "622e947e7ff70122fb95c34d289b3c4c8aa189ab70635a7e1cb726121292e8f4",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r-1.launch.out": "666b5f80b1e2581324b7684f4f879211af20aaae6b05d0e7b0e67e535e344d3c",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r0.launch.out": "4ea60a98d3baf1df252fe5ee6e3655d7f6d1acfc81e38e7c55a066bea49f3378",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r1.launch.out": "0dc4a933ae13b1093f01b393c473bcd82400df544948b2db004c06333848b748",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r2.launch.out": "58805aa321432164dc648b48ea7cd81a02cb9a525ab2b463453aad6cd4124933",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r3.launch.out": "017dfd8361ee36f8ed9ca32c651a9505f52049986d09bbc8a7e046efed26a2e3",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r4.launch.out": "d319a434fd0b8557f8459fe431da604cdb6b097d35b21dcf78916e49438c6f63",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r5.launch.out": "5516bb180a3b840216eab9012e66cd9ad76e0c1d70282b754f55e99a75a90278",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r6.launch.out": "749109da1afc548fedb338e1ed7300f19d81c62a5a3060a98c3da8e972ce33b6",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-g0-r7.launch.out": "a2400c7562e85e3bcee4044d4fda67503ee385d056f6a3b15e1afc2fd90acdc1",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r-1.out": "f7281badc95f5626e4b2f4eb5ac7d830f1aaf77d22795cb779b12ee4aa5f9e5a",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r-1.out": "0a34b5ac05668ae9517226f271ac9d46a3ff383c7dc233e2ecd1f261f039b794",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r-1.out": "deb1e631b4068a66b3e356c8ebfb014b5770ff9bedc62945b3227ef9b9cd0e01",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r-1.out": "55450948b73c2d8979b0d27a028960ad0673d7ca57886eb203c499223474cee2",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r0.out": "d315f80e4fed805db801be598d2fce33cde6f714d0232fb163d80058876549aa",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r0.out": "dd2dbf516b3c7c15d44949350715fbc6e90e4fb5f6d8dd4ac1ddda29bbb39cf2",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r0.out": "f3ac9ba485687eca3ee5c1654c69a1898998a09526cb67217b2f460278622ca8",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r0.out": "f28a53a30041095107e8c9276f8c5606182bed46df7aeb1029358ce7f22e3fbb",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r1.out": "c8927bdaa86818bbf570312854c2ffde64694028096d2dd9c03e289afcb3885d",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r1.out": "7da52e05f7b86faa11a29c0817a06524757ef925862df4a76b55a1dd9fb918ca",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r1.out": "d8a486ac12aa7443526c49426d710487fe229d51d57826939fbe30f5484f4749",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r1.out": "c3d35e51af1992d76acabb65efe6d59c97bbcf7444eef760cd0b69ac4d234778",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r2.out": "b6e777cc9274793a8118b071fbf67d986ae88cbd6e619f2eac85f2ac0c5afa35",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r2.out": "5287fbfe0d61284bc4cd1885144341630748c4adef655e223134ab1170d65b41",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r2.out": "004c7f5a4d639e7120ea84f422bf44ff9fe7b606afdbb0b5a96e653b316d4af4",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r2.out": "a2973e10f33e1a837adadb367bf13903999600b5eaa17aea755744a09912eb66",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r3.out": "fc86923a2d3fbb8520dec982624cad225feb8fc32bc601a9270b77ddeabb28e0",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r3.out": "b1ae7cff346ac8e6b6169681ff734af6ad959a91428cd5dc3fea13931df089eb",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r3.out": "c3599665491b41fd810e8997df87c1ef07b78a181dfae3e789e2d23756d37f68",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r3.out": "1eb752a7e46740b0dfe6032cb7df4d6cf702dfd22c012d3e3347e4bcad0ab6f1",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r4.out": "f2e1c57b3803142a1b69c438752218758c4e71579f1f157c68e3261d9dfa51b5",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r4.out": "f76e1d7ea4d80b9e1c505199cea6871a3f146ac5ee0edef00c1bcef4b3c85d59",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r4.out": "09f6217f81b00452edfa4e955549756958fc84c9ee1e6db6e2d6c753c8f4afbb",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r4.out": "89c3dd4e4593ee79cf68bf1c32ca7163f266644be88bae0e9384532d9b34171d",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r5.out": "cd1dc726c94dbdaf3a4484c2853cc7fb0e62a97a32da4b1955a412de2df383fb",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r5.out": "7b19d706f311e6b97c40cdb352100c3848179c6cff8bbd3e84eb74227060d373",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r5.out": "eebf9ff21ed496278c10e8a8ae792149497acc152a644c85b5eeebc7f6eed36d",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r5.out": "f6e8ef0add258c58d5234392a23f91e5d2cf343cdc98ee0954f5448bee79afa7",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r6.out": "9adba14b71507786cf4e01c3c9a1f6ff98999067d2e488bed5e27d034b46f061",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r6.out": "9004365d8ae3ef974e07f11a4506f14781b4702627d2ee8b534e7f3d017fb9a7",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r6.out": "5d1bbed227dc10e513555f1b3a1e2301cc8b5f0797eddc6521e623c911f0734e",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r6.out": "2ede9d9525cd3daa6adec594a17edc9375b3bcf46ac9163daee0a2db7e373689",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s0-r7.out": "c30310e4b93500cbd45d174f21be9c9b2e3d08849d83fec709c656d1d9a9a442",
+    "logs/AB-uniform25-16n-5536460/n16_4x14-s1-r7.out": "6f47d713cb4bb775f39e9d3f09daaf43c36d273ab3604f4dbf2aa7422c5d4193",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s0-r7.out": "ee6ad786c84c013aa126369f10c72ec6cea8368b89d71287b89d91247d0c62dd",
+    "logs/AB-uniform25-16n-5536460/n16_8x7-s1-r7.out": "3e1bfeb1db17ae2d58459dc46158ae9721b8bdb5114eacc2f84043417a920a58",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r-1.launch.out": "25690731bdb349c55d8faaf83961db3cacdac86ed5122c9911a8c19c7b061eb0",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r0.launch.out": "3ba84cca21bb0eb01a0eed1d631cd927f5e5981ae74779adb35bf83560acba5e",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r1.launch.out": "6d5ac9068faf0877c55aad1ad2cc6a1e6c3e879fb0c481bfff151a85418bbfd2",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r2.launch.out": "a77a62e5d085d4dffda8796612ac3973de501daee0f0eebba7ad6d64fde7f74a",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r3.launch.out": "dc9125f6de54d757031330dbfdc15ed69ba88cd4401795e7b6b0f53f05762c49",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r4.launch.out": "d5456275f93c36304ce6a4918aefd13e1b2602cb19128213b18c1906e934b01f",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r5.launch.out": "f4bfd23940db075996b915f5db07ebece7707702da129676e97d522dec39d273",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r6.launch.out": "a9d74a8abc46b059bce3016309c5e54912cd6ddf3583e5f5d01e6ac23c7c4b4b",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-g0-r7.launch.out": "1dca4f544235e13e2d285660da4b2c4a7d8289d782ada8727d8ad90b4f76b06f",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r-1.launch.out": "7974341c039ef046eb312a92425494b408dcd3aeb5187546db1f57e70c1dab3c",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r0.launch.out": "39c549bf21bd4c4e8c05e70876c20e5167b114c0c5a1ffde792565a2d7cc0080",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r1.launch.out": "1239ab143a43a21640cbeff7212e864d7f86b08e432f886754e8de6d1526b74d",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r2.launch.out": "7b6cc9f949c30fb0393565679b9b8a0c3eaaddf7b43b3d8f77b53b05c4a495c1",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r3.launch.out": "c99a25450ed090ace5480a9fddfd603fdfa0efbd3c2dc55fbfff8379bfe0ca59",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r4.launch.out": "c2edd165a0993e539ae54d263805a971136b2317bb3fbaff2fd3e8a65e22e23d",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r5.launch.out": "0b950c23726ddb7bf5ecb31e7f30f2570660b7f06d3292419ca6ed9fb365d43f",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r6.launch.out": "dd5e27e7af2d116f11041ee379ace00a39ed45e337e57781c701e420b25a3f30",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-g0-r7.launch.out": "62780feee07256fbf825a4e8186dc03b38a38ac67c8ab16b81ec2ad510b8990e",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r-1.out": "b0676b91bc3c6a7d63560ff43fc89770f80cb2d17c2b580e16005a7434b5cb44",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r-1.out": "bc487f25e73250aeb5b78e2d3d319aac3cefd1d049b08ee1a829165303471cf9",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r-1.out": "440da5d2d9eefbd9708750643cc843bbb7ffa651b7f7e67a8dac46b7551d714d",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r-1.out": "f73476bcd14fb32f0bac6490c6f67bb3d71ea1f59edfcd472a36cdc5ce9445f4",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r0.out": "faf0e8ab1cc66fc14e0205c199c02d79454e65694c8ac4e7bfe36b16c5c099b6",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r0.out": "4d47e863fd5b981fada5ef4c5d187b5f64b5b961dbb097d5e8c2a3eb15d3243c",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r0.out": "818eab735e5c9da03d875e0f19f5365858840493afbff8f88b777570ba4cc699",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r0.out": "de45d0054828e53f0b728ed7526c5b09ce6140e34a519be0b8782cea388f1499",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r1.out": "6f695cef531895dc211a830eb6c5105f254ab5f4557162da8a0ba6f0832ac193",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r1.out": "f3c4eda1c5115d6b1ed4ada1855bb66a7ba3f9e2ae098d3b73e62cb8bfc45beb",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r1.out": "f658a3ce0aed8bddcdcdc285b0563267da48f5e94c0c067769255792bfd37d2c",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r1.out": "a5f40505b898e2369689cedf965189d46d93e8d8179248aa52fc90473f865c38",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r2.out": "09d5f11e17f5119121f04a473957a700bc7294cb12b709d28be311b521cd472d",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r2.out": "7dba276966d63a668c732cd480a41edf0d2571ab196b49199d053e3fdbc42a42",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r2.out": "80d50d88dbbc8f4092c4233973bfc1191e382f0707bf1af79709aa4072b8488f",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r2.out": "8ac8152b2c7d55efc67132cc35365d1e2f8eed8a75800badf19565542b21eaae",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r3.out": "ed7f9ce517d02ac3ca97031cb16901b4a2710e484e6f5c60e9020ed7b2cf44f4",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r3.out": "a6fb409314883cfa0b92465067e75dc54a6aba6f9ae53442640afd4e3f0bb509",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r3.out": "8192559b0c46cd9f73cb7e5b2c8364c46ccdbcb7e17327a43b9d300ef33ba5d7",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r3.out": "e2999c571044760017ca75c2e6faaa50fdd5c0933b7e6fa0e7e3472f809a0d44",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r4.out": "3e8d7f8bbd1326a8a8068bc9486fd8e3461c2f3d1bb7d3c281831930b4d1fe00",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r4.out": "480d5589310cda5eb545049d482e05e78a94f73119294e13391364fb09e2fda4",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r4.out": "bf89ccc244de10c5b69e12630f3929148a84042e7f142c76da88cd1f41703078",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r4.out": "e6356e33adde005f5bc18774c2d4b3cd27c91028b392d6b4ce2e6c0fc534df91",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r5.out": "a7a7d0a9dbdca74e18f058f66262c36560f7cb04039271b549dc8cd24cad0194",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r5.out": "6f65ec89f0bfc1da8adb9656d7f163dacb5e540f1ec8f8f7a9f9da450ec8be4c",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r5.out": "6227922148480f4765a398181713bbe173483954f80d86b66f69b3e1cfeb5a49",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r5.out": "e810272c7c072de27305f43225c1128697ab5047be5a2c9fb998c1996a81726e",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r6.out": "3562164be082716459d7caea8b737ab9b5208c52f61960820cdca460aaee09dd",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r6.out": "7146a10c591ed8a5327eec954c5b425a2d2398bba76c5225b9c739df55bf18ca",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r6.out": "833c76b171814ebb59a693739b077fea77844036189e14cdc6a9951dd80c8d67",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r6.out": "ecdeefb06558f8023b43216225d12c3d85921cd30676ab7f2ac96bab7c041a08",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s0-r7.out": "1ae5bd45383b23881cc994273f859cac9d9261f5fd23d12d91c4c648cee16f8f",
+    "logs/AB-rmat26-16n-5536460/n16_4x14-s1-r7.out": "68a15257367fdc18b2f02eb1d73e629eb3fce4b9c4fcaddf066c3bb0839a80ed",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s0-r7.out": "e9384f6f98da4f07048739314ddbaee93ef262916aeedc80eb919b9b83da24db",
+    "logs/AB-rmat26-16n-5536460/n16_8x7-s1-r7.out": "76e769d63ecd99e08ee776156aeb09943fb6a3b1c23eeec31affa6aea284c537",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r-1.launch.out": "6ef90cc806597c41bc9a22a92254c664eb2e32423fc7e77003f1318437bd72a9",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r0.launch.out": "51834974da0f698adfd16c48dd795e699787778d2470db8573873eb1d5f28984",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r1.launch.out": "983c1f430a97607fdd204b91967abdf8bf8875fbe9a44adb6b15c85c7d3138aa",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r2.launch.out": "c0ce0c47c06f1a125ec98f4a580de65694feb5a5f4a98cd086c147519d3b6fd8",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r3.launch.out": "83f1764f348d280289f0dd4412ed5b4a2c1203a95a6c3973bd2774b1f76bc7a6",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r4.launch.out": "84171f30f243299b4ff7955e53af8729ee25f46723580ad674959c8eeede53b6",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r5.launch.out": "6d2a081cf107920953e9bc4e7839f646ae790aaf6ebc0130476f20ac5c67682e",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r6.launch.out": "a1d4903672a783647565b20859628389e35a5358a9fa222d8658554545d4f176",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-g0-r7.launch.out": "30177f290030fbd37a239ed21067a37c19bd01889abdf62792b81be280ca6266",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r-1.launch.out": "996f40173e91aca634c5fe1a7f5cc259a33b083033634e846cb18345ea42bbc1",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r0.launch.out": "5f880f037d4ac8f12e368b962106f47cb63ee87e9eb15988e275d171a02daa42",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r1.launch.out": "3d4e9d9c0228d10fa4b23c77cbfc7c7e840f73130de46d3f411a115c3bf58b4e",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r2.launch.out": "1fbd0db67c6156dc60cd8b0164475db40c74ebb3985c8aa71e97538ae2b82874",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r3.launch.out": "f934b3b98653c8cc3cf9ce60c83c3bcfb8d45aa6933ad62172a0a85cd4950c18",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r4.launch.out": "442b7476ed757d187ba990d071bf83408fa1dfa5cb3653b42bd848140e571d87",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r5.launch.out": "310876ddc182bb26f1b84b59e828a5591c3063080664ab0e6629dc9ec89db24e",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r6.launch.out": "b7c5c2ec8d5fe8e646c4a175458b5e4dd2c47ec09fac8f35c072460e220f6a1e",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-g0-r7.launch.out": "6ff835b1d9f852f0bd51fd1b46d9342656e616cb7bef5d30a681f872cc055e7d",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r-1.out": "46e0f1da022161e5e5139d1c2362c4f909e68b872c1b742fda70e6518c1a7e7c",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r-1.out": "f7512779e3e03725c23974cd0f25c535ce923cd888e26a8b81d7acc10bddc136",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r-1.out": "091be02f9d285f3de6b458df41ef599ee732a464a88f5c141fcbede7a33ffd83",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r-1.out": "55114ffb34592c753a4b9e9bf4bc0b686df244843a5aa65f4df8346e85d85d3f",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r0.out": "8d9c6466fce7e43119097f1a51cac73fbd2fe3e297ab175b119a2950e176bb37",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r0.out": "c0636993b42abbbb46c7385fcba7c3e6a0a1d8ae49cb8233bb7e362b6988dbb1",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r0.out": "a74e1382bbd2788b6122737ac3c5deca4d5a2a93a1a7193eb5a9eef66caebba4",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r0.out": "d1a196b24c79fd8de4602f66e9b5d751e1a0f7a68a6544cfcdc6f382bf6c26d4",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r1.out": "0ebeffc3cda03723fa11a8bb6164fb120b96a921f85eccf9db4af61b3bad4c38",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r1.out": "ac034cec4f110012ca4ea2bdad5f0c80cb3c2b69befad6a39dff043759cabac4",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r1.out": "dc37e11489ae8ddfbf12d8cdbf99dc1018e14ba05cff7f6d0c6240e732ec878d",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r1.out": "9a9a92bc27a7866e8cdf16706a2debdf0482b4bad1bffbefc16b6d0406a67701",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r2.out": "bbc86a9acb90c10c2a5906bd983cd396f8446ad6d00302f20a591c6363083d19",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r2.out": "8246ce37f17abc24ca90e5fc31946521774d5a8356a66bd1c40aa1f785543946",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r2.out": "54ac5f2801f96f37ac6919d540e36cad5d997bb0c1c16055f4b487592c82168b",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r2.out": "72a83990cb9aac059d566049006c511231b04d02d802cac33550b4fb6b1eb4fd",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r3.out": "1a8ea631998afecd91846ae6bc664ef0e0dd514843b349032a943ea4d6beab3f",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r3.out": "45c04ef521d16f98520ffe28933885b26c9cb7b83f4bb9cefb953549a1759e97",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r3.out": "da7814883366d2667e2588c5dae53616e60ce75030470af7943ed9f4541e799b",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r3.out": "112dab7a2c325553dc828e81a06478937dfe18a128eff5bae9ae46646d23c811",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r4.out": "9348c7acf97b42450a5de042eb767cbb287a633a4900ff5a4fe710012c3e4c40",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r4.out": "d253d6421666a28a43f90e476352a41ec37c3cf124f3cdb3e0540e4ba35f14d1",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r4.out": "589d92064faf3d3bbf6ec64b0b64dd5af59e80ad728d27ca5ef20f6e507c653b",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r4.out": "8cfbd7c4c60d211b46a782713f9be84b7ce461ddb3e3033089fe72109c937e35",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r5.out": "52f6679e44c89a499cba9b181cc586bb6f30720320ad5651aa6e6226e5ea4e62",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r5.out": "36099eb316954ba6c632399493514cbfb2f47c680b7699adb0e2fefd058195fe",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r5.out": "c725d09e0790d8be668fcab1c59a2ac692659e449fa0a6c48af499f960466e92",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r5.out": "55bbe67a95e2d5eaa645a8d1151ebe82e9141ee8ef9f4922e78b1618d433b81b",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r6.out": "ff27e10c899288a78928ff9025409df98e67b0434acdff1ebce5ef448524eab8",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r6.out": "e88fd3b8f5961ae5ca56f6a34995ffe0352c281d769461ef3043ebe50afe8492",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r6.out": "f77114ba083b7047adb445920abe53ed7eb8ab9b768b29386d73f9b49dca6b06",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r6.out": "dc46267e1d2206ecef23fdb237fa8ed63043187a72eadbabef69298f73094053",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s0-r7.out": "29527fbcdccaa8b9bd93de33bbcb90d6d54bcf25308e9b200986fc9589ff3e38",
+    "logs/AB-rmat27-16n-5536460/n16_4x14-s1-r7.out": "26e34ce84145af4bf59b692927a44febde50b88c6b0ef7a7b7346733d6678323",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s0-r7.out": "e8de43975c5fab502355a66d9bcf15319ee420b69c18fabd2ed650e2e0c863c3",
+    "logs/AB-rmat27-16n-5536460/n16_8x7-s1-r7.out": "6a63f7553547cc0ef1ec0716b9ef49e8970deda5784243f0d19d8a03782ea5cd"
+  }
+}

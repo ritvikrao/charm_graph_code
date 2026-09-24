@@ -1,6 +1,7 @@
 # ACIC current evidence
 
-*Status at repository revision `48b6c2b`, 2026-09-23. This document replaces
+*Status at repository revision `48b6c2b`, 2026-09-23; Wasp, RIKEN and scaling
+evidence added 2026-09-24. This document replaces
 the individual experiment narratives. Raw summaries remain under
 `design/onenode-data/`; job logs remain in the recorded campaign directories;
 the deleted narratives remain in Git history.*
@@ -13,8 +14,15 @@ sixteen Frontier nodes. Both cells use 896 PEs, four held-out sources and two
 allocations. Removing heap slice 8 loses the win, so the cadence mechanism is
 causal rather than a favorable baseline draw.
 
+Against tuned Wasp, the stronger modern multicore baseline, the Frontier cell
+is narrower: ACIC/Wasp is 0.81–1.04 by source (median 0.93) in both
+allocations, so ACIC is faster on three of four held-out sources and 2–4%
+slower on one. The claim against the best multicore code is a narrow median
+win, not a win on every source.
+
 The result is specific to sparse meshes. Road remains 1.45–1.51× slower than
-GAPBS after its work is brought close to the useful-work floor. Scale-free
+GAPBS after its work is brought close to the useful-work floor, and 2.5–2.8×
+slower than tuned Wasp on the same sources. Scale-free
 graphs remain 1.87–3.65× slower than RIKEN in the last complete comparison.
 No measured live adaptive policy causes the accepted result.
 
@@ -140,6 +148,43 @@ step is faster than the one before on every source in both allocations. 18 of
 misses were a 2.5% control difference on one source and batch-8 work of 5.41
 against a predicted ceiling of 5.4 attempts per edge.
 
+### 9. Wasp and RIKEN references on Frontier
+
+**Wasp** (SC25 artifact, `bin/wasp_sssp`, digest adapter
+`benchmarks/wasp_driver.cpp`) matches the independent reference on all 58
+sources of seven graphs (job 5536535), so it reads the native weights. Tuned
+like GAPBS, a joint thread × Δ search on training sources then four held-out
+sources (job 5536541), it selects 56 threads with GAPBS's Δ (4096 on mesh,
+32768 on road). Both choices sit at the 56-thread boundary.
+
+| Graph | Wasp held-out | GAPBS held-out | Wasp/GAPBS | ACIC/Wasp |
+|---|---:|---:|---:|---:|
+| `mesh26-z` | 0.262–0.293 s | 0.316–0.352 s | 0.77–0.86 | 0.81–1.04 at 16 nodes (median 0.93) |
+| `road-usa-z` | 0.067–0.077 s | 0.116–0.142 s | 0.55–0.60 | 2.46–2.82 at 8 nodes, training sources |
+
+The mesh ratios pair each held-out source with the 16-node cells of jobs
+5536321/5536322; the road ratios pair the training sources of jobs
+5534016/5534017 with Wasp's training runs of its selected setting. The Wasp and
+ACIC cells come from different jobs. Five Wasp launches at mesh Δ 4 hit the
+180 s launch limit (the other four at that Δ took 52–68 s, against GAPBS's
+4–7 s); they are recorded and do not affect the selection.
+
+**RIKEN** at 16 nodes (jobs 5536474/5536475, independent searches) selects
+8 ranks/node with Δ 16 (rmat25/26/27) or 64 (orkut, uniform25) in both
+allocations; held-out medians agree within 1%: orkut 0.031 s, rmat25 0.063 s,
+uniform25 0.187–0.188 s, rmat26 0.123 s, rmat27 0.231 s. On `mesh26-z` (job
+5536476, one allocation) it selects Δ 1024 and takes 19–55 s per solve, about
+200× ACIC's 16-node time. Road is outside RIKEN's exact-distance range. The
+only failures are the known Δ-equal-to-denominator aborts.
+
+**ACIC on the scale-free graphs at 16 nodes** chose 4 × 14 for rmat25,
+uniform25, rmat26 and rmat27 and 8 × 7 for orkut on training sources (job
+5536460). The launch bimodality nearly disappears at 16 nodes: rmat25, rmat27,
+uniform25 and orkut ran every launch in one mode, and rmat26 had 1–2 slow
+launches of 8 at negligible cost. Training-source times suggest ACIC trails
+RIKEN by about 1.25× (uniform25) to 3.2× (rmat27); the held-out confirmation is
+jobs 5538389–5538392.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
@@ -150,6 +195,8 @@ against a predicted ceiling of 5.4 attempts per edge.
 | Frontier road | `design/onenode-data/frontier-road-rounds-5534016.json` and 5534017; `benchmarks/frontier-road-rounds-8n-variants.json` |
 | Runtime scheduler | layout and old-scheduler JSON summaries under `design/onenode-data/`; `benchmarks/oldsched-variants.json` |
 | Frontier mesh strong scaling and ablation | `design/onenode-data/frontier-mesh-scaling-5536321.json`, `-5536322.json` and `frontier-mesh-scaling-report.json` (`benchmarks/mesh_scaling_report.py`); `benchmarks/frontier-mesh-scaling-variants.json`, predictions recorded in commit `026e502` |
+| Frontier Wasp and RIKEN references | `design/onenode-data/frontier-wasp-1n-5536541.json`, `frontier-riken-16n-5536474.json`, `-5536475.json`, `-5536476.json`; smoke job 5536535 |
+| Frontier scale-free layout selection | `design/onenode-data/frontier-scalefree-layout-5536460.json` and `frontier-scalefree-layout-modes-5536460.json`; `benchmarks/frontier-scalefree-layout-variants.json` |
 | Frontier RMAT behavior | `design/onenode-data/frontier-rmat-regression-5534333.json` and 5534334 plus probe configurations named `benchmarks/frontier-*-probe-variants.json` |
 
 Anvil raw logs are rooted at `/anvil/scratch/x-rrao/acic/`; Frontier raw logs
@@ -159,18 +206,19 @@ and paths are consolidated in [configurations.md](configurations.md).
 ## Claims supported now
 
 1. At 896 CPU PEs, sliced asynchronous ACIC beats tuned one-node GAPBS on the
-   measured `mesh26-z` class on two machines and held-out sources.
+   measured `mesh26-z` class on two machines and held-out sources. Against
+   tuned Wasp on Frontier it wins on the median (0.93) but not on every source.
 2. Process-wide priority plus batched removal reduces redundant sparse-graph
    work, and heap slicing converts that reduction to a distributed mesh gain.
    At 16 Frontier nodes each step of the cumulative ablation is faster than the
    previous one, from 3.2–3.3× the candidate's time with a local queue.
-5. The fixed mesh candidate strong-scales from 1 to 16 Frontier nodes at
-   6.6× (41% efficiency), with time falling at every doubling; the efficiency
-   loss is measured redundant work, not inter-node traffic.
 3. On road, a representable global ordering window approaches minimal edge
    work, after which controller round cost is the dominant measured limit.
 4. Runtime scheduling materially changes asynchronous SSSP work; registered
    scheduling causes a reproduced 30–45% regression on road.
+5. The fixed mesh candidate strong-scales from 1 to 16 Frontier nodes at
+   6.6× (41% efficiency), with time falling at every doubling; the efficiency
+   loss is measured redundant work, not inter-node traffic.
 
 ## Claims not supported
 

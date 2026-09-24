@@ -1,0 +1,452 @@
+[
+  {
+    "directory": "AB-orkut-16n-5536460",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]": {
+        "arms": [
+          "n16_4x14"
+        ],
+        "launches": 8,
+        "bimodal": false,
+        "tail_ratio": 1.113992134494756,
+        "slow_launches": 0
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_8x7"
+        ],
+        "launches": 8,
+        "bimodal": false,
+        "tail_ratio": 1.3398721924976071,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_8x7": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.06626699999999999,
+        "median": 0.06626699999999999,
+        "mean": 0.066763875,
+        "sources": {
+          "189054": {
+            "fast": 0.066914,
+            "slow": null,
+            "median": 0.066914,
+            "mean": 0.06754075
+          },
+          "2515403": {
+            "fast": 0.06562,
+            "slow": null,
+            "median": 0.06562,
+            "mean": 0.065987
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      },
+      "n16_4x14": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.09151875000000001,
+        "median": 0.09151875000000001,
+        "mean": 0.09152556249999999,
+        "sources": {
+          "189054": {
+            "fast": 0.094395,
+            "slow": null,
+            "median": 0.094395,
+            "mean": 0.09372575
+          },
+          "2515403": {
+            "fast": 0.08864250000000001,
+            "slow": null,
+            "median": 0.08864250000000001,
+            "mean": 0.089325375
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      }
+    }
+  },
+  {
+    "directory": "AB-rmat25-16n-5536460",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]": {
+        "arms": [
+          "n16_4x14"
+        ],
+        "launches": 8,
+        "bimodal": false,
+        "tail_ratio": 1.3568040002425705,
+        "slow_launches": 0
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_8x7"
+        ],
+        "launches": 8,
+        "bimodal": false,
+        "tail_ratio": 1.3573001698834004,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_8x7": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.2078535,
+        "median": 0.2078535,
+        "mean": 0.21230312499999998,
+        "sources": {
+          "9130980": {
+            "fast": 0.221491,
+            "slow": null,
+            "median": 0.221491,
+            "mean": 0.224042625
+          },
+          "29743083": {
+            "fast": 0.194216,
+            "slow": null,
+            "median": 0.194216,
+            "mean": 0.200563625
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      },
+      "n16_4x14": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.198189,
+        "median": 0.198189,
+        "mean": 0.201866375,
+        "sources": {
+          "9130980": {
+            "fast": 0.203269,
+            "slow": null,
+            "median": 0.203269,
+            "mean": 0.210124
+          },
+          "29743083": {
+            "fast": 0.19310899999999998,
+            "slow": null,
+            "median": 0.19310899999999998,
+            "mean": 0.19360875
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      }
+    }
+  },
+  {
+    "directory": "AB-uniform25-16n-5536460",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]": {
+        "arms": [
+          "n16_4x14"
+        ],
+        "launches": 8,
+        "bimodal": false,
+        "tail_ratio": 1.1210670635146525,
+        "slow_launches": 0
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_8x7"
+        ],
+        "launches": 8,
+        "bimodal": false,
+        "tail_ratio": 1.1128811236540863,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_8x7": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.253066,
+        "median": 0.253066,
+        "mean": 0.25468525,
+        "sources": {
+          "29743083": {
+            "fast": 0.26203,
+            "slow": null,
+            "median": 0.26203,
+            "mean": 0.264247
+          },
+          "31146309": {
+            "fast": 0.24410199999999999,
+            "slow": null,
+            "median": 0.24410199999999999,
+            "mean": 0.2451235
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      },
+      "n16_4x14": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.2342275,
+        "median": 0.2342275,
+        "mean": 0.2350175625,
+        "sources": {
+          "29743083": {
+            "fast": 0.237128,
+            "slow": null,
+            "median": 0.237128,
+            "mean": 0.236818125
+          },
+          "31146309": {
+            "fast": 0.231327,
+            "slow": null,
+            "median": 0.231327,
+            "mean": 0.233217
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      }
+    }
+  },
+  {
+    "directory": "AB-rmat26-16n-5536460",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]": {
+        "arms": [
+          "n16_4x14"
+        ],
+        "launches": 8,
+        "bimodal": true,
+        "tail_ratio": 1.5443712968445864,
+        "slow_launches": 2
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_8x7"
+        ],
+        "launches": 8,
+        "bimodal": true,
+        "tail_ratio": 2.0263076282128365,
+        "slow_launches": 1
+      }
+    },
+    "arms": {
+      "n16_8x7": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 1,
+        "fast": 0.388828,
+        "median": 0.39202899999999996,
+        "mean": 0.389584375,
+        "sources": {
+          "21987187": {
+            "fast": 0.395228,
+            "slow": 0.423489,
+            "median": 0.398909,
+            "mean": 0.393339375
+          },
+          "29743083": {
+            "fast": 0.382428,
+            "slow": 0.42513,
+            "median": 0.38514899999999996,
+            "mean": 0.385829375
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "slow"
+        }
+      },
+      "n16_4x14": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]",
+        "launches": 8,
+        "slow_launches": 2,
+        "fast": 0.36976625,
+        "median": 0.37741375,
+        "mean": 0.378520625,
+        "sources": {
+          "21987187": {
+            "fast": 0.3747205,
+            "slow": 0.39015849999999996,
+            "median": 0.3808365,
+            "mean": 0.3841555
+          },
+          "29743083": {
+            "fast": 0.364812,
+            "slow": 0.3950395,
+            "median": 0.37399099999999996,
+            "mean": 0.37288575
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "slow",
+          "4": "slow",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      }
+    }
+  },
+  {
+    "directory": "AB-rmat27-16n-5536460",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]": {
+        "arms": [
+          "n16_4x14"
+        ],
+        "launches": 8,
+        "bimodal": false,
+        "tail_ratio": 1.2092532913011418,
+        "slow_launches": 0
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_8x7"
+        ],
+        "launches": 8,
+        "bimodal": false,
+        "tail_ratio": 1.1803146830652733,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_8x7": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.758499,
+        "median": 0.758499,
+        "mean": 0.763563875,
+        "sources": {
+          "7224676": {
+            "fast": 0.7503070000000001,
+            "slow": null,
+            "median": 0.7503070000000001,
+            "mean": 0.76406975
+          },
+          "9130980": {
+            "fast": 0.766691,
+            "slow": null,
+            "median": 0.766691,
+            "mean": 0.763058
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      },
+      "n16_4x14": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 4, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.73188275,
+        "median": 0.73188275,
+        "mean": 0.73085725,
+        "sources": {
+          "7224676": {
+            "fast": 0.7002095,
+            "slow": null,
+            "median": 0.7002095,
+            "mean": 0.70290525
+          },
+          "9130980": {
+            "fast": 0.763556,
+            "slow": null,
+            "median": 0.763556,
+            "mean": 0.75880925
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      }
+    }
+  }
+]

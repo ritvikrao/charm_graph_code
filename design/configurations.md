@@ -135,6 +135,17 @@ manifest. Use these records rather than filesystem timestamps.
 | Frontier `mesh26-z` | 56 threads, delta 4096 | Joint thread × delta search on training sources. |
 | Frontier `road-usa-z` | 56 threads, delta 32768 | Joint thread × delta search on training sources. |
 
+| Machine / graph | Wasp setting (`bin/wasp_sssp`) | Selection |
+|---|---|---|
+| Frontier `mesh26-z` | 56 threads, delta 4096 | Joint thread × delta search on training sources, job 5536541 (`onenode_gap_tune.py --engine wasp`). |
+| Frontier `road-usa-z` | 56 threads, delta 32768 | Same job and search. |
+
+| Machine / graph (16 nodes) | RIKEN setting | Selection |
+|---|---|---|
+| Frontier orkut, `uniform25` | 8 ranks/node × 7 threads, delta 64 | `run.py --mode external`, layout then delta on training sources; same choice in jobs 5536474/5536475. |
+| Frontier `rmat25`, `rmat26`, `rmat27` | 8 ranks/node × 7 threads, delta 16 | Same jobs. |
+| Frontier `mesh26-z` | 8 ranks/node × 7 threads, delta 1024 | Job 5536476. Road-usa-z exceeds RIKEN's exact-distance range. |
+
 Anvil road reference times are 0.117–0.142 seconds; consult the GAPBS tuning
 record for the exact selected grid cell before another road acceptance run.
 Do not infer baseline settings from the ACIC bucket width.

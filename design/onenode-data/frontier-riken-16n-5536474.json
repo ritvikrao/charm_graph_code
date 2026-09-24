@@ -1,0 +1,711 @@
+{
+ "job": 5536474,
+ "engine": "riken",
+ "nodes": 16,
+ "hosts": "frontier[02169,02287,03195-03196,05751,06399,06503,06506,06784,06904,07671,08574,08956,09088,09190,09340]",
+ "binary_sha256": [
+  "a01b5f82326d89d97bc3479feb44259535328a94784258560bc59c290320dd9d"
+ ],
+ "raw_log_sha256": "1a63554ff3e6be45cc908c422f800b3e008ea4ed1004e2b18cd54c33ceca09d5",
+ "records_sha256": "cb60e4b32fff9d04d9e0e1a1e9e466f0389083722a7d4ac0706d31a94d826960",
+ "launches": 120,
+ "outcomes": {
+  "ok": 113,
+  "crash": 7
+ },
+ "graphs": {
+  "orkut": {
+   "selected": {
+    "engine": "riken",
+    "name": "riken",
+    "rpn": 8,
+    "threads": 7,
+    "cpus": 7,
+    "delta": 64,
+    "denominator": 1024,
+    "presolve": 0,
+    "chosen": "riken-r8-d64"
+   },
+   "search": {
+    "riken": {
+     "layout": "riken-r8-d64",
+     "selected": "riken-r8-d64"
+    },
+    "candidates": {
+     "riken-r2-d64": {
+      "valid": true,
+      "seconds": [
+       0.041937041
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r4-d64": {
+      "valid": true,
+      "seconds": [
+       0.040228619
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d64": {
+      "valid": true,
+      "seconds": [
+       0.029115697,
+       0.028914338
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r56-d64": {
+      "valid": true,
+      "seconds": [
+       0.050501133
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d16": {
+      "valid": true,
+      "seconds": [
+       0.032396469,
+       0.032621894
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d256": {
+      "valid": true,
+      "seconds": [
+       0.064619059,
+       0.061548528
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d1024": {
+      "valid": false,
+      "seconds": [
+       null,
+       null
+      ],
+      "outcomes": [
+       "crash",
+       "crash"
+      ]
+     }
+    }
+   },
+   "heldout": {
+    "254572": {
+     "seconds": [
+      0.031902843,
+      0.031621699,
+      0.03178019
+     ],
+     "median": 0.03178019
+    },
+    "1892699": {
+     "seconds": [
+      0.031040665,
+      0.030336297,
+      0.030756394
+     ],
+     "median": 0.030756394
+    },
+    "2549343": {
+     "seconds": [
+      0.030622742,
+      0.030754201,
+      0.030578858
+     ],
+     "median": 0.030622742
+    },
+    "2608772": {
+     "seconds": [
+      0.029664459,
+      0.029524454,
+      0.029105097
+     ],
+     "median": 0.029524454
+    }
+   },
+   "heldout_median": 0.030689568,
+   "failures": [
+    {
+     "config": "riken-r8-d1024",
+     "phase": "external-parameters",
+     "outcome": "crash",
+     "source": 2515403,
+     "launch_wall_seconds": 4.8
+    },
+    {
+     "config": "riken-r8-d1024",
+     "phase": "external-parameters",
+     "outcome": "crash",
+     "source": 189054,
+     "launch_wall_seconds": 2.8
+    }
+   ]
+  },
+  "rmat25": {
+   "selected": {
+    "engine": "riken",
+    "name": "riken",
+    "rpn": 8,
+    "threads": 7,
+    "cpus": 7,
+    "delta": 16,
+    "denominator": 1024,
+    "presolve": 0,
+    "chosen": "riken-r8-d16"
+   },
+   "search": {
+    "riken": {
+     "layout": "riken-r8-d64",
+     "selected": "riken-r8-d16"
+    },
+    "candidates": {
+     "riken-r2-d64": {
+      "valid": true,
+      "seconds": [
+       0.16522396
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r4-d64": {
+      "valid": true,
+      "seconds": [
+       0.096965222
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d64": {
+      "valid": true,
+      "seconds": [
+       0.075113145,
+       0.074447755
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r56-d64": {
+      "valid": true,
+      "seconds": [
+       0.103045458
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d16": {
+      "valid": true,
+      "seconds": [
+       0.062580409,
+       0.062085072
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d256": {
+      "valid": true,
+      "seconds": [
+       0.151350938,
+       0.16054379
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d1024": {
+      "valid": false,
+      "seconds": [
+       null,
+       null
+      ],
+      "outcomes": [
+       "crash",
+       "crash"
+      ]
+     }
+    }
+   },
+   "heldout": {
+    "20659448": {
+     "seconds": [
+      0.062674889,
+      0.062473571,
+      0.062556054
+     ],
+     "median": 0.062556054
+    },
+    "21987187": {
+     "seconds": [
+      0.062541185,
+      0.062169739,
+      0.062384812
+     ],
+     "median": 0.062384812
+    },
+    "23077392": {
+     "seconds": [
+      0.06789768,
+      0.067097464,
+      0.067372205
+     ],
+     "median": 0.067372205
+    },
+    "26007212": {
+     "seconds": [
+      0.064289591,
+      0.064239919,
+      0.064245796
+     ],
+     "median": 0.064245796
+    }
+   },
+   "heldout_median": 0.063400925,
+   "failures": [
+    {
+     "config": "riken-r8-d1024",
+     "phase": "external-parameters",
+     "outcome": "crash",
+     "source": 29743083,
+     "launch_wall_seconds": 3.1
+    },
+    {
+     "config": "riken-r8-d1024",
+     "phase": "external-parameters",
+     "outcome": "crash",
+     "source": 9130980,
+     "launch_wall_seconds": 3.7
+    }
+   ]
+  },
+  "uniform25": {
+   "selected": {
+    "engine": "riken",
+    "name": "riken",
+    "rpn": 8,
+    "threads": 7,
+    "cpus": 7,
+    "delta": 64,
+    "denominator": 1024,
+    "presolve": 0,
+    "chosen": "riken-r8-d64"
+   },
+   "search": {
+    "riken": {
+     "layout": "riken-r8-d64",
+     "selected": "riken-r8-d64"
+    },
+    "candidates": {
+     "riken-r2-d64": {
+      "valid": true,
+      "seconds": [
+       0.300124716
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r4-d64": {
+      "valid": true,
+      "seconds": [
+       0.225630799
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d64": {
+      "valid": true,
+      "seconds": [
+       0.193237801,
+       0.185454801
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r56-d64": {
+      "valid": true,
+      "seconds": [
+       0.296229608
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d16": {
+      "valid": true,
+      "seconds": [
+       0.242978468,
+       0.245782634
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d256": {
+      "valid": true,
+      "seconds": [
+       0.192253158,
+       0.207700265
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d1024": {
+      "valid": true,
+      "seconds": [
+       0.766310929,
+       0.767683953
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     }
+    }
+   },
+   "heldout": {
+    "7224676": {
+     "seconds": [
+      0.186946808,
+      0.188599283,
+      0.187002498
+     ],
+     "median": 0.187002498
+    },
+    "9130980": {
+     "seconds": [
+      0.186133637,
+      0.187623378,
+      0.186767091
+     ],
+     "median": 0.186767091
+    },
+    "23077392": {
+     "seconds": [
+      0.18943992,
+      0.188170819,
+      0.188243787
+     ],
+     "median": 0.188243787
+    },
+    "26007212": {
+     "seconds": [
+      0.18038963,
+      0.182584472,
+      0.181151979
+     ],
+     "median": 0.181151979
+    }
+   },
+   "heldout_median": 0.1868847945,
+   "failures": []
+  },
+  "rmat26": {
+   "selected": {
+    "engine": "riken",
+    "name": "riken",
+    "rpn": 8,
+    "threads": 7,
+    "cpus": 7,
+    "delta": 16,
+    "denominator": 1024,
+    "presolve": 0,
+    "chosen": "riken-r8-d16"
+   },
+   "search": {
+    "riken": {
+     "layout": "riken-r8-d64",
+     "selected": "riken-r8-d16"
+    },
+    "candidates": {
+     "riken-r2-d64": {
+      "valid": true,
+      "seconds": [
+       0.287082112
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r4-d64": {
+      "valid": true,
+      "seconds": [
+       0.199930964
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d64": {
+      "valid": true,
+      "seconds": [
+       0.152606853,
+       0.162413562
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r56-d64": {
+      "valid": true,
+      "seconds": [
+       0.183523906
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d16": {
+      "valid": true,
+      "seconds": [
+       0.124145185,
+       0.122063162
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d256": {
+      "valid": true,
+      "seconds": [
+       0.175653764,
+       0.250812011
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d1024": {
+      "valid": false,
+      "seconds": [
+       0.569200431,
+       null
+      ],
+      "outcomes": [
+       "ok",
+       "crash"
+      ]
+     }
+    }
+   },
+   "heldout": {
+    "8530897": {
+     "seconds": [
+      0.123661956,
+      0.124632327,
+      0.124993913
+     ],
+     "median": 0.124632327
+    },
+    "27797227": {
+     "seconds": [
+      0.123997168,
+      0.123559923,
+      0.123923103
+     ],
+     "median": 0.123923103
+    },
+    "47836480": {
+     "seconds": [
+      0.122390431,
+      0.121920083,
+      0.122322548
+     ],
+     "median": 0.122322548
+    },
+    "48422984": {
+     "seconds": [
+      0.122142057,
+      0.122838829,
+      0.121844709
+     ],
+     "median": 0.122142057
+    }
+   },
+   "heldout_median": 0.1231228255,
+   "failures": [
+    {
+     "config": "riken-r8-d1024",
+     "phase": "external-parameters",
+     "outcome": "crash",
+     "source": 21987187,
+     "launch_wall_seconds": 6.1
+    }
+   ]
+  },
+  "rmat27": {
+   "selected": {
+    "engine": "riken",
+    "name": "riken",
+    "rpn": 8,
+    "threads": 7,
+    "cpus": 7,
+    "delta": 16,
+    "denominator": 1024,
+    "presolve": 0,
+    "chosen": "riken-r8-d16"
+   },
+   "search": {
+    "riken": {
+     "layout": "riken-r8-d64",
+     "selected": "riken-r8-d16"
+    },
+    "candidates": {
+     "riken-r2-d64": {
+      "valid": true,
+      "seconds": [
+       0.706109003
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r4-d64": {
+      "valid": true,
+      "seconds": [
+       0.455623901
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d64": {
+      "valid": true,
+      "seconds": [
+       0.363225478,
+       0.323295077
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r56-d64": {
+      "valid": true,
+      "seconds": [
+       0.408501566
+      ],
+      "outcomes": [
+       "ok"
+      ]
+     },
+     "riken-r8-d16": {
+      "valid": true,
+      "seconds": [
+       0.23154784,
+       0.230130573
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d256": {
+      "valid": true,
+      "seconds": [
+       0.418702957,
+       0.511511091
+      ],
+      "outcomes": [
+       "ok",
+       "ok"
+      ]
+     },
+     "riken-r8-d1024": {
+      "valid": false,
+      "seconds": [
+       null,
+       null
+      ],
+      "outcomes": [
+       "crash",
+       "crash"
+      ]
+     }
+    }
+   },
+   "heldout": {
+    "27797227": {
+     "seconds": [
+      0.230118639,
+      0.231179141,
+      0.22994356
+     ],
+     "median": 0.230118639
+    },
+    "54213880": {
+     "seconds": [
+      0.231485583,
+      0.233403012,
+      0.232513142
+     ],
+     "median": 0.232513142
+    },
+    "115531848": {
+     "seconds": [
+      0.230637588,
+      0.229551878,
+      0.230297543
+     ],
+     "median": 0.230297543
+    },
+    "126157692": {
+     "seconds": [
+      0.242044992,
+      0.241610669,
+      0.241165152
+     ],
+     "median": 0.241610669
+    }
+   },
+   "heldout_median": 0.2314053425,
+   "failures": [
+    {
+     "config": "riken-r8-d1024",
+     "phase": "external-parameters",
+     "outcome": "crash",
+     "source": 7224676,
+     "launch_wall_seconds": 12.3
+    },
+    {
+     "config": "riken-r8-d1024",
+     "phase": "external-parameters",
+     "outcome": "crash",
+     "source": 9130980,
+     "launch_wall_seconds": 13.1
+    }
+   ]
+  }
+ }
+}
