@@ -29,19 +29,22 @@ def file_hash(path):
     return digest.hexdigest()
 
 
-def profile_summary(text, pes):
+def profile_summary(text, pes, source_index=0, source_count=1):
+    # Each PE prints once per source, after its solve timer stops. Rank-local
+    # logs preserve that order even though there is no ordering across ranks.
     records = {}
     for line in text.splitlines():
         if not line.startswith('ROUND_PROFILE '):
             continue
         fields = dict(item.split('=', 1) for item in line.split()[1:])
         pe = int(fields.pop('pe'))
-        if pe in records:
-            raise ValueError('duplicate round profile for PE %d' % pe)
-        records[pe] = {name: [float(x) for x in value.split(',')]
-                       for name, value in fields.items()}
-    if set(records) != set(range(pes)):
-        raise ValueError('missing round profiles')
+        records.setdefault(pe, []).append(
+            {name: [float(x) for x in value.split(',')]
+             for name, value in fields.items()})
+    if (set(records) != set(range(pes)) or
+            any(len(rows) != source_count for rows in records.values())):
+        raise ValueError('missing or duplicate round profiles for a PE/source')
+    records = {pe: rows[source_index] for pe, rows in records.items()}
     result = {}
     for name in records[0]:
         active = [row[name] for row in records.values() if row[name][0]]
@@ -94,20 +97,30 @@ def main():
     (out/'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     records = []
 
-    def launch(binary, label, flags, rpn=args.rpn, extra_env=None):
+    def launch(binary, label, flags, rpn=args.rpn, extra_env=None, rank_output=False):
+        output_flags = []
+        if rank_output:
+            rank_dir = out/(label + '-ranks')
+            rank_dir.mkdir()
+            # Slurm can interleave even single CkPrintf records when combining
+            # stdout from many tasks. Keep the diagnostic records per rank.
+            output_flags = ['--output', str(rank_dir/'%t.out')]
         command = ['srun', '-N', str(nodes), '-n', str(nodes*rpn),
                    '--ntasks-per-node', str(rpn), '-c', str(machine.cpus_per_rank(rpn)),
                    *machine.acic_srun_extra(nodes), '--cpu-bind=none', '--unbuffered',
-                   '--kill-on-bad-exit=1', '--time=00:04:00', 'bash',
+                   '--kill-on-bad-exit=1', '--time=00:04:00', *output_flags, 'bash',
                    str(app/'benchmarks/launch_acic.sh'), str(rpn),
                    str(machine.acic_workers(rpn)), str(root/'bin'/binary),
                    *flags, '+old-scheduler']
-        log = out/(label + '.out')
+        log = out/(label + ('.srun.out' if rank_output else '.out'))
         (out/(label + '.command.json')).write_text(json.dumps(command) + '\n')
         with log.open('w') as stream:
             subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT,
                            env={**os.environ, **(extra_env or {})}, check=True, timeout=300)
-        text = log.read_text()
+        text = (rank_dir/'0.out').read_text() if rank_output else log.read_text()
+        if rank_output:
+            # Main's source markers, timings and digests are on rank zero.
+            (out/(label + '.out')).write_text(text)
         if 'Using the original scheduler (+old-scheduler)' not in text:
             raise ValueError('%s: old scheduler not confirmed' % log)
         return text
@@ -137,11 +150,14 @@ def main():
         run_sources = sources[:1] if one_source else sources
         run_flags = list(flags)
         run_flags[run_flags.index('--sources') + 1] = ','.join(run_sources)
-        text = launch(binary, label, run_flags + list(extra_flags))
+        text = launch(binary, label, run_flags + list(extra_flags), rank_output=profile)
+        if profile:
+            profile_text = '\n'.join((out/(label + '-ranks')/('%d.out' % rank)).read_text()
+                                     for rank in range(nodes*args.rpn))
         chunks = re.split(r'^SOURCE_RUN index=\d+ source=(\d+)\n', text, flags=re.M)
         if chunks[1::2] != run_sources:
             raise ValueError(label + ': missing or reordered sources')
-        for source, chunk in zip(run_sources, chunks[2::2]):
+        for source_index, (source, chunk) in enumerate(zip(run_sources, chunks[2::2])):
             log = out/(label + '-s' + source + '.out')
             log.write_text(chunk)
             check(ref, source, log)
@@ -152,7 +168,8 @@ def main():
             row['edge_attempts'] = production_attempts(chunk, vertices)
             row['attempts_per_edge'] = row['edge_attempts'] / edges
             if profile:
-                row['profile'] = profile_summary(chunk, nodes*workers)
+                row['profile'] = profile_summary(profile_text, nodes*workers,
+                                                 source_index, len(run_sources))
             if cost:
                 row['work'] = check_work_accounting(chunk, vertices)
             records.append(row)
