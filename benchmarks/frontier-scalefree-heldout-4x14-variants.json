@@ -1,0 +1,48 @@
+[
+  {
+    "label": "n16_4x14",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Held-out confirmation of the layout chosen on training sources in job 5536460 (rule in frontier-scalefree-layout-variants.json). Four held-out sources, 8 launches per arm, two allocations; fast-mode time and slow-launch count from benchmarks/launch_modes.py. Reference: RIKEN held-out medians at 16 nodes from jobs 5536474/5536475 (orkut 0.031, rmat25 0.063, uniform25 0.187, rmat26 0.123, rmat27 0.231 s). Predictions (median over sources of fast-mode source medians, divided by RIKEN): orkut 1.6-2.8x, rmat25 2.3-3.9x, uniform25 1.0-1.6x, rmat26 2.3-3.9x, rmat27 2.4-4.0x; ACIC slower than RIKEN on every source of every graph; the repeated control within 3% of its arm on every source; at most 2 of 16 launches per configuration classified slow on rmat25, rmat27, uniform25 and orkut."
+  },
+  {
+    "label": "n16_4x14_control",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Held-out confirmation of the layout chosen on training sources in job 5536460 (rule in frontier-scalefree-layout-variants.json). Four held-out sources, 8 launches per arm, two allocations; fast-mode time and slow-launch count from benchmarks/launch_modes.py. Reference: RIKEN held-out medians at 16 nodes from jobs 5536474/5536475 (orkut 0.031, rmat25 0.063, uniform25 0.187, rmat26 0.123, rmat27 0.231 s). Predictions (median over sources of fast-mode source medians, divided by RIKEN): orkut 1.6-2.8x, rmat25 2.3-3.9x, uniform25 1.0-1.6x, rmat26 2.3-3.9x, rmat27 2.4-4.0x; ACIC slower than RIKEN on every source of every graph; the repeated control within 3% of its arm on every source; at most 2 of 16 launches per configuration classified slow on rmat25, rmat27, uniform25 and orkut."
+  }
+]
