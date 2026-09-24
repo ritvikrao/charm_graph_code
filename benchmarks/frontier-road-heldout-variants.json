@@ -1,0 +1,100 @@
+[
+  {
+    "label": "n8_w128k",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "131072"
+    ],
+    "nodes": 8,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Road-usa-z on four held-out sources, one warmup and three repetitions, two allocations; the ordered road profile (width 131072, selected on training sources in jobs 5534016/5534017) and the plain mesh candidate. References on the same held-out sources: tuned GAPBS 0.116-0.142 s (job 5529591), tuned Wasp 0.067-0.077 s (job 5536541). Predictions (median over sources): n8_w128k 0.16-0.23 s; n16_w128k within 15% of n8_w128k on every source (round-bound: more PEs do not shorten rounds); n16_s8 at least 1.15x n16_w128k on every source; repeated control within 2% on every source; at the faster node count ACIC/Wasp 2.2-3.2 and ACIC/GAPBS 1.3-1.8."
+  },
+  {
+    "label": "n16_w128k",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "131072"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Road-usa-z on four held-out sources, one warmup and three repetitions, two allocations; the ordered road profile (width 131072, selected on training sources in jobs 5534016/5534017) and the plain mesh candidate. References on the same held-out sources: tuned GAPBS 0.116-0.142 s (job 5529591), tuned Wasp 0.067-0.077 s (job 5536541). Predictions (median over sources): n8_w128k 0.16-0.23 s; n16_w128k within 15% of n8_w128k on every source (round-bound: more PEs do not shorten rounds); n16_s8 at least 1.15x n16_w128k on every source; repeated control within 2% on every source; at the faster node count ACIC/Wasp 2.2-3.2 and ACIC/GAPBS 1.3-1.8."
+  },
+  {
+    "label": "n16_w128k_control",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "131072"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Road-usa-z on four held-out sources, one warmup and three repetitions, two allocations; the ordered road profile (width 131072, selected on training sources in jobs 5534016/5534017) and the plain mesh candidate. References on the same held-out sources: tuned GAPBS 0.116-0.142 s (job 5529591), tuned Wasp 0.067-0.077 s (job 5536541). Predictions (median over sources): n8_w128k 0.16-0.23 s; n16_w128k within 15% of n8_w128k on every source (round-bound: more PEs do not shorten rounds); n16_s8 at least 1.15x n16_w128k on every source; repeated control within 2% on every source; at the faster node count ACIC/Wasp 2.2-3.2 and ACIC/GAPBS 1.3-1.8."
+  },
+  {
+    "label": "n16_s8",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Road-usa-z on four held-out sources, one warmup and three repetitions, two allocations; the ordered road profile (width 131072, selected on training sources in jobs 5534016/5534017) and the plain mesh candidate. References on the same held-out sources: tuned GAPBS 0.116-0.142 s (job 5529591), tuned Wasp 0.067-0.077 s (job 5536541). Predictions (median over sources): n8_w128k 0.16-0.23 s; n16_w128k within 15% of n8_w128k on every source (round-bound: more PEs do not shorten rounds); n16_s8 at least 1.15x n16_w128k on every source; repeated control within 2% on every source; at the faster node count ACIC/Wasp 2.2-3.2 and ACIC/GAPBS 1.3-1.8."
+  }
+]
