@@ -37,7 +37,8 @@ unset LCT_PMI_BACKEND ACIC_SRUN_MPI
 OUT=$ROOT/profile/$GRAPH-${N}n-${RPN}x$PER-$SLURM_JOB_ID
 mkdir -p "$OUT"
 printf 'job=%s hosts=%s\nflags=%s\n' "$SLURM_JOB_ID" "$SLURM_JOB_NODELIST" "$FLAGS" | tee "$OUT/job.txt"
-sha256sum "$ROOT/bin/$BASE" "$ROOT/bin/acic_papi" "$ROOT/bin/acic_prj" "$ROOT/bin/riken_sssp_verbose" 2>/dev/null | tee -a "$OUT/job.txt"
+PAPI_BIN=${PAPI_BIN:-acic_papi}; PRJ_BIN=${PRJ_BIN:-acic_prj}
+sha256sum "$ROOT/bin/$BASE" "$ROOT/bin/$PAPI_BIN" "$ROOT/bin/$PRJ_BIN" "$ROOT/bin/riken_sssp_verbose" 2>/dev/null | tee -a "$OUT/job.txt"
 grep -E "^$SOURCE\b" "$ROOT/graphs/$GRAPH.reference.txt" | tee -a "$OUT/job.txt" || true
 EXTRA=()
 [ "$N" = 1 ] && EXTRA=(--network=single_node_vni)
@@ -63,14 +64,14 @@ for kind in $RUNS; do
     warmup|plain) launch "$ROOT/bin/$BASE" "$label" ;;
     timer)
       mkdir -p "$OUT/$label.prof"
-      ACIC_PROF_DIR="$OUT/$label.prof" ACIC_PROF_TIMER=${ACIC_PROF_TIMER:-100} launch "$ROOT/bin/acic_papi" "$label"
-      "$PY" "$APP/benchmarks/papi_profile_report.py" "$OUT/$label.prof" "$ROOT/bin/acic_papi" \
+      ACIC_PROF_DIR="$OUT/$label.prof" ACIC_PROF_TIMER=${ACIC_PROF_TIMER:-100} launch "$ROOT/bin/$PAPI_BIN" "$label"
+      "$PY" "$APP/benchmarks/papi_profile_report.py" "$OUT/$label.prof" "$ROOT/bin/$PAPI_BIN" \
           --run-output "$OUT/$label.out" > "$OUT/$label.md" 2>"$OUT/$label.report.err" || echo "$label: report failed" ;;
     trace)
       mkdir -p "$OUT/$label.trace"
-      launch "$ROOT/bin/acic_prj" "$label" +traceoff +traceroot "$OUT/$label.trace"
+      launch "$ROOT/bin/$PRJ_BIN" "$label" +traceoff +traceroot "$OUT/$label.trace"
       du -sh "$OUT/$label.trace"
-      "$PY" "$APP/benchmarks/projections_report.py" "$OUT/$label.trace/acic_prj" \
+      "$PY" "$APP/benchmarks/projections_report.py" "$OUT/$label.trace/$PRJ_BIN" \
           --pes-per-process "$PER" --processes-per-node "$RPN" --jobs 56 \
           --json "$OUT/$label-report.json" > "$OUT/$label-report.md" 2>"$OUT/$label.report.err" || echo "$label: report failed" ;;
     *) echo "unknown run kind $kind" >&2; exit 2 ;;

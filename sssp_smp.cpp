@@ -270,8 +270,19 @@ int skip_empty_mode = SKIP_EMPTY_AUTO;
 // only fall, so a target that has already reached d rejects anything at d or
 // above wherever and whenever it arrives. RIKEN's settled-vertex bitmap is the
 // same idea restricted to final vertices.
-long hub_hint_degree = 0;  // 0: off
+// auto (-1) is D = 256 wherever --lazy-heavy's auto rule holds (average
+// degree 8 or more and skewed degrees): on uniform25 every edge paid a table
+// probe for no filtering, 0.89-0.92x at 16 nodes (jobs 5538859/61).
+enum { HUB_HINTS_AUTO = -1, HUB_HINTS_AUTO_DEGREE = 256 };
+long hub_hint_degree = 0;  // 0: off, -1: auto
 int hub_hint_bits = 0;     // table size per process, log2 entries; 0: from |V|
+// The degree in force: auto resolves against the graph once it is read.
+static bool lazy_active();
+static long hub_hint_min_degree() {
+  if (hub_hint_degree == HUB_HINTS_AUTO)
+    return lazy_active() ? HUB_HINTS_AUTO_DEGREE : 0;
+  return hub_hint_degree;
+}
 enum { CONTROL_REDUCTION = 0, CONTROL_NODE = 1 };
 int control_mode = CONTROL_REDUCTION;
 double control_interval_ms = 0.25;
@@ -1413,10 +1424,12 @@ public:
         const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
         if (value == "off")
           hub_hint_degree = 0;
+        else if (value == "auto")
+          hub_hint_degree = HUB_HINTS_AUTO;
         else if (!value.empty() && std::stol(value) > 0)
           hub_hint_degree = std::stol(value);
         else {
-          ckout << "--hub-hints must be off or a minimum degree" << endl;
+          ckout << "--hub-hints must be off, auto or a minimum degree" << endl;
           CkExit(1);
           return;
         }
@@ -1964,8 +1977,9 @@ public:
     ckout << "Heap slice: " << heap_slice
           << (process_share_active() ? "" : " (inactive)") << endl;
     ckout << "Hub hints: ";
-    if (hub_hint_degree > 0) ckout << "degree >= " << hub_hint_degree;
+    if (hub_hint_min_degree() > 0) ckout << "degree >= " << hub_hint_min_degree();
     else ckout << "off";
+    if (hub_hint_degree == HUB_HINTS_AUTO) ckout << " (auto)";
     ckout << endl;
 #ifdef INFO_PRINTS
     ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
@@ -3180,8 +3194,10 @@ public:
     if (!table) {
       int bits = hub_hint_bits;
       if (bits == 0) {
+        // |V| / 32 entries: 2^21 (16 MB) for rmat26. At |V| / 8 the table was
+        // 64 MB a process and the probe was 12% of the samples (job 5538928).
         bits = 16;
-        while (bits < 28 && (1L << bits) < V / 8)
+        while (bits < 28 && (1L << bits) < V / 32)
           bits++;
       }
       shift = 64 - bits;
@@ -3215,10 +3231,12 @@ public:
       }
     }
   }
-  // Called by any PE of this process; sent by flush().
-  void publish(uint64_t v, uint64_t d) {
+  // Called by any PE of this process with its round's hubs; sent by flush().
+  void publish(const std::vector<uint64_t> &items) {
+    if (items.empty())
+      return;
     std::lock_guard<std::mutex> g(outbox_lock);
-    outbox.push_back((v << 32) | d);
+    outbox.insert(outbox.end(), items.begin(), items.end());
   }
   void flush() {
     std::vector<uint64_t> out;
@@ -3271,6 +3289,7 @@ private:
   bool hints_on = false;
   std::vector<uint32_t> hub_local;
   std::vector<cost> hub_sent;
+  std::vector<uint64_t> hub_batch;
   long hint_filtered = 0, hints_published = 0;
   int sent_cache_shift = 64;
   // Whether generate_updates() consults the table now: always under
@@ -4315,14 +4334,14 @@ public:
   // Between sources: the process table is cleared by its first PE (every PE
   // is here, and none is solving), and this PE's hubs are listed once.
   void reset_hub_hints() {
-    hints_on = hints && hub_hint_degree > 0 && V < 0xffffffffL;
+    hints_on = hints && hub_hint_min_degree() > 0 && V < 0xffffffffL;
     if (!hints_on)
       return;
     if (CkMyRank() == 0)
       hints->reset();
     if (hub_sent.empty()) {
       for (long v = 0; v < num_vertices; v++)
-        if (local_graph.degree(v) >= hub_hint_degree)
+        if (local_graph.degree(v) >= hub_hint_min_degree())
           hub_local.push_back((uint32_t)v);
       hub_sent.resize(hub_local.size());
     }
@@ -4334,14 +4353,16 @@ public:
   void publish_hub_hints() {
     if (!hints_on)
       return;
+    hub_batch.clear();
     for (size_t i = 0; i < hub_local.size(); i++) {
       const cost d = distances[hub_local[i]];
       if (d < hub_sent[i] && (unsigned long)d < 0xffffffffUL) {
-        hints->publish((uint64_t)(start_vertex + hub_local[i]), (uint64_t)d);
+        hub_batch.push_back(((uint64_t)(start_vertex + hub_local[i]) << 32) | (uint64_t)d);
         hub_sent[i] = d;
-        hints_published++;
       }
     }
+    hints_published += (long)hub_batch.size();
+    hints->publish(hub_batch);
     if (CkMyRank() == 0)
       hints->flush();
   }
