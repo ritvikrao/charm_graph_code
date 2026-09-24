@@ -135,11 +135,13 @@ manifest. Use these records rather than filesystem timestamps.
 | Anvil `mesh26-z` | 64 threads, delta 4096 | Fastest held-out reference across the frozen training-selected settings. |
 | Frontier `mesh26-z` | 56 threads, delta 4096 | Joint thread × delta search on training sources. |
 | Frontier `road-usa-z` | 56 threads, delta 32768 | Joint thread × delta search on training sources. |
+| Frontier `mesh24-z` | 56 threads, delta 4096 | Same search, job 5538410. |
 
 | Machine / graph | Wasp setting (`bin/wasp_sssp`) | Selection |
 |---|---|---|
 | Frontier `mesh26-z` | 56 threads, delta 4096 | Joint thread × delta search on training sources, job 5536541 (`onenode_gap_tune.py --engine wasp`). |
 | Frontier `road-usa-z` | 56 threads, delta 32768 | Same job and search. |
+| Frontier `mesh24-z` | 56 threads, delta 4096 | Same search, job 5538411. |
 
 | Machine / graph (16 nodes) | RIKEN setting | Selection |
 |---|---|---|
