@@ -8,45 +8,50 @@ the deleted narratives remain in Git history.*
 
 ## Executive conclusion
 
+*Reporting rule (2026-09-24): every comparison is a speedup, the reference
+time divided by ACIC's (or the named arm's) time. Above 1× means ACIC is
+faster; below 1× means it is slower.*
+
 ACIC has one accepted performance result. On `mesh26-z`, the frozen candidate
-beats tuned one-node GAPBS by 1.21–1.41× at eight Anvil nodes and 1.27–1.43× at
-sixteen Frontier nodes. Both cells use 896 PEs, four held-out sources and two
+has a 1.21–1.41× speedup over tuned one-node GAPBS at eight Anvil nodes and
+1.25–1.44× at sixteen Frontier nodes. Both cells use 896 PEs, four held-out sources and two
 allocations. Removing heap slice 8 loses the win, so the cadence mechanism is
 causal rather than a favorable baseline draw.
 
 Against tuned Wasp, the stronger modern multicore baseline, the Frontier cell
-is narrower: ACIC/Wasp is 0.81–1.04 by source (median 0.93) in both
-allocations, so ACIC is faster on three of four held-out sources and 2–4%
-slower on one. The claim against the best multicore code is a narrow median
+is narrower: the speedup over Wasp is 0.96–1.24× by source (median 1.08×) in
+both allocations, so ACIC is faster on three of four held-out sources and
+slower on one (0.96–0.98×). The claim against the best multicore code is a narrow median
 win, not a win on every source.
 
-The result is specific to sparse meshes. On held-out road sources at 16 Frontier
-nodes, ACIC is 1.19–1.39× slower than tuned GAPBS and 2.0–2.55× slower than
-tuned Wasp, so road misses the plan's 1.5× local-efficiency gate, which is set
-against the faster of the two. Scale-free
-graphs remain 1.87–3.65× slower than RIKEN in the last complete comparison.
+The result is specific to large sparse meshes. On held-out road sources at 16
+Frontier nodes, ACIC's speedup is 0.72–0.84× over tuned GAPBS and 0.39–0.50×
+over tuned Wasp, so road misses the plan's local-efficiency gate (within 1.5×
+of the faster of the two, a speedup of at least 0.67×). On the scale-free
+graphs at 16 Frontier nodes the speedup over RIKEN is 0.77–0.85× on `uniform25`
+and 0.28–0.48× on orkut and RMAT 25–27 (Anvil's older comparison: 0.27–0.53×).
 No measured live adaptive policy causes the accepted result.
 
 ## Accepted result matrix
 
 | Regime | ACIC result | Interpretation |
 |---|---|---|
-| `mesh26-z`, Anvil | 8 nodes, 16 processes/node × 7 workers/process; ACIC/GAPBS 0.71–0.83 | Accepted win on four held-out sources in jobs 20866513/20866514. GAPBS references are jobs 20866515/20866516 plus the earlier fixed-setting cells. |
-| `mesh26-z`, Frontier | 16 nodes, 8 × 7; ACIC/GAPBS 0.70–0.79 | Independent-machine reproduction at the same 896 PEs, jobs 5534022/5534023. Eight Frontier nodes reach parity rather than a win. |
-| `mesh24-z`, Frontier | Fixed candidate, 1–16 nodes; best is 16 nodes at ACIC/GAPBS 1.08, ACIC/Wasp 1.13 | No win on a quarter-size mesh, as predicted. Jobs 5538412/5538413 (held-out, two allocations), GAPBS 5538410, Wasp 5538411. |
-| `road-usa-z`, Anvil | Best fixed width/cap arms remain about 1.5× behind GAPBS | Width 32K reaches about 1.5 attempts/edge but needs 889–1,444 rounds. Width 128K trades 1.7–2.0 attempts/edge for 520–800 rounds and ties cap 7 with 40–60% less work. Jobs 20868020–22 and 20876828–30. |
-| `road-usa-z`, Frontier | Width 128K is 1.45–1.51× behind GAPBS | Two allocations agree within about 1%; jobs 5534016/5534017. Training sources, 8 nodes. |
-| `road-usa-z`, Frontier held-out | Width 128K, 16 nodes: 0.146–0.148 s; ACIC/GAPBS 1.19–1.39, ACIC/Wasp 2.00–2.55 | Jobs 5538405/5538406, four held-out sources, two allocations within 1%. 16 nodes is 13–14% faster than 8; the plain mesh candidate is 1.45–2.15× slower than width 128K at 10.8–11.0 attempts per edge against 3.1. |
-| Scale-free suite | ACIC speeds up from 2 to 8 nodes but trails RIKEN by 1.87–3.65× | Last complete 8g comparison at application revision `de0ed1c`. The newer high-diameter paths resolve inactive, but the formal frozen-binary regression is incomplete. |
-| Scale-free suite, Frontier | 16 nodes, current candidate, layout tuned on training sources; ACIC/RIKEN 1.17–1.30 (`uniform25`), 2.09–3.56 (orkut, RMAT 25–27) | Held-out sources, two allocations, jobs 5538389–5538392 against RIKEN 5536474/5536475. A counter-regime result: ACIC loses on every source. |
+| `mesh26-z`, Anvil | 8 nodes, 16 processes/node × 7 workers/process; speedup over GAPBS 1.21–1.41× | Accepted win on four held-out sources in jobs 20866513/20866514. GAPBS references are jobs 20866515/20866516 plus the earlier fixed-setting cells. |
+| `mesh26-z`, Frontier | 16 nodes, 8 × 7; speedup over GAPBS 1.26–1.43× (jobs 5534022/5534023) and 1.25–1.44× (scaling jobs 5536321/5536322); over Wasp 0.96–1.24× (median 1.08×) | Independent-machine reproduction at the same 896 PEs. Eight Frontier nodes give 0.90–0.95×, near parity rather than a win. |
+| `mesh24-z`, Frontier | Fixed candidate, 1–16 nodes; best is 16 nodes with speedup 0.85–1.02× over GAPBS (median 0.92×) and 0.72–1.00× over Wasp (median 0.89×) | No win on a quarter-size mesh, as predicted. Jobs 5538412/5538413 (held-out, two allocations), GAPBS 5538410, Wasp 5538411. |
+| `road-usa-z`, Anvil | Best fixed width/cap arms reach a speedup of about 0.67× over GAPBS | Width 32K reaches about 1.5 attempts/edge but needs 889–1,444 rounds. Width 128K trades 1.7–2.0 attempts/edge for 520–800 rounds and ties cap 7 with 40–60% less work. Jobs 20868020–22 and 20876828–30. |
+| `road-usa-z`, Frontier | Width 128K: speedup 0.66–0.69× over GAPBS | Two allocations agree within about 1%; jobs 5534016/5534017. Training sources, 8 nodes. |
+| `road-usa-z`, Frontier held-out | Width 128K, 16 nodes: 0.146–0.148 s; speedup 0.72–0.84× over GAPBS (median 0.78–0.79×), 0.39–0.50× over Wasp (median 0.46–0.47×) | Jobs 5538405/5538406, four held-out sources, two allocations within 1%. 16 nodes has a 1.14–1.16× speedup over 8; width 128K has a 1.45–2.15× speedup over the plain mesh candidate, which does 10.8–11.0 attempts per edge against 3.1. |
+| Scale-free suite | ACIC speeds up from 2 to 8 nodes, but its speedup over RIKEN is 0.27–0.53× | Last complete 8g comparison at application revision `de0ed1c`. The newer high-diameter paths resolve inactive, but the formal frozen-binary regression is incomplete. |
+| Scale-free suite, Frontier | 16 nodes, current candidate, layout tuned on training sources; speedup over RIKEN 0.77–0.85× (`uniform25`), 0.28–0.48× (orkut, RMAT 25–27) | Held-out sources, two allocations, jobs 5538389–5538392 against RIKEN 5536474/5536475. A counter-regime result: ACIC loses on every source. |
 
 ## Mechanism chain established September 18–23
 
 ### 1. Scale-free work growth was repaired
 
 Lazy heavy-edge relaxation, an htram hold bitmap, revised idle flushing and
-empty-delivery suppression changed the scale-free trend. ACIC became 1.1–2.3×
-faster from two to eight nodes on `rmat25`, Orkut, `rmat26` and `rmat27`.
+empty-delivery suppression changed the scale-free trend. ACIC gained a 1.1–2.3×
+speedup from two to eight nodes on `rmat25`, Orkut, `rmat26` and `rmat27`.
 RIKEN retained a substantial lead, so these changes are a regression defense
 and scaling repair rather than a winning scale-free result.
 
@@ -74,7 +79,8 @@ the 224-solve gate was 20833717. Machine-readable audits are
 ### 4. A runtime scheduler regression was found
 
 Reconverse commit `146ec42` registered queues with a new scheduler. The changed
-polling/order adds 30–45% road work and time. On the same current runtime,
+polling/order adds 30–45% road work, and the registered scheduler's speedup
+over `+old-scheduler` is about 0.69–0.77× on road. On the same current runtime,
 `+old-scheduler` matches the earlier v0916 behavior within the control floor.
 Jobs 20841653/20841654 contain the matched comparison. Every current
 performance run therefore uses `+old-scheduler`.
@@ -85,7 +91,7 @@ A fixed process drain cap controls road speculation but hurts mesh. Heap slice
 8 instead yields to the scheduler after eight removals, allowing messages and
 other tasks to interleave. It reduces distributed mesh rework enough to beat
 GAPBS at 896 PEs on both machines. On one Frontier node, where cross-process
-rework is small, the same slice costs 5–7%; activation is graph/scale
+rework is small, the slice's speedup is 0.93–0.95×; activation is graph/scale
 dependent.
 
 ### 6. Road becomes round bound after ordering
@@ -104,8 +110,8 @@ prepared and remains the only open road-runtime test.
 ### 7. Frontier reproduces mesh and exposes launch bimodality
 
 Every input regenerates byte-identically on Frontier. The mesh result
-reproduces, but RMAT and uniform launches randomly enter a roughly 18% slower
-mode. A whole launch moves together; work counts remain the same, reductions
+reproduces, but RMAT and uniform launches randomly enter a slow mode whose
+speedup relative to the fast mode is about 0.84× (rmat27, 8 nodes). A whole launch moves together; work counts remain the same, reductions
 stay short and remote updates trickle through the tail. Frozen R0 shows the
 same behavior, so it is not caused by the recent candidate policies.
 
@@ -121,13 +127,13 @@ node, `+old-scheduler`) ran `mesh26-z` at 1, 2, 4, 8 and 16 nodes on the four
 held-out sources, in two allocations (jobs 5536321/5536322). All 448 timed and
 160 work-cost solves passed the audit; allocations agree within 1.5%.
 
-| Nodes | PEs | Time (s) | Speedup | Efficiency | Attempts/edge | Rounds | ACIC/GAPBS |
+| Nodes | PEs | Time (s) | Speedup over 1 node | Efficiency | Attempts/edge | Rounds | Speedup over GAPBS (median) |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 56 | 1.70–1.72 | 1.00× | 100% | 1.35 | 598–607 | 5.1–5.2 |
-| 2 | 112 | 0.98–0.99 | 1.71–1.72× | 85–86% | 1.54 | 612–630 | 3.0 |
-| 4 | 224 | 0.56–0.58 | 2.91–2.97× | 73–74% | 1.72–1.73 | 550–555 | 1.7–1.8 |
-| 8 | 448 | 0.364 | 4.68–4.70× | 59% | 1.94–1.95 | 586 | 1.09 |
-| 16 | 896 | 0.259–0.260 | 6.55–6.58× | 41% | 2.76–2.80 | 500 | 0.77–0.78 |
+| 1 | 56 | 1.70–1.72 | 1.00× | 100% | 1.35 | 598–607 | 0.19–0.20× |
+| 2 | 112 | 0.98–0.99 | 1.71–1.72× | 85–86% | 1.54 | 612–630 | 0.33–0.34× |
+| 4 | 224 | 0.56–0.58 | 2.91–2.97× | 73–74% | 1.72–1.73 | 550–555 | 0.56–0.58× |
+| 8 | 448 | 0.364 | 4.68–4.70× | 59% | 1.94–1.95 | 586 | 0.92× |
+| 16 | 896 | 0.259–0.260 | 6.55–6.58× | 41% | 2.76–2.80 | 500 | 1.29× |
 
 Time falls at every doubling on every source. The loss of efficiency is
 extra work, not communication: attempts per edge double from one to sixteen
@@ -137,7 +143,7 @@ work time at every scale. ACIC passes one-node GAPBS between 8 and 16 nodes.
 
 The cumulative ablation at 16 nodes, same allocations and sources:
 
-| Arm | Time vs candidate | Attempts/edge | Rounds |
+| Arm | Candidate's speedup over this arm (median) | Attempts/edge | Rounds |
 |---|---:|---:|---:|
 | Local queue, no batch, no slice | 3.21–3.33× | 18.1–18.2 | 287–288 |
 | Nearest, unbatched | 1.83× | 4.00–4.06 | 254–255 |
@@ -145,7 +151,7 @@ The cumulative ablation at 16 nodes, same allocations and sources:
 | Nearest, batch 8, slice 8 (candidate) | 1.00× | 2.76–2.80 | 500 |
 
 Process-wide priority removes 78% of the local queue's work. Batching then
-trades 25–35% more work for a 13–20% faster solve. The slice halves the remaining
+trades 25–35% more work for a 1.15–1.24× speedup over the unbatched arm. The slice halves the remaining
 work while doubling the rounds, and is the step that crosses GAPBS. Every
 step is faster than the one before on every source in both allocations. 18 of
 20 recorded predictions were met in allocation A and 20 of 20 in B; the two
@@ -161,13 +167,13 @@ like GAPBS, a joint thread × Δ search on training sources then four held-out
 sources (job 5536541), it selects 56 threads with GAPBS's Δ (4096 on mesh,
 32768 on road). Both choices sit at the 56-thread boundary.
 
-| Graph | Wasp held-out | GAPBS held-out | Wasp/GAPBS | ACIC/Wasp |
+| Graph | Wasp held-out | GAPBS held-out | Wasp's speedup over GAPBS | ACIC's speedup over Wasp |
 |---|---:|---:|---:|---:|
-| `mesh26-z` | 0.262–0.293 s | 0.316–0.352 s | 0.77–0.86 | 0.81–1.04 at 16 nodes (median 0.93) |
-| `road-usa-z` | 0.067–0.077 s | 0.116–0.142 s | 0.55–0.60 | 2.46–2.82 at 8 nodes, training sources |
+| `mesh26-z` | 0.262–0.293 s | 0.316–0.352 s | 1.16–1.30× | 0.96–1.24× at 16 nodes (median 1.08×) |
+| `road-usa-z` | 0.067–0.077 s | 0.116–0.142 s | 1.66–1.83× | 0.39–0.50× at 16 nodes; 0.35–0.41× at 8 nodes, training sources |
 
-The mesh ratios pair each held-out source with the 16-node cells of jobs
-5536321/5536322; the road ratios pair the training sources of jobs
+The mesh speedups pair each held-out source with the 16-node cells of jobs
+5536321/5536322; the 8-node road speedups pair the training sources of jobs
 5534016/5534017 with Wasp's training runs of its selected setting. The Wasp and
 ACIC cells come from different jobs. Five Wasp launches at mesh Δ 4 hit the
 180 s launch limit (the other four at that Δ took 52–68 s, against GAPBS's
@@ -177,8 +183,8 @@ ACIC cells come from different jobs. Five Wasp launches at mesh Δ 4 hit the
 8 ranks/node with Δ 16 (rmat25/26/27) or 64 (orkut, uniform25) in both
 allocations; held-out medians agree within 1%: orkut 0.031 s, rmat25 0.063 s,
 uniform25 0.187–0.188 s, rmat26 0.123 s, rmat27 0.231 s. On `mesh26-z` (job
-5536476, one allocation) it selects Δ 1024 and takes 19–55 s per solve, about
-200× ACIC's 16-node time. Road is outside RIKEN's exact-distance range. The
+5536476, one allocation) it selects Δ 1024 and takes 19–55 s per solve: ACIC's
+16-node speedup over RIKEN there is 87–210× (median about 197×). Road is outside RIKEN's exact-distance range. The
 only failures are the known Δ-equal-to-denominator aborts.
 
 **ACIC on the scale-free graphs at 16 nodes** chose 4 × 14 for rmat25,
@@ -191,16 +197,17 @@ Held-out confirmation, 16 nodes, four held-out sources, 8 launches per arm, two
 allocations (jobs 5538389–5538392; 720 audited solves), paired with RIKEN's
 allocation of the same letter:
 
-| Graph | Layout | ACIC fast-mode median | RIKEN | ACIC/RIKEN (by source) | Slow launches |
+| Graph | Layout | ACIC fast-mode median | RIKEN | ACIC's speedup over RIKEN (by source) | Slow launches |
 |---|---|---:|---:|---:|---:|
-| orkut | 8 × 7 | 0.066 s | 0.031 s | 2.09–2.23 | 1/16, 0/16 |
-| `rmat25` | 4 × 14 | 0.208–0.209 s | 0.063–0.064 s | 2.98–3.43 | 0 |
-| `uniform25` | 4 × 14 | 0.230 s | 0.187–0.188 s | 1.17–1.30 | 0 |
-| `rmat26` | 4 × 14 | 0.366–0.369 s | 0.123 s | 2.89–3.20 | 0 |
-| `rmat27` | 4 × 14 | 0.743–0.751 s | 0.231 s | 3.01–3.56 | 0 |
+| orkut | 8 × 7 | 0.066 s | 0.031 s | 0.45–0.48× | 1/16, 0/16 |
+| `rmat25` | 4 × 14 | 0.208–0.209 s | 0.063–0.064 s | 0.29–0.34× | 0 |
+| `uniform25` | 4 × 14 | 0.230 s | 0.187–0.188 s | 0.77–0.85× | 0 |
+| `rmat26` | 4 × 14 | 0.366–0.369 s | 0.123 s | 0.31–0.35× | 0 |
+| `rmat27` | 4 × 14 | 0.743–0.751 s | 0.231 s | 0.28–0.33× | 0 |
 
-ACIC is slower than RIKEN on every source of every scale-free graph, by 1.2×
-on `uniform25` and 2.1–3.6× elsewhere; every recorded ratio prediction was met.
+ACIC is slower than RIKEN on every source of every scale-free graph: a speedup
+of 0.77–0.85× on `uniform25` and 0.28–0.48× elsewhere. Every recorded
+prediction (written as time ratios before the reporting rule changed) was met.
 With almost no slow launches, fast-mode and plain medians agree within 0.1%.
 The repeated-control prediction (within 3%) held for orkut but missed on all
 four 4 × 14 graphs in both allocations: at 4 × 14, repeated launches on the
@@ -213,19 +220,21 @@ comparisons.
 references 5538410 GAPBS and 5538411 Wasp, both 56 threads, Δ 4096): the fixed
 candidate falls at every doubling, from 0.41 s at one node to 0.085 s at 16
 (4.8×, against 6.6× on `mesh26-z`), while attempts per edge rise from 1.30 to
-3.3. The best cell, 16 nodes, is 1.08× GAPBS and 1.13× Wasp, so the smaller
-mesh does not cross. This was the recorded prediction: rounds follow the
+3.3. The best cell, 16 nodes, has a speedup of 0.85–1.02× over GAPBS (median
+0.92×) and 0.72–1.00× over Wasp (median 0.89×), so the smaller mesh does not
+cross on the median. This was the recorded prediction: rounds follow the
 diameter, which halves, while the shared-memory work follows size, which
 quarters. The 16-node repeat was within 2% except one source in allocation B
 (3.5%). The mesh win therefore needs enough work per round; the paper's mesh
 claim is `mesh26-z` at 896 PEs, not the mesh family.
 
 **Road on held-out sources** (jobs 5538405/5538406): width 131072 at 16 nodes
-takes 0.140–0.197 s by source, 13–14% faster than at 8 nodes, with repeats
-within 2%. At 16 nodes ACIC/GAPBS is 1.19–1.39 and ACIC/Wasp 2.00–2.55. Both
-ratio predictions (GAPBS 1.3–1.8, Wasp 2.2–3.2) missed on the favorable side;
-the node-count, width and control predictions were met. Without the width, the
-plain candidate does 10.8–11.0 attempts per edge and is 1.45–2.15× slower.
+takes 0.140–0.197 s by source, a 1.14–1.16× speedup over 8 nodes, with repeats
+within 2%. At 16 nodes the speedup is 0.72–0.84× over GAPBS and 0.39–0.50× over
+Wasp. Both comparison predictions (recorded as time ratios, GAPBS 1.3–1.8 and
+Wasp 2.2–3.2) missed on the favorable side; the node-count, width and control
+predictions were met. Without the width, the plain candidate does 10.8–11.0
+attempts per edge, and width 128K has a 1.45–2.15× speedup over it.
 
 ### 10. Frontier gates: RMAT regression NO-GO by the recorded rule; spanning tree kept, small effect
 
@@ -235,33 +244,37 @@ sources, 16 launches per arm; 2,040 audited solves). The recorded pass rule is
 --regression-reps 16` over allocations (5536321, GAPBS 5529591, 5536321,
 5538463) and (5536322, GAPBS 5538465, 5536322, 5538464). Result: **NO-GO.**
 
-| Graph | Worst per-source candidate/frozen (A / B) | Floor from repeated R0 (A / B) | Verdict |
+A graph passes if the candidate's worst per-source speedup over frozen R0 is
+no lower than the noise bound set by the repeated R0 (1 / the largest
+control-versus-frozen difference).
+
+| Graph | Candidate's worst per-source speedup over frozen R0 (A / B) | Noise bound (A / B) | Verdict |
 |---|---:|---:|---|
-| `mesh26-z` C6 | ACIC/GAPBS 0.77 / 0.78, worst 0.80 / 0.79 | — | pass, both |
-| `rmat25` | 1.029 / 1.018 | 1.061 / 1.059 | pass, both |
-| orkut | 1.010 / 1.026 | 1.023 / 1.029 | pass, both |
-| `uniform25` | 1.058 / 1.001 | 1.089 / 1.055 | pass, both |
-| `rmat26` | 1.053 / 1.036 | 1.035 / 1.018 | **fail, both** |
-| `rmat27` | 1.025 / 1.048 | 1.025 / 1.025 | **fail, both** |
+| `mesh26-z` C6 | speedup over GAPBS 1.29× / 1.28× median, worst 1.25× / 1.27× | — | pass, both |
+| `rmat25` | 0.972 / 0.982 | 0.942 / 0.944 | pass, both |
+| orkut | 0.990 / 0.975 | 0.978 / 0.972 | pass, both |
+| `uniform25` | 0.945 / 0.999 | 0.919 / 0.948 | pass, both |
+| `rmat26` | 0.949 / 0.965 | 0.967 / 0.982 | **fail, both** |
+| `rmat27` | 0.975 / 0.955 | 0.976 / 0.976 | **fail, both** |
 
 What the failures are made of:
 
 - **`rmat26`**: each allocation fails on one source, and a different one each
-  time (1.053 on source 1 in A, 1.036 on source 4 in B); the other sources are
-  0.97–1.01. No launch was slow. Fast-mode medians put the candidate at 1.027×
-  frozen in A and 0.978× in B.
+  time (speedup 0.950 on source 1 in A, 0.965 on source 4 in B); the other
+  sources are 0.99–1.03×. No launch was slow. On fast-mode medians the
+  candidate's speedup over frozen is 0.974× in A and 1.022× in B.
 - **`rmat27`**: the slow launch mode returned at 16 nodes on this graph, and
   more often for the candidate (7/16 and 4/16) than for frozen (4/16, 0/16) or
   control (2/16, 0/16); pooled, 11/32 against 6/64 (Fisher p = 0.004). In fast
-  mode the candidate is 0.992× and 0.994× frozen, so its fast solves did not
-  regress. The opposite imbalance appeared on `uniform25` in B (candidate 0/32
+  mode the candidate's speedup over frozen is 1.008× and 1.006×, so its fast
+  solves did not regress. The opposite imbalance appeared on `uniform25` in B (candidate 0/32
   against R0 11/64 pooled over allocations, p = 0.014), so a mode-rate
   difference is not yet shown to be a property of the candidate.
-- Predictions: every floor lay in 1.00–1.10 (met); every graph passes (missed
+- Predictions: every control-versus-frozen difference was under 10% (met); every graph passes (missed
   on `rmat26`, `rmat27`); at most 2 slow launches of 48 per graph (missed on
   `rmat27` in A, 13/48, and `uniform25` in B, 11/48).
 
-The regressions are 2.5–5% on single sources, at the resolution limit the plan
+The failures are speedups of 0.95–0.975× on single sources, at the resolution limit the plan
 stated for this gate. The recorded rule decides this run; a mode-aware rule
 (fast-mode ratio within the floor and no higher slow rate) or more allocations
 would have to be recorded before a new run, not applied to this one.
@@ -270,8 +283,9 @@ would have to be recorded before a new run, not applied to this one.
 sources; tree = `acic_slice` on the campaign runtime, flat = `acic_flat` on the
 same Reconverse/LCI built with `SPANTREE=OFF`). The tree lowers round cost on
 every arm in both allocations, but by 0.002–0.027 ms, not the predicted
-≥ 0.05 ms. `w32k` is 8–10% faster with the tree (predicted ≥ 20%), `w128k`
-0.5–4% (≥ 10%), and `4x14_cap7` −1 to +1% (≥ 10%). Work stays within 10%,
+≥ 0.05 ms. The tree's speedup over flat is 1.09–1.11× on `w32k` (predicted at
+least 20% faster), 1.005–1.04× on `w128k` (at least 10%) and 0.99–1.01× on
+`4x14_cap7` (at least 10%). Work stays within 10%,
 repeats within 2%, and `w64k` within 10% of `w128k`. By the plan's rule
 `SPANTREE=ON` stays the campaign setting, and the screen stops here: the
 broadcast tree is not what makes road's rounds cost 0.16–0.31 ms. The
@@ -304,15 +318,17 @@ and paths are consolidated in [configurations.md](configurations.md).
 
 1. At 896 CPU PEs, sliced asynchronous ACIC beats tuned one-node GAPBS on the
    measured `mesh26-z` class on two machines and held-out sources. Against
-   tuned Wasp on Frontier it wins on the median (0.93) but not on every source.
+   tuned Wasp on Frontier its median speedup is 1.08×, but not every source is
+   above 1×.
 2. Process-wide priority plus batched removal reduces redundant sparse-graph
    work, and heap slicing converts that reduction to a distributed mesh gain.
    At 16 Frontier nodes each step of the cumulative ablation is faster than the
-   previous one, from 3.2–3.3× the candidate's time with a local queue.
+   previous one; the candidate's speedup over the local-queue arm is 3.2–3.3×.
 3. On road, a representable global ordering window approaches minimal edge
    work, after which controller round cost is the dominant measured limit.
 4. Runtime scheduling materially changes asynchronous SSSP work; registered
-   scheduling causes a reproduced 30–45% regression on road.
+   scheduling causes a reproduced regression on road (a speedup of about
+   0.69–0.77× relative to `+old-scheduler`).
 5. The fixed mesh candidate strong-scales from 1 to 16 Frontier nodes at
    6.6× (41% efficiency), with time falling at every doubling; the efficiency
    loss is measured redundant work, not inter-node traffic.

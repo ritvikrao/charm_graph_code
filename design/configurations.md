@@ -90,7 +90,7 @@ default.
 | Profile | Additional settings | Layout | Status |
 |---|---|---|---|
 | Mesh candidate | `--heap-slice 8` | Anvil: 8 nodes, 16 processes/node × 7 workers/process. Frontier: 16 nodes, 8 × 7. Both total 896 PEs. | Accepted on `mesh26-z`: four held-out sources, two allocations on each machine. |
-| Road ordered | `--heap-slice 8 --bucket-width 131072` | Anvil: 8 nodes, 16 × 7. Frontier: 8 nodes, 8 × 7. | Best ordering mechanism measured; fixed-width diagnostic choice. About 1.5× behind GAPBS. |
+| Road ordered | `--heap-slice 8 --bucket-width 131072` | Anvil: 8 nodes, 16 × 7. Frontier: 8 nodes, 8 × 7. | Best ordering mechanism measured; fixed-width diagnostic choice. Speedup over GAPBS 0.72–0.84× at 16 Frontier nodes (held-out), about 0.67× at 8 nodes. |
 | Road capped | `--process-drain-cap 7`; no heap slice requirement | Anvil: 8 nodes, 8 × 15. Frontier has no exact 15-worker analogue; 4 × 14 was screened. | Strong fixed alternative. Similar time to ordered road with substantially more work. |
 | Dense scale-free regression | High-diameter auto mechanisms must print inactive | Anvil: use the frozen gate's recorded layout. Frontier diagnostic suite used 8 nodes, 8 × 7. | Formal frozen-binary gate pending. Frontier 8-node timing is bimodal; classify launches with `benchmarks/launch_modes.py`. |
 | Scale-free comparison (Frontier) | Same flags as the mesh candidate; everything high-diameter resolves inactive | 16 nodes: 4 × 14 for `rmat25`, `uniform25`, `rmat26`, `rmat27`; 8 × 7 for orkut, selected on training sources (job 5536460) | Held-out against RIKEN in jobs 5538389–5538392. Launches are almost all one mode at 16 nodes; 4 × 14 repeats spread about ±6%. |
