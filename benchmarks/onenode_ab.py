@@ -72,8 +72,13 @@ def main():
     for path, rows in references.values():
         if [r[4:7] for r in rows] != [r[4:7] for r in base_rows]:
             raise ValueError(f'{path}: sources are not paired with the baseline')
-    env = dict(os.environ, SLURM_MPI_TYPE=os.environ.get('ACIC_SRUN_MPI', 'cray_shasta'), PMI_MAX_KVS_ENTRIES='100000',
+    env = dict(os.environ, SLURM_MPI_TYPE=os.environ.get('ACIC_SRUN_MPI', 'cray_shasta'),
                FI_CXI_RX_MATCH_MODE='hybrid')
+    # LCI's bootstrap publishes one Cray PMI KVS entry per rank pair, so the
+    # store must hold ranks^2 (512 ranks at 64 nodes x 8 is 262K; 100000
+    # aborted every rank of job 5541371). Twice that, never below 100000.
+    def kvs_entries(ranks):
+        return str(max(100000, 2 * ranks * ranks, int(os.environ.get('PMI_MAX_KVS_ENTRIES', '0') or 0)))
     env.pop('LCT_PMI_BACKEND', None)
     records = []
     with (out / 'runs.jsonl').open('w', buffering=1) as stream:
@@ -98,7 +103,8 @@ def main():
                         command += ['--sources', ','.join(sources)]
                     with log.open('w') as output:
                         # A variant's "env" overrides the launch environment (network probes).
-                        subprocess.run(command, env={**env, **variant.get('env', {})},
+                        subprocess.run(command, env={**env, 'PMI_MAX_KVS_ENTRIES': kvs_entries(vn * rpn),
+                                                     **variant.get('env', {})},
                                        stdout=output, stderr=subprocess.STDOUT,
                                        check=True, timeout=420)
                     if args.batch:

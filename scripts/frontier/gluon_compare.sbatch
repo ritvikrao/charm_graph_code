@@ -37,11 +37,12 @@ N=$SLURM_NNODES
 printf 'job=%s hosts=%s pairs=%s run.py args=%s\n' "$SLURM_JOB_ID" "$SLURM_JOB_NODELIST" "$PAIRS" "$*"
 GRAPHS=$(tr ',' '\n' <<< "$PAIRS" | cut -d: -f1 | paste -sd,)
 
-# --- ACIC (LCI environment, as onenode_ab.sbatch).
-(
+# --- ACIC (LCI environment, as onenode_ab.sbatch). SKIP_ACIC=1 runs the
+# baselines only (mesh30-z's Gluon and RIKEN need a job each).
+[ -n "${SKIP_ACIC:-}" ] || (
   module swap PrgEnv-cray PrgEnv-gnu/8.6.0 >/dev/null 2>&1
   module load gcc-native/13.2 cray-mpich/8.1.31 libfabric/2.3.1 >/dev/null 2>&1
-  export PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
+  export PMI_MAX_KVS_ENTRIES=${PMI_MAX_KVS_ENTRIES:-600000} FI_CXI_RX_MATCH_MODE=hybrid
   unset LCT_PMI_BACKEND ACIC_SRUN_MPI
   for pair in ${PAIRS//,/ }; do
     graph=${pair%%:*}
