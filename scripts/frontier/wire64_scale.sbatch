@@ -4,7 +4,8 @@
 # vertices), sources above 2^32 and near 0. The WIRE=compact64 build runs at
 # NODES_LIST node counts in one allocation; each solve must pass --certify, and
 # the digests must agree across node counts. Then the compact (31-bit) build
-# must refuse the graph with its wire error rather than answer.
+# must refuse the graph with its wire error rather than answer. (No
+# --reader-tile: it applies only to files.)
 #
 #   sbatch -N 16 scripts/frontier/wire64_scale.sbatch CAMPAIGN
 #SBATCH --account=csc710
@@ -21,7 +22,7 @@ SOURCES=${SOURCES:-5000000000,17}
 NODES_LIST=${NODES_LIST:-"8 16"}
 RPN=8
 WORKERS=56
-FLAGS="--process-share auto --reader-tile auto --slack-control off --process-queue nearest --process-queue-batch 8 +old-scheduler --heap-slice 8"
+FLAGS="--process-share auto --slack-control off --process-queue nearest --process-queue-batch 8 +old-scheduler --heap-slice 8"
 module swap PrgEnv-cray PrgEnv-gnu/8.6.0 >/dev/null 2>&1
 module load gcc-native/13.2 cray-mpich/8.1.31 libfabric/2.3.1 >/dev/null 2>&1
 export PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
