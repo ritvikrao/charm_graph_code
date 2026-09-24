@@ -1,0 +1,108 @@
+[
+  {
+    "directory": "AB-orkut-16n-5538390",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_8x7",
+          "n16_8x7_control"
+        ],
+        "launches": 16,
+        "bimodal": true,
+        "tail_ratio": 2.7017173371346552,
+        "slow_launches": 1
+      }
+    },
+    "arms": {
+      "n16_8x7": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.0654895,
+        "median": 0.0654895,
+        "mean": 0.06553424999999999,
+        "sources": {
+          "254572": {
+            "fast": 0.06642300000000001,
+            "slow": null,
+            "median": 0.06642300000000001,
+            "mean": 0.06660975
+          },
+          "1892699": {
+            "fast": 0.0659605,
+            "slow": null,
+            "median": 0.0659605,
+            "mean": 0.06505675
+          },
+          "2549343": {
+            "fast": 0.0650185,
+            "slow": null,
+            "median": 0.0650185,
+            "mean": 0.06601175
+          },
+          "2608772": {
+            "fast": 0.0639985,
+            "slow": null,
+            "median": 0.0639985,
+            "mean": 0.06424774999999999
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      },
+      "n16_8x7_control": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 1,
+        "fast": 0.065542,
+        "median": 0.065799,
+        "mean": 0.0684933125,
+        "sources": {
+          "254572": {
+            "fast": 0.066102,
+            "slow": 0.082594,
+            "median": 0.068481,
+            "mean": 0.070573875
+          },
+          "1892699": {
+            "fast": 0.064955,
+            "slow": 0.090478,
+            "median": 0.0656055,
+            "mean": 0.06876275
+          },
+          "2549343": {
+            "fast": 0.065584,
+            "slow": 0.085654,
+            "median": 0.065974,
+            "mean": 0.068223875
+          },
+          "2608772": {
+            "fast": 0.0655,
+            "slow": 0.080287,
+            "median": 0.065624,
+            "mean": 0.067469625
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "slow",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      }
+    }
+  }
+]

@@ -35,6 +35,7 @@ No measured live adaptive policy causes the accepted result.
 | `road-usa-z`, Anvil | Best fixed width/cap arms remain about 1.5× behind GAPBS | Width 32K reaches about 1.5 attempts/edge but needs 889–1,444 rounds. Width 128K trades 1.7–2.0 attempts/edge for 520–800 rounds and ties cap 7 with 40–60% less work. Jobs 20868020–22 and 20876828–30. |
 | `road-usa-z`, Frontier | Width 128K is 1.45–1.51× behind GAPBS | Two allocations agree within about 1%; jobs 5534016/5534017. |
 | Scale-free suite | ACIC speeds up from 2 to 8 nodes but trails RIKEN by 1.87–3.65× | Last complete 8g comparison at application revision `de0ed1c`. The newer high-diameter paths resolve inactive, but the formal frozen-binary regression is incomplete. |
+| Scale-free suite, Frontier | 16 nodes, current candidate, layout tuned on training sources; ACIC/RIKEN 1.17–1.30 (`uniform25`), 2.09–3.56 (orkut, RMAT 25–27) | Held-out sources, two allocations, jobs 5538389–5538392 against RIKEN 5536474/5536475. A counter-regime result: ACIC loses on every source. |
 
 ## Mechanism chain established September 18–23
 
@@ -181,9 +182,29 @@ only failures are the known Δ-equal-to-denominator aborts.
 uniform25, rmat26 and rmat27 and 8 × 7 for orkut on training sources (job
 5536460). The launch bimodality nearly disappears at 16 nodes: rmat25, rmat27,
 uniform25 and orkut ran every launch in one mode, and rmat26 had 1–2 slow
-launches of 8 at negligible cost. Training-source times suggest ACIC trails
-RIKEN by about 1.25× (uniform25) to 3.2× (rmat27); the held-out confirmation is
-jobs 5538389–5538392.
+launches of 8 at negligible cost.
+
+Held-out confirmation, 16 nodes, four held-out sources, 8 launches per arm, two
+allocations (jobs 5538389–5538392; 720 audited solves), paired with RIKEN's
+allocation of the same letter:
+
+| Graph | Layout | ACIC fast-mode median | RIKEN | ACIC/RIKEN (by source) | Slow launches |
+|---|---|---:|---:|---:|---:|
+| orkut | 8 × 7 | 0.066 s | 0.031 s | 2.09–2.23 | 1/16, 0/16 |
+| `rmat25` | 4 × 14 | 0.208–0.209 s | 0.063–0.064 s | 2.98–3.43 | 0 |
+| `uniform25` | 4 × 14 | 0.230 s | 0.187–0.188 s | 1.17–1.30 | 0 |
+| `rmat26` | 4 × 14 | 0.366–0.369 s | 0.123 s | 2.89–3.20 | 0 |
+| `rmat27` | 4 × 14 | 0.743–0.751 s | 0.231 s | 3.01–3.56 | 0 |
+
+ACIC is slower than RIKEN on every source of every scale-free graph, by 1.2×
+on `uniform25` and 2.1–3.6× elsewhere; every recorded ratio prediction was met.
+With almost no slow launches, fast-mode and plain medians agree within 0.1%.
+The repeated-control prediction (within 3%) held for orkut but missed on all
+four 4 × 14 graphs in both allocations: at 4 × 14, repeated launches on the
+same source spread about ±6% in both directions (control/candidate
+0.95–1.06), a continuous spread rather than two modes. That floor is too wide
+for a few-percent regression decision at this layout, but not for these
+comparisons.
 
 ## Evidence and provenance
 
@@ -197,6 +218,7 @@ jobs 5538389–5538392.
 | Frontier mesh strong scaling and ablation | `design/onenode-data/frontier-mesh-scaling-5536321.json`, `-5536322.json` and `frontier-mesh-scaling-report.json` (`benchmarks/mesh_scaling_report.py`); `benchmarks/frontier-mesh-scaling-variants.json`, predictions recorded in commit `026e502` |
 | Frontier Wasp and RIKEN references | `design/onenode-data/frontier-wasp-1n-5536541.json`, `frontier-riken-16n-5536474.json`, `-5536475.json`, `-5536476.json`; smoke job 5536535 |
 | Frontier scale-free layout selection | `design/onenode-data/frontier-scalefree-layout-5536460.json` and `frontier-scalefree-layout-modes-5536460.json`; `benchmarks/frontier-scalefree-layout-variants.json` |
+| Frontier scale-free held-out vs RIKEN | `design/onenode-data/frontier-scalefree-heldout-{5538389,5538390,5538391,5538392}.json`, matching `-modes-` files, `frontier-scalefree-vs-riken-16n.json`; `benchmarks/frontier-scalefree-heldout-{4x14,8x7}-variants.json` |
 | Frontier RMAT behavior | `design/onenode-data/frontier-rmat-regression-5534333.json` and 5534334 plus probe configurations named `benchmarks/frontier-*-probe-variants.json` |
 
 Anvil raw logs are rooted at `/anvil/scratch/x-rrao/acic/`; Frontier raw logs

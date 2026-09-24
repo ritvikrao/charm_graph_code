@@ -1,0 +1,783 @@
+{
+  "allocations": [
+    {
+      "job": 5538390,
+      "graph": "orkut",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n16_8x7",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Held-out confirmation of the layout chosen on training sources in job 5536460 (rule in frontier-scalefree-layout-variants.json). Four held-out sources, 8 launches per arm, two allocations; fast-mode time and slow-launch count from benchmarks/launch_modes.py. Reference: RIKEN held-out medians at 16 nodes from jobs 5536474/5536475 (orkut 0.031, rmat25 0.063, uniform25 0.187, rmat26 0.123, rmat27 0.231 s). Predictions (median over sources of fast-mode source medians, divided by RIKEN): orkut 1.6-2.8x, rmat25 2.3-3.9x, uniform25 1.0-1.6x, rmat26 2.3-3.9x, rmat27 2.4-4.0x; ACIC slower than RIKEN on every source of every graph; the repeated control within 3% of its arm on every source; at most 2 of 16 launches per configuration classified slow on rmat25, rmat27, uniform25 and orkut.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_8x7_control",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Held-out confirmation of the layout chosen on training sources in job 5536460 (rule in frontier-scalefree-layout-variants.json). Four held-out sources, 8 launches per arm, two allocations; fast-mode time and slow-launch count from benchmarks/launch_modes.py. Reference: RIKEN held-out medians at 16 nodes from jobs 5536474/5536475 (orkut 0.031, rmat25 0.063, uniform25 0.187, rmat26 0.123, rmat27 0.231 s). Predictions (median over sources of fast-mode source medians, divided by RIKEN): orkut 1.6-2.8x, rmat25 2.3-3.9x, uniform25 1.0-1.6x, rmat26 2.3-3.9x, rmat27 2.4-4.0x; ACIC slower than RIKEN on every source of every graph; the repeated control within 3% of its arm on every source; at most 2 of 16 launches per configuration classified slow on rmat25, rmat27, uniform25 and orkut.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          }
+        ],
+        "nodes": 16,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 8,
+        "source_role": "test",
+        "batch": true,
+        "hosts": "frontier[01529,01661,01671,02043,02130,02203,02429,02544,02593,02811,02838,03060,03075,03302,03574,03691]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n16_8x7": {
+          "sources": {
+            "1892699": {
+              "seconds": 0.0659605
+            },
+            "254572": {
+              "seconds": 0.06642300000000001
+            },
+            "2549343": {
+              "seconds": 0.0650185
+            },
+            "2608772": {
+              "seconds": 0.0639985
+            }
+          },
+          "medians": {
+            "seconds": 0.0654895
+          }
+        },
+        "n16_8x7_control": {
+          "sources": {
+            "1892699": {
+              "seconds": 0.0656055
+            },
+            "254572": {
+              "seconds": 0.068481
+            },
+            "2549343": {
+              "seconds": 0.065974
+            },
+            "2608772": {
+              "seconds": 0.065624
+            }
+          },
+          "medians": {
+            "seconds": 0.065799
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.065429
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.067277
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.069019
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.071553
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.061169
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.065568
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.066497
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.063257
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.066953
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.064012
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.06465
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.064282
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.064149
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.066519
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.065503
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.06571
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.064955
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.064791
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.065584
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.065565
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.06465
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.063985
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.065128
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.06549
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.066355
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.063906
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.064909
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.066274
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.066816
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.065273
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.061794
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.071196
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.070313
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.0655
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.065487
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.07904
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.062806
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.064876
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.069832
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": 3,
+          "metrics": {
+            "seconds": 0.067471
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.060799
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.062898
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.064539
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.06748
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.090478
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.080287
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.085654
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": 4,
+          "metrics": {
+            "seconds": 0.082594
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.064609
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.066797
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.06791
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.07086
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.066806
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.066731
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.066708
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": 5,
+          "metrics": {
+            "seconds": 0.071306
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.066519
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.063344
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.063687
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.064003
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.062526
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.065748
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.067495
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": 6,
+          "metrics": {
+            "seconds": 0.066102
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "1892699",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.066256
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2608772",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.064842
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "2549343",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.066364
+          }
+        },
+        {
+          "variant": "n16_8x7_control",
+          "source": "254572",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.063524
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "1892699",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.065566
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2608772",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.06423
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "2549343",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.068641
+          }
+        },
+        {
+          "variant": "n16_8x7",
+          "source": "254572",
+          "rep": 7,
+          "metrics": {
+            "seconds": 0.066572
+          }
+        }
+      ]
+    }
+  ],
+  "checked_solves": 72,
+  "diagnostic_solves": 0,
+  "checked_launches": 18,
+  "raw_sha256": {
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r-1.launch.out": "598d0d8922f09a0c86f5efe3d7ab8bdcd5e1ad755dca6d4c32573c32d6882b48",
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r0.launch.out": "11126604b221a6de3b574d5635422232a6cf84bc35d7e8ebca1a982832fced6b",
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r1.launch.out": "6ffcaad05d3489ef351b05f524795e6c584f1433280b67d85c2453283d076358",
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r2.launch.out": "4c91f782a52e19fe2b9f1a11823640f5c8b7ad39493ea31bf972f32a88a22d5c",
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r3.launch.out": "02ea4cc0e832607a831288ba6ec9a99c9628d2b32a45b0f8dfcbcefa982be68d",
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r4.launch.out": "c5623c43677525fa64bb2e7c1920f254492bcfd2de4df47e43e1563f6ed328cf",
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r5.launch.out": "d62246e01e084c64c881e6273145189c6d111fb97c1c8a3ee46a62d16e9f8842",
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r6.launch.out": "c157dfe47dc973cc31441ab88a2107af8ae6d7052e4fe3a25cd396c0df68c18f",
+    "logs/AB-orkut-16n-5538390/n16_8x7-g0-r7.launch.out": "7403c31424454be3c8677177c793557423a97c983a4e9abc04468b37b4b23aca",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r-1.launch.out": "f6c9e768798d4e760d07814481bc9db6cd94f7272287d45cf8d3cede87417a21",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r0.launch.out": "4d057b69b6d16a57636b41dbe7e4cd3fab850e66fd94736778ecefd9caba086c",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r1.launch.out": "938a58512e989a2ff31d3f6bf21602ad83bdf4127227dd3cdba926c86f7aa61b",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r2.launch.out": "3191f4005436af51baa6ea05d37b762be2869178c98e670475e580c969946824",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r3.launch.out": "4daa0ed89771c9dbf586f74a339dc6956d6208875da9db544cba38572a271820",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r4.launch.out": "540cbeba17f6250f01dce4edef4f7b9f22d8a9d25c845953588c981e867b36a2",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r5.launch.out": "a31551d0d285ebb89af7eb93e398c2152a083f4460d46dc6747e8e5bf415cb81",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r6.launch.out": "2c4f39753a89e42901dcf67db235879e54957d4d8d1bbe3386f1bb87627d3967",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-g0-r7.launch.out": "719bf6bb9c8d6e6e88d463d4e44d6e257e3869d1041e5ea4aa65b40c2f5b5a27",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r-1.out": "175c1b10e485fc4ae88cbc8df5210c74497dd893f11e1bb988c41da0ae6f91c7",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r-1.out": "ea13432bded6d0246ade1f68a852671b028628d3aee005b1b3db70366d7aad81",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r-1.out": "473116d6e16ade5fa8a7b03d1ba96abf73e2aa8d9280442eb745ac7b506be2fa",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r-1.out": "c9f410115f7ff71500ddf397f564b8e7fed94c1edb10a8d93d0413e8d9c83467",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r-1.out": "b99b2bb860b22acc2ef92e9be6445bb889d98002e15390331faf21330599e9aa",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r-1.out": "e1ecdcc42a3a84f15996b7226565413097bc7b570679401d1645be84e5ca39a1",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r-1.out": "46d39b6f7ebabfe6752780f9f30c949e55ecfa4b8407209b224ce35d02c684c2",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r-1.out": "58607d4a8e777fb25ee6a5367fd1ea0f1e96d8c42cf9f34db82488f322ebba76",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r0.out": "0212502d699019130d9e3da3f87b18f25dbf4337c983481ddec955a65f62d94a",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r0.out": "d10a68176a4d0d52dcabc0ef1ad7cb02267bf45b5bb7960cebdfd71716aa4034",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r0.out": "c80844b61883b01f9bbf7138659796b07e89bcb4e574e86ad7fdd68a5a759e78",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r0.out": "410b6f0db141af53b8e0952cda916759657468645a34ffd4a0baa7f6afcfd98a",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r0.out": "bb287518e0e03c4f61f56b2040b030471632a45f0ab4b2a80b3c046e12b40e7b",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r0.out": "70359f2a93316677cd4f6bb17f68db5192b42293ceb9d35edb4a10d347a12bae",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r0.out": "e50f3f95022ce8e1e8d3c18b31559edcb1c225f99dbc0a8d3bb17d5cd8367f0a",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r0.out": "fbe7a8bcb012905ef27402a2d9537a5abcd3497e64b89fed2a400c3ed64d4e48",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r1.out": "707b357a0b68857d950e48cebb5a46af5cda0162f7a5ab6ab0201d9085bbd4f8",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r1.out": "88eb9999ba7e41c983577a881677e524d75334a5040d5fda6baa39f8840e9217",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r1.out": "55470357bac979bf00fd28814f6743cabad032ba536b4b663fdc5e961dae8a9c",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r1.out": "83231a2c59f5776a904b6bc550ed4b43ddc66cd368a2da14dbadc5e2196d67d4",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r1.out": "881723fc596356feacfc802b9e40386101638a251e9209564e0c8573bd411511",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r1.out": "71f35cb4c72079a0095f1e33a405b911d8d3635a3c3fed993b9943392c8eac40",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r1.out": "3612fba5dd53305fe2d59105ebb40cca8002959b4cd005af6ce0d0defda66385",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r1.out": "1343414f0880643d55d515e0de63f5f95debf51a56d9279ac0f2f5e32420fb10",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r2.out": "04efa8170792840ce7bf94d9bb2f35c61f97c2aee80ad85e16050593e640439c",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r2.out": "a2c2252200532afedb925996fede2709f4422d56572cabcb9658ecddc8472925",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r2.out": "f1d15f473a602c97285075bf952c563a21f8947cfe1d6bdd60a467409ccb1fc1",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r2.out": "a9d3e1dd53abc06f72625b2924ef7cd51ada1e435bf7bbe170bac55d62a17906",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r2.out": "84190774656387cfc8a1816173a116793fe12a229685c6e0a8c29ab7f5f4ab68",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r2.out": "4fab0fcd292ea75d8f4ae4cc796e1e6249c23b2e5a106a7e04c32ffc97b872aa",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r2.out": "0927398c448453fafdf6619c4e9bb7cf27ecc03dbb6b7aea9175f9340c22f308",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r2.out": "d2e7f3853408bfa86eb37c52c66682bfe4877a65c8070c867b5bb0040f8ca353",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r3.out": "fa8ef60541dd0a96dd5256e98310bc32d64f30fc1d8216d5d84b15f85ca71f48",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r3.out": "bb581b911270ecbdd7106081383d29c99293ba96cbbf0c3742bdf8e146a4f986",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r3.out": "18a2d28e5da58d334891e670b72c45ac04b6993fc3d75cd320700433349a59ad",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r3.out": "da1612a6474397f63e426a522266ec92d8cbde8b4c1ee47bd8fd4d8de9988700",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r3.out": "f6348378258fdd3ab56be54fc38f55aab56c3823ea209c8459b7cd287a4348be",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r3.out": "67d488085b9b3ec43ecca00361842cd3a35c9539c464b25f4ff72bafd48eb0fe",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r3.out": "fef0f06f30e8d63be4066edf59f7d683d381378d158d86666707d5392b8743d5",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r3.out": "c99fc573b2e98d6498178aaa484890e862b30050f017b873d7285784ea9162d3",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r4.out": "ec662b06b79ebf2039829dbfcafd3413490d0878fb6360745c99ed1d5c270206",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r4.out": "08fce426feeb6dbf6240e9b7d92555467548576936219c0b3ad4ce31f1db3f0d",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r4.out": "df29ae92d75e07e989bb1bce361cd7f59f5a5a57513378243f1a8da960291b76",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r4.out": "0ec067d3f96e2c4901b27de692311e310719b7af0df829ee109deaa90db482e4",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r4.out": "df607b2d20f475301868e04bcbb984eb4f689632a5329c93c80c40655c621fc2",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r4.out": "02283a778c50e27ac05883083aa8592f3c608d21dd8430e3e16bd9d4baa2445f",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r4.out": "7024fe54b5e00a80dd0ea5c344565099eb342f33ce4da7ca2ddc1782eacd39b7",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r4.out": "8602d911ca134e8017fefc9ab3312673bae9071873d91d38d98fdd60269f0749",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r5.out": "e675e2693560686cb64845bbcb2c3966bcfb1904e9b72765579c6ae612c0f269",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r5.out": "2d45cc557c6f726ba29bd13a9822f31113e82a6db022d68988b5dc0487df8143",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r5.out": "2d0e62aa193a372f170f81e2f1e74adfe2308e457dac1efc1a1636d574c85d46",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r5.out": "4e53665c02900986c6f38f5abbc3a56b26191b3cdb3dc71b723599cb06cb8c9e",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r5.out": "2911dd25d2fffcbc1faf6eb54e714695188915bb10c6648080a837b421e643f0",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r5.out": "fe5f285541bcd5918d446e281c624cebaeb7af5d25c522f553d3598e5dd153e6",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r5.out": "8334d71d38080df69f5e08e7d7cb9acd2fae722ed225fd3cf0191ed42bd4d24b",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r5.out": "781d7da61e71814453964782c0cca78e42f6cc3f90356057f89686ad4c3f2a0d",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r6.out": "2491fa54d25cba6cce8d926616af951efeb4edfa445d59fba26555913a106ff7",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r6.out": "a5095ead7d472dbfb0f2fdb58f1e7405e4a23a4fa03826863629fd6556c7aa14",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r6.out": "98a14a56aa35680440538250883e6607c776dc3375433ad180d471c750bf0822",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r6.out": "0d00ab4d84df44616d0e8344e09930245adc2ee87b363abd594aa6fb5659f2aa",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r6.out": "180ebfb9d577116bd59e12aa5dfd7812108fadd648fb3aad477d9ba8bfad0944",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r6.out": "347a38fddfc3d83cb08795988345a022957cc69cdb03e7c1f750d27b8bf47f77",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r6.out": "72549e501c52de12b8d01b6e9f3fa4510a8864e421d62a3c4db49cb80d647216",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r6.out": "166cb1187523f4e88763ff9764b6354cf0001ddef3c55b6f71d89672d4a856bd",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s0-r7.out": "1c16e5cf1c6c76bd78bd33a97dccb445c939f140f9dc6a28c92c7c32d4dfcea1",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s1-r7.out": "1ec3a394ac3f631e0b4fb90fe4ba15e528b707ee254101d78e417d3516e1e20e",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s2-r7.out": "35b2e0b3665f3d2e63740f5aa4103993235d9078f1f17d9017b38f2764bc0a84",
+    "logs/AB-orkut-16n-5538390/n16_8x7_control-s3-r7.out": "48620166fcf9a5a52263feed62c3cc53c95c8f69b8a040715d90fc9c1151cc39",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s0-r7.out": "986b29444e117cb697ae660da21661224a43d3393e07217a0c3efefa5fc666f3",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s1-r7.out": "d01f5f09ffbdb99f47d227ee376cbed8bbc3753877447b5e3f5a403a53c6b5fc",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s2-r7.out": "6d39b4b50d29c6d46fc6850480c58e966f695c2f8539001d8f9b6b308451c14b",
+    "logs/AB-orkut-16n-5538390/n16_8x7-s3-r7.out": "2973f1457da619c6fc91827f2ee67e55971cae33e83aef7c13b9ceb33bb7363b"
+  }
+}

@@ -1,0 +1,108 @@
+[
+  {
+    "directory": "AB-orkut-16n-5538392",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_8x7",
+          "n16_8x7_control"
+        ],
+        "launches": 16,
+        "bimodal": false,
+        "tail_ratio": 1.1923331635664893,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_8x7": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.06615525,
+        "median": 0.06615525,
+        "mean": 0.066296,
+        "sources": {
+          "254572": {
+            "fast": 0.06765750000000001,
+            "slow": null,
+            "median": 0.06765750000000001,
+            "mean": 0.0676435
+          },
+          "1892699": {
+            "fast": 0.06601399999999999,
+            "slow": null,
+            "median": 0.06601399999999999,
+            "mean": 0.06611637499999999
+          },
+          "2549343": {
+            "fast": 0.06629650000000001,
+            "slow": null,
+            "median": 0.06629650000000001,
+            "mean": 0.066475625
+          },
+          "2608772": {
+            "fast": 0.065372,
+            "slow": null,
+            "median": 0.065372,
+            "mean": 0.06578125
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      },
+      "n16_8x7_control": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 8,
+        "slow_launches": 0,
+        "fast": 0.0664705,
+        "median": 0.0664705,
+        "mean": 0.06642181250000001,
+        "sources": {
+          "254572": {
+            "fast": 0.0674415,
+            "slow": null,
+            "median": 0.0674415,
+            "mean": 0.067507125
+          },
+          "1892699": {
+            "fast": 0.0664525,
+            "slow": null,
+            "median": 0.0664525,
+            "mean": 0.06641087500000001
+          },
+          "2549343": {
+            "fast": 0.0661095,
+            "slow": null,
+            "median": 0.0661095,
+            "mean": 0.06643275
+          },
+          "2608772": {
+            "fast": 0.0664885,
+            "slow": null,
+            "median": 0.0664885,
+            "mean": 0.06640937499999999
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast"
+        }
+      }
+    }
+  }
+]
