@@ -38,7 +38,11 @@ Galois files and RIKEN a wide `.wsg` adapter first.
 ACIC arms in every allocation: `frozen` (production `acic_slice`) and `tls`
 (`acic_tls`, 7afd94d on the initial-exec TLS runtime). Road widths: 131072 on
 road-usa-z; road-na-z and road-eu-z selected on training sources at 16 nodes
-(job 5541364). Gluon-Sync is left out: on mesh24/26 it was 20-40x slower than
+(job 5541364, 96 valid solves): 131072 on both. The surface is flat, 8K-128K
+within 2% (0.336-0.342 s road-na-z, 0.403-0.407 s road-eu-z), because bucket
+coarsening brings 8K and 32K up to the same effective width; every width has a
+1.30-1.42x speedup over plain. Predictions: the flat surface met the width and
+speedup ranges, though 131072 sits above the predicted fastest range. Gluon-Sync is left out: on mesh24/26 it was 20-40x slower than
 Async in every tuning run.
 
 Pinned baseline settings, where a full search does not fit two hours: Gluon on
