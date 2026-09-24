@@ -1,0 +1,1400 @@
+{
+  "job": 22354907,
+  "manifest": {
+    "nodes": 1,
+    "rpn": 16,
+    "workers": 112,
+    "sources": [
+      "5620086",
+      "1294456"
+    ],
+    "reps": 3,
+    "hosts": "cn044",
+    "graph_sha256": "20f9102b40689c8ea496aaa122a4329413022d0ef59cc77ef142d313a43781b9",
+    "reference_sha256": "415bc7468e7cc65bb345daf6c01070b0464ccda828a6ca7b6bdb06a61bd3550a",
+    "harness_sha256": "a8a091b5a8e4ed326b3bf6dfce1ca7eabc417abae3ded91cfa56f9edeaff6f3d",
+    "vertices": 23947347,
+    "stored_directed_edges": 57708624,
+    "binaries": {
+      "acic_latest": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+      "acic_quiet_rounds": "721a511595355f4a9af303fe2d66005eac4a7fdf27711cff89f2833b98c06b00",
+      "acic_round_profile_v2": "8f3a05d8c96e119b7761f9c93f367346331a24385c819c70e92f0293209f981c",
+      "acic_cost": "b4ba9e8eeeb24f64e7afb84692daad8c869f3b4e97bddae564c5fdc5cd90689f",
+      "round_trip": "ec8a14cc35aee2b7c424d26389e56b11f31c534b0a617ded23c5bdbada796299",
+      "acic_round_trace": "1c5c47dbe41ea91310157b8856ead9c381c16b78d465511b08c9620020fb54bb"
+    },
+    "runtime": {
+      "revisions": {
+        "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+        "reconverse": "0c97c4d1f58dc5599b15a687cf328a7e05d60f90",
+        "lci": "ca88ce2c4b429ce72dfc3233fa21f8833299440c",
+        "htram": "7db9c0af69777b43e17dec110e6298fc09c91c54",
+        "sssp": "7a4da59ebbf6094e716e327af34b3c6bbc98f33d"
+      },
+      "runtime": "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64",
+      "scheduler": "+old-scheduler",
+      "build_command": "CC=gcc CXX=g++ ./build charm++ reconverse-linux-x86_64 --with-production --enable-tracing --enable-shmem --with-fetch-reconverse-dir=/u/rao1/.tmp/road-rounds-20260924/reconverse --with-cmake-args=\"-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF\" -j8",
+      "cache": [
+        "CMAKE_BUILD_TYPE:STRING=Release",
+        "CMAKE_CXX_COMPILER:FILEPATH=/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+        "CMK_USE_SHMEM:BOOL=1",
+        "RECONVERSE_AUTOFETCH_LCI2_TAG:STRING=ca88ce2c4b429ce72dfc3233fa21f8833299440c",
+        "RECONVERSE_ENABLE_CPU_AFFINITY:BOOL=ON",
+        "SPANTREE:BOOL=ON"
+      ],
+      "libraries": {
+        "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/libreconverse.so": "43ee00d5e99d258914821e80c80e7b19604fb6ae107475c2f4a051edad926a82",
+        "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/liblci.so": "083e911056b3d798d38eef827603323e8ccffb503d415928345e440bf96dc99f",
+        "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/liblct.so": "c731e80abc9deeb16ed62dbe8a4a7cce3f337845a70edd32055f63696c1f01ea",
+        "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/libck.a": "aafc40688291f80ae7d217d3f74fdf63c9ee50f8d83006eacd6ab9e237a957d9"
+      }
+    }
+  },
+  "records": [
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p11-r0",
+      "rpn": 8,
+      "result": {
+        "pes": "120",
+        "processes": "8",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "66.115141",
+        "p50_us": "64.134598",
+        "p95_us": "79.631805",
+        "min_us": "53.644180",
+        "max_us": "277.042389"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p11-r1",
+      "rpn": 8,
+      "result": {
+        "pes": "120",
+        "processes": "8",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "66.998243",
+        "p50_us": "64.134598",
+        "p95_us": "83.923340",
+        "min_us": "55.313110",
+        "max_us": "291.347504"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p11-r2",
+      "rpn": 8,
+      "result": {
+        "pes": "120",
+        "processes": "8",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "70.132256",
+        "p50_us": "67.472458",
+        "p95_us": "86.069107",
+        "min_us": "56.028366",
+        "max_us": "284.194946"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p267-r0",
+      "rpn": 8,
+      "result": {
+        "pes": "120",
+        "processes": "8",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "72.852850",
+        "p50_us": "70.333481",
+        "p95_us": "86.069107",
+        "min_us": "59.604645",
+        "max_us": "288.724899"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p267-r1",
+      "rpn": 8,
+      "result": {
+        "pes": "120",
+        "processes": "8",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "77.223539",
+        "p50_us": "75.101852",
+        "p95_us": "91.791153",
+        "min_us": "64.373016",
+        "max_us": "279.903412"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p267-r2",
+      "rpn": 8,
+      "result": {
+        "pes": "120",
+        "processes": "8",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "74.047565",
+        "p50_us": "70.571899",
+        "p95_us": "92.029572",
+        "min_us": "59.127808",
+        "max_us": "304.222107"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p11-r0",
+      "rpn": 16,
+      "result": {
+        "pes": "112",
+        "processes": "16",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "42.958736",
+        "p50_us": "38.385391",
+        "p95_us": "59.366226",
+        "min_us": "31.709671",
+        "max_us": "868.797302"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p11-r1",
+      "rpn": 16,
+      "result": {
+        "pes": "112",
+        "processes": "16",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "63.414812",
+        "p50_us": "43.630600",
+        "p95_us": "88.214874",
+        "min_us": "32.901764",
+        "max_us": "913.143158"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p11-r2",
+      "rpn": 16,
+      "result": {
+        "pes": "112",
+        "processes": "16",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "57.255745",
+        "p50_us": "42.915344",
+        "p95_us": "71.763992",
+        "min_us": "32.901764",
+        "max_us": "1035.213470"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p267-r0",
+      "rpn": 16,
+      "result": {
+        "pes": "112",
+        "processes": "16",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "90.230942",
+        "p50_us": "56.982040",
+        "p95_us": "434.875488",
+        "min_us": "38.862228",
+        "max_us": "1713.991165"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p267-r1",
+      "rpn": 16,
+      "result": {
+        "pes": "112",
+        "processes": "16",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "79.675674",
+        "p50_us": "47.206879",
+        "p95_us": "184.059143",
+        "min_us": "34.570694",
+        "max_us": "1451.492310"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p267-r2",
+      "rpn": 16,
+      "result": {
+        "pes": "112",
+        "processes": "16",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "90.441227",
+        "p50_us": "48.160553",
+        "p95_us": "428.199768",
+        "min_us": "35.762787",
+        "max_us": "2702.951431"
+      }
+    },
+    {
+      "kind": "road",
+      "label": "control-r-1",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.443436,
+      "rounds": 714,
+      "us_per_round": 621.0588235294117,
+      "edge_attempts": 88292336,
+      "attempts_per_edge": 1.5299677912958036
+    },
+    {
+      "kind": "road",
+      "label": "control-r-1",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.49254,
+      "rounds": 844,
+      "us_per_round": 583.5781990521327,
+      "edge_attempts": 89530151,
+      "attempts_per_edge": 1.5514171850640557
+    },
+    {
+      "kind": "road",
+      "label": "base-r-1",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.457855,
+      "rounds": 723,
+      "us_per_round": 633.271092669433,
+      "edge_attempts": 88035288,
+      "attempts_per_edge": 1.525513552359176
+    },
+    {
+      "kind": "road",
+      "label": "base-r-1",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.452149,
+      "rounds": 844,
+      "us_per_round": 535.7215639810427,
+      "edge_attempts": 93434870,
+      "attempts_per_edge": 1.6190798449812285
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r-1",
+      "binary": "acic_quiet_rounds",
+      "source": "5620086",
+      "seconds": 0.43878,
+      "rounds": 695,
+      "us_per_round": 631.3381294964029,
+      "edge_attempts": 87917522,
+      "attempts_per_edge": 1.5234728521685077
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r-1",
+      "binary": "acic_quiet_rounds",
+      "source": "1294456",
+      "seconds": 0.467631,
+      "rounds": 855,
+      "us_per_round": 546.9368421052632,
+      "edge_attempts": 90274916,
+      "attempts_per_edge": 1.5643227951510332
+    },
+    {
+      "kind": "road",
+      "label": "base-r0",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.448003,
+      "rounds": 652,
+      "us_per_round": 687.1211656441718,
+      "edge_attempts": 88917644,
+      "attempts_per_edge": 1.5408033988126282
+    },
+    {
+      "kind": "road",
+      "label": "base-r0",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.485322,
+      "rounds": 840,
+      "us_per_round": 577.7642857142857,
+      "edge_attempts": 91758747,
+      "attempts_per_edge": 1.5900352605877417
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r0",
+      "binary": "acic_quiet_rounds",
+      "source": "5620086",
+      "seconds": 0.445612,
+      "rounds": 681,
+      "us_per_round": 654.3494860499266,
+      "edge_attempts": 88743901,
+      "attempts_per_edge": 1.5377927049516897
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r0",
+      "binary": "acic_quiet_rounds",
+      "source": "1294456",
+      "seconds": 0.474764,
+      "rounds": 843,
+      "us_per_round": 563.1838671411625,
+      "edge_attempts": 91291823,
+      "attempts_per_edge": 1.5819441995359307
+    },
+    {
+      "kind": "road",
+      "label": "control-r0",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.43213,
+      "rounds": 672,
+      "us_per_round": 643.0505952380952,
+      "edge_attempts": 88543910,
+      "attempts_per_edge": 1.5343271743925138
+    },
+    {
+      "kind": "road",
+      "label": "control-r0",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.477706,
+      "rounds": 851,
+      "us_per_round": 561.3466509988249,
+      "edge_attempts": 93723565,
+      "attempts_per_edge": 1.624082476823568
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r1",
+      "binary": "acic_quiet_rounds",
+      "source": "5620086",
+      "seconds": 0.433103,
+      "rounds": 676,
+      "us_per_round": 640.6849112426036,
+      "edge_attempts": 88607021,
+      "attempts_per_edge": 1.5354207891007763
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r1",
+      "binary": "acic_quiet_rounds",
+      "source": "1294456",
+      "seconds": 0.481157,
+      "rounds": 843,
+      "us_per_round": 570.767497034401,
+      "edge_attempts": 90852726,
+      "attempts_per_edge": 1.574335336777394
+    },
+    {
+      "kind": "road",
+      "label": "control-r1",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.450412,
+      "rounds": 676,
+      "us_per_round": 666.2899408284023,
+      "edge_attempts": 88959909,
+      "attempts_per_edge": 1.541535785015425
+    },
+    {
+      "kind": "road",
+      "label": "control-r1",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.506618,
+      "rounds": 846,
+      "us_per_round": 598.839243498818,
+      "edge_attempts": 90998603,
+      "attempts_per_edge": 1.5768631565361877
+    },
+    {
+      "kind": "road",
+      "label": "base-r1",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.436788,
+      "rounds": 678,
+      "us_per_round": 644.2300884955753,
+      "edge_attempts": 88800313,
+      "attempts_per_edge": 1.5387702364901301
+    },
+    {
+      "kind": "road",
+      "label": "base-r1",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.463453,
+      "rounds": 841,
+      "us_per_round": 551.0737217598097,
+      "edge_attempts": 91408776,
+      "attempts_per_edge": 1.5839708117109152
+    },
+    {
+      "kind": "road",
+      "label": "control-r2",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.440207,
+      "rounds": 662,
+      "us_per_round": 664.965256797583,
+      "edge_attempts": 88660005,
+      "attempts_per_edge": 1.5363389187723484
+    },
+    {
+      "kind": "road",
+      "label": "control-r2",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.481798,
+      "rounds": 846,
+      "us_per_round": 569.5011820330969,
+      "edge_attempts": 92736169,
+      "attempts_per_edge": 1.6069724518124016
+    },
+    {
+      "kind": "road",
+      "label": "base-r2",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.424767,
+      "rounds": 670,
+      "us_per_round": 633.9805970149254,
+      "edge_attempts": 88509262,
+      "attempts_per_edge": 1.533726778860643
+    },
+    {
+      "kind": "road",
+      "label": "base-r2",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.465354,
+      "rounds": 844,
+      "us_per_round": 551.3672985781991,
+      "edge_attempts": 92612504,
+      "attempts_per_edge": 1.6048295311979714
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r2",
+      "binary": "acic_quiet_rounds",
+      "source": "5620086",
+      "seconds": 0.432423,
+      "rounds": 675,
+      "us_per_round": 640.6266666666667,
+      "edge_attempts": 88782936,
+      "attempts_per_edge": 1.5384691203172685
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r2",
+      "binary": "acic_quiet_rounds",
+      "source": "1294456",
+      "seconds": 0.463357,
+      "rounds": 843,
+      "us_per_round": 549.6524317912218,
+      "edge_attempts": 91975716,
+      "attempts_per_edge": 1.5937949932751818
+    },
+    {
+      "kind": "road",
+      "label": "profile",
+      "binary": "acic_round_profile_v2",
+      "source": "5620086",
+      "seconds": 0.45107,
+      "rounds": 685,
+      "us_per_round": 658.4963503649635,
+      "edge_attempts": 88200130,
+      "attempts_per_edge": 1.528370005841761,
+      "profile": {
+        "controller": {
+          "pes": 1,
+          "calls": 685.0,
+          "pe_seconds": 0.0141170024872,
+          "mean_us": 20.608762755036498,
+          "max_pe_mean_us": 20.608762755036498,
+          "max_call_us": 52.213668823199995
+        },
+        "controller_log": {
+          "pes": 1,
+          "calls": 1369.0,
+          "pe_seconds": 0.00630021095276,
+          "mean_us": 4.602053289086925,
+          "max_pe_mean_us": 4.602053289086925,
+          "max_call_us": 29.563903808600003
+        },
+        "broadcast_call": {
+          "pes": 1,
+          "calls": 684.0,
+          "pe_seconds": 0.00715708732605,
+          "mean_us": 10.463577962061404,
+          "max_pe_mean_us": 10.463577962061404,
+          "max_call_us": 32.6633453369
+        },
+        "thresholds": {
+          "pes": 112,
+          "calls": 76608.0,
+          "pe_seconds": 0.6002690792083699,
+          "mean_us": 7.835592617068321,
+          "max_pe_mean_us": 9.889839685453216,
+          "max_call_us": 926.01776123
+        },
+        "threshold_setup": {
+          "pes": 112,
+          "calls": 76608.0,
+          "pe_seconds": 0.004858970642089401,
+          "mean_us": 0.06342641293454211,
+          "max_pe_mean_us": 0.10491811741169593,
+          "max_call_us": 19.0734863281
+        },
+        "hints": {
+          "pes": 112,
+          "calls": 76608.0,
+          "pe_seconds": 0.0044202804565431995,
+          "mean_us": 0.05769998507392439,
+          "max_pe_mean_us": 0.09097551044663743,
+          "max_call_us": 20.2655792236
+        },
+        "tram_threshold": {
+          "pes": 112,
+          "calls": 76608.0,
+          "pe_seconds": 0.020831584930425997,
+          "mean_us": 0.27192440646441624,
+          "max_pe_mean_us": 0.38690734327923976,
+          "max_call_us": 25.749206543
+        },
+        "tram_flush": {
+          "pes": 112,
+          "calls": 76608.0,
+          "pe_seconds": 0.39496350288394005,
+          "mean_us": 5.155643051429878,
+          "max_pe_mean_us": 6.757284465584794,
+          "max_call_us": 921.726226807
+        },
+        "queue_dispatch": {
+          "pes": 112,
+          "calls": 153216.0,
+          "pe_seconds": 0.029038906097412,
+          "mean_us": 0.189529201241463,
+          "max_pe_mean_us": 0.247481273628655,
+          "max_call_us": 21.4576721191
+        },
+        "histogram_prepare": {
+          "pes": 112,
+          "calls": 76720.0,
+          "pe_seconds": 0.025619506835935002,
+          "mean_us": 0.33393517773637904,
+          "max_pe_mean_us": 0.4569979479708029,
+          "max_call_us": 24.5571136475
+        },
+        "contribute_call": {
+          "pes": 112,
+          "calls": 76720.0,
+          "pe_seconds": 0.07833933830261301,
+          "mean_us": 1.0211071207327036,
+          "max_pe_mean_us": 1.4426934458043796,
+          "max_call_us": 233.888626099
+        },
+        "clear_hold": {
+          "pes": 112,
+          "calls": 76608.0,
+          "pe_seconds": 0.021911382675167998,
+          "mean_us": 0.2860195106929824,
+          "max_pe_mean_us": 0.3656448676578947,
+          "max_call_us": 25.0339508057
+        }
+      }
+    },
+    {
+      "kind": "road",
+      "label": "profile",
+      "binary": "acic_round_profile_v2",
+      "source": "1294456",
+      "seconds": 0.47045,
+      "rounds": 846,
+      "us_per_round": 556.0874704491725,
+      "edge_attempts": 92182294,
+      "attempts_per_edge": 1.5973746662197317,
+      "profile": {
+        "controller": {
+          "pes": 1,
+          "calls": 846.0,
+          "pe_seconds": 0.0156669616699,
+          "mean_us": 18.518867222104017,
+          "max_pe_mean_us": 18.518867222104017,
+          "max_call_us": 61.7504119873
+        },
+        "controller_log": {
+          "pes": 1,
+          "calls": 1691.0,
+          "pe_seconds": 0.00740718841553,
+          "mean_us": 4.380359796292135,
+          "max_pe_mean_us": 4.380359796292135,
+          "max_call_us": 47.683715820299994
+        },
+        "broadcast_call": {
+          "pes": 1,
+          "calls": 845.0,
+          "pe_seconds": 0.00760173797607,
+          "mean_us": 8.996139616650886,
+          "max_pe_mean_us": 8.996139616650886,
+          "max_call_us": 30.994415283200002
+        },
+        "thresholds": {
+          "pes": 112,
+          "calls": 94640.0,
+          "pe_seconds": 0.5457277297973698,
+          "mean_us": 5.766353865145496,
+          "max_pe_mean_us": 6.742872430023668,
+          "max_call_us": 400.304794312
+        },
+        "threshold_setup": {
+          "pes": 112,
+          "calls": 94640.0,
+          "pe_seconds": 0.0057015419006347995,
+          "mean_us": 0.06024452557729078,
+          "max_pe_mean_us": 0.07759184526970413,
+          "max_call_us": 9.298324584960001
+        },
+        "hints": {
+          "pes": 112,
+          "calls": 94640.0,
+          "pe_seconds": 0.005221128463745496,
+          "mean_us": 0.055168305829939736,
+          "max_pe_mean_us": 0.06997373682508877,
+          "max_call_us": 13.1130218506
+        },
+        "tram_threshold": {
+          "pes": 112,
+          "calls": 94640.0,
+          "pe_seconds": 0.025162458419798996,
+          "mean_us": 0.26587551162086853,
+          "max_pe_mean_us": 0.36030831421656806,
+          "max_call_us": 16.450881958
+        },
+        "tram_flush": {
+          "pes": 112,
+          "calls": 94640.0,
+          "pe_seconds": 0.31151604652408005,
+          "mean_us": 3.2915896716407445,
+          "max_pe_mean_us": 4.043240518970414,
+          "max_call_us": 397.443771362
+        },
+        "queue_dispatch": {
+          "pes": 112,
+          "calls": 189280.0,
+          "pe_seconds": 0.032146215438844994,
+          "mean_us": 0.16983418976566458,
+          "max_pe_mean_us": 0.21457672119112425,
+          "max_call_us": 26.4644622803
+        },
+        "histogram_prepare": {
+          "pes": 112,
+          "calls": 94752.0,
+          "pe_seconds": 0.030885219573967993,
+          "mean_us": 0.3259584976989192,
+          "max_pe_mean_us": 0.40102794097163125,
+          "max_call_us": 20.7424163818
+        },
+        "contribute_call": {
+          "pes": 112,
+          "calls": 94752.0,
+          "pe_seconds": 0.08537960052490501,
+          "mean_us": 0.9010849430608854,
+          "max_pe_mean_us": 1.1715201339539005,
+          "max_call_us": 197.649002075
+        },
+        "clear_hold": {
+          "pes": 112,
+          "calls": 94640.0,
+          "pe_seconds": 0.035751342773433996,
+          "mean_us": 0.37776144097035075,
+          "max_pe_mean_us": 0.45059700689349114,
+          "max_call_us": 52.4520874023
+        }
+      }
+    },
+    {
+      "kind": "road",
+      "label": "cost",
+      "binary": "acic_cost",
+      "source": "5620086",
+      "seconds": 0.462564,
+      "rounds": 697,
+      "us_per_round": 663.6499282639885,
+      "edge_attempts": 86971172,
+      "attempts_per_edge": 1.507074090000829,
+      "work": {
+        "sample_period": 1024,
+        "edge_attempts": 86971172,
+        "expansions": 35587878,
+        "changes": 39125212,
+        "queue_pushes": 39125212,
+        "queue_pops": 39125212,
+        "stale_pops": 3537334,
+        "cas_attempts": 39133501,
+        "cas_failures": 8289,
+        "intra_process": 86210520,
+        "intra_node": 760652,
+        "inter_node": 0,
+        "queue_probes": 75275705,
+        "lock_misses": 10091318,
+        "cpu_ns": 48234912084,
+        "push_calls": 39125212,
+        "push_samples": 38212,
+        "push_ticks": 33523428,
+        "pop_calls": 15306355,
+        "pop_samples": 14944,
+        "pop_ticks": 33087359
+      }
+    },
+    {
+      "kind": "road",
+      "label": "cost",
+      "binary": "acic_cost",
+      "source": "1294456",
+      "seconds": 0.487336,
+      "rounds": 851,
+      "us_per_round": 572.6627497062279,
+      "edge_attempts": 90925386,
+      "attempts_per_edge": 1.5755944206883186,
+      "work": {
+        "sample_period": 1024,
+        "edge_attempts": 90925386,
+        "expansions": 37208549,
+        "changes": 40969129,
+        "queue_pushes": 40969129,
+        "queue_pops": 40969129,
+        "stale_pops": 3760580,
+        "cas_attempts": 40979435,
+        "cas_failures": 10306,
+        "intra_process": 90122903,
+        "intra_node": 802483,
+        "inter_node": 0,
+        "queue_probes": 109308179,
+        "lock_misses": 12944523,
+        "cpu_ns": 51407945662,
+        "push_calls": 40969129,
+        "push_samples": 40008,
+        "push_ticks": 32716366,
+        "pop_calls": 20742916,
+        "pop_samples": 20260,
+        "pop_ticks": 35596819
+      }
+    },
+    {
+      "kind": "road",
+      "label": "trace",
+      "binary": "acic_round_trace",
+      "source": "5620086",
+      "seconds": 0.45924,
+      "rounds": 691,
+      "us_per_round": 664.602026049204,
+      "edge_attempts": 88379391,
+      "attempts_per_edge": 1.5314763179936504
+    }
+  ],
+  "summary": {
+    "5620086": {
+      "base": 0.436788,
+      "quiet": 0.433103,
+      "control": 0.440207,
+      "quiet_speedup": 1.008508368679044,
+      "control_speedup": 0.9922331993812002
+    },
+    "1294456": {
+      "base": 0.465354,
+      "quiet": 0.474764,
+      "control": 0.481798,
+      "quiet_speedup": 0.9801796260879089,
+      "control_speedup": 0.9658695137796338
+    }
+  },
+  "trace": {
+    "pes": 112,
+    "processes": 16,
+    "nodes": 1,
+    "window_s_mean": 0.45911655357142855,
+    "time": [
+      {
+        "activity": "SsspChares::process_heap",
+        "pe_seconds": 33.439879,
+        "share": 0.65031492742253,
+        "calls": 5031506
+      },
+      {
+        "activity": "idle",
+        "pe_seconds": 11.365704,
+        "share": 0.22103210875451912,
+        "calls": 102885
+      },
+      {
+        "activity": "untraced",
+        "pe_seconds": 4.628232,
+        "share": 0.09000655645837209,
+        "calls": 0
+      },
+      {
+        "activity": "SsspChares::current_thresholds",
+        "pe_seconds": 0.647526,
+        "share": 0.0125926240251707,
+        "calls": 77280
+      },
+      {
+        "activity": "HTramRecv::receive",
+        "pe_seconds": 0.614407,
+        "share": 0.011948549323784767,
+        "calls": 174611
+      },
+      {
+        "activity": "HTram::receivePerPE",
+        "pe_seconds": 0.511667,
+        "share": 0.00995053504737573,
+        "calls": 1222277
+      },
+      {
+        "activity": "CkReductionMgr::RecvMsg",
+        "pe_seconds": 0.077145,
+        "share": 0.0015002609631455629,
+        "calls": 76698
+      },
+      {
+        "activity": "SsspChares::clear_pq_hold",
+        "pe_seconds": 0.037131,
+        "share": 0.0007220972172215684,
+        "calls": 77280
+      },
+      {
+        "activity": "CkArray::recvNoKeepBroadcast",
+        "pe_seconds": 0.035944,
+        "share": 0.0006990132874366986,
+        "calls": 154560
+      },
+      {
+        "activity": "unpack",
+        "pe_seconds": 0.025968,
+        "share": 0.0005050071513508844,
+        "calls": 262359
+      },
+      {
+        "activity": "pack",
+        "pe_seconds": 0.022453,
+        "share": 0.0004366499372027652,
+        "calls": 252003
+      },
+      {
+        "activity": "dummy_thread_chare::dummy_thread_ep",
+        "pe_seconds": 0.007192,
+        "share": 0.0001398648888060521,
+        "calls": 691
+      },
+      {
+        "activity": "Main::redn_wrapper_reduce_histogram",
+        "pe_seconds": 0.007146,
+        "share": 0.00013897031359956177,
+        "calls": 1382
+      },
+      {
+        "activity": "SsspChares::contribute_histogram",
+        "pe_seconds": 0.000594,
+        "share": 1.1551688535983723e-05,
+        "calls": 112
+      },
+      {
+        "activity": "CkArray::recvNoKeepExpeditedBroadcast",
+        "pe_seconds": 5.6e-05,
+        "share": 1.089048077466479e-06,
+        "calls": 166
+      },
+      {
+        "activity": "SsspChares::start_algo",
+        "pe_seconds": 1e-05,
+        "share": 1.9447287097615695e-07,
+        "calls": 1
+      }
+    ],
+    "spread": {
+      "busy (entries+pack)": [
+        0.298529,
+        0.304687,
+        0.319181,
+        0.3244613,
+        0.335118
+      ],
+      "idle": [
+        0.078882,
+        0.0925214,
+        0.0989755,
+        0.11457840000000001,
+        0.118397
+      ],
+      "untraced": [
+        0.03644700000000001,
+        0.03758140000000004,
+        0.04055300000000001,
+        0.04626299999999999,
+        0.05124000000000002
+      ],
+      "window": [
+        0.458954,
+        0.4590181,
+        0.459157,
+        0.4591919,
+        0.459215
+      ]
+    },
+    "busy_by_process": [
+      2.13826,
+      2.1394130000000002,
+      2.245255,
+      2.14663,
+      2.11848,
+      2.1582779999999997,
+      2.255449,
+      2.267669,
+      2.229299,
+      2.247473,
+      2.3244789999999997,
+      2.2552250000000003,
+      2.2288490000000003,
+      2.242014,
+      2.2439090000000004,
+      2.186436
+    ],
+    "timeline": [
+      [
+        0.0,
+        0.5749075892857143,
+        0.06544821428571423,
+        0.3208482142857143,
+        0.014150446428571429,
+        0.009662053571428571,
+        0.007161607142857143
+      ],
+      [
+        0.02,
+        0.42883660714285715,
+        0.07654553571428568,
+        0.4558526785714286,
+        0.01318125,
+        0.011553125,
+        0.008689285714285714
+      ],
+      [
+        0.04,
+        0.19820401785714287,
+        0.09755446428571424,
+        0.66178125,
+        0.012775,
+        0.014307142857142857,
+        0.0116
+      ],
+      [
+        0.06,
+        0.2277875,
+        0.08698169642857145,
+        0.6488285714285714,
+        0.01193705357142857,
+        0.012201339285714286,
+        0.009626785714285714
+      ],
+      [
+        0.08,
+        0.3784683035714286,
+        0.07044687500000002,
+        0.5216450892857143,
+        0.00844375,
+        0.010629910714285715,
+        0.008229017857142857
+      ],
+      [
+        0.1,
+        0.16782901785714285,
+        0.09518392857142854,
+        0.6954075892857143,
+        0.013414285714285714,
+        0.013870089285714286,
+        0.010778125
+      ],
+      [
+        0.12,
+        0.027009375,
+        0.10728794642857142,
+        0.8203473214285715,
+        0.015608928571428572,
+        0.014992857142857143,
+        0.011897321428571429
+      ],
+      [
+        0.14,
+        0.016080357142857143,
+        0.10271919642857141,
+        0.8431678571428571,
+        0.013219196428571429,
+        0.011795535714285715,
+        0.010795535714285714
+      ],
+      [
+        0.16,
+        0.09284821428571428,
+        0.10359776785714281,
+        0.7596272321428571,
+        0.01436607142857143,
+        0.014406696428571428,
+        0.011522767857142856
+      ],
+      [
+        0.18,
+        0.372146875,
+        0.08542589285714286,
+        0.4965200892857143,
+        0.01588214285714286,
+        0.012810267857142857,
+        0.009827232142857143
+      ],
+      [
+        0.2,
+        0.04165625,
+        0.11643928571428575,
+        0.7865767857142857,
+        0.018041517857142857,
+        0.018554910714285715,
+        0.013826785714285715
+      ],
+      [
+        0.22,
+        0.03763214285714286,
+        0.10288660714285713,
+        0.82244375,
+        0.011416071428571428,
+        0.012272767857142857,
+        0.0110125
+      ],
+      [
+        0.24,
+        0.07082678571428572,
+        0.09667276785714285,
+        0.7990379464285714,
+        0.010604017857142857,
+        0.01069330357142857,
+        0.010319642857142857
+      ],
+      [
+        0.26,
+        0.1460875,
+        0.09087053571428572,
+        0.7288441964285715,
+        0.011601785714285714,
+        0.010485267857142858,
+        0.010030357142857143
+      ],
+      [
+        0.28,
+        0.13878169642857144,
+        0.09681205357142852,
+        0.7240535714285714,
+        0.014420535714285714,
+        0.012741964285714285,
+        0.010102232142857144
+      ],
+      [
+        0.3,
+        0.12605044642857144,
+        0.09921250000000004,
+        0.7321116071428572,
+        0.01515,
+        0.01332857142857143,
+        0.011019642857142856
+      ],
+      [
+        0.32,
+        0.17380133928571428,
+        0.09276116071428575,
+        0.6971741071428571,
+        0.011929910714285714,
+        0.011863392857142857,
+        0.009820982142857143
+      ],
+      [
+        0.34,
+        0.14447723214285715,
+        0.1011066964285714,
+        0.7071424107142857,
+        0.016591071428571427,
+        0.014399553571428572,
+        0.012336607142857142
+      ],
+      [
+        0.36,
+        0.10090178571428571,
+        0.0991919642857143,
+        0.7600200892857143,
+        0.014457142857142858,
+        0.011564285714285714,
+        0.011029017857142857
+      ],
+      [
+        0.38,
+        0.25908258928571426,
+        0.08391696428571427,
+        0.6241223214285714,
+        0.010878571428571428,
+        0.009913392857142857,
+        0.009373660714285715
+      ],
+      [
+        0.4,
+        0.23185178571428572,
+        0.08667098214285718,
+        0.6489767857142857,
+        0.009953125,
+        0.01037767857142857,
+        0.009151339285714285
+      ],
+      [
+        0.42,
+        0.3077035714285714,
+        0.08177276785714283,
+        0.5768026785714285,
+        0.010622321428571429,
+        0.010105803571428571,
+        0.008830803571428571
+      ],
+      [
+        0.44,
+        0.8120464285714286,
+        0.07084151785714288,
+        0.09718526785714286,
+        0.009023660714285715,
+        0.0017589285714285714,
+        0.0014415178571428571
+      ]
+    ],
+    "sent": [
+      {
+        "ep": "SsspChares::process_heap",
+        "messages": 5031500,
+        "bytes": 402520000
+      },
+      {
+        "ep": "HTram::receivePerPE",
+        "messages": 1222277,
+        "bytes": 262270288
+      },
+      {
+        "ep": "HTramRecv::receive",
+        "messages": 174611,
+        "bytes": 23758928
+      },
+      {
+        "ep": "SsspChares::clear_pq_hold",
+        "messages": 77280,
+        "bytes": 6182400
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "messages": 76701,
+        "bytes": 180400752
+      },
+      {
+        "ep": "CkArray::recvNoKeepBroadcast",
+        "messages": 11730,
+        "bytes": 1689120
+      },
+      {
+        "ep": "Main::redn_wrapper_reduce_histogram",
+        "messages": 691,
+        "bytes": 1625232
+      },
+      {
+        "ep": "SsspChares::current_thresholds",
+        "messages": 690,
+        "bytes": 99360
+      },
+      {
+        "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+        "messages": 11,
+        "bytes": 1232
+      },
+      {
+        "ep": "SsspChares::print_distances",
+        "messages": 1,
+        "bytes": 80
+      },
+      {
+        "ep": "SsspChares::contribute_histogram",
+        "messages": 1,
+        "bytes": 112
+      }
+    ],
+    "latency": [
+      {
+        "ep": "SsspChares::process_heap",
+        "locality": "same process",
+        "messages": 5031501,
+        "p50_p90_p99_max_ms": [
+          0.104,
+          0.352,
+          0.57,
+          1.397
+        ]
+      },
+      {
+        "ep": "HTram::receivePerPE",
+        "locality": "same process",
+        "messages": 1222277,
+        "p50_p90_p99_max_ms": [
+          0.007,
+          0.199,
+          0.485,
+          1.39
+        ]
+      },
+      {
+        "ep": "HTramRecv::receive",
+        "locality": "same node",
+        "messages": 174610,
+        "p50_p90_p99_max_ms": [
+          0.003,
+          0.00925,
+          0.02325,
+          0.661125
+        ]
+      },
+      {
+        "ep": "CkArray::recvNoKeepBroadcast",
+        "locality": "same process",
+        "messages": 154560,
+        "p50_p90_p99_max_ms": [
+          0.007,
+          0.037,
+          0.332,
+          5.936
+        ]
+      },
+      {
+        "ep": "SsspChares::current_thresholds",
+        "locality": "same process",
+        "messages": 77280,
+        "p50_p90_p99_max_ms": [
+          0.004,
+          0.023,
+          0.326,
+          5.932
+        ]
+      },
+      {
+        "ep": "SsspChares::clear_pq_hold",
+        "locality": "same process",
+        "messages": 77280,
+        "p50_p90_p99_max_ms": [
+          0.042,
+          0.27,
+          0.5112100000000064,
+          1.148
+        ]
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "locality": "same process",
+        "messages": 66336,
+        "p50_p90_p99_max_ms": [
+          0.006,
+          0.017,
+          0.037,
+          0.619
+        ]
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "locality": "same node",
+        "messages": 10362,
+        "p50_p90_p99_max_ms": [
+          0.005,
+          0.01425,
+          0.03409749999999986,
+          0.3175
+        ]
+      },
+      {
+        "ep": "Main::redn_wrapper_reduce_histogram",
+        "locality": "same process",
+        "messages": 1382,
+        "p50_p90_p99_max_ms": [
+          0.034,
+          0.235,
+          0.4279500000000003,
+          0.495
+        ]
+      },
+      {
+        "ep": "dummy_thread_chare::dummy_thread_ep",
+        "locality": "same process",
+        "messages": 691,
+        "p50_p90_p99_max_ms": [
+          0.0,
+          0.001,
+          0.001,
+          0.015
+        ]
+      },
+      {
+        "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+        "locality": "same process",
+        "messages": 166,
+        "p50_p90_p99_max_ms": [
+          0.007,
+          0.013,
+          0.018349999999999995,
+          0.023
+        ]
+      },
+      {
+        "ep": "SsspChares::contribute_histogram",
+        "locality": "same process",
+        "messages": 112,
+        "p50_p90_p99_max_ms": [
+          0.004,
+          0.008,
+          0.01267,
+          0.02
+        ]
+      },
+      {
+        "ep": "SsspChares::print_distances",
+        "locality": "same process",
+        "messages": 98,
+        "p50_p90_p99_max_ms": [
+          41.577,
+          60.917,
+          70.005,
+          70.005
+        ]
+      }
+    ]
+  },
+  "raw_directory": "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22354907"
+}

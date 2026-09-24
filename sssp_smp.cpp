@@ -1977,6 +1977,10 @@ public:
     ckout << (process_share_active() ? "" : " (inactive)") << endl;
     ckout << "Heap slice: " << heap_slice
           << (process_share_active() ? "" : " (inactive)") << endl;
+#ifdef ACIC_COALESCE_HEAP
+    ckout << "Heap wakeups: coalesced"
+          << (process_share_active() ? "" : " (inactive)") << endl;
+#endif
     ckout << "Hub hints: ";
     if (hub_hint_min_degree() > 0) ckout << "degree >= " << hub_hint_min_degree();
     else ckout << "off";
@@ -5211,7 +5215,16 @@ public:
     //    tram->flush_everything();
     {
     ROUND_SCOPE(queue_dispatch);
+#ifdef ACIC_COALESCE_HEAP
+    // A sliced shared heap already reschedules itself. Injecting another
+    // callback on every threshold round creates multiple persistent drain
+    // chains and queues controller work behind them. Reuse the pending
+    // callback; it reads the newly installed thresholds when it executes.
+    // Leave the non-shared heap (which does not track heap_queued) unchanged.
+    if (control_mode != CONTROL_NODE && !process_share_active())
+#else
     if (control_mode != CONTROL_NODE)
+#endif
       arr[thisIndex].process_heap();
     else if (!heap_queued) {
       heap_queued = true;

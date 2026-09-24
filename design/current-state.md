@@ -321,20 +321,51 @@ The same instruments on `road-usa-z` at 16 nodes (job 5538868) show PEs idle
 Road at this size is bound by round latency, not work, which is why larger
 road inputs are the next test (`road-eu`, `road-na`; `scripts/frontier/prepare_osm.sbatch`).
 
-### 12. Delta runtime refresh and road attribution (in progress)
+### 12. Delta road attribution: one-node work and queued heap callbacks
 
 The September 24 rebuild uses latest Charm++ `f6c74074f` and Reconverse
 `0c97c4d`, production/shared-memory/spanning-tree settings and `+old-scheduler`.
 Unmodified upstream SSSP `7a4da59` and the output-only sensitivity build passed
 448 serial-verified solves across one-node job 22354859 and two-node job
-22354910; all 112 launches confirmed the old scheduler. A two-PE local profiler smoke passed four serial checks including
-a disconnected source and a repeated source, with per-source timer counts
-matching controller rounds. One-node road probe 22354907 is queued;
-eight-node probe 22354948 depends on its success and the completed two-node
-gate. The workspace `sssp_smp` and ignored `config.mk` now use the new runtime;
-previous copies are preserved in the campaign. Phase attribution and the
-intervention decision are pending; no speedup is claimed. See the Delta section of the forward plan and
-`benchmarks/delta-road-rounds-protocol.json`.
+22354910; all 112 launches confirmed the old scheduler. A two-PE profiler
+smoke passed four serial checks and per-source timer-count checks. The
+workspace binary/config now use this runtime; previous copies are preserved.
+
+One-node attribution job **22354907** completed all 29 road digests, work
+audits and 12 empty-cycle launches (16 × 7 road layout, two training sources).
+Production medians are 0.437/0.465 s, about 670/841 rounds and 1.54/1.59
+attempts per edge. Quiet-round speedup is 1.009/0.980×, versus repeated-control
+speedup 0.992/0.966×: **no resolved logging benefit**. The phase build puts
+Main at 18.5–20.6 us/round including 8.8–9.2 us of logging and 9.0–10.5 us
+of broadcast-call work. Worker threshold handling averages 5.8–7.8 us.
+Production round cost is 0.55–0.64 ms, while the 267-long empty cycle at the
+same layout averages 0.080–0.090 ms across launches. The work-cost build
+spends 73–77% of PE time in solver work, with 13–17% idle. One-node road is
+therefore predominantly work-bound, not explained by an unloaded collective
+floor or controller arithmetic. These are attribution measurements from one
+allocation, not a new accepted performance result.
+
+The single-source trace is within 5% of production time and locates long
+queue waits: Main's reduction callback has p90 send-to-execute latency
+0.23 ms; heap callbacks have p50 0.10 ms and p90 0.35 ms. Four inspected
+PEs have **62–75 pending heap callbacks at peak**, with 14–17 already waiting
+at median heap execution. Code inspection identifies a cause: every ordinary
+controller round queues another heap callback even when the sliced shared
+heap already has one pending. Each callback can reschedule its own chain.
+
+A compile-time prototype, `ACIC_COALESCE_HEAP`, uses the existing pending
+flag to suppress duplicate shared-heap wakeups. The non-shared path and all
+threshold/relaxation rules remain unchanged. This is **experimental**: its
+four-source local serial/work smoke passed; distributed gate **22355072**
+and matched road/mesh timing are next. The prediction and controls are in
+`benchmarks/delta-heap-coalesce-{road,mesh}-variants.json`.
+
+Eight-node attribution **22354948** is queued after successful correctness
+and one-node dependencies; the scheduler currently forecasts an overnight
+start. It is needed to explain the previously observed distributed road
+round limit. Raw one-node evidence is archived in
+`design/onenode-data/delta-road-rounds-22354907.json`; logs are under
+`/u/rao1/.tmp/road-rounds-20260924/logs/`.
 
 ## Evidence and provenance
 

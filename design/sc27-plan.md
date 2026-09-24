@@ -412,3 +412,15 @@ overhead. Quieter output may change work and round count as well as cost.
 Accept an intervention only after a matched comparison and a second
 allocation, full distance digests, work/queue accounting and regression
 checks. A runtime rebuild alone is not an accepted performance improvement.
+
+The first Delta allocation (22354907) rejects logging as a useful
+intervention and finds substantial loaded queue delay. A trace-backed
+follow-up tests `ACIC_COALESCE_HEAP`: allow only one pending shared-heap
+callback per worker instead of adding one each controller round. Predictions
+are recorded in `benchmarks/delta-heap-coalesce-{road,mesh}-variants.json`: at
+most one pending callback, at least 25% less p90 controller callback delay,
+road speedup 1.05–1.20× with work within 20%, and no resolved mesh regression.
+`scripts/delta/heap_coalesce.sbatch` interleaves the frozen production,
+prototype and repeated control plus separate work builds, then traces one
+road source and audits all PEs' callback backlog. The two-node correctness
+gate is 22355072. Keep the prototype disabled in production pending results.
