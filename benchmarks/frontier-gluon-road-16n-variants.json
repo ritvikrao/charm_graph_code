@@ -1,0 +1,54 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "131072"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Gluon comparison at 16 nodes: in the same allocation, run.py --mode external tunes Gluon-Async and Gluon-Sync (layouts 1 and 8 ranks/node x oec/cvc on the first training source, then delta on both training sources; deltas {0, d/16, d} plus d x {4,16,64} while <= max distance/4) and runs each selection on the four held-out sources, three repetitions; then these ACIC arms on the same four held-out sources, one warmup and three repetitions. Two allocations. Speedup = Gluon time / ACIC time per source (median over repetitions); h2tls speedup = frozen time / h2tls time. Predictions (road-usa-z, 8 x 7, width 131072): Gluon's rounds are bounded below by the hop diameter (thousands), so ACIC's speedup over the faster Gluon mode is 10-100x; Gluon selects delta >= d = 524288; h2tls over frozen 0.97-1.05x; every solve returns the reference digest."
+  },
+  {
+    "label": "h2tls",
+    "binary": "acic_hint2_tls",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "131072",
+      "--hub-hints",
+      "auto"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Gluon comparison at 16 nodes: in the same allocation, run.py --mode external tunes Gluon-Async and Gluon-Sync (layouts 1 and 8 ranks/node x oec/cvc on the first training source, then delta on both training sources; deltas {0, d/16, d} plus d x {4,16,64} while <= max distance/4) and runs each selection on the four held-out sources, three repetitions; then these ACIC arms on the same four held-out sources, one warmup and three repetitions. Two allocations. Speedup = Gluon time / ACIC time per source (median over repetitions); h2tls speedup = frozen time / h2tls time. Predictions (road-usa-z, 8 x 7, width 131072): Gluon's rounds are bounded below by the hop diameter (thousands), so ACIC's speedup over the faster Gluon mode is 10-100x; Gluon selects delta >= d = 524288; h2tls over frozen 0.97-1.05x; every solve returns the reference digest."
+  }
+]

@@ -1199,14 +1199,22 @@ class Campaign:
             arms['riken'] = ([riken(r, mid) for r in layouts(self.args.riken_layouts)],
                              lambda layout: [riken(layout['rpn'], d) for d in deltas])
         partitions = ['oec'] if self.nodes == 1 else ['oec', 'cvc']
-        gluon_deltas = sorted({0, mid, denominator})
+        # Gluon's -delta raises the priority threshold by delta every round
+        # (sssp_push.cpp), so a solve takes at least max_distance/delta rounds.
+        # On meshes and roads d/16 and d mean thousands of rounds; the optional
+        # multipliers add larger steps that still leave four or more rounds.
+        max_distance = max(int(r['max_distance']) for r in self.references(graph))
+        gluon_deltas = sorted({0, mid, denominator} |
+                              {denominator * m for m in map(int, filter(None, self.args.gluon_delta_multipliers.split(',')))
+                               if denominator * m <= max_distance // 4})
 
         def gluon(model, rpn, partition, delta):
             return dict(engine='gluon', name=f'gluon-{model.lower()}-r{rpn}-{partition}-d{delta}', model=model,
                         rpn=rpn, threads=machine.gluon_threads_per_rank(rpn), cpus=stride(rpn), partition=partition, delta=delta)
         for model in ['Async', 'Sync']:
             arms['gluon-'+model.lower()] = (
-                [gluon(model, r, p, mid) for r in layouts(self.args.gluon_layouts) for p in partitions],
+                [gluon(model, r, p, max(1, denominator // self.args.gluon_layout_divisor))
+                 for r in layouts(self.args.gluon_layouts) for p in partitions],
                 lambda layout, model=model: [gluon(model, layout['rpn'], layout['partition'], d) for d in gluon_deltas])
         if self.nodes == 1:
             def gap(threads, delta):
@@ -1471,6 +1479,10 @@ if __name__ == '__main__':
     # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
     # fair-baseline re-take extends the grid downward.
     parser.add_argument('--delta-divisors', default='64,16,4,1')
+    parser.add_argument('--gluon-layout-divisor', type=int, default=16,
+                        help="Gluon layout stage's delta, denominator / this (16: the mid delta; 1 for meshes and roads)")
+    parser.add_argument('--gluon-delta-multipliers', default='',
+                        help='extra Gluon deltas, denominator x each (e.g. 4,16,64), kept while <= max distance / 4')
     parser.add_argument('--fixed-idle', default='off',
                         help="--mode ablation: idle-flush settings in the fixed search space, 'off' or 'off,on'")
     parser.add_argument('--ablation-binary', default='acic_ipdps',
