@@ -1,0 +1,15 @@
+mainmodule round_trip {
+  readonly CProxy_RoundMain roundMain;
+  readonly int payload_longs;
+  mainchare RoundMain {
+    entry RoundMain(CkArgMsg *m);
+    entry [reductiontarget] void ready();
+    entry [reductiontarget, expedited] void reduced(long values[n], int n);
+  };
+  array [1D] RoundWorker {
+    entry RoundWorker();
+    // Match SSSP's non-expedited, nine-integer threshold broadcast.
+    entry void thresholds(int round, int b, int c, int d, int e, int f,
+                          int g, int h, int i);
+  };
+};

@@ -321,6 +321,19 @@ The same instruments on `road-usa-z` at 16 nodes (job 5538868) show PEs idle
 Road at this size is bound by round latency, not work, which is why larger
 road inputs are the next test (`road-eu`, `road-na`; `scripts/frontier/prepare_osm.sbatch`).
 
+### 12. Delta runtime refresh and road attribution (in progress)
+
+The September 24 rebuild uses latest Charm++ `f6c74074f` and Reconverse
+`0c97c4d`, production/shared-memory/spanning-tree settings and `+old-scheduler`.
+Unmodified upstream SSSP `7a4da59` and the output-only sensitivity build passed
+224 serial-verified solves in job 22354859; all 56 launches confirmed the old
+scheduler. A two-PE local profiler smoke passed four serial checks including
+a disconnected source and a repeated source, with per-source timer counts
+matching controller rounds. Two-node gate 22354910 and one-node road probe
+22354907 are queued. Phase attribution and the intervention decision are
+pending; no speedup is claimed. See the Delta section of the forward plan and
+`benchmarks/delta-road-rounds-protocol.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |

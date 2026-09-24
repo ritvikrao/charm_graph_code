@@ -45,6 +45,10 @@ if [ "$KIND" = diagnostic ]; then
   FLAGS='-DACIC_IPDPS_DIAG -DACIC_DIAG -DACIC_COMM_SHARE -DVCOUNT'
 elif [ "$KIND" = work-cost ]; then
   FLAGS='-DACIC_WORK_COST -DACIC_COMM_SHARE'
+elif [ "$KIND" = round-profile ]; then
+  FLAGS='-DACIC_ROUND_PROFILE'
+elif [ "$KIND" = quiet-rounds ]; then
+  FLAGS='-DACIC_QUIET_ROUNDS'
 elif [ "$KIND" = papi ]; then
   # Solve-window PC sampler (acic_prof.h); timer mode needs no PMU events.
   TARGET=sssp_smp_papi
@@ -54,6 +58,7 @@ elif [ "$KIND" != production ]; then
   echo "Unknown build kind: $KIND" >&2
   exit 2
 fi
+FLAGS="${FLAGS}${ACIC_BUILD_FLAGS:+ $ACIC_BUILD_FLAGS}"
 make -C "$WORK/src" "$TARGET" CHARMC_SMP="$CHARMC $FLAGS" HTRAM_DIR="$WORK/htram" ${PAPI_HOME:+PAPI_HOME=$PAPI_HOME} \
   > "$WORK/build.log" 2>&1 || { tail -40 "$WORK/build.log"; exit 1; }
 install -m755 "$WORK/src/$TARGET" "$ROOT/bin/$LABEL"

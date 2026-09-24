@@ -32,7 +32,7 @@ all: sssp_smp
 run_sssp_smp: sssp_smp
 	./sssp_smp 10000 160000 100 1 1 0.999 0.005 +p8 +ppn 8 ++local
 
-SSSP_SRC = sssp_smp.cpp sssp_smp.ci weighted_node_struct.h acic_prof.h process_work.h live_slack.h work_cost.h \
+SSSP_SRC = sssp_smp.cpp sssp_smp.ci weighted_node_struct.h acic_prof.h round_profile.h process_work.h live_slack.h work_cost.h \
            $(wildcard graphlib/*.h) $(wildcard graphlib/*.C)
 
 sssp_smp: $(SSSP_SRC) $(HTRAM_DIR)/libhtram_group_graph.a

@@ -369,3 +369,46 @@ sequence of settings.
 Enter a larger scale only when the previous scale is correct, fits the memory
 model, and is faster than the next smaller accepted scale or answers a stated
 capacity question. Do not use more nodes solely because they are available.
+
+
+## Delta road round-cost investigation — September 24
+
+At the user's request, investigate the remaining 500–800 rounds at roughly
+0.2 ms per round using newly rebuilt Charm++/Reconverse/SSSP and the old
+scheduler. This is phase attribution, not another width/cap sweep. The
+spanning-tree screen remains closed. Runtime identities are recorded in
+[configurations.md](configurations.md#delta-runtime-refresh-september-24).
+
+The preregistered protocol is
+`benchmarks/delta-road-rounds-protocol.json`. Run
+`scripts/delta/road_round_probe.sbatch CAMPAIGN --trace`, overriding `-N` for
+the multi-node cell, only after the corresponding correctness gate passes.
+
+1. Validate the new production and quiet-round binaries against serial
+   Dijkstra on one and two nodes. All runs use `+old-scheduler` (the actual
+   spelling accepted by Reconverse).
+2. On one node and eight nodes, use two training road sources, 16 processes
+   × 7 workers per node, nearest queue, batch 8, slice 8, width 131072,
+   process share/reader tile/hub hints auto, slack control off. Interleave
+   production, quiet-round and repeated-production arms, one warmup and
+   three measured launches, retaining the graph between sources.
+3. Separately time controller/logging/broadcast-call work and worker
+   threshold setup, hold release, flushing, queue dispatch, histogram
+   preparation and contribution calls. Run work counters and one single-source
+   Projections trace separately from performance builds. Check their timing
+   perturbation against production.
+4. Calibrate an empty array-broadcast/sum-long-reduction cycle at 8 × 15
+   and 16 × 7 per node, with 11 versus 267 longs (the real histogram size),
+   100 warmups and 1,000 measured rounds, three launches each. Validate
+   placement, sequence and the entire payload.
+
+The protocol records quantitative decision rules. Substantial root logging
+would motivate an output-only intervention; a high unloaded round floor
+would motivate collective/scheduler work; a low floor would direct effort
+toward threshold handling or queue delays under load. Do not add parallel
+PE-times as wall time or subtract an unloaded microbenchmark as communication
+overhead. Quieter output may change work and round count as well as cost.
+
+Accept an intervention only after a matched comparison and a second
+allocation, full distance digests, work/queue accounting and regression
+checks. A runtime rebuild alone is not an accepted performance improvement.

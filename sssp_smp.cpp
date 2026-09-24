@@ -4,6 +4,7 @@
 #include "graphlib/graphlib.h"
 #include "process_work.h"
 #include "live_slack.h"
+#include "round_profile.h"
 #include "graphlib/tile_layout.h"
 #ifdef PAPI
 #include "acic_prof.h"
@@ -2243,6 +2244,7 @@ public:
    * do local processing to select thresholds
    */
   void reduce_histogram(long *histo_values, int histo_length) {
+    ROUND_SCOPE(controller);
     reduction_times.push_back(CkWallTimer());
     reduction_counts++;
     round_active_pes = histo_values[histo_reduction_width + 10];
@@ -2320,13 +2322,16 @@ public:
 #ifdef PRINT_HISTO
     histoSeq->insert(last_first_nonzero, histo_reduction_width, histo_values);
 #endif
-#ifdef INFO_PRINTS
+#if defined(INFO_PRINTS) && !defined(ACIC_QUIET_ROUNDS)
+    {
+    ROUND_SCOPE(controller_log);
     ckout << "Updates: created: " << updates_created
           << ", noted: " << updates_noted
           << ", processed: " << updates_processed
           << ", distance changes: " << distance_changes
           << ", Done vertices: " << done_vertex_count
           << ", BFS noted: " << bfs_noted;
+    }
 #endif
     // Each round's broadcast is sent only after every contribution to the
     // previous round has arrived. Unchanged monotone created/processed sums
@@ -2477,12 +2482,15 @@ public:
       previous_threshold = heap_threshold;
       threshold_change_counter++;
     }
-#ifdef INFO_PRINTS
+#if defined(INFO_PRINTS) && !defined(ACIC_QUIET_ROUNDS)
+    {
+    ROUND_SCOPE(controller_log);
     ckout << ", Heap threshold: " << heap_threshold
           << ", Tram: " << tram_threshold
           << ", BFS threshold: " << bfs_threshold
           << ", first nonzero: " << first_nonzero << ", t= " << CkWallTimer()
           << endl;
+    }
 #endif
     if (first_nonzero == -1) {
       // Nothing in the reduced window: either the run has converged or all the
@@ -2612,6 +2620,7 @@ public:
                  coarsen);
     // arr.contribute_histogram(first_nonzero-1);
     last_first_nonzero = first_nonzero;
+    ROUND_SCOPE(broadcast_call);
     if (control_mode == CONTROL_NODE)
       controlProxy.thresholds(++control_generation, heap_threshold,
                               tram_threshold, bfs_threshold, first_nonzero - 1,
@@ -3909,6 +3918,9 @@ public:
   }
 
   void start_papi() {
+#ifdef ACIC_ROUND_PROFILE
+    round_profile::start();
+#endif
 #ifdef ACIC_WORK_COST
     work_cost::ensure_start(CkMyPe());
 #endif
@@ -4934,9 +4946,10 @@ public:
    * Contribute to a reduction to get the overall histogram to pe 0/main chare
    */
   void contribute_histogram(int behind_first_nonzero) {
+    {
+    ROUND_SCOPE(histogram_prepare);
     long donecount = 0;
     traceUserEvent(shared_local->event_id);
-    CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
     int first_nonzero = behind_first_nonzero + 1;
     for (int i = first_nonzero; i < (first_nonzero + histo_reduction_width);
          i++) {
@@ -4968,6 +4981,9 @@ public:
     info_array[histo_reduction_width + 10] =
         updates_processed_locally != processed_at_contribution;
     processed_at_contribution = updates_processed_locally;
+    }
+    ROUND_SCOPE(contribute_call);
+    CkCallback cb(CkReductionTarget(Main, reduce_histogram), mainProxy);
     if (control_mode == CONTROL_NODE)
       control_local->add(info_array, histo_reduction_width + 11);
     else
@@ -5086,6 +5102,7 @@ public:
   }
 
   void clear_pq_hold() {
+    ROUND_SCOPE(clear_hold);
     // we should maintain lower bound
     for (int i = 0; i <= heap_threshold; i++) {
       for (int j = 0; j < pq_hold[i].size(); j++) {
@@ -5102,6 +5119,9 @@ public:
                           int _bfs_threshold, int behind_first_nonzero,
                           int phase, int starved, int coarsen, int extend,
                           int buffer_size_now) {
+    ROUND_SCOPE(thresholds);
+    {
+    ROUND_SCOPE(threshold_setup);
     // Before the threshold change below, which releases held items against a
     // level that is a multiple of the buffer size.
     if (buffer_size_now > 0) {
@@ -5134,7 +5154,13 @@ public:
     bfs_threshold = _bfs_threshold;
     current_phase = phase;
     last_round_starved = starved;
+    }
+    {
+    ROUND_SCOPE(hints);
     publish_hub_hints();
+    }
+    {
+    ROUND_SCOPE(tram_threshold);
     // after every reduction, push out messages in hold that are in limit
     // replace this loop with call to tram->changethreshold(tram_threshold)
     tram->setHistoBucketCount(HISTO_BUCKET_COUNT);
@@ -5145,15 +5171,19 @@ public:
     float selectivity = 1.0;
     // if(behind_first_nonzero > 68) selectivity = 1.0;
     tram->changeThreshold(direct_threshold, tram_threshold, selectivity);
+    }
 #ifdef ACIC_DIAG
     max_admitted_drift =
         std::max(max_admitted_drift, (long)tram->admittedDrift());
 #endif
 #ifndef PQ_HOLD_ONLY
+    {
+    ROUND_SCOPE(queue_dispatch);
     if (control_mode == CONTROL_NODE)
       clear_pq_hold();
     else
       arr[thisIndex].clear_pq_hold();
+    }
 // add user event
 #endif
     // This was `rand() % 5 == 0`. rand() keeps process-global state, shared by
@@ -5169,18 +5199,24 @@ public:
     // is worse still on both mean and variance. Independent per-chare draws are
     // what the 2024 measurements were taken with, so keep that and make it
     // reproducible.
+    {
+    ROUND_SCOPE(tram_flush);
     if (flush_policy == FLUSH_STALE ||
         (flush_policy == FLUSH_ADAPTIVE && starved))
       tram->flushStale();
     if (flush_rng.bounded((uint64_t)flush_round_interval) == 0)
       tram->tflush();
+    }
     //    tram->sanityCheck();
     //    tram->flush_everything();
+    {
+    ROUND_SCOPE(queue_dispatch);
     if (control_mode != CONTROL_NODE)
       arr[thisIndex].process_heap();
     else if (!heap_queued) {
       heap_queued = true;
       arr[thisIndex].process_heap();
+    }
     }
     // The controller's cadence is normally not a knob: this call closes the
     // loop, so a round costs exactly a reduction plus a broadcast and nothing
@@ -5206,6 +5242,9 @@ public:
    */
   void print_distances() {
     traceEnd();
+#ifdef ACIC_ROUND_PROFILE
+    round_profile::dump();
+#endif
 #ifdef PAPI
     const long long instructions = acic_prof::stop(CkMyPe());
 #endif

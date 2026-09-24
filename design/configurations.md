@@ -175,3 +175,35 @@ Before accepting a cell, store:
 5. Raw logs plus the parser version and a machine-readable summary.
 
 If any item is missing, the cell is exploratory rather than paper evidence.
+
+
+## Delta runtime refresh, September 24
+
+The road round-cost investigation uses a new isolated production runtime;
+it does not change the historical Frontier/Anvil identities above.
+
+| Component | Revision |
+|---|---|
+| Charm++, latest `reconverse-specific-build` | `f6c74074f0c505d21d1c898836c1509d951dd44a` |
+| Reconverse, latest `main` | `0c97c4d1f58dc5599b15a687cf328a7e05d60f90` |
+| SSSP, upstream before attribution instrumentation | `7a4da59ebbf6094e716e327af34b3c6bbc98f33d` |
+| htram, current upstream `master` | `7db9c0af69777b43e17dec110e6298fc09c91c54` |
+| LCI, Reconverse's dependency pin | `ca88ce2c4b429ce72dfc3233fa21f8833299440c` |
+
+Campaign: `/u/rao1/.tmp/road-rounds-20260924`. Runtime compiler:
+`CAMPAIGN/charm/reconverse-linux-x86_64/bin/charmc`. Clean worktrees preserve
+the original Reconverse checkout's uncommitted dependency edit. Configuration
+is Release/production, tracing, shared memory, affinity, `SPANTREE=ON`, LCI
+on and LCW off; GCC 14.2.1, CMake 3.30.1. All runs use `+old-scheduler`.
+The exact command, cache settings and library hashes are in
+`build/runtime-manifest.json`; each application's source snapshot and hash
+are in `bin/*.manifest` and `build/*/source-files.sha256`.
+
+`acic_latest` is the unmodified upstream application. `acic_quiet_rounds`
+disables only two per-round progress-print blocks. `acic_round_profile_v2`
+adds phase timers; `acic_cost` counts work; `acic_round_trace` traces the
+solve. The unsubmitted `acic_round_profile` is superseded by v2, which resets
+its counters for every source. `round_trip` measures an unloaded collective
+cycle. `scripts/delta/build_round_probe.sh` reproduces the instrumented set
+with an explicitly supplied runtime and source revision. Diagnostic timing
+is not substituted for production timing.

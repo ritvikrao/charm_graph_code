@@ -1,0 +1,59 @@
+{
+  "recorded": "2026-09-24",
+  "question": "Attribute the ordered road round cost before changing the algorithm.",
+  "graph": "road-usa-z",
+  "source_role": "tune",
+  "sources": [
+    5620086,
+    1294456
+  ],
+  "road_rpn": 16,
+  "road_workers_per_node": 112,
+  "queue_batch": 8,
+  "heap_slice": 8,
+  "bucket_width": 131072,
+  "hub_hints": "auto",
+  "scheduler": "+old-scheduler",
+  "warmups": 1,
+  "repetitions": 3,
+  "nodes": [
+    1,
+    8
+  ],
+  "empty_rpn": [
+    8,
+    16
+  ],
+  "empty_payload_longs": [
+    11,
+    267
+  ],
+  "empty_rounds": 1000,
+  "empty_warmups": 100,
+  "empty_repetitions": 3,
+  "predictions": [
+    {
+      "condition": "controller logging seconds / instrumented solve seconds >= 0.20",
+      "prediction": "production / quiet time >= 1.10",
+      "otherwise": "output sensitivity only; no automatic promotion"
+    },
+    {
+      "condition": "267-long unloaded round cost / real production round cost >= 0.50",
+      "action": "investigate collective delivery and scheduling"
+    },
+    {
+      "condition": "267-long unloaded round cost / real production round cost < 0.25",
+      "action": "investigate threshold handling and loaded queue delay"
+    },
+    {
+      "condition": "intermediate ratio",
+      "action": "use trace to distinguish causes"
+    }
+  ],
+  "acceptance": "Independent full digests, old-scheduler startup confirmation, work conservation. One matched intervention, then a second allocation and regression checks before acceptance.",
+  "caveats": [
+    "Nested phase timings are inclusive; PE-time sums are not wall-clock critical paths.",
+    "Unloaded cycles omit graph work and idle callbacks; do not subtract as communication time.",
+    "Suppressing output can alter asynchronous work and rounds; report both."
+  ]
+}
