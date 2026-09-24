@@ -51,12 +51,18 @@ mesh28/30 uses 8 ranks per node, oec, delta 64 (selected on mesh24-z and
 mesh26-z at 16 nodes in both allocations); RIKEN uses 8 ranks per node, delta
 1024 (selected on mesh26-z at 16 nodes, job 5536476).
 
-## Stages
+## Stages (allocation A)
 
-1. Ready now: mesh24-z@4, mesh26-z@16 and @64, road-usa-z@4, @16, @64.
-2. After width selection: road-na-z, road-eu-z at 4, 16, 64.
-3. After preparation (job 5541357): mesh28-z@16, @64; mesh30-z@32, @64;
-   GAPBS and Wasp on mesh28-z and mesh30-z.
+| Stage | Jobs | Notes |
+|---|---|---|
+| 1 | 5541369 (4n, done), 5541370 (16n), 5541371 (64n) | mesh24/26-z, road-usa-z |
+| 2 | 5541426 (4n), 5541428 (16n), 5541429 (64n) | road-na-z, road-eu-z |
+| 64-node ACIC rerun | 5541660 | 5541371 and 5541429 lost their ACIC arms: every 512-process launch aborted in Cray PMI (`_pmi2_add_kvs`, LCI's bootstrap needs ranks^2 KVS entries; the harness pinned 100000). Fixed in cf42624; their Gluon and RIKEN runs are valid |
+| 3 | 5541663 (mesh28-z@16), 5541664 (@64); mesh30-z@32: 5541665 (ACIC + Gluon), 5541666 (RIKEN); @64: 5541667, 5541668 | pinned Gluon/RIKEN; mesh30-z at two repetitions |
+| One node | GAPBS 5541358 / Wasp 5541359 (road-na/eu); 5541661 / 5541662 (mesh28/30) | 56 threads |
 
-Allocation A first; allocation B repeats every point once A is checked.
-Estimated cost about 700 node-hours per allocation.
+Inputs: mesh28-z (max distance 3.8M) and mesh30-z (6.9M) from job 5541357,
+both below 2^24, so RIKEN is exact on both.
+
+Allocation B repeats every point once A is checked. Estimated cost about 700
+node-hours per allocation.
