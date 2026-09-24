@@ -66,5 +66,5 @@ mesh26-z at 16 nodes in both allocations); RIKEN uses 8 ranks per node, delta
 Inputs: mesh28-z (max distance 3.8M) and mesh30-z (6.9M) from job 5541357,
 both below 2^24, so RIKEN is exact on both.
 
-Allocation B repeats every point once A is checked. Estimated cost about 700
+Allocation B (a repeat of every point) is submitted only if the user asks, after A is reported. Estimated cost about 700
 node-hours per allocation.
