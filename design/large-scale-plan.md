@@ -41,9 +41,10 @@ road-usa-z; road-na-z and road-eu-z selected on training sources at 16 nodes
 (job 5541364, 96 valid solves): 131072 on both. The surface is flat, 8K-128K
 within 2% (0.336-0.342 s road-na-z, 0.403-0.407 s road-eu-z), because bucket
 coarsening brings 8K and 32K up to the same effective width; every width has a
-1.30-1.42x speedup over plain. Predictions: the flat surface met the width and
-speedup ranges, though 131072 sits above the predicted fastest range. Gluon-Sync is left out: on mesh24/26 it was 20-40x slower than
-Async in every tuning run.
+1.30-1.42x speedup over plain. Predictions: the fastest width missed (131072,
+above the predicted 16K-32K and 8K-32K, though every width is within 2%); the
+1.3x-over-plain prediction was met. Gluon-Sync is left out: on mesh24/26 it
+was 20-40x slower than Async in every tuning run.
 
 Pinned baseline settings, where a full search does not fit two hours: Gluon on
 mesh28/30 uses 8 ranks per node, oec, delta 64 (selected on mesh24-z and
