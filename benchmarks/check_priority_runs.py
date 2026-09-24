@@ -26,6 +26,8 @@ def main():
     ap.add_argument('--sources', type=int, default=2)
     ap.add_argument('--source-role', default='tune')
     ap.add_argument('--reps', type=int, default=3, help='timed repetitions per arm (launch-mode runs use more)')
+    ap.add_argument('--rpn', type=int, default=8, help='default ranks per node recorded by onenode_ab.py')
+    ap.add_argument('--workers', type=int, help='default workers per node recorded by onenode_ab.py')
     args = ap.parse_args()
     root = args.campaign
     config = json.loads(args.config.read_text())
@@ -42,11 +44,11 @@ def main():
             manifest = json.loads((directory/'manifest.json').read_text())
             # Variants without an explicit layout use the whole allocation:
             # 8 x 15 on Delta and Anvil, 8 x 7 on Frontier (machine.py).
-            default_workers = machine.acic_workers(8)
+            default_workers = args.workers if args.workers is not None else machine.acic_workers(args.rpn)
             expected_variants = [{**v, 'nodes': v.get('nodes', manifest['nodes']),
-                                  'rpn': v.get('rpn', 8), 'workers': v.get('workers', default_workers)} for v in hashed]
+                                  'rpn': v.get('rpn', args.rpn), 'workers': v.get('workers', default_workers)} for v in hashed]
             if (manifest['variants'] != expected_variants or manifest['workers'] != default_workers
-                    or manifest['rpn'] != 8 or manifest['sources'] != args.sources or manifest['reps'] != args.reps
+                    or manifest['rpn'] != args.rpn or manifest['sources'] != args.sources or manifest['reps'] != args.reps
                     or manifest['source_role'] != args.source_role or not manifest['batch']):
                 raise ValueError(f'{directory}: unexpected experiment settings')
             refpath = root/'graphs'/f'{graph}.reference.txt'

@@ -1,0 +1,1019 @@
+{
+  "allocations": [
+    {
+      "job": 22355092,
+      "graph": "road-usa-z",
+      "manifest": {
+        "variants": [
+          {
+            "label": "base",
+            "binary": "acic_latest",
+            "rpn": 16,
+            "workers": 112,
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto",
+              "+old-scheduler",
+              "--bucket-width",
+              "131072"
+            ],
+            "work_cost": false,
+            "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+            "sha256": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+            "nodes": 1
+          },
+          {
+            "label": "coalesce",
+            "binary": "acic_coalesce",
+            "rpn": 16,
+            "workers": 112,
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto",
+              "+old-scheduler",
+              "--bucket-width",
+              "131072"
+            ],
+            "work_cost": false,
+            "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+            "sha256": "ef5c6cd40dce05cbb74dfd6d01069ced85477ac981708af2ded251cb1e91891a",
+            "nodes": 1
+          },
+          {
+            "label": "control",
+            "binary": "acic_latest",
+            "rpn": 16,
+            "workers": 112,
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto",
+              "+old-scheduler",
+              "--bucket-width",
+              "131072"
+            ],
+            "work_cost": false,
+            "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+            "sha256": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+            "nodes": 1
+          },
+          {
+            "label": "base_cost",
+            "binary": "acic_cost",
+            "rpn": 16,
+            "workers": 112,
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto",
+              "+old-scheduler",
+              "--bucket-width",
+              "131072"
+            ],
+            "work_cost": true,
+            "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+            "sha256": "b4ba9e8eeeb24f64e7afb84692daad8c869f3b4e97bddae564c5fdc5cd90689f",
+            "nodes": 1
+          },
+          {
+            "label": "coalesce_cost",
+            "binary": "acic_coalesce_diag",
+            "rpn": 16,
+            "workers": 112,
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto",
+              "+old-scheduler",
+              "--bucket-width",
+              "131072"
+            ],
+            "work_cost": true,
+            "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+            "sha256": "111791d8f28037029bb4eb8121d3e5eb595dc6a11d71d9e677178cbd813c31c0",
+            "nodes": 1
+          }
+        ],
+        "nodes": 1,
+        "workers": 112,
+        "rpn": 16,
+        "sources": 2,
+        "reps": 3,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "cn101"
+      },
+      "runtime_warnings": {
+        "warn:reg_cache": 960
+      },
+      "summary": {
+        "base": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.329078,
+              "edge_attempts": 91178045,
+              "attempts_per_edge": 1.579972605134373
+            },
+            "5620086": {
+              "seconds": 0.292398,
+              "edge_attempts": 87809948,
+              "attempts_per_edge": 1.5216087633626474
+            }
+          },
+          "medians": {
+            "seconds": 0.31073799999999996,
+            "edge_attempts": 89493996.5,
+            "attempts_per_edge": 1.5507906842485102
+          }
+        },
+        "base_cost": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.33962,
+              "edge_attempts": 90362204,
+              "attempts_per_edge": 1.56583535937367,
+              "expansions_per_vertex": 1.5439003744339612,
+              "stale_pop_fraction": 0.09165224193166757,
+              "cpu_ns_per_attempt": 390.41812331525773,
+              "work_ns_per_attempt": 305.5978946081944,
+              "queue_ns_per_attempt": 216.97513581662275,
+              "queue_work_fraction": 0.7100020636425048,
+              "lock_miss_fraction": 0.11652403479983456,
+              "work_share": 0.725922,
+              "idle_share": 0.170576,
+              "send_share": 0.008695,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 2.0582391150891866,
+              "pop_queue_time_fraction": 0.5058574849313159
+            },
+            "5620086": {
+              "seconds": 0.304633,
+              "edge_attempts": 88359679,
+              "attempts_per_edge": 1.5311347399307251,
+              "expansions_per_vertex": 1.5095323502849816,
+              "stale_pop_fraction": 0.09042714399498479,
+              "cpu_ns_per_attempt": 358.0848511117837,
+              "work_ns_per_attempt": 294.6590944496301,
+              "queue_ns_per_attempt": 205.07882081419433,
+              "queue_work_fraction": 0.698294777728602,
+              "lock_miss_fraction": 0.12445900903513973,
+              "work_share": 0.763095,
+              "idle_share": 0.128087,
+              "send_share": 0.010593,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 2.6650524954887476,
+              "pop_queue_time_fraction": 0.4695080813660688
+            }
+          },
+          "medians": {
+            "seconds": 0.3221265,
+            "edge_attempts": 89360941.5,
+            "attempts_per_edge": 1.5484850496521976,
+            "expansions_per_vertex": 1.5267163623594713,
+            "stale_pop_fraction": 0.09103969296332617,
+            "cpu_ns_per_attempt": 374.2514872135207,
+            "work_ns_per_attempt": 300.12849452891226,
+            "queue_ns_per_attempt": 211.02697831540854,
+            "queue_work_fraction": 0.7041484206855535,
+            "lock_miss_fraction": 0.12049152191748715,
+            "work_share": 0.7445085,
+            "idle_share": 0.1493315,
+            "send_share": 0.009644,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.3616458052889673,
+            "pop_queue_time_fraction": 0.48768278314869234
+          }
+        },
+        "coalesce": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.325389,
+              "edge_attempts": 99554932,
+              "attempts_per_edge": 1.7251309267051662
+            },
+            "5620086": {
+              "seconds": 0.295875,
+              "edge_attempts": 92472229,
+              "attempts_per_edge": 1.6023987853184647
+            }
+          },
+          "medians": {
+            "seconds": 0.310632,
+            "edge_attempts": 96013580.5,
+            "attempts_per_edge": 1.6637648560118155
+          }
+        },
+        "coalesce_cost": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.335809,
+              "edge_attempts": 99815457,
+              "attempts_per_edge": 1.7296454166018582,
+              "expansions_per_vertex": 1.7090875243925767,
+              "stale_pop_fraction": 0.09406823275768855,
+              "cpu_ns_per_attempt": 350.45322361673107,
+              "work_ns_per_attempt": 269.9661107754439,
+              "queue_ns_per_attempt": 180.4492764394632,
+              "queue_work_fraction": 0.6711074096885943,
+              "lock_miss_fraction": 0.055587938277169804,
+              "work_share": 0.707881,
+              "idle_share": 0.108412,
+              "send_share": 0.02075,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 2.9478625717379128,
+              "pop_queue_time_fraction": 0.3959622213641945
+            },
+            "5620086": {
+              "seconds": 0.305277,
+              "edge_attempts": 91931635,
+              "attempts_per_edge": 1.593031138638828,
+              "expansions_per_vertex": 1.5738968913759006,
+              "stale_pop_fraction": 0.09209647948883101,
+              "cpu_ns_per_attempt": 340.50002740623506,
+              "work_ns_per_attempt": 273.17483676913815,
+              "queue_ns_per_attempt": 185.7871424751044,
+              "queue_work_fraction": 0.6738547718476109,
+              "lock_miss_fraction": 0.09398918706787789,
+              "work_share": 0.730788,
+              "idle_share": 0.084391,
+              "send_share": 0.0204,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.4728848714972673,
+              "pop_queue_time_fraction": 0.40288388558991983
+            }
+          },
+          "medians": {
+            "seconds": 0.320543,
+            "edge_attempts": 95873546.0,
+            "attempts_per_edge": 1.6613382776203431,
+            "expansions_per_vertex": 1.6414922078842387,
+            "stale_pop_fraction": 0.09308235612325978,
+            "cpu_ns_per_attempt": 345.47662551148306,
+            "work_ns_per_attempt": 271.57047377229105,
+            "queue_ns_per_attempt": 183.1182094572838,
+            "queue_work_fraction": 0.6724810907681026,
+            "lock_miss_fraction": 0.07478856267252385,
+            "work_share": 0.7193345,
+            "idle_share": 0.0964015,
+            "send_share": 0.020575000000000003,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.2103737216175903,
+            "pop_queue_time_fraction": 0.3994230534770572
+          }
+        },
+        "control": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.32919,
+              "edge_attempts": 91696713,
+              "attempts_per_edge": 1.5889603086013626
+            },
+            "5620086": {
+              "seconds": 0.293626,
+              "edge_attempts": 88390182,
+              "attempts_per_edge": 1.5316633091095708
+            }
+          },
+          "medians": {
+            "seconds": 0.311408,
+            "edge_attempts": 90043447.5,
+            "attempts_per_edge": 1.5603118088554666
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "coalesce_cost",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.31349,
+            "edge_attempts": 91166166,
+            "attempts_per_edge": 1.5797667606838104,
+            "expansions_per_vertex": 1.56212986766342,
+            "stale_pop_fraction": 0.09199169927581655,
+            "cpu_ns_per_attempt": 353.13333027518127,
+            "work_ns_per_attempt": 275.81526242970443,
+            "queue_ns_per_attempt": 186.99486884349176,
+            "queue_work_fraction": 0.6779714334740636,
+            "lock_miss_fraction": 0.09028255616239932,
+            "work_share": 0.716161,
+            "idle_share": 0.088622,
+            "send_share": 0.022737,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.357193589009992,
+            "pop_queue_time_fraction": 0.4143062694565213
+          }
+        },
+        {
+          "variant": "coalesce_cost",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.336643,
+            "edge_attempts": 100118333,
+            "attempts_per_edge": 1.734893782946549,
+            "expansions_per_vertex": 1.7164855881530425,
+            "stale_pop_fraction": 0.0936462326442026,
+            "cpu_ns_per_attempt": 347.0680123589353,
+            "work_ns_per_attempt": 265.9086822789988,
+            "queue_ns_per_attempt": 177.9039022200391,
+            "queue_work_fraction": 0.6690413441761084,
+            "lock_miss_fraction": 0.05703851703997269,
+            "work_share": 0.706087,
+            "idle_share": 0.099478,
+            "send_share": 0.02022,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.1160073669997654,
+            "pop_queue_time_fraction": 0.3843239690004012
+          }
+        },
+        {
+          "variant": "base",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.292797,
+            "edge_attempts": 87901664,
+            "attempts_per_edge": 1.523198057884728
+          }
+        },
+        {
+          "variant": "base",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.335932,
+            "edge_attempts": 90131613,
+            "attempts_per_edge": 1.5618395787776884
+          }
+        },
+        {
+          "variant": "coalesce",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.292406,
+            "edge_attempts": 92109875,
+            "attempts_per_edge": 1.5961197584610578
+          }
+        },
+        {
+          "variant": "coalesce",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.323607,
+            "edge_attempts": 102898998,
+            "attempts_per_edge": 1.7830783489136737
+          }
+        },
+        {
+          "variant": "control",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.298181,
+            "edge_attempts": 87740539,
+            "attempts_per_edge": 1.5204060141860254
+          }
+        },
+        {
+          "variant": "control",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.330446,
+            "edge_attempts": 91473416,
+            "attempts_per_edge": 1.5850909215925855
+          }
+        },
+        {
+          "variant": "base_cost",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.3057,
+            "edge_attempts": 86369895,
+            "attempts_per_edge": 1.4966549020472226,
+            "expansions_per_vertex": 1.4768224638829512,
+            "stale_pop_fraction": 0.08992812651462681,
+            "cpu_ns_per_attempt": 368.1469966936975,
+            "work_ns_per_attempt": 301.30854043529865,
+            "queue_ns_per_attempt": 217.23417099482026,
+            "queue_work_fraction": 0.7209691789053948,
+            "lock_miss_fraction": 0.13204463686613135,
+            "work_share": 0.760082,
+            "idle_share": 0.1328,
+            "send_share": 0.010321,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.572880292342147,
+            "pop_queue_time_fraction": 0.4765381296497894
+          }
+        },
+        {
+          "variant": "base_cost",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.337322,
+            "edge_attempts": 91564254,
+            "attempts_per_edge": 1.5866650017508648,
+            "expansions_per_vertex": 1.563953660503604,
+            "stale_pop_fraction": 0.09188540822388547,
+            "cpu_ns_per_attempt": 386.28506456242195,
+            "work_ns_per_attempt": 301.67789058817647,
+            "queue_ns_per_attempt": 213.71504061357072,
+            "queue_work_fraction": 0.7084212906583708,
+            "lock_miss_fraction": 0.11140913060406443,
+            "work_share": 0.73115,
+            "idle_share": 0.16535,
+            "send_share": 0.008768,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.112676220117633,
+            "pop_queue_time_fraction": 0.4970251448935729
+          }
+        },
+        {
+          "variant": "base",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.297685,
+            "edge_attempts": 87809948,
+            "attempts_per_edge": 1.5216087633626474
+          }
+        },
+        {
+          "variant": "base",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.329078,
+            "edge_attempts": 91875054,
+            "attempts_per_edge": 1.5920506785952824
+          }
+        },
+        {
+          "variant": "coalesce",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.292284,
+            "edge_attempts": 91896213,
+            "attempts_per_edge": 1.5924173309001441
+          }
+        },
+        {
+          "variant": "coalesce",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.323056,
+            "edge_attempts": 99554932,
+            "attempts_per_edge": 1.7251309267051662
+          }
+        },
+        {
+          "variant": "control",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.295742,
+            "edge_attempts": 88390182,
+            "attempts_per_edge": 1.5316633091095708
+          }
+        },
+        {
+          "variant": "control",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.327166,
+            "edge_attempts": 90798322,
+            "attempts_per_edge": 1.5733926007315648
+          }
+        },
+        {
+          "variant": "base_cost",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.303496,
+            "edge_attempts": 88614379,
+            "attempts_per_edge": 1.5355482917076657,
+            "expansions_per_vertex": 1.513695191371303,
+            "stale_pop_fraction": 0.09046809186073088,
+            "cpu_ns_per_attempt": 355.3559256901185,
+            "work_ns_per_attempt": 293.6851704394385,
+            "queue_ns_per_attempt": 205.07882081419433,
+            "queue_work_fraction": 0.698294777728602,
+            "lock_miss_fraction": 0.12445900903513973,
+            "work_share": 0.765624,
+            "idle_share": 0.123958,
+            "send_share": 0.010707,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.7342018389987968,
+            "pop_queue_time_fraction": 0.4695080813660688
+          }
+        },
+        {
+          "variant": "base_cost",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.335639,
+            "edge_attempts": 90362204,
+            "attempts_per_edge": 1.56583535937367,
+            "expansions_per_vertex": 1.5439003744339612,
+            "stale_pop_fraction": 0.09181398647489496,
+            "cpu_ns_per_attempt": 389.2232572038637,
+            "work_ns_per_attempt": 301.99109574618166,
+            "queue_ns_per_attempt": 210.99782135085886,
+            "queue_work_fraction": 0.6986888829603073,
+            "lock_miss_fraction": 0.10623234014562523,
+            "work_share": 0.725922,
+            "idle_share": 0.170576,
+            "send_share": 0.009061,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.0582391150891866,
+            "pop_queue_time_fraction": 0.5024459877537055
+          }
+        },
+        {
+          "variant": "coalesce_cost",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.309584,
+            "edge_attempts": 91595424,
+            "attempts_per_edge": 1.5872051289942384,
+            "expansions_per_vertex": 1.5697745975785962,
+            "stale_pop_fraction": 0.09197542078273,
+            "cpu_ns_per_attempt": 349.3564656570616,
+            "work_ns_per_attempt": 273.17483676913815,
+            "queue_ns_per_attempt": 185.84683874338404,
+            "queue_work_fraction": 0.6803219540328469,
+            "lock_miss_fraction": 0.09594582585406565,
+            "work_share": 0.721635,
+            "idle_share": 0.084391,
+            "send_share": 0.0204,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.4728848714972673,
+            "pop_queue_time_fraction": 0.4007484885504049
+          }
+        },
+        {
+          "variant": "coalesce_cost",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.335381,
+            "edge_attempts": 99815457,
+            "attempts_per_edge": 1.7296454166018582,
+            "expansions_per_vertex": 1.7090875243925767,
+            "stale_pop_fraction": 0.09406823275768855,
+            "cpu_ns_per_attempt": 347.40167256860826,
+            "work_ns_per_attempt": 263.1446750777287,
+            "queue_ns_per_attempt": 176.5983412647613,
+            "queue_work_fraction": 0.6711074096885943,
+            "lock_miss_fraction": 0.048255559378738884,
+            "work_share": 0.699256,
+            "idle_share": 0.105042,
+            "send_share": 0.02075,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.0204051875007227,
+            "pop_queue_time_fraction": 0.37711577352727105
+          }
+        },
+        {
+          "variant": "coalesce",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.300381,
+            "edge_attempts": 92472229,
+            "attempts_per_edge": 1.6023987853184647
+          }
+        },
+        {
+          "variant": "coalesce",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.328804,
+            "edge_attempts": 100751699,
+            "attempts_per_edge": 1.7458690229730656
+          }
+        },
+        {
+          "variant": "control",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.292373,
+            "edge_attempts": 88069985,
+            "attempts_per_edge": 1.5261147969842428
+          }
+        },
+        {
+          "variant": "control",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.329489,
+            "edge_attempts": 92222685,
+            "attempts_per_edge": 1.5980745789398825
+          }
+        },
+        {
+          "variant": "base_cost",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.306187,
+            "edge_attempts": 86421856,
+            "attempts_per_edge": 1.4975553047322703,
+            "expansions_per_vertex": 1.47683098257189,
+            "stale_pop_fraction": 0.09003562546281454,
+            "cpu_ns_per_attempt": 367.2271059996675,
+            "work_ns_per_attempt": 300.29657081190203,
+            "queue_ns_per_attempt": 213.63544295625607,
+            "queue_work_fraction": 0.71141486024518,
+            "lock_miss_fraction": 0.12655640606877921,
+            "work_share": 0.756778,
+            "idle_share": 0.135987,
+            "send_share": 0.010593,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.521876934251524,
+            "pop_queue_time_fraction": 0.47724387752471853
+          }
+        },
+        {
+          "variant": "base_cost",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.345652,
+            "edge_attempts": 88264653,
+            "attempts_per_edge": 1.5294880882968203,
+            "expansions_per_vertex": 1.5081833073200133,
+            "stale_pop_fraction": 0.09146703730120474,
+            "cpu_ns_per_attempt": 410.4169742331622,
+            "work_ns_per_attempt": 315.3992346177354,
+            "queue_ns_per_attempt": 228.97554876817156,
+            "queue_work_fraction": 0.725986380549371,
+            "lock_miss_fraction": 0.1185104062634166,
+            "work_share": 0.719102,
+            "idle_share": 0.181784,
+            "send_share": 0.008695,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 1.8965296535531146,
+            "pop_queue_time_fraction": 0.5268601649484073
+          }
+        },
+        {
+          "variant": "coalesce_cost",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.305277,
+            "edge_attempts": 91931635,
+            "attempts_per_edge": 1.593031138638828,
+            "expansions_per_vertex": 1.5738968913759006,
+            "stale_pop_fraction": 0.09209647948883101,
+            "cpu_ns_per_attempt": 340.50002740623506,
+            "work_ns_per_attempt": 275.7079867012047,
+            "queue_ns_per_attempt": 185.7871424751044,
+            "queue_work_fraction": 0.6738547718476109,
+            "lock_miss_fraction": 0.09398918706787789,
+            "work_share": 0.741314,
+            "idle_share": 0.08543,
+            "send_share": 0.024126,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.4636796636736897,
+            "pop_queue_time_fraction": 0.4038845256136598
+          }
+        },
+        {
+          "variant": "coalesce_cost",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.335809,
+            "edge_attempts": 98656719,
+            "attempts_per_edge": 1.7095663032963668,
+            "expansions_per_vertex": 1.6891048933311903,
+            "stale_pop_fraction": 0.09361214695099172,
+            "cpu_ns_per_attempt": 350.45322361673107,
+            "work_ns_per_attempt": 271.0160166587336,
+            "queue_ns_per_attempt": 182.9990848211256,
+            "queue_work_fraction": 0.675233468033589,
+            "lock_miss_fraction": 0.055587938277169804,
+            "work_share": 0.710905,
+            "idle_share": 0.119286,
+            "send_share": 0.021636,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.773009530784272,
+            "pop_queue_time_fraction": 0.3959622213641945
+          }
+        },
+        {
+          "variant": "base",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.292398,
+            "edge_attempts": 87363500,
+            "attempts_per_edge": 1.5138725192962494
+          }
+        },
+        {
+          "variant": "base",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.329363,
+            "edge_attempts": 91178045,
+            "attempts_per_edge": 1.579972605134373
+          }
+        },
+        {
+          "variant": "control",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.293626,
+            "edge_attempts": 88639789,
+            "attempts_per_edge": 1.5359886071794053
+          }
+        },
+        {
+          "variant": "control",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.32919,
+            "edge_attempts": 91696713,
+            "attempts_per_edge": 1.5889603086013626
+          }
+        },
+        {
+          "variant": "base_cost",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.304633,
+            "edge_attempts": 88359679,
+            "attempts_per_edge": 1.5311347399307251,
+            "expansions_per_vertex": 1.5095323502849816,
+            "stale_pop_fraction": 0.09042714399498479,
+            "cpu_ns_per_attempt": 358.0848511117837,
+            "work_ns_per_attempt": 294.6590944496301,
+            "queue_ns_per_attempt": 204.22526901242057,
+            "queue_work_fraction": 0.6930899906343512,
+            "lock_miss_fraction": 0.12321031207834562,
+            "work_share": 0.763095,
+            "idle_share": 0.128087,
+            "send_share": 0.01033,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.6650524954887476,
+            "pop_queue_time_fraction": 0.4686094436989729
+          }
+        },
+        {
+          "variant": "base_cost",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.33962,
+            "edge_attempts": 91232425,
+            "attempts_per_edge": 1.5809149252978203,
+            "expansions_per_vertex": 1.559014073667534,
+            "stale_pop_fraction": 0.09165224193166757,
+            "cpu_ns_per_attempt": 390.41812331525773,
+            "work_ns_per_attempt": 305.5978946081944,
+            "queue_ns_per_attempt": 216.97513581662275,
+            "queue_work_fraction": 0.7100020636425048,
+            "lock_miss_fraction": 0.11652403479983456,
+            "work_share": 0.732974,
+            "idle_share": 0.167305,
+            "send_share": 0.007275,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.0760356545789915,
+            "pop_queue_time_fraction": 0.5058574849313159
+          }
+        },
+        {
+          "variant": "coalesce_cost",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.302559,
+            "edge_attempts": 91964775,
+            "attempts_per_edge": 1.5936054028943751,
+            "expansions_per_vertex": 1.5743363972635465,
+            "stale_pop_fraction": 0.0924432449342947,
+            "cpu_ns_per_attempt": 340.482523259585,
+            "work_ns_per_attempt": 269.2764920046833,
+            "queue_ns_per_attempt": 177.78811744172307,
+            "queue_work_fraction": 0.6602437372759259,
+            "lock_miss_fraction": 0.08483993221243749,
+            "work_share": 0.730788,
+            "idle_share": 0.081215,
+            "send_share": 0.017209,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 3.564396535599003,
+            "pop_queue_time_fraction": 0.40288388558991983
+          }
+        },
+        {
+          "variant": "coalesce_cost",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.351804,
+            "edge_attempts": 103316616,
+            "attempts_per_edge": 1.7903150142689246,
+            "expansions_per_vertex": 1.7676214822460292,
+            "stale_pop_fraction": 0.09436938739095702,
+            "cpu_ns_per_attempt": 352.3923648834956,
+            "work_ns_per_attempt": 269.9661107754439,
+            "queue_ns_per_attempt": 180.4492764394632,
+            "queue_work_fraction": 0.6684145499638648,
+            "lock_miss_fraction": 0.06177309734450662,
+            "work_share": 0.707881,
+            "idle_share": 0.108412,
+            "send_share": 0.018913,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 2.9478625717379128,
+            "pop_queue_time_fraction": 0.4001624894645032
+          }
+        },
+        {
+          "variant": "base",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.289665,
+            "edge_attempts": 88229486,
+            "attempts_per_edge": 1.5288786993084431
+          }
+        },
+        {
+          "variant": "base",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.320586,
+            "edge_attempts": 90719343,
+            "attempts_per_edge": 1.5720240184551966
+          }
+        },
+        {
+          "variant": "coalesce",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.295875,
+            "edge_attempts": 92583307,
+            "attempts_per_edge": 1.604323592952069
+          }
+        },
+        {
+          "variant": "coalesce",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.325389,
+            "edge_attempts": 99468590,
+            "attempts_per_edge": 1.7236347551797457
+          }
+        }
+      ]
+    }
+  ],
+  "checked_solves": 40,
+  "diagnostic_solves": 16,
+  "checked_launches": 20,
+  "raw_sha256": {
+    "logs/AB-road-usa-z-1n-22355092/base-g0-r-1.launch.out": "3cbf331dff21b1f62730e5211f67dfd679924eb9458108fb935fbe9638885509",
+    "logs/AB-road-usa-z-1n-22355092/base-g0-r0.launch.out": "e858d5b93eef19238b468e12b6972a210582378631616668e3854adef89bdf0f",
+    "logs/AB-road-usa-z-1n-22355092/base-g0-r1.launch.out": "42605e36753d08ba9a4e42ae45adc98aab6130fe1c79c5d827261a41c049734e",
+    "logs/AB-road-usa-z-1n-22355092/base-g0-r2.launch.out": "66dc633039b641e630b5882f0a41d74a11790666ec04dc1d4f324d17a5146589",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-g0-r-1.launch.out": "cd50cf07642257152a0c7fb5e423142f16d6cd0f8e200248c233649111caf5f6",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-g0-r0.launch.out": "176dc9dea64c243cc693d0f83f6482fe52ec09af4b2d0f9f68c8660b4669dd68",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-g0-r1.launch.out": "b71a5f848050c79307b60a5cc68ba6ad7b0bbf835bd4f81c721a079c0e668165",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-g0-r2.launch.out": "719785508472e054b3569e59ed1d4f00bb9001516b300cabafbf629592e22fa6",
+    "logs/AB-road-usa-z-1n-22355092/control-g0-r-1.launch.out": "611c62f8a2a9cb4d2ae1baef04db5d0ca26c6cf70bf99d7e649fa2d796c4b6e4",
+    "logs/AB-road-usa-z-1n-22355092/control-g0-r0.launch.out": "d8927a7f97f7ef4d74092e2520906560c2d4e6a723509f17b2b089b9579f0e93",
+    "logs/AB-road-usa-z-1n-22355092/control-g0-r1.launch.out": "58b0fa049d4dde0d89f7b099ef5f497282ac8db3b7cbdf0bca097580cc729d3f",
+    "logs/AB-road-usa-z-1n-22355092/control-g0-r2.launch.out": "05d87c66503d6cb35a3dfe380f9966ba759a4563a0695697c782e2a62d1398e8",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-g0-r-1.launch.out": "f0b48b47c0520f099924c28d6d25decb4a39c06194b5241a626facb7fd75edf9",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-g0-r0.launch.out": "99169243746aa71b149f95081d5d449e65431458ce78459931e6cc14b34a4c13",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-g0-r1.launch.out": "394e977c78f7b2a318ed38a586ec16374672f6cd545cbb127825495a3d177086",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-g0-r2.launch.out": "05a28b46eac2b5c87b2093e71977929d2cbcd631236a5c09759d7dc38d5f569e",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-g0-r-1.launch.out": "0b91a8f5473a43a5cc66c2676b76d7bc2fd45af58cc34795919df2cbbb6b5a19",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-g0-r0.launch.out": "aa79c49749799ed5255edddd5025799fd5c377f7bb48c75416dc4048f554ad0e",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-g0-r1.launch.out": "f6998186e06eb5bc318becf94c498cfd090a0e91e96e44e9805ac5edc401b3fc",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-g0-r2.launch.out": "c32b210f620c5ed8333547ff3647c2d44644f9ea214ec16247f04afb7aa60d01",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-s0-r-1.out": "86e76a7d73153dfd686b0843124fbd551bd4e653bb61453ee39a8de47b933c9e",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-s1-r-1.out": "0f575ac20299212cb2baaa5cf5d581e2433ab3e35253d237157bc9b16c5d05cd",
+    "logs/AB-road-usa-z-1n-22355092/base-s0-r-1.out": "600ba3e4edb87708397b90d482b1e088a7ea526831bf052c72edb645782d8b8d",
+    "logs/AB-road-usa-z-1n-22355092/base-s1-r-1.out": "fa74b3773b485bbf935b66e7524c5e0d866bd5936711e434dbf42f3abf72f84e",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-s0-r-1.out": "71d15a77fb39c54f36e084e59c2ccbf23fbb35ffa18bc192e4b8c0a63aaafd19",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-s1-r-1.out": "47be5b75a8cf9a8c05e22261ddef1c9452e567056dab46cab960439b6bba8744",
+    "logs/AB-road-usa-z-1n-22355092/control-s0-r-1.out": "8ae944bc7f3cd3511d288503df3ef51a5dae53819abcab3730344ae1edd2be8b",
+    "logs/AB-road-usa-z-1n-22355092/control-s1-r-1.out": "90a30dee57988cef90a0b7f586f6121d83114b3db13376fa46e73025e882180a",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-s0-r-1.out": "04eb63542c14c77a061aa2ec835bdefddf5d00948d044c4a5762611f9dcdc7dd",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-s1-r-1.out": "3ff7cc32f47e677b8a1b90ac64256ca573c5b11c72366c67ce323a43ebbacd6a",
+    "logs/AB-road-usa-z-1n-22355092/base-s0-r0.out": "74c784e049a1969c8f4505ed6462f9060f2e00b317795e48c496a41fce3f6258",
+    "logs/AB-road-usa-z-1n-22355092/base-s1-r0.out": "3734b9bb975a0ce3d37030f9b3d8ebad3e1b667c1c75e71c60ff12de628295bf",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-s0-r0.out": "e568f55f49c82064b43b44e9193a49b897a4dd847545c3a6f7d7b4e25a009d05",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-s1-r0.out": "a8d22d00439ecb8409fb58a1e0c9450f36e4d9d5f05eb5eeca2164b57bd937bc",
+    "logs/AB-road-usa-z-1n-22355092/control-s0-r0.out": "33b961a2b58a329d825d5f5ea7dfcb9d29d2e0e48ca86ea935e1b928e13d3b7f",
+    "logs/AB-road-usa-z-1n-22355092/control-s1-r0.out": "05dbf511876f549f988a86497f85e0fef93376c23000544939b3bb6651a854b4",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-s0-r0.out": "b0dfaffebd63cd5cf6959bde8c9fb62e10fc8a151477957c4e33a03c8f7d893b",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-s1-r0.out": "e2da164d9de717d04ff5e7503fa15ad44388910e829c02b990557e4c5d30a655",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-s0-r0.out": "4787963521170e9f306c96ffcb65e41764b836197dc33f880cc41c6f32e6fd8e",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-s1-r0.out": "cd32f4de8ae5dc2bd1e3287bf8281a5d7ce15ee91cefcf1993cdb5c06ce33acc",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-s0-r1.out": "bdaecd221953e192b65169b44fdbf234a06749a0989b57c47a7434bea6b80a09",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-s1-r1.out": "c41cf91f2168819b1dc9599a4760c88634e8d232ada5909f76e304d35fe0338e",
+    "logs/AB-road-usa-z-1n-22355092/control-s0-r1.out": "60fbff37a72a48c3d5fbe5502d7f0bfe7ce1680e0e5963c931e5e72dae1fd4e3",
+    "logs/AB-road-usa-z-1n-22355092/control-s1-r1.out": "7cc3303b2b0e805225bebe40d77aa14f9a80f96eb733ee3b0f4d1de3ecb55a29",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-s0-r1.out": "24fe0f2bdab063e0f113e524e8388d40f10adee5db055adae7b296a0f24bf54e",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-s1-r1.out": "f56103d960e5cb8b910cee4f96789f92254f85f2fec78b1844bb157ffa37c2f6",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-s0-r1.out": "12971ad91b701206ce0f1b9759bc7db433911ad534e7644fb898ed039f90d071",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-s1-r1.out": "27bce3d9d7e31cdd99c43f8c4706b4543e821227215b8c8b7e2cb583e88f12ec",
+    "logs/AB-road-usa-z-1n-22355092/base-s0-r1.out": "6485bcc730ae29ea0dce089531e07cd8d402c8e3998e345d016808d51d9b1eff",
+    "logs/AB-road-usa-z-1n-22355092/base-s1-r1.out": "37801d3ef560448366b97af376613c316cc58e5c97a8b9773d19c95a71ac9c46",
+    "logs/AB-road-usa-z-1n-22355092/control-s0-r2.out": "c62558ce309b3840ce8c3742be21529134b5056090e44e781825be212144ddd9",
+    "logs/AB-road-usa-z-1n-22355092/control-s1-r2.out": "3449b601ef0108939d1cbaf54ee425f2faf571f62c26d80a4af3c24167462300",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-s0-r2.out": "49dfbefafd1c43b6bb0814623584eb5f50173764a2359474b4649b6487e83d12",
+    "logs/AB-road-usa-z-1n-22355092/base_cost-s1-r2.out": "7eaabd5550542d16af1ae48b902c331b29670ae3e4681625ba2eeabec7857a0c",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-s0-r2.out": "f2ad5de66bb4f9b5bbf4cdb12e566f7b91ee3722e156c8eb4090321275e84055",
+    "logs/AB-road-usa-z-1n-22355092/coalesce_cost-s1-r2.out": "bd7e7f873f4faea112febe05f25296e995c089445c0e6b98996987b2d59642c4",
+    "logs/AB-road-usa-z-1n-22355092/base-s0-r2.out": "cfdcad0ff91663a48f94187a479da3352d4056e7d4b9f65fa88ed6dc6466304b",
+    "logs/AB-road-usa-z-1n-22355092/base-s1-r2.out": "98bebb6cd37cc1e902deadae5a052c09c1b0ca4509ce5d8dbc61b3ac41ac75a2",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-s0-r2.out": "d529d1321e42a8d3439b81dc4a6ca528206cca2b4a30479525dc6b3a2b961642",
+    "logs/AB-road-usa-z-1n-22355092/coalesce-s1-r2.out": "23bd871adee7cfb254e82d8cca808274b7eaf2fffa8db4797f19ee035f58c04e"
+  }
+}

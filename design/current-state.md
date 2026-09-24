@@ -345,7 +345,7 @@ therefore predominantly work-bound, not explained by an unloaded collective
 floor or controller arithmetic. These are attribution measurements from one
 allocation, not a new accepted performance result.
 
-The single-source trace is within 5% of production time and locates long
+The single-source trace costs about 5% more than production and locates long
 queue waits: Main's reduction callback has p90 send-to-execute latency
 0.23 ms; heap callbacks have p50 0.10 ms and p90 0.35 ms. Four inspected
 PEs have **62–75 pending heap callbacks at peak**, with 14–17 already waiting
@@ -356,8 +356,15 @@ heap already has one pending. Each callback can reschedule its own chain.
 A compile-time prototype, `ACIC_COALESCE_HEAP`, uses the existing pending
 flag to suppress duplicate shared-heap wakeups. The non-shared path and all
 threshold/relaxation rules remain unchanged. This is **experimental**: its
-four-source local serial/work smoke passed; distributed gate **22355072**
-and matched road/mesh timing are next. The prediction and controls are in
+four-source local smoke and **224 distributed serial/work checks** passed
+in gate **22355072**, including 90 inter-node accounting checks. Road job
+**22355092** completed all 40 road solves; prototype speedup was 0.988/1.011×
+on the two sources (controls 0.996/1.000×), missing the 1.05–1.20× prediction.
+It then stopped in the audit harness because that assumed an 8-process
+default while this driver recorded 16. The auditor now takes explicit default
+layout arguments; the retained road results pass all 40 digest checks and
+16 work-accounting checks. Mesh and backlog tracing resume in job **22355117**.
+There is no demonstrated one-node speedup; do not promote the prototype. The prediction and controls are in
 `benchmarks/delta-heap-coalesce-{road,mesh}-variants.json`.
 
 Eight-node attribution **22354948** is queued after successful correctness

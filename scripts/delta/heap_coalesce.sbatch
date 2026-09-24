@@ -15,24 +15,31 @@ ROOT=${1:?campaign}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 export SLURM_MPI_TYPE=cray_shasta PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
 unset LCT_PMI_BACKEND
+ROAD_JOB=${RESUME_ROAD_JOB:-$SLURM_JOB_ID}
 for pair in road-usa-z:road mesh26-z:mesh; do
   graph=${pair%:*}
   config=$APP/benchmarks/delta-heap-coalesce-${pair#*:}-variants.json
-  python3 "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$config" \
-    --rpn 16 --workers 112 --sources 2 --source-role tune --reps 3 --batch
-  python3 "$APP/benchmarks/check_priority_runs.py" "$ROOT" "$SLURM_JOB_ID" \
-    --config "$config" --graphs "$graph" --sources 2 --source-role tune --reps 3 \
-    --output "$ROOT/logs/coalesce-audit-$SLURM_JOB_ID-$graph.json"
+  DATA_JOB=$SLURM_JOB_ID
+  if [ "$graph" = road-usa-z ] && [ -n "${RESUME_ROAD_JOB:-}" ]; then
+    DATA_JOB=$RESUME_ROAD_JOB
+  else
+    python3 "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$config" \
+      --rpn 16 --workers 112 --sources 2 --source-role tune --reps 3 --batch
+  fi
   python3 "$APP/benchmarks/work_cost_report.py" \
-    "$ROOT/logs/AB-$graph-${SLURM_NNODES}n-$SLURM_JOB_ID" \
-    > "$ROOT/logs/coalesce-work-$SLURM_JOB_ID-$graph.json"
+    "$ROOT/logs/AB-$graph-${SLURM_NNODES}n-$DATA_JOB" \
+    > "$ROOT/logs/coalesce-work-$DATA_JOB-$graph.json"
+  python3 "$APP/benchmarks/check_priority_runs.py" "$ROOT" "$DATA_JOB" \
+    --config "$config" --graphs "$graph" --sources 2 --source-role tune --reps 3 \
+    --rpn 16 --workers 112 --output "$ROOT/logs/coalesce-audit-$DATA_JOB-$graph.json"
 done
-python3 - "$ROOT" "$SLURM_JOB_ID" "$SLURM_NNODES" <<'PY'
+python3 - "$ROOT" "$SLURM_JOB_ID" "$SLURM_NNODES" "$ROAD_JOB" <<'PY'
 from pathlib import Path
 import sys
 root, job, nodes = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
 for graph in ['road-usa-z', 'mesh26-z']:
-    logs = list((root/'logs'/f'AB-{graph}-{nodes}n-{job}').glob('*.launch.out'))
+    data_job = sys.argv[4] if graph == 'road-usa-z' else job
+    logs = list((root/'logs'/f'AB-{graph}-{nodes}n-{data_job}').glob('*.launch.out'))
     assert len(logs) == 20, (graph, len(logs))
     for log in logs:
         text = log.read_text()

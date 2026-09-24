@@ -1396,5 +1396,53 @@
       }
     ]
   },
-  "raw_directory": "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22354907"
+  "raw_directory": "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22354907",
+  "sampled_heap_backlog": [
+    {
+      "pe": 0,
+      "max_pending": 63,
+      "median_pending_at_execution": 15.0,
+      "median_pending_at_threshold": 3.0,
+      "executed": 42376,
+      "median_delay_us": 119.0,
+      "max_delay_us": 730,
+      "pending_at_end": 0
+    },
+    {
+      "pe": 1,
+      "max_pending": 62,
+      "median_pending_at_execution": 14,
+      "median_pending_at_threshold": 3.0,
+      "executed": 42493,
+      "median_delay_us": 116,
+      "max_delay_us": 721,
+      "pending_at_end": 0
+    },
+    {
+      "pe": 50,
+      "max_pending": 65,
+      "median_pending_at_execution": 17.0,
+      "median_pending_at_threshold": 5.0,
+      "executed": 43464,
+      "median_delay_us": 141.0,
+      "max_delay_us": 709,
+      "pending_at_end": 0
+    },
+    {
+      "pe": 111,
+      "max_pending": 75,
+      "median_pending_at_execution": 15.0,
+      "median_pending_at_threshold": 4.0,
+      "executed": 44078,
+      "median_delay_us": 121.0,
+      "max_delay_us": 854,
+      "pending_at_end": 0
+    }
+  ],
+  "sampled_heap_backlog_pes": [
+    0,
+    1,
+    50,
+    111
+  ]
 }
