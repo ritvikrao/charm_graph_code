@@ -379,6 +379,29 @@ updates counted live but almost none held; the fallback reran production
 alone. It is a pre-existing liveness defect, not a hints one, and the
 192-solve probe (job 5539909) did not reproduce it.
 
+### 14. Gluon at 16 nodes, mesh and road: ACIC 26-73x faster
+
+Gluon-Async only on held-out sources (Gluon-Sync was 20-40x slower than Async
+in every mesh tuning run: 100-260 s per mesh24-z/mesh26-z solve, 80% in its
+sync phase; three Sync candidates passed the 330 s launch cap). Two
+allocations: A = jobs 5541240 (meshes) and 5541195 (road), B = 5541196; every
+Gluon run valid, 160 ACIC solves with no stall. Gluon selected 8 ranks/node,
+oec and delta 64 on both meshes in both allocations; on road its delta surface
+is flat (3.9-4.6 s on training sources), selecting 8388608 (A) and 32768 (B).
+`design/onenode-data/frontier-gluon-meshroad-16n.json`.
+
+| Graph | Gluon-Async | Speedup, production | Speedup, hints v2 + TLS | TLS build over production |
+|---|---:|---:|---:|---:|
+| mesh24-z | 3.1-4.3 s | 42.9-47.8x | 52.0-59.2x | 1.17-1.26x |
+| mesh26-z | 12.0-15.7 s | 49.3-56.7x | 61.1-71.0x | 1.22-1.27x |
+| road-usa-z | 3.9-8.7 s | 26.2-59.6x | 31.2-73.0x | 1.18-1.23x |
+
+The hints v2 + TLS build's gain on meshes and road is not hub hints (auto
+resolves off: 0 published, same round counts) but cheaper rounds, most likely
+the initial-exec TLS runtime; the recorded prediction (0.97-1.05x) missed. On
+road-usa-z it brings ACIC at 16 nodes to a speedup of 0.86-1.00x over one-node
+GAPBS and 0.47-0.60x over Wasp (production: 0.72-0.84x and 0.39-0.50x).
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
