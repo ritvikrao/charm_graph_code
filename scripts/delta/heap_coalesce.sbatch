@@ -49,12 +49,23 @@ for graph in ['road-usa-z', 'mesh26-z']:
 print('COALESCE AUDIT PASS: 80 serial-reference digests, work accounting, old scheduler')
 PY
 
-# One source, outside the timed A/B, to check whether the queue backlog fell.
-TRACE=$ROOT/profile/coalesce-$SLURM_JOB_ID
+# Matched traces on this allocation: cross-allocation absolute times differ.
+TRACE_ROOT=$ROOT/profile/coalesce-$SLURM_JOB_ID
+mkdir -p "$TRACE_ROOT"
+sha256sum "$ROOT/bin/acic_round_trace" "$ROOT/bin/acic_coalesce_trace" \
+  > "$TRACE_ROOT/binaries.sha256"
+for ARM in base coalesce; do
+TRACE=$TRACE_ROOT/$ARM
 mkdir -p "$TRACE"
+BIN=acic_round_trace
+CHECK=()
+if [ "$ARM" = coalesce ]; then
+  BIN=acic_coalesce_trace
+  CHECK=(--require-single)
+fi
 srun -N "$SLURM_NNODES" -n $((SLURM_NNODES * 16)) --ntasks-per-node=16 \
   -c 8 --cpu-bind=none --unbuffered --kill-on-bad-exit=1 \
-  bash "$APP/benchmarks/launch_acic.sh" 16 112 "$ROOT/bin/acic_coalesce_trace" \
+  bash "$APP/benchmarks/launch_acic.sh" 16 112 "$ROOT/bin/$BIN" \
   0 "$ROOT/graphs/road-usa-z.wsg" 1 5620086 4 0.999 0.005 \
   --result-digest --timeout 120 --process-share auto --reader-tile auto \
   --slack-control off --process-queue nearest --process-queue-batch 8 \
@@ -62,9 +73,10 @@ srun -N "$SLURM_NNODES" -n $((SLURM_NNODES * 16)) --ntasks-per-node=16 \
   +old-scheduler +traceoff +traceroot "$TRACE" > "$TRACE/run.out" 2>&1
 python3 "$APP/benchmarks/check_onenode_digest.py" \
   "$ROOT/graphs/road-usa-z.reference.txt" 5620086 "$TRACE/run.out"
-python3 "$APP/benchmarks/projections_report.py" "$TRACE/acic_coalesce_trace" \
+python3 "$APP/benchmarks/projections_report.py" "$TRACE/$BIN" \
   --pes-per-process 7 --processes-per-node 16 --jobs 8 \
   --json "$TRACE/summary.json" > "$TRACE/summary.txt"
-python3 "$APP/benchmarks/heap_backlog_report.py" "$TRACE/acic_coalesce_trace" \
-  --jobs 8 --require-single --json "$TRACE/heap-backlog.json"
+python3 "$APP/benchmarks/heap_backlog_report.py" "$TRACE/$BIN" \
+  --jobs 8 "${CHECK[@]}" --json "$TRACE/heap-backlog.json"
+done
 echo "HEAP COALESCE COMPLETE $SLURM_JOB_ID"

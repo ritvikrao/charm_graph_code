@@ -1015,5 +1015,169 @@
     "logs/AB-road-usa-z-1n-22355092/base-s1-r2.out": "98bebb6cd37cc1e902deadae5a052c09c1b0ca4509ce5d8dbc61b3ac41ac75a2",
     "logs/AB-road-usa-z-1n-22355092/coalesce-s0-r2.out": "d529d1321e42a8d3439b81dc4a6ca528206cca2b4a30479525dc6b3a2b961642",
     "logs/AB-road-usa-z-1n-22355092/coalesce-s1-r2.out": "23bd871adee7cfb254e82d8cca808274b7eaf2fffa8db4797f19ee035f58c04e"
-  }
+  },
+  "round_measurements": [
+    {
+      "source_index": 0,
+      "variant": "base",
+      "rep": 0,
+      "seconds": 0.297685,
+      "rounds": 688,
+      "threshold_changes": 300,
+      "us_per_round": 432.68168604651163
+    },
+    {
+      "source_index": 0,
+      "variant": "base",
+      "rep": 1,
+      "seconds": 0.292398,
+      "rounds": 652,
+      "threshold_changes": 290,
+      "us_per_round": 448.4631901840491
+    },
+    {
+      "source_index": 0,
+      "variant": "base",
+      "rep": 2,
+      "seconds": 0.289665,
+      "rounds": 691,
+      "threshold_changes": 300,
+      "us_per_round": 419.1968162083936
+    },
+    {
+      "source_index": 0,
+      "variant": "coalesce",
+      "rep": 0,
+      "seconds": 0.292284,
+      "rounds": 1656,
+      "threshold_changes": 336,
+      "us_per_round": 176.5
+    },
+    {
+      "source_index": 0,
+      "variant": "coalesce",
+      "rep": 1,
+      "seconds": 0.300381,
+      "rounds": 2940,
+      "threshold_changes": 355,
+      "us_per_round": 102.17040816326531
+    },
+    {
+      "source_index": 0,
+      "variant": "coalesce",
+      "rep": 2,
+      "seconds": 0.295875,
+      "rounds": 3343,
+      "threshold_changes": 378,
+      "us_per_round": 88.50583308405623
+    },
+    {
+      "source_index": 0,
+      "variant": "control",
+      "rep": 0,
+      "seconds": 0.295742,
+      "rounds": 687,
+      "threshold_changes": 300,
+      "us_per_round": 430.4832605531295
+    },
+    {
+      "source_index": 0,
+      "variant": "control",
+      "rep": 1,
+      "seconds": 0.292373,
+      "rounds": 703,
+      "threshold_changes": 301,
+      "us_per_round": 415.8933143669986
+    },
+    {
+      "source_index": 0,
+      "variant": "control",
+      "rep": 2,
+      "seconds": 0.293626,
+      "rounds": 675,
+      "threshold_changes": 295,
+      "us_per_round": 435.0014814814815
+    },
+    {
+      "source_index": 1,
+      "variant": "base",
+      "rep": 0,
+      "seconds": 0.329078,
+      "rounds": 840,
+      "threshold_changes": 413,
+      "us_per_round": 391.7595238095238
+    },
+    {
+      "source_index": 1,
+      "variant": "base",
+      "rep": 1,
+      "seconds": 0.329363,
+      "rounds": 849,
+      "threshold_changes": 411,
+      "us_per_round": 387.942285041225
+    },
+    {
+      "source_index": 1,
+      "variant": "base",
+      "rep": 2,
+      "seconds": 0.320586,
+      "rounds": 842,
+      "threshold_changes": 412,
+      "us_per_round": 380.7434679334917
+    },
+    {
+      "source_index": 1,
+      "variant": "coalesce",
+      "rep": 0,
+      "seconds": 0.323056,
+      "rounds": 2350,
+      "threshold_changes": 373,
+      "us_per_round": 137.47063829787234
+    },
+    {
+      "source_index": 1,
+      "variant": "coalesce",
+      "rep": 1,
+      "seconds": 0.328804,
+      "rounds": 3109,
+      "threshold_changes": 409,
+      "us_per_round": 105.75876487616597
+    },
+    {
+      "source_index": 1,
+      "variant": "coalesce",
+      "rep": 2,
+      "seconds": 0.325389,
+      "rounds": 3204,
+      "threshold_changes": 393,
+      "us_per_round": 101.55711610486891
+    },
+    {
+      "source_index": 1,
+      "variant": "control",
+      "rep": 0,
+      "seconds": 0.327166,
+      "rounds": 847,
+      "threshold_changes": 409,
+      "us_per_round": 386.26446280991735
+    },
+    {
+      "source_index": 1,
+      "variant": "control",
+      "rep": 1,
+      "seconds": 0.329489,
+      "rounds": 848,
+      "threshold_changes": 408,
+      "us_per_round": 388.5483490566038
+    },
+    {
+      "source_index": 1,
+      "variant": "control",
+      "rep": 2,
+      "seconds": 0.32919,
+      "rounds": 844,
+      "threshold_changes": 407,
+      "us_per_round": 390.03554502369667
+    }
+  ]
 }

@@ -424,3 +424,20 @@ road speedup 1.05–1.20× with work within 20%, and no resolved mesh regression
 prototype and repeated control plus separate work builds, then traces one
 road source and audits all PEs' callback backlog. The two-node correctness
 gate is 22355072. Keep the prototype disabled in production pending results.
+
+The road-only portion of 22355092 completed, but its audit then rejected the
+driver's 16-process default because the audit assumed eight. The saved data
+pass with explicitly matching defaults; the missing mesh/traces resume in
+22355144 (22355117 was cancelled while pending to add a matched baseline
+trace). Road shows no net one-node speedup despite approximately four times
+faster rounds: the loop polls roughly four times more often. Separate useful
+threshold advances from repeated controller polls in the distributed result.
+The prototype remains disabled in the workspace production binary.
+
+Eight-node coalescing job 22355150 depends on both attribution job 22354948
+and continuation 22355144. This tests the distributed regime, where earlier
+measurements found substantially more idle time. It does not turn the missed
+one-node speedup prediction into a pass. The trace parser now computes
+per-process-pair minimum delays in one pass instead of rescanning every
+message for each pair; exact equivalence was checked for empty, sparse, dense
+and signed-delay inputs up to 128 processes before the large traces.

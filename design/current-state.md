@@ -363,14 +363,24 @@ on the two sources (controls 0.996/1.000×), missing the 1.05–1.20× predictio
 It then stopped in the audit harness because that assumed an 8-process
 default while this driver recorded 16. The auditor now takes explicit default
 layout arguments; the retained road results pass all 40 digest checks and
-16 work-accounting checks. Mesh and backlog tracing resume in job **22355117**.
-There is no demonstrated one-node speedup; do not promote the prototype. The prediction and controls are in
+16 work-accounting checks. Mesh and matched baseline/prototype backlog traces resume in job
+**22355144**. The earlier pending continuation 22355117 was cancelled before
+execution to add the matched baseline trace; no completed timing was rerun.
+The round loop becomes much faster (388–433 us to 102–106 us), but rounds
+increase from 688/842 to 2,940/3,109; threshold changes stay around 300–412.
+Work rises from 1.55 to 1.66 attempts/edge, while measured work cost per
+attempt falls from 300 to 272 ns and idle share from 15% to 10%. These
+tradeoffs leave solve time unchanged. The number of controller polls is not
+a fixed count of necessary algorithmic steps: a faster poll loop alone need
+not shorten the solve. There is no demonstrated one-node speedup; do not
+promote the prototype. The prediction and controls are in
 `benchmarks/delta-heap-coalesce-{road,mesh}-variants.json`.
 
 Eight-node attribution **22354948** is queued after successful correctness
 and one-node dependencies; the scheduler currently forecasts an overnight
 start. It is needed to explain the previously observed distributed road
-round limit. Raw one-node evidence is archived in
+round limit. Matched eight-node coalescing job **22355150** depends on both
+22354948 and successful completion of the one-node mesh/backlog checks. Raw one-node evidence is archived in
 `design/onenode-data/delta-road-rounds-22354907.json`; logs are under
 `/u/rao1/.tmp/road-rounds-20260924/logs/`.
 

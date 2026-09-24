@@ -168,6 +168,20 @@ def pct(xs, qs):
     return np.percentile(xs, qs) if len(xs) else [float('nan')] * len(qs)
 
 
+def process_minima(sp, dp, raw, nproc):
+    """Minimum delay per observed process pair in one pass over messages.
+
+    Scanning every message separately for every pair makes a 128-process
+    trace's clock alignment prohibitively expensive. The scatter reduction
+    computes the same minima without those repeated full-array scans.
+    """
+    minima = np.full(nproc * nproc, np.inf)
+    np.minimum.at(minima, sp * nproc + dp, raw)
+    return {(int(k // nproc), int(k % nproc)): float(minima[k])
+            for k in np.flatnonzero(np.isfinite(minima))
+            if k // nproc != k % nproc}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -325,13 +339,7 @@ def main():
     # each way between p and every process whose offset is already known.
     offset = np.full(nproc, np.nan)
     offset[0] = 0.0
-    mins = {}
-    for a in range(nproc):
-        for b in range(nproc):
-            if a != b:
-                m = (sp == a) & (dp == b)
-                if m.any():
-                    mins[(a, b)] = raw[m].min()
+    mins = process_minima(sp, dp, raw, nproc)
     for _ in range(nproc):
         for p in range(nproc):
             if not np.isnan(offset[p]):
