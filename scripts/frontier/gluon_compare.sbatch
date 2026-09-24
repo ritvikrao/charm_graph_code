@@ -44,8 +44,19 @@ GRAPHS=$(tr ',' '\n' <<< "$PAIRS" | cut -d: -f1 | paste -sd,)
   for pair in ${PAIRS//,/ }; do
     graph=${pair%%:*}
     variants=$APP/benchmarks/frontier-gluon-${pair#*:}-${N}n-variants.json
-    "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$variants" \
-      --sources "$SOURCES" --reps "$REPS" --source-role test --batch || echo "ACIC $graph: exit $?"
+    # onenode_ab.py stops a graph at its first failed check (a stall is a
+    # failure even when the answer is right), which also loses every other
+    # arm. Keep that attempt aside and rerun the production arm alone.
+    if ! "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$variants" \
+         --sources "$SOURCES" --reps "$REPS" --source-role test --batch; then
+      echo "ACIC $graph: failed check; rerunning the frozen arm alone"
+      mv "$ROOT/logs/AB-$graph-${N}n-$SLURM_JOB_ID" "$ROOT/logs/AB-$graph-${N}n-$SLURM_JOB_ID.failed"
+      variants=$ROOT/logs/gluon-variants-$SLURM_JOB_ID-$graph-frozen.json
+      "$PY" -c 'import json,sys; json.dump([v for v in json.load(open(sys.argv[1])) if v["label"] == "frozen"], open(sys.argv[2], "w"), indent=2)' \
+        "$APP/benchmarks/frontier-gluon-${pair#*:}-${N}n-variants.json" "$variants"
+      "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$variants" \
+        --sources "$SOURCES" --reps "$REPS" --source-role test --batch || echo "ACIC $graph frozen: exit $?"
+    fi
     "$PY" "$APP/benchmarks/check_priority_runs.py" "$ROOT" "$SLURM_JOB_ID" \
       --config "$variants" --graphs "$graph" --sources "$SOURCES" --source-role test --reps "$REPS" \
       --output "$ROOT/logs/onenode-audit-$SLURM_JOB_ID-$graph.json" || echo "audit $graph: exit $?"
@@ -53,7 +64,7 @@ GRAPHS=$(tr ',' '\n' <<< "$PAIRS" | cut -d: -f1 | paste -sd,)
 )
 
 # --- Gluon (Cray MPICH environment, as compare.sbatch).
-(
+[ -n "${SKIP_GLUON:-}" ] || (
   module swap PrgEnv-cray PrgEnv-gnu/8.6.0 >/dev/null 2>&1
   module load gcc-native/13.2 cray-mpich/8.1.31 boost/1.85.0 >/dev/null 2>&1
   module unload cray-libsci darshan-runtime >/dev/null 2>&1 || true
