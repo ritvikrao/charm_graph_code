@@ -16,10 +16,12 @@ CHARMCFLAGS = $(OPTS) -g -O3
 # variant. These must match what libhtram_group_graph.a was compiled with.
 # WIRE=compact (the default) carries 8-byte updates and recomputes the
 # destination PE on arrival (HTRAM_COMPACT_WIRE, step 7.6j); WIRE=wide is the
-# 24-byte layout every run before 7.6j used.
+# 24-byte layout every run before 7.6j used. WIRE=compact64 is the compact
+# wire widened to 12 bytes for graphs past 2^31 vertices (weighted_node_struct.h).
 # The library and the client must agree, so the flag reaches both.
 WIRE ?= compact
 WIRE_FLAGS_compact = -DHTRAM_COMPACT_WIRE
+WIRE_FLAGS_compact64 = -DHTRAM_COMPACT_WIRE -DACIC_WIRE64
 WIRE_FLAGS = $(WIRE_FLAGS_$(WIRE))
 GRAPH_FLAGS = -DGRAPH -DBUCKETS_BY_DEST $(WIRE_FLAGS) -DHTRAM_GRAPH_TYPES_HEADER=\"$(CURDIR)/weighted_node_struct.h\"
 SSSP_FLAGS  = $(CHARMCFLAGS) -DTRAM_SMP -DGROUPBY $(GRAPH_FLAGS) -I$(CURDIR) -I$(HTRAM_DIR)
