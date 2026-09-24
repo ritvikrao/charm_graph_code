@@ -1,0 +1,917 @@
+[
+  {
+    "directory": "AB-rmat25-16n-5538463",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]": {
+        "arms": [
+          "frozen",
+          "control"
+        ],
+        "launches": 32,
+        "bimodal": false,
+        "tail_ratio": 1.2569312777983868,
+        "slow_launches": 0
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_s8"
+        ],
+        "launches": 16,
+        "bimodal": false,
+        "tail_ratio": 1.1628752602461112,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_s8": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.23882775,
+        "median": 0.23882775,
+        "mean": 0.24012543749999998,
+        "sources": {
+          "20659448": {
+            "fast": 0.23718650000000002,
+            "slow": null,
+            "median": 0.23718650000000002,
+            "mean": 0.2432396875
+          },
+          "21987187": {
+            "fast": 0.23504,
+            "slow": null,
+            "median": 0.23504,
+            "mean": 0.2379231875
+          },
+          "23077392": {
+            "fast": 0.24057099999999998,
+            "slow": null,
+            "median": 0.24057099999999998,
+            "mean": 0.2423276875
+          },
+          "26007212": {
+            "fast": 0.240469,
+            "slow": null,
+            "median": 0.240469,
+            "mean": 0.2373088125
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "frozen": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.23858925,
+        "median": 0.23858925,
+        "mean": 0.23701650000000002,
+        "sources": {
+          "20659448": {
+            "fast": 0.242092,
+            "slow": null,
+            "median": 0.242092,
+            "mean": 0.2453085625
+          },
+          "21987187": {
+            "fast": 0.238311,
+            "slow": null,
+            "median": 0.238311,
+            "mean": 0.23410068750000002
+          },
+          "23077392": {
+            "fast": 0.23375600000000002,
+            "slow": null,
+            "median": 0.23375600000000002,
+            "mean": 0.2375255
+          },
+          "26007212": {
+            "fast": 0.2388675,
+            "slow": null,
+            "median": 0.2388675,
+            "mean": 0.2365075
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "control": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.24305,
+        "median": 0.24305,
+        "mean": 0.24445543749999998,
+        "sources": {
+          "20659448": {
+            "fast": 0.240859,
+            "slow": null,
+            "median": 0.240859,
+            "mean": 0.2435794375
+          },
+          "21987187": {
+            "fast": 0.245241,
+            "slow": null,
+            "median": 0.245241,
+            "mean": 0.2459609375
+          },
+          "23077392": {
+            "fast": 0.24804749999999998,
+            "slow": null,
+            "median": 0.24804749999999998,
+            "mean": 0.2453314375
+          },
+          "26007212": {
+            "fast": 0.239754,
+            "slow": null,
+            "median": 0.239754,
+            "mean": 0.2412558125
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      }
+    }
+  },
+  {
+    "directory": "AB-orkut-16n-5538463",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]": {
+        "arms": [
+          "frozen",
+          "control"
+        ],
+        "launches": 32,
+        "bimodal": false,
+        "tail_ratio": 1.2802243197694716,
+        "slow_launches": 0
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_s8"
+        ],
+        "launches": 16,
+        "bimodal": false,
+        "tail_ratio": 1.1909019896827135,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_s8": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.06631475,
+        "median": 0.06631475,
+        "mean": 0.066222375,
+        "sources": {
+          "254572": {
+            "fast": 0.06754299999999999,
+            "slow": null,
+            "median": 0.06754299999999999,
+            "mean": 0.068226
+          },
+          "1892699": {
+            "fast": 0.065753,
+            "slow": null,
+            "median": 0.065753,
+            "mean": 0.0660156875
+          },
+          "2549343": {
+            "fast": 0.0663665,
+            "slow": null,
+            "median": 0.0663665,
+            "mean": 0.0663408125
+          },
+          "2608772": {
+            "fast": 0.066263,
+            "slow": null,
+            "median": 0.066263,
+            "mean": 0.0661039375
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "frozen": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.06622425,
+        "median": 0.06622425,
+        "mean": 0.06665571875,
+        "sources": {
+          "254572": {
+            "fast": 0.0677275,
+            "slow": null,
+            "median": 0.0677275,
+            "mean": 0.0676755
+          },
+          "1892699": {
+            "fast": 0.065862,
+            "slow": null,
+            "median": 0.065862,
+            "mean": 0.0665065
+          },
+          "2549343": {
+            "fast": 0.06658649999999999,
+            "slow": null,
+            "median": 0.06658649999999999,
+            "mean": 0.0668049375
+          },
+          "2608772": {
+            "fast": 0.065604,
+            "slow": null,
+            "median": 0.065604,
+            "mean": 0.0660231875
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "control": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.06752675,
+        "median": 0.06752675,
+        "mean": 0.06786196875,
+        "sources": {
+          "254572": {
+            "fast": 0.069247,
+            "slow": null,
+            "median": 0.069247,
+            "mean": 0.0691344375
+          },
+          "1892699": {
+            "fast": 0.065778,
+            "slow": null,
+            "median": 0.065778,
+            "mean": 0.0669280625
+          },
+          "2549343": {
+            "fast": 0.0680945,
+            "slow": null,
+            "median": 0.0680945,
+            "mean": 0.0680923125
+          },
+          "2608772": {
+            "fast": 0.06695899999999999,
+            "slow": null,
+            "median": 0.06695899999999999,
+            "mean": 0.067631625
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      }
+    }
+  },
+  {
+    "directory": "AB-uniform25-16n-5538463",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]": {
+        "arms": [
+          "frozen",
+          "control"
+        ],
+        "launches": 32,
+        "bimodal": false,
+        "tail_ratio": 1.3838319748635797,
+        "slow_launches": 0
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_s8"
+        ],
+        "launches": 16,
+        "bimodal": false,
+        "tail_ratio": 1.4741513527966748,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_s8": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.26969200000000004,
+        "median": 0.26969200000000004,
+        "mean": 0.2776664375,
+        "sources": {
+          "7224676": {
+            "fast": 0.2830815,
+            "slow": null,
+            "median": 0.2830815,
+            "mean": 0.2860833125
+          },
+          "9130980": {
+            "fast": 0.26017650000000003,
+            "slow": null,
+            "median": 0.26017650000000003,
+            "mean": 0.272938375
+          },
+          "23077392": {
+            "fast": 0.25572700000000004,
+            "slow": null,
+            "median": 0.25572700000000004,
+            "mean": 0.2646125625
+          },
+          "26007212": {
+            "fast": 0.2792075,
+            "slow": null,
+            "median": 0.2792075,
+            "mean": 0.2823945
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "frozen": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.266429,
+        "median": 0.266429,
+        "mean": 0.27024706249999997,
+        "sources": {
+          "7224676": {
+            "fast": 0.272418,
+            "slow": null,
+            "median": 0.272418,
+            "mean": 0.2806338125
+          },
+          "9130980": {
+            "fast": 0.26044,
+            "slow": null,
+            "median": 0.26044,
+            "mean": 0.2676070625
+          },
+          "23077392": {
+            "fast": 0.2417415,
+            "slow": null,
+            "median": 0.2417415,
+            "mean": 0.249152125
+          },
+          "26007212": {
+            "fast": 0.272856,
+            "slow": null,
+            "median": 0.272856,
+            "mean": 0.2728870625
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "control": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.28167675000000003,
+        "median": 0.28167675000000003,
+        "mean": 0.28068128125,
+        "sources": {
+          "7224676": {
+            "fast": 0.2872865,
+            "slow": null,
+            "median": 0.2872865,
+            "mean": 0.28704775
+          },
+          "9130980": {
+            "fast": 0.276067,
+            "slow": null,
+            "median": 0.276067,
+            "mean": 0.2743148125
+          },
+          "23077392": {
+            "fast": 0.261886,
+            "slow": null,
+            "median": 0.261886,
+            "mean": 0.2671466875
+          },
+          "26007212": {
+            "fast": 0.297005,
+            "slow": null,
+            "median": 0.297005,
+            "mean": 0.2936035
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      }
+    }
+  },
+  {
+    "directory": "AB-rmat26-16n-5538463",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]": {
+        "arms": [
+          "frozen",
+          "control"
+        ],
+        "launches": 32,
+        "bimodal": false,
+        "tail_ratio": 1.2749379631469973,
+        "slow_launches": 0
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_s8"
+        ],
+        "launches": 16,
+        "bimodal": false,
+        "tail_ratio": 1.3577744792147914,
+        "slow_launches": 0
+      }
+    },
+    "arms": {
+      "n16_s8": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.4174755,
+        "median": 0.4174755,
+        "mean": 0.42015368750000004,
+        "sources": {
+          "8530897": {
+            "fast": 0.40891299999999997,
+            "slow": null,
+            "median": 0.40891299999999997,
+            "mean": 0.4127175
+          },
+          "27797227": {
+            "fast": 0.42484049999999995,
+            "slow": null,
+            "median": 0.42484049999999995,
+            "mean": 0.427589875
+          },
+          "47836480": {
+            "fast": 0.428869,
+            "slow": null,
+            "median": 0.428869,
+            "mean": 0.434827625
+          },
+          "48422984": {
+            "fast": 0.4101105,
+            "slow": null,
+            "median": 0.4101105,
+            "mean": 0.4122435
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "frozen": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.40665525,
+        "median": 0.40665525,
+        "mean": 0.40630484375,
+        "sources": {
+          "8530897": {
+            "fast": 0.4059295,
+            "slow": null,
+            "median": 0.4059295,
+            "mean": 0.4052605
+          },
+          "27797227": {
+            "fast": 0.4032785,
+            "slow": null,
+            "median": 0.4032785,
+            "mean": 0.4021830625
+          },
+          "47836480": {
+            "fast": 0.4301045,
+            "slow": null,
+            "median": 0.4301045,
+            "mean": 0.43036993749999997
+          },
+          "48422984": {
+            "fast": 0.407381,
+            "slow": null,
+            "median": 0.407381,
+            "mean": 0.4073491875
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "control": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 0,
+        "fast": 0.40271275,
+        "median": 0.40271275,
+        "mean": 0.40626384375,
+        "sources": {
+          "8530897": {
+            "fast": 0.3961675,
+            "slow": null,
+            "median": 0.3961675,
+            "mean": 0.391233125
+          },
+          "27797227": {
+            "fast": 0.409258,
+            "slow": null,
+            "median": 0.409258,
+            "mean": 0.410637125
+          },
+          "47836480": {
+            "fast": 0.435328,
+            "slow": null,
+            "median": 0.435328,
+            "mean": 0.43454225
+          },
+          "48422984": {
+            "fast": 0.39374,
+            "slow": null,
+            "median": 0.39374,
+            "mean": 0.4018905625
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "fast",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      }
+    }
+  },
+  {
+    "directory": "AB-rmat27-16n-5538463",
+    "rule_min_tail_ratio": 1.5,
+    "configurations": {
+      "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]": {
+        "arms": [
+          "frozen",
+          "control"
+        ],
+        "launches": 32,
+        "bimodal": true,
+        "tail_ratio": 1.5144993650167342,
+        "slow_launches": 6
+      },
+      "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]": {
+        "arms": [
+          "n16_s8"
+        ],
+        "launches": 16,
+        "bimodal": true,
+        "tail_ratio": 1.5868972146861677,
+        "slow_launches": 7
+      }
+    },
+    "arms": {
+      "n16_s8": {
+        "configuration": "[\"acic_slice\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"--process-queue\", \"nearest\", \"--process-queue-batch\", \"8\", \"+old-scheduler\", \"--heap-slice\", \"8\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 7,
+        "fast": 0.72212,
+        "median": 0.7392909999999999,
+        "mean": 0.75174146875,
+        "sources": {
+          "27797227": {
+            "fast": 0.727051,
+            "slow": 0.784517,
+            "median": 0.751524,
+            "mean": 0.7502039375
+          },
+          "54213880": {
+            "fast": 0.743781,
+            "slow": 0.795644,
+            "median": 0.762718,
+            "mean": 0.770192375
+          },
+          "115531848": {
+            "fast": 0.717189,
+            "slow": 0.805725,
+            "median": 0.727058,
+            "mean": 0.753279
+          },
+          "126157692": {
+            "fast": 0.709114,
+            "slow": 0.781544,
+            "median": 0.7195805,
+            "mean": 0.738876375
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "slow",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "slow",
+          "8": "fast",
+          "9": "slow",
+          "10": "slow",
+          "11": "slow",
+          "12": "slow",
+          "13": "fast",
+          "14": "fast",
+          "15": "slow"
+        }
+      },
+      "frozen": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 4,
+        "fast": 0.7280055000000001,
+        "median": 0.7391295,
+        "mean": 0.75299209375,
+        "sources": {
+          "27797227": {
+            "fast": 0.7160695,
+            "slow": 0.792901,
+            "median": 0.7328595,
+            "mean": 0.7452099375
+          },
+          "54213880": {
+            "fast": 0.7399415,
+            "slow": 0.8344944999999999,
+            "median": 0.7453995,
+            "mean": 0.76077425
+          },
+          "115531848": {
+            "fast": 0.7532625,
+            "slow": 0.857139,
+            "median": 0.755163,
+            "mean": 0.7687454375
+          },
+          "126157692": {
+            "fast": 0.7092160000000001,
+            "slow": 0.770255,
+            "median": 0.720952,
+            "mean": 0.7341828125000001
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "slow",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "slow",
+          "9": "fast",
+          "10": "slow",
+          "11": "fast",
+          "12": "slow",
+          "13": "fast",
+          "14": "fast",
+          "15": "fast"
+        }
+      },
+      "control": {
+        "configuration": "[\"acic_r0_control\", [\"--process-share\", \"auto\", \"--reader-tile\", \"auto\", \"--slack-control\", \"off\", \"+old-scheduler\"], 16, 8, 56]",
+        "launches": 16,
+        "slow_launches": 2,
+        "fast": 0.740075,
+        "median": 0.7497705,
+        "mean": 0.7523794687500001,
+        "sources": {
+          "27797227": {
+            "fast": 0.727367,
+            "slow": 0.785946,
+            "median": 0.7357435,
+            "mean": 0.746648125
+          },
+          "54213880": {
+            "fast": 0.752783,
+            "slow": 0.819044,
+            "median": 0.7637975,
+            "mean": 0.7581108125
+          },
+          "115531848": {
+            "fast": 0.7605839999999999,
+            "slow": 0.787777,
+            "median": 0.766425,
+            "mean": 0.760945125
+          },
+          "126157692": {
+            "fast": 0.6934735000000001,
+            "slow": 0.807382,
+            "median": 0.7048755,
+            "mean": 0.716485375
+          }
+        },
+        "modes": {
+          "0": "fast",
+          "1": "fast",
+          "2": "fast",
+          "3": "fast",
+          "4": "fast",
+          "5": "fast",
+          "6": "fast",
+          "7": "fast",
+          "8": "fast",
+          "9": "fast",
+          "10": "fast",
+          "11": "slow",
+          "12": "fast",
+          "13": "fast",
+          "14": "fast",
+          "15": "slow"
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,91 @@
+{
+  "status": "NO-GO",
+  "cells": [
+    {
+      "allocation": 1,
+      "graph": "mesh26-z",
+      "gap_ratio": 0.7723064669203321,
+      "worst_gap_ratio": 0.7984735996786675,
+      "own_one_node_ratio": 0.15196187721605464,
+      "passed": true
+    },
+    {
+      "allocation": 1,
+      "graph": "rmat25",
+      "worst_regression_ratio": 1.0291543318674172,
+      "observed_allocation_floor": 1.0611385376204245,
+      "passed": true
+    },
+    {
+      "allocation": 1,
+      "graph": "orkut",
+      "worst_regression_ratio": 1.0100451192000488,
+      "observed_allocation_floor": 1.022647233298041,
+      "passed": true
+    },
+    {
+      "allocation": 1,
+      "graph": "uniform25",
+      "worst_regression_ratio": 1.0578531199649213,
+      "observed_allocation_floor": 1.0885045591813998,
+      "passed": true
+    },
+    {
+      "allocation": 1,
+      "graph": "rmat26",
+      "worst_regression_ratio": 1.0534667729621092,
+      "observed_allocation_floor": 1.034644689388937,
+      "passed": false
+    },
+    {
+      "allocation": 1,
+      "graph": "rmat27",
+      "worst_regression_ratio": 1.0254680467402004,
+      "observed_allocation_floor": 1.0246820664623468,
+      "passed": false
+    },
+    {
+      "allocation": 2,
+      "graph": "mesh26-z",
+      "gap_ratio": 0.7784089497462547,
+      "worst_gap_ratio": 0.7863274338393805,
+      "own_one_node_ratio": 0.15277065139532042,
+      "passed": true
+    },
+    {
+      "allocation": 2,
+      "graph": "rmat25",
+      "worst_regression_ratio": 1.0177980237589224,
+      "observed_allocation_floor": 1.0588159642381196,
+      "passed": true
+    },
+    {
+      "allocation": 2,
+      "graph": "orkut",
+      "worst_regression_ratio": 1.02594383974846,
+      "observed_allocation_floor": 1.0286736420987848,
+      "passed": true
+    },
+    {
+      "allocation": 2,
+      "graph": "uniform25",
+      "worst_regression_ratio": 1.0009028800147222,
+      "observed_allocation_floor": 1.0545753050325783,
+      "passed": true
+    },
+    {
+      "allocation": 2,
+      "graph": "rmat26",
+      "worst_regression_ratio": 1.0360335931622104,
+      "observed_allocation_floor": 1.018080088961814,
+      "passed": false
+    },
+    {
+      "allocation": 2,
+      "graph": "rmat27",
+      "worst_regression_ratio": 1.0476187638666261,
+      "observed_allocation_floor": 1.0250708270533688,
+      "passed": false
+    }
+  ]
+}

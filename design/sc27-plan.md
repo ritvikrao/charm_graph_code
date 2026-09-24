@@ -51,9 +51,11 @@ are true:
 
 1. The fixed candidate passes the frozen-binary RMAT regression gate on
    Frontier at 16 nodes (see *Machine decision* below); an Anvil gate is
-   optional replication.
+   optional replication. *Status 2026-09-24: NO-GO by the recorded rule on
+   `rmat26` and `rmat27` (current-state §10); author decision pending.*
 2. The matched spanning-tree screen either closes with a clear result or is
-   omitted; it must not remain an unresolved dependency in the paper.
+   omitted; it must not remain an unresolved dependency in the paper. *Closed
+   2026-09-24 on Frontier: `SPANTREE=ON` kept, small effect (current-state §10).*
 3. A fixed-candidate strong-scaling figure and its work/round explanation can
    be completed without tuning on held-out sources.
 4. The new contributions can be separated cleanly from the IA³@SC24 paper:

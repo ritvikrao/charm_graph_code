@@ -25,10 +25,10 @@ performance configuration; it does not mean every graph enables it.*
 | Fixed bucket width 32768 | Cuts road work to about 1.5 attempts/edge but causes roughly 900–1,500 controller rounds. | **Mechanism evidence only.** Too fine for the candidate. |
 | Fixed bucket width 131072 | Best road time measured, with roughly half the work of cap 7. Still 1.45–1.51× behind GAPBS and selected using road training data. | **Keep as the road study point.** Do not make it a global default. |
 | Node-level controller | Did not reduce road rounds or improve the measured result. | **Stop.** No further work without a new mechanism. |
-| Spanning-tree controller broadcast | Anvil's runtime cache has `SPANTREE=0`; early idle-round time grows roughly linearly with PE count. A matched `SPANTREE=ON` binary is built. | **One pending screen.** Accept only if two allocations show lower round cost without work/correctness changes. |
+| Spanning-tree controller broadcast | Frontier's runtime has `SPANTREE=ON`. Against a matched `SPANTREE=OFF` build (jobs 5538468/5538469) the tree lowers road round cost in both allocations by only 0.002–0.027 ms; `w32k` 8–10% faster, `w128k` 0.5–4%, cap 7 unchanged. Anvil's runtime has `SPANTREE=0`. | **Keep `SPANTREE=ON`; closed.** The broadcast is not the round-cost limit. The Anvil screen is optional replication. |
 | Reconverse registered scheduler | Adds 30–45% road work/time relative to the old behavior. `+old-scheduler` on the same runtime reproduces the control. | **Reject for this campaign.** `+old-scheduler` is required. |
 | Frontier send-cap, packet, matching, LCI-device, ASLR, huge-page, NUMA and fabric probes | None explains the whole-launch fast/slow modes. Work stays fixed and the slow tail trickles remote data. | **Closed negatives.** Do not repeat. |
-| Frontier backend progress/polling | The remaining concrete hypothesis for launch bimodality. | **One bounded pending screen.** Test documented polling controls at 2 and 4 nodes; stop after the preregistered comparison. |
+| Frontier backend progress/polling | The remaining concrete hypothesis for launch bimodality. The modes are rare at 16 nodes but recur on `rmat27` (current-state §10). | **Not run** under the 2026-09-24 machine decision; still the bounded hypothesis. |
 | Range extension and coarse weight-derived widths | Overshoot on road and do not provide a useful window. | **Reject in current form.** |
 
 ## What belongs in the current candidate

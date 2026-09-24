@@ -43,7 +43,8 @@ candidate results.
 | Anvil production | `~/charm_reconverse/reconverse-linux-x86_64-mpicxx-v0921-shm` | Reconverse `1233130`; cached `SPANTREE=0`; performance runs require `+old-scheduler`. |
 | Anvil spanning-tree screen | `~/charm_reconverse/reconverse-linux-x86_64-mpicxx-v0923-span` | Same Reconverse source, configured with `SPANTREE=ON`; `acic_span` carries its own RPATH. |
 | Anvil/Delta v0916 control | `~/charm_reconverse/reconverse-linux-x86_64-mpicxx-v0916-shm` | Reconverse `33b8c36`; attribution only. |
-| Frontier production | campaign-local `reconverse-linux-x86_64` described in `scripts/frontier/README.md` | Charm++ `f6c74074f`, Reconverse `1233130`, LCI `ca88ce2c`; performance runs require `+old-scheduler`. |
+| Frontier production | campaign-local `reconverse-linux-x86_64` described in `scripts/frontier/README.md` | Charm++ `f6c74074f`, Reconverse `1233130`, LCI `ca88ce2c`, cached `SPANTREE=ON`; performance runs require `+old-scheduler`. |
+| Frontier flat-broadcast control | campaign-local `reconverse-linux-x86_64-flat` (`./build ... --suffix=flat --with-cmake-args="-DSPANTREE=OFF -DAUTOFETCH_RECONVERSE_TAG=123313027faa..."`) | CMake cache differs from production only in `SPANTREE` and the pinned tag; used only by `acic_flat` for the spanning-tree screen. |
 
 The repository may be newer than the application revision embedded in a
 binary. For example, the documentation and Frontier harness are at repository

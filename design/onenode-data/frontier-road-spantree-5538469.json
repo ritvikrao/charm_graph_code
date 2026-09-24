@@ -1,0 +1,1123 @@
+{
+  "allocations": [
+    {
+      "job": 5538469,
+      "graph": "road-usa-z",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n8_w32k",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "32768"
+            ],
+            "nodes": 8,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Frontier mirror of the Anvil spanning-tree screen (commit 477600f): acic_slice links the campaign runtime (Reconverse 1233130, SPANTREE=ON, tree broadcast); acic_flat has byte-identical application and htram sources and links the same Reconverse and LCI commits built with SPANTREE=OFF (flat broadcast). Road-usa-z, 8 nodes, two training sources, one warmup and three repetitions, two allocations; round cost is compute time / \"Number of reductions\". Earlier tree cells (jobs 5534016/5534017): w32k 0.16-0.19 ms per round over 963/1494 rounds, w128k 549/812 rounds. Predictions: the tree lowers the median round cost by at least 0.05 ms on every ordered arm (half of Anvil's predicted 0.1 ms at half its PEs); w32k is at least 20% faster with the tree than flat, w128k at least 10%, 4x14 cap7 at least 10% (it runs 700-900 rounds here, unlike Anvil's 8x15 cap); work (attempts per edge) and round counts differ by less than 10% between builds; w64k with the tree is within 10% of w128k with the tree; the w128k repeat is within 2%. Acceptance (plan P1.1): SPANTREE=ON stays the campaign setting only if it lowers round cost in both allocations without changing work or correctness.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n8_w32k_flat",
+            "binary": "acic_flat",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "32768"
+            ],
+            "nodes": 8,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Frontier mirror of the Anvil spanning-tree screen (commit 477600f): acic_slice links the campaign runtime (Reconverse 1233130, SPANTREE=ON, tree broadcast); acic_flat has byte-identical application and htram sources and links the same Reconverse and LCI commits built with SPANTREE=OFF (flat broadcast). Road-usa-z, 8 nodes, two training sources, one warmup and three repetitions, two allocations; round cost is compute time / \"Number of reductions\". Earlier tree cells (jobs 5534016/5534017): w32k 0.16-0.19 ms per round over 963/1494 rounds, w128k 549/812 rounds. Predictions: the tree lowers the median round cost by at least 0.05 ms on every ordered arm (half of Anvil's predicted 0.1 ms at half its PEs); w32k is at least 20% faster with the tree than flat, w128k at least 10%, 4x14 cap7 at least 10% (it runs 700-900 rounds here, unlike Anvil's 8x15 cap); work (attempts per edge) and round counts differ by less than 10% between builds; w64k with the tree is within 10% of w128k with the tree; the w128k repeat is within 2%. Acceptance (plan P1.1): SPANTREE=ON stays the campaign setting only if it lowers round cost in both allocations without changing work or correctness.",
+            "sha256": "d5d2eb8c2b7c27b40f121e8857035614acdd85c2a25dc166eefe064852b7bf3c"
+          },
+          {
+            "label": "n8_w128k",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "131072"
+            ],
+            "nodes": 8,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Frontier mirror of the Anvil spanning-tree screen (commit 477600f): acic_slice links the campaign runtime (Reconverse 1233130, SPANTREE=ON, tree broadcast); acic_flat has byte-identical application and htram sources and links the same Reconverse and LCI commits built with SPANTREE=OFF (flat broadcast). Road-usa-z, 8 nodes, two training sources, one warmup and three repetitions, two allocations; round cost is compute time / \"Number of reductions\". Earlier tree cells (jobs 5534016/5534017): w32k 0.16-0.19 ms per round over 963/1494 rounds, w128k 549/812 rounds. Predictions: the tree lowers the median round cost by at least 0.05 ms on every ordered arm (half of Anvil's predicted 0.1 ms at half its PEs); w32k is at least 20% faster with the tree than flat, w128k at least 10%, 4x14 cap7 at least 10% (it runs 700-900 rounds here, unlike Anvil's 8x15 cap); work (attempts per edge) and round counts differ by less than 10% between builds; w64k with the tree is within 10% of w128k with the tree; the w128k repeat is within 2%. Acceptance (plan P1.1): SPANTREE=ON stays the campaign setting only if it lowers round cost in both allocations without changing work or correctness.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n8_w128k_flat",
+            "binary": "acic_flat",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "131072"
+            ],
+            "nodes": 8,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Frontier mirror of the Anvil spanning-tree screen (commit 477600f): acic_slice links the campaign runtime (Reconverse 1233130, SPANTREE=ON, tree broadcast); acic_flat has byte-identical application and htram sources and links the same Reconverse and LCI commits built with SPANTREE=OFF (flat broadcast). Road-usa-z, 8 nodes, two training sources, one warmup and three repetitions, two allocations; round cost is compute time / \"Number of reductions\". Earlier tree cells (jobs 5534016/5534017): w32k 0.16-0.19 ms per round over 963/1494 rounds, w128k 549/812 rounds. Predictions: the tree lowers the median round cost by at least 0.05 ms on every ordered arm (half of Anvil's predicted 0.1 ms at half its PEs); w32k is at least 20% faster with the tree than flat, w128k at least 10%, 4x14 cap7 at least 10% (it runs 700-900 rounds here, unlike Anvil's 8x15 cap); work (attempts per edge) and round counts differ by less than 10% between builds; w64k with the tree is within 10% of w128k with the tree; the w128k repeat is within 2%. Acceptance (plan P1.1): SPANTREE=ON stays the campaign setting only if it lowers round cost in both allocations without changing work or correctness.",
+            "sha256": "d5d2eb8c2b7c27b40f121e8857035614acdd85c2a25dc166eefe064852b7bf3c"
+          },
+          {
+            "label": "n8_4x14_cap7",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--process-drain-cap",
+              "7"
+            ],
+            "nodes": 8,
+            "rpn": 4,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Frontier mirror of the Anvil spanning-tree screen (commit 477600f): acic_slice links the campaign runtime (Reconverse 1233130, SPANTREE=ON, tree broadcast); acic_flat has byte-identical application and htram sources and links the same Reconverse and LCI commits built with SPANTREE=OFF (flat broadcast). Road-usa-z, 8 nodes, two training sources, one warmup and three repetitions, two allocations; round cost is compute time / \"Number of reductions\". Earlier tree cells (jobs 5534016/5534017): w32k 0.16-0.19 ms per round over 963/1494 rounds, w128k 549/812 rounds. Predictions: the tree lowers the median round cost by at least 0.05 ms on every ordered arm (half of Anvil's predicted 0.1 ms at half its PEs); w32k is at least 20% faster with the tree than flat, w128k at least 10%, 4x14 cap7 at least 10% (it runs 700-900 rounds here, unlike Anvil's 8x15 cap); work (attempts per edge) and round counts differ by less than 10% between builds; w64k with the tree is within 10% of w128k with the tree; the w128k repeat is within 2%. Acceptance (plan P1.1): SPANTREE=ON stays the campaign setting only if it lowers round cost in both allocations without changing work or correctness.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n8_4x14_cap7_flat",
+            "binary": "acic_flat",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--process-drain-cap",
+              "7"
+            ],
+            "nodes": 8,
+            "rpn": 4,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Frontier mirror of the Anvil spanning-tree screen (commit 477600f): acic_slice links the campaign runtime (Reconverse 1233130, SPANTREE=ON, tree broadcast); acic_flat has byte-identical application and htram sources and links the same Reconverse and LCI commits built with SPANTREE=OFF (flat broadcast). Road-usa-z, 8 nodes, two training sources, one warmup and three repetitions, two allocations; round cost is compute time / \"Number of reductions\". Earlier tree cells (jobs 5534016/5534017): w32k 0.16-0.19 ms per round over 963/1494 rounds, w128k 549/812 rounds. Predictions: the tree lowers the median round cost by at least 0.05 ms on every ordered arm (half of Anvil's predicted 0.1 ms at half its PEs); w32k is at least 20% faster with the tree than flat, w128k at least 10%, 4x14 cap7 at least 10% (it runs 700-900 rounds here, unlike Anvil's 8x15 cap); work (attempts per edge) and round counts differ by less than 10% between builds; w64k with the tree is within 10% of w128k with the tree; the w128k repeat is within 2%. Acceptance (plan P1.1): SPANTREE=ON stays the campaign setting only if it lowers round cost in both allocations without changing work or correctness.",
+            "sha256": "d5d2eb8c2b7c27b40f121e8857035614acdd85c2a25dc166eefe064852b7bf3c"
+          },
+          {
+            "label": "n8_w64k",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "65536"
+            ],
+            "nodes": 8,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Frontier mirror of the Anvil spanning-tree screen (commit 477600f): acic_slice links the campaign runtime (Reconverse 1233130, SPANTREE=ON, tree broadcast); acic_flat has byte-identical application and htram sources and links the same Reconverse and LCI commits built with SPANTREE=OFF (flat broadcast). Road-usa-z, 8 nodes, two training sources, one warmup and three repetitions, two allocations; round cost is compute time / \"Number of reductions\". Earlier tree cells (jobs 5534016/5534017): w32k 0.16-0.19 ms per round over 963/1494 rounds, w128k 549/812 rounds. Predictions: the tree lowers the median round cost by at least 0.05 ms on every ordered arm (half of Anvil's predicted 0.1 ms at half its PEs); w32k is at least 20% faster with the tree than flat, w128k at least 10%, 4x14 cap7 at least 10% (it runs 700-900 rounds here, unlike Anvil's 8x15 cap); work (attempts per edge) and round counts differ by less than 10% between builds; w64k with the tree is within 10% of w128k with the tree; the w128k repeat is within 2%. Acceptance (plan P1.1): SPANTREE=ON stays the campaign setting only if it lowers round cost in both allocations without changing work or correctness.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n8_w128k_control",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "131072"
+            ],
+            "nodes": 8,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Frontier mirror of the Anvil spanning-tree screen (commit 477600f): acic_slice links the campaign runtime (Reconverse 1233130, SPANTREE=ON, tree broadcast); acic_flat has byte-identical application and htram sources and links the same Reconverse and LCI commits built with SPANTREE=OFF (flat broadcast). Road-usa-z, 8 nodes, two training sources, one warmup and three repetitions, two allocations; round cost is compute time / \"Number of reductions\". Earlier tree cells (jobs 5534016/5534017): w32k 0.16-0.19 ms per round over 963/1494 rounds, w128k 549/812 rounds. Predictions: the tree lowers the median round cost by at least 0.05 ms on every ordered arm (half of Anvil's predicted 0.1 ms at half its PEs); w32k is at least 20% faster with the tree than flat, w128k at least 10%, 4x14 cap7 at least 10% (it runs 700-900 rounds here, unlike Anvil's 8x15 cap); work (attempts per edge) and round counts differ by less than 10% between builds; w64k with the tree is within 10% of w128k with the tree; the w128k repeat is within 2%. Acceptance (plan P1.1): SPANTREE=ON stays the campaign setting only if it lowers round cost in both allocations without changing work or correctness.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          }
+        ],
+        "nodes": 8,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 2,
+        "reps": 3,
+        "source_role": "tune",
+        "batch": true,
+        "hosts": "frontier[08259,08381,08575,08640,08712,08905,08964,09161]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n8_4x14_cap7": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.262599,
+              "edge_attempts": 152598399,
+              "attempts_per_edge": 2.6442910681772624
+            },
+            "5620086": {
+              "seconds": 0.216113,
+              "edge_attempts": 129798048,
+              "attempts_per_edge": 2.249196723179537
+            }
+          },
+          "medians": {
+            "seconds": 0.239356,
+            "edge_attempts": 141198223.5,
+            "attempts_per_edge": 2.4467438956783996
+          }
+        },
+        "n8_4x14_cap7_flat": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.265167,
+              "edge_attempts": 153703133,
+              "attempts_per_edge": 2.663434376809955
+            },
+            "5620086": {
+              "seconds": 0.213393,
+              "edge_attempts": 128233075,
+              "attempts_per_edge": 2.2220781940668
+            }
+          },
+          "medians": {
+            "seconds": 0.23928,
+            "edge_attempts": 140968104.0,
+            "attempts_per_edge": 2.4427562854383775
+          }
+        },
+        "n8_w128k": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.212411,
+              "edge_attempts": 134628876,
+              "attempts_per_edge": 2.3329074004606314
+            },
+            "5620086": {
+              "seconds": 0.17069,
+              "edge_attempts": 125434248,
+              "attempts_per_edge": 2.173578909107242
+            }
+          },
+          "medians": {
+            "seconds": 0.1915505,
+            "edge_attempts": 130031562.0,
+            "attempts_per_edge": 2.2532431547839367
+          }
+        },
+        "n8_w128k_control": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.211139,
+              "edge_attempts": 135616611,
+              "attempts_per_edge": 2.3500232998104407
+            },
+            "5620086": {
+              "seconds": 0.168754,
+              "edge_attempts": 128091697,
+              "attempts_per_edge": 2.219628334926163
+            }
+          },
+          "medians": {
+            "seconds": 0.1899465,
+            "edge_attempts": 131854154.0,
+            "attempts_per_edge": 2.2848258173683016
+          }
+        },
+        "n8_w128k_flat": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.215795,
+              "edge_attempts": 127167844,
+              "attempts_per_edge": 2.2036194105061315
+            },
+            "5620086": {
+              "seconds": 0.171582,
+              "edge_attempts": 121248705,
+              "attempts_per_edge": 2.10105000944053
+            }
+          },
+          "medians": {
+            "seconds": 0.19368849999999999,
+            "edge_attempts": 124208274.5,
+            "attempts_per_edge": 2.1523347099733305
+          }
+        },
+        "n8_w32k": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.23785,
+              "edge_attempts": 86338207,
+              "attempts_per_edge": 1.496105798675775
+            },
+            "5620086": {
+              "seconds": 0.181534,
+              "edge_attempts": 85971519,
+              "attempts_per_edge": 1.4897516703915865
+            }
+          },
+          "medians": {
+            "seconds": 0.209692,
+            "edge_attempts": 86154863.0,
+            "attempts_per_edge": 1.4929287345336808
+          }
+        },
+        "n8_w32k_flat": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.265146,
+              "edge_attempts": 83840844,
+              "attempts_per_edge": 1.452830412314111
+            },
+            "5620086": {
+              "seconds": 0.198039,
+              "edge_attempts": 82783444,
+              "attempts_per_edge": 1.43450732770894
+            }
+          },
+          "medians": {
+            "seconds": 0.23159249999999998,
+            "edge_attempts": 83312144.0,
+            "attempts_per_edge": 1.4436688700115254
+          }
+        },
+        "n8_w64k": {
+          "sources": {
+            "1294456": {
+              "seconds": 0.226943,
+              "edge_attempts": 95672192,
+              "attempts_per_edge": 1.657849128407567
+            },
+            "5620086": {
+              "seconds": 0.174052,
+              "edge_attempts": 90173633,
+              "attempts_per_edge": 1.5625677195145045
+            }
+          },
+          "medians": {
+            "seconds": 0.2004975,
+            "edge_attempts": 92922912.5,
+            "attempts_per_edge": 1.6102084239610357
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "n8_w128k_control",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.172696,
+            "edge_attempts": 128251203,
+            "attempts_per_edge": 2.222392323892526
+          }
+        },
+        {
+          "variant": "n8_w128k_control",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.215464,
+            "edge_attempts": 133377742,
+            "attempts_per_edge": 2.311227209298908
+          }
+        },
+        {
+          "variant": "n8_w32k",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.182497,
+            "edge_attempts": 84809301,
+            "attempts_per_edge": 1.469612254140733
+          }
+        },
+        {
+          "variant": "n8_w32k",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.239889,
+            "edge_attempts": 85456625,
+            "attempts_per_edge": 1.4808293644291364
+          }
+        },
+        {
+          "variant": "n8_w32k_flat",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.199899,
+            "edge_attempts": 83292354,
+            "attempts_per_edge": 1.4433259403308594
+          }
+        },
+        {
+          "variant": "n8_w32k_flat",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.266705,
+            "edge_attempts": 84313495,
+            "attempts_per_edge": 1.461020713299281
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.166415,
+            "edge_attempts": 126792990,
+            "attempts_per_edge": 2.197123778241533
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.216095,
+            "edge_attempts": 137524013,
+            "attempts_per_edge": 2.383075586761521
+          }
+        },
+        {
+          "variant": "n8_w128k_flat",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.171068,
+            "edge_attempts": 123992874,
+            "attempts_per_edge": 2.148602156932385
+          }
+        },
+        {
+          "variant": "n8_w128k_flat",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.216962,
+            "edge_attempts": 129146223,
+            "attempts_per_edge": 2.2379016176161124
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.214003,
+            "edge_attempts": 130757561,
+            "attempts_per_edge": 2.2658235795052053
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.263927,
+            "edge_attempts": 152905661,
+            "attempts_per_edge": 2.6496154370272285
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7_flat",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.219458,
+            "edge_attempts": 130196793,
+            "attempts_per_edge": 2.2561063490267936
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7_flat",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.264296,
+            "edge_attempts": 153942539,
+            "attempts_per_edge": 2.667582907539088
+          }
+        },
+        {
+          "variant": "n8_w64k",
+          "source": "5620086",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.176168,
+            "edge_attempts": 91472190,
+            "attempts_per_edge": 1.5850696769342483
+          }
+        },
+        {
+          "variant": "n8_w64k",
+          "source": "1294456",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.228935,
+            "edge_attempts": 95584995,
+            "attempts_per_edge": 1.6563381410722946
+          }
+        },
+        {
+          "variant": "n8_w32k",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.183804,
+            "edge_attempts": 86514184,
+            "attempts_per_edge": 1.4991552042550866
+          }
+        },
+        {
+          "variant": "n8_w32k",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.240166,
+            "edge_attempts": 86957805,
+            "attempts_per_edge": 1.5068424608425943
+          }
+        },
+        {
+          "variant": "n8_w32k_flat",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.198039,
+            "edge_attempts": 82664574,
+            "attempts_per_edge": 1.4324474969287087
+          }
+        },
+        {
+          "variant": "n8_w32k_flat",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.266851,
+            "edge_attempts": 84303796,
+            "attempts_per_edge": 1.4608526448317325
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.17069,
+            "edge_attempts": 125434248,
+            "attempts_per_edge": 2.173578909107242
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.212411,
+            "edge_attempts": 133567289,
+            "attempts_per_edge": 2.3145117617082676
+          }
+        },
+        {
+          "variant": "n8_w128k_flat",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.171582,
+            "edge_attempts": 119751778,
+            "attempts_per_edge": 2.075110610850815
+          }
+        },
+        {
+          "variant": "n8_w128k_flat",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.215795,
+            "edge_attempts": 127167844,
+            "attempts_per_edge": 2.2036194105061315
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.216816,
+            "edge_attempts": 129798048,
+            "attempts_per_edge": 2.249196723179537
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.264021,
+            "edge_attempts": 152598399,
+            "attempts_per_edge": 2.6442910681772624
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7_flat",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.212984,
+            "edge_attempts": 127931135,
+            "attempts_per_edge": 2.216846047135
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7_flat",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.264248,
+            "edge_attempts": 153703133,
+            "attempts_per_edge": 2.663434376809955
+          }
+        },
+        {
+          "variant": "n8_w64k",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.174052,
+            "edge_attempts": 90868862,
+            "attempts_per_edge": 1.5746149483654297
+          }
+        },
+        {
+          "variant": "n8_w64k",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.226393,
+            "edge_attempts": 95061291,
+            "attempts_per_edge": 1.6472631716188555
+          }
+        },
+        {
+          "variant": "n8_w128k_control",
+          "source": "5620086",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.168754,
+            "edge_attempts": 128091697,
+            "attempts_per_edge": 2.219628334926163
+          }
+        },
+        {
+          "variant": "n8_w128k_control",
+          "source": "1294456",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.211139,
+            "edge_attempts": 135616611,
+            "attempts_per_edge": 2.3500232998104407
+          }
+        },
+        {
+          "variant": "n8_w32k_flat",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.197729,
+            "edge_attempts": 82783444,
+            "attempts_per_edge": 1.43450732770894
+          }
+        },
+        {
+          "variant": "n8_w32k_flat",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.265002,
+            "edge_attempts": 83840844,
+            "attempts_per_edge": 1.452830412314111
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.171404,
+            "edge_attempts": 125035734,
+            "attempts_per_edge": 2.1666732861279105
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.214627,
+            "edge_attempts": 135844494,
+            "attempts_per_edge": 2.353972155011008
+          }
+        },
+        {
+          "variant": "n8_w128k_flat",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.170001,
+            "edge_attempts": 124324595,
+            "attempts_per_edge": 2.1543503619147115
+          }
+        },
+        {
+          "variant": "n8_w128k_flat",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.214386,
+            "edge_attempts": 127444542,
+            "attempts_per_edge": 2.208414153142865
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.214841,
+            "edge_attempts": 127978429,
+            "attempts_per_edge": 2.2176655780252186
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.261027,
+            "edge_attempts": 153520749,
+            "attempts_per_edge": 2.660273947963133
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7_flat",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.217004,
+            "edge_attempts": 129388148,
+            "attempts_per_edge": 2.242093798666903
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7_flat",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.265912,
+            "edge_attempts": 155426750,
+            "attempts_per_edge": 2.693301957780175
+          }
+        },
+        {
+          "variant": "n8_w64k",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.175575,
+            "edge_attempts": 90107591,
+            "attempts_per_edge": 1.5614233151703634
+          }
+        },
+        {
+          "variant": "n8_w64k",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.230091,
+            "edge_attempts": 95922193,
+            "attempts_per_edge": 1.662181253879836
+          }
+        },
+        {
+          "variant": "n8_w128k_control",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.168322,
+            "edge_attempts": 128716630,
+            "attempts_per_edge": 2.2304574442807716
+          }
+        },
+        {
+          "variant": "n8_w128k_control",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.210191,
+            "edge_attempts": 135402506,
+            "attempts_per_edge": 2.3463131957538965
+          }
+        },
+        {
+          "variant": "n8_w32k",
+          "source": "5620086",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.181534,
+            "edge_attempts": 85971519,
+            "attempts_per_edge": 1.4897516703915865
+          }
+        },
+        {
+          "variant": "n8_w32k",
+          "source": "1294456",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.23785,
+            "edge_attempts": 86338207,
+            "attempts_per_edge": 1.496105798675775
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.170495,
+            "edge_attempts": 130888432,
+            "attempts_per_edge": 2.2680913688047735
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.210991,
+            "edge_attempts": 134628876,
+            "attempts_per_edge": 2.3329074004606314
+          }
+        },
+        {
+          "variant": "n8_w128k_flat",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.171784,
+            "edge_attempts": 121248705,
+            "attempts_per_edge": 2.10105000944053
+          }
+        },
+        {
+          "variant": "n8_w128k_flat",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.216394,
+            "edge_attempts": 125787697,
+            "attempts_per_edge": 2.1797036262725653
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.216113,
+            "edge_attempts": 130087411,
+            "attempts_per_edge": 2.254210930414837
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.262599,
+            "edge_attempts": 151450816,
+            "attempts_per_edge": 2.624405253537149
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7_flat",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.213393,
+            "edge_attempts": 128233075,
+            "attempts_per_edge": 2.2220781940668
+          }
+        },
+        {
+          "variant": "n8_4x14_cap7_flat",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.265167,
+            "edge_attempts": 150476210,
+            "attempts_per_edge": 2.607516859178621
+          }
+        },
+        {
+          "variant": "n8_w64k",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.173352,
+            "edge_attempts": 90173633,
+            "attempts_per_edge": 1.5625677195145045
+          }
+        },
+        {
+          "variant": "n8_w64k",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.226943,
+            "edge_attempts": 95672192,
+            "attempts_per_edge": 1.657849128407567
+          }
+        },
+        {
+          "variant": "n8_w128k_control",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.169746,
+            "edge_attempts": 126406678,
+            "attempts_per_edge": 2.1904295967964855
+          }
+        },
+        {
+          "variant": "n8_w128k_control",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.212954,
+            "edge_attempts": 137175718,
+            "attempts_per_edge": 2.377040180337691
+          }
+        },
+        {
+          "variant": "n8_w32k",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.179464,
+            "edge_attempts": 84797891,
+            "attempts_per_edge": 1.4694145367250482
+          }
+        },
+        {
+          "variant": "n8_w32k",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.236722,
+            "edge_attempts": 85742174,
+            "attempts_per_edge": 1.4857774810225939
+          }
+        },
+        {
+          "variant": "n8_w32k_flat",
+          "source": "5620086",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.198905,
+            "edge_attempts": 84175653,
+            "attempts_per_edge": 1.45863212749623
+          }
+        },
+        {
+          "variant": "n8_w32k_flat",
+          "source": "1294456",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.265146,
+            "edge_attempts": 83526316,
+            "attempts_per_edge": 1.4473801350730524
+          }
+        }
+      ]
+    }
+  ],
+  "checked_solves": 64,
+  "diagnostic_solves": 0,
+  "checked_launches": 32,
+  "raw_sha256": {
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-g0-r-1.launch.out": "5f1a79df567041153b2e42ecc2e48dbbacabed24bfe31ac71b3b50b20b0dfb15",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-g0-r0.launch.out": "fc51d0572932cd35e633d87c6ebb9cd031ac93ab7bb24aa8f03c80794115d02a",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-g0-r1.launch.out": "cad750307fc944cad6ec9e04e2838f9ee24e5ecbbe1d46114085403dfbb820f7",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-g0-r2.launch.out": "1faf7ca247ce76e4a2c1e56e0080354a0cd7c4d69abaebb71292290084b5d57b",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-g0-r-1.launch.out": "6b65622b11a72de7dda39e69b1add1710be056910e11eefb2958e6b3988a275a",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-g0-r0.launch.out": "c8c2ecff53ffc50960bc733ee4dc0d87e6ec236582d7932d47a54e1e442e5138",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-g0-r1.launch.out": "996005a303444658cbd0654c50fd3d6cee4e6e413f78a9f73f1afcbe991c404c",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-g0-r2.launch.out": "82e513b99bd5cd7480f6c66e36d57b73657e85bcbe85d48eba52a38fb6d1d7c4",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-g0-r-1.launch.out": "637d9583e7c9caef768ef5efea0b621dc621c2193f999de6487581665a45b4fd",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-g0-r0.launch.out": "f8adb691d404690c54e5e363439edd22d66ccbe05c608ed0b50ed3557a969a9e",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-g0-r1.launch.out": "3bb55277e1dfff791e625f6f39e3c04b6547fbba83076d3debd682f366ee99ae",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-g0-r2.launch.out": "a4005c23b8e7dbb43de76de687234ceffd3618d09cc5b1e7c40d3ae747c4e239",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-g0-r-1.launch.out": "22c4e3fb08c36001345fde04b31ce51d3cf6b1a1aade2e82ce8be2c0a95962a3",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-g0-r0.launch.out": "32eaa1d03ce23fe142f1ef86de38f662fc08bf24325d2e694113d3052958d723",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-g0-r1.launch.out": "353317f3c679347ebffab1d6c49003e590a2c2255c07dbae735c329badb3a1de",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-g0-r2.launch.out": "74ec4e3919fad2779acfde8c26464d8ab2fb715dd2a15da3bd8ccd49aa740798",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-g0-r-1.launch.out": "3960ab5baf294a88dcbccb2018597d1cd6e6f98ff470db2f7a4ac3bb7e4b1fea",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-g0-r0.launch.out": "96dc2023b9386d5d1cadefdda4d518dd5864e9b6d77914f87a116a481a24abab",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-g0-r1.launch.out": "44ba088d04614991cb0670607ad53d6487968888b373e7f3ee46cbd8cb8745cc",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-g0-r2.launch.out": "689ac6a036279e51aca8e6fd9ec923002364461ec0887bee4025842973b14a6d",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-g0-r-1.launch.out": "f5f5a843cbba1c6bcc6dbb516de6b0692cb830bf2cfb5552e48a412d950f26ab",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-g0-r0.launch.out": "fc1bc5a664c295f03e4568b498b6c1dc8c2707872a720392f3d0781868dc54e2",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-g0-r1.launch.out": "baca8d6285afd72feb9fc3876fa691d3ebff98c415d9e0210b534ad77941dbd5",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-g0-r2.launch.out": "f1eabaffdf5050311dd70514914532e0fd5cf79c79c6b2c3e34a7b7ed320818b",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-g0-r-1.launch.out": "90214312e9d838d6a8f7c53c3d7abcae756c6821f6ee526785ee1962cbe95880",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-g0-r0.launch.out": "c677ce11cab4573ea384169e18a5029782309d8cee336421a7b5df9a9069b9fe",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-g0-r1.launch.out": "cb5771e37da815789144b207cd9f992a17dca34a0f430d3b96d76805f64a8f0e",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-g0-r2.launch.out": "b5e7ab76434503c35b829e7436fe5c961001d713ccce7952d1df3356f5d58d57",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-g0-r-1.launch.out": "68be9f64324e6960a56675baa2d9ad7f0ed0f99a1af05da35ece6e805a0eeada",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-g0-r0.launch.out": "934ea774eb8cb6a1ea3118cc807133ea8a7bdb2fd754d228293b5cc3dc1fd73f",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-g0-r1.launch.out": "5db6f7d61e9a70ce57ade316a7bfc9e553dbe21ca9c38d4cdcadb6a28348fb0b",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-g0-r2.launch.out": "b8d5e3f41c81663810ab8e18b4fa37d0406bfbf5118b1ddaeb00181d15f5f6d4",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-s0-r-1.out": "a8f1a40e69550fa95de6c56d3e75e70e627241b165f116cffcf23b88f1eb57bd",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-s1-r-1.out": "e6ad681308d6bfe559ea4392eb3cd3ead124d9dc53ac4430e11ff3f054456af4",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-s0-r-1.out": "5a5f2465a5b1936620481d81358eca630d29da114ae9d966b5f657f80c2e568d",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-s1-r-1.out": "1c0f135b159b280e19ce6e23cb0e643e351cb575294e55250b797a64b317fc14",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-s0-r-1.out": "04c096813a040efb558b5291e1da2c1860e31edbad16ee8cf77cf7cd466cd316",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-s1-r-1.out": "793e5b4e14097d6e5e19f8a6d7501326259b086dc3f39e57321ce5154ff457ec",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-s0-r-1.out": "17226320e0bcbe3d5343e32c7bb4296a6e1717f95f5d40da9d5a5196739a78d5",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-s1-r-1.out": "8e12dce15eb162cf35d9461f751e3ba012f12c94e97d288d95beb8775abb0eb5",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-s0-r-1.out": "43022ed7623e5263225938d0bb8fcf8520ada526979485356b7660a3cb25aa77",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-s1-r-1.out": "c28f3dc43277213be493dc077f530508e899ae180e6c50fc4955394f63fc0c88",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-s0-r-1.out": "33b7a6915b9f6beed43574c69d51157f9064921740441562078383c914e76330",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-s1-r-1.out": "18118004dc90441082d66eac665a1253c231956613babacb79b7c0727fd6a006",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-s0-r-1.out": "69c365770c351584a5095112266df79359412aaf50126a7f7f244c1b6c4d2348",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-s1-r-1.out": "f2b5787eea0eda06fa5e0c159a0f868875b636fceb8cd02d477e30e17c84d7d6",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-s0-r-1.out": "8dba91f579154a949936a24b0c82b655d96a2023aa2ced87a4432cd7b8e7d530",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-s1-r-1.out": "6e02300c75ae0cc439c7a48649f16db8ed894b15147d9577b176cd98c2758cea",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-s0-r0.out": "045ea0ad828dd52d113ecba77e46f6e9ebf8895c730458f6ba081150f8bad19f",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-s1-r0.out": "98ee8dc9490921a1707e6d6ffc82ce73c89e58c93554d47c9de1a3b76bf1446c",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-s0-r0.out": "519ec191802a89e516a59a0f43025e20ccacd16cfdc58726b60f4b34bb54670e",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-s1-r0.out": "67eb2137f57ac4535579bd05fc4fe7601b2afb2854c387be85954ec1fe188084",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-s0-r0.out": "bff019fec87d42f8d7cf17672cc2eab99bf948f1fc372ed806a4f90d4b818933",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-s1-r0.out": "9d5680d5b67a704b547c39dfa1926dab77dcc82f3ff16776970871c0324d06f6",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-s0-r0.out": "eb62672aab7e93d0b0b7897fd91e5d689a2e28c11daa91bdc22bc1b82363bd5c",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-s1-r0.out": "164ca96a974fa4e0b742314c2eefbb8862e9c785d4a2bbe83497407237dd8e39",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-s0-r0.out": "5dca2f82bc11c9b34fcc5371a49de45edfc09dc7e4a584dc8d4bf23f8a38204b",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-s1-r0.out": "bf2aec8f0b5dcce86f366ffa9ffd29da3b4781c3c4f587a84883483ab157925d",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-s0-r0.out": "24e3f1f17377716471fe5e585fe26d1298e0de9bb30308efb1115e85ada4c937",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-s1-r0.out": "a2125edd5ff3e408be16452fcaa99369fd216824e569f5aea07a40616828b118",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-s0-r0.out": "23c84dabdebb6500c9a126e2f750ccf890fcc7d04ae705946ece20444f9b50ab",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-s1-r0.out": "f7b7dac0ad69371c75e7ef3872dc179cede0703f212f21815b1b3bebb76e8937",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-s0-r0.out": "6fb668c1a9b9ff94089e0fa504c9ab08c5e5b1e9218f284fb3f9067e24816d83",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-s1-r0.out": "ea4cf56329c319d8ca16fabc10122a10dd167f80a6b46fcc513c2f6be57fea50",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-s0-r1.out": "34f54ddd2a62d3ae06d858ebbfb29d0f5e9fec52407766fa075daa8a5592aa2c",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-s1-r1.out": "2a235d8561dc5d5502736659392d7116618ff09780e385eab8951a9c78b30af6",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-s0-r1.out": "001d868105ceb9c72afa206130c0294b4da1c11a77d69b65972c439f92ff1cd1",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-s1-r1.out": "fe737416d6949372e548d9bd56c1bbb91bd19e6ab1e23ed9bcb113d6aae9a6d3",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-s0-r1.out": "8f0cdf40b5d8ce8860665bdda98ff1c2b416d383a3291b48b3fbc7276eb070b7",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-s1-r1.out": "7c0459b68ef1ff70fcd669207cfaea10c3af0350e6b531f8eb0991da5fea41ef",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-s0-r1.out": "08d08c489a653831862fdbe0d2e8832943410fcb75864ec13c11d64209dd68e5",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-s1-r1.out": "8dacf3685d08593882a6db83ee907577ac57435cffa8c91494302e77df81a4d4",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-s0-r1.out": "d3d98e7b66a26502fc1d48ed4b773420b3ac906b45424622c68ad8f46bd5452b",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-s1-r1.out": "91104db40204fe93f7805ede14e224fe4eafc9735c4b215f9710363106f424d2",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-s0-r1.out": "f5e7083d181e06905821f0a7af713fbeb7eb643413f0d9765606e83d20bb002f",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-s1-r1.out": "611b44b16f7fc6439a7ce346900605736bf9940d770421c008506fa9a9193f80",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-s0-r1.out": "859c04598803d648d289a4c585becc94d27f4ca44b8c596afb5e84cb3ebca2cd",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-s1-r1.out": "c1569b2f1fd744044a0d4293bbe5251433b5e4ed2ce5309d20496e0b8eff1493",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-s0-r1.out": "29c79eff87a1c3b15a6a2432f149dddd7bc0a47201e62a46b5fdb3c3f664ca64",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-s1-r1.out": "ac09cebead7a175f743cd9236e42a553fcaf57bd548480269a0e881ad2707d01",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-s0-r2.out": "9638277848292fc781c58cf52cdd43a2bf8ea839b343d6b42764fafb824745bd",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k-s1-r2.out": "c7b7baae1d35b6c7dbd18d2c1504ac85b426f76d8702eac1754a175d801f749f",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-s0-r2.out": "c29802c9ac32f35328d1a2cb05094527eb565492300933fbb23455743663f5cc",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_flat-s1-r2.out": "d542b5423b65ba9e34352e3112ffbedcf73e0e74c89eb9948a82ae04effd65d2",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-s0-r2.out": "e7430bde995f0df6abc4cbef8ac869ae8f921224eedcea4082e9580eb124eaf2",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7-s1-r2.out": "7c623592c93830860a2693a2556b824ec41de89315060cca99cc393913f4f3b3",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-s0-r2.out": "0794616160b2e69f89985d89edf3580f131b2cd3d88844f30984591842c9a648",
+    "logs/AB-road-usa-z-8n-5538469/n8_4x14_cap7_flat-s1-r2.out": "ee16012cf4b8a974bfb26efd9e4f68db9964396d904f7151ca82009081bfb3a4",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-s0-r2.out": "8d233c72f7e6b20bf47acceb9c675097056f9d2d7b6f00c48b16826348705800",
+    "logs/AB-road-usa-z-8n-5538469/n8_w64k-s1-r2.out": "33e61630e3c65cf9113166559403091536e4699775679225e460a4a87f98b561",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-s0-r2.out": "cb845c2c170e16ea55af57deef99b9c3621e04b8db782ef800286794c2650241",
+    "logs/AB-road-usa-z-8n-5538469/n8_w128k_control-s1-r2.out": "5f302624074eae1581ef1e632f039cdbbb52c0bf5eb23b760fb5dcebad87a0b2",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-s0-r2.out": "ecb205b34fc201bc6c9373b043c6766c346c997f5c76f5a25d2a3eb7b6b0d5b5",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k-s1-r2.out": "167d9400cfdb04aebf87278d2c833f8d3644f3ad726ae59b252d688e96d0f85c",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-s0-r2.out": "e15c0465db007d6bb486b2b4239d0a19465a1a94b46a864f71e8f6375a116e42",
+    "logs/AB-road-usa-z-8n-5538469/n8_w32k_flat-s1-r2.out": "0b38aebbd3e2c276d56ee78598334d6dd98dd39108de0b148a47432a74d7cf26"
+  }
+}

@@ -227,6 +227,56 @@ ratio predictions (GAPBS 1.3–1.8, Wasp 2.2–3.2) missed on the favorable side
 the node-count, width and control predictions were met. Without the width, the
 plain candidate does 10.8–11.0 attempts per edge and is 1.45–2.15× slower.
 
+### 10. Frontier gates: RMAT regression NO-GO by the recorded rule; spanning tree kept, small effect
+
+**RMAT regression gate** (jobs 5538463/5538464, 16 nodes, 8 × 7, four held-out
+sources, 16 launches per arm; 2,040 audited solves). The recorded pass rule is
+`onenode_accept.py --nodes 16 --variant n16_s8 --one-node-variant n1_s8
+--regression-reps 16` over allocations (5536321, GAPBS 5529591, 5536321,
+5538463) and (5536322, GAPBS 5538465, 5536322, 5538464). Result: **NO-GO.**
+
+| Graph | Worst per-source candidate/frozen (A / B) | Floor from repeated R0 (A / B) | Verdict |
+|---|---:|---:|---|
+| `mesh26-z` C6 | ACIC/GAPBS 0.77 / 0.78, worst 0.80 / 0.79 | — | pass, both |
+| `rmat25` | 1.029 / 1.018 | 1.061 / 1.059 | pass, both |
+| orkut | 1.010 / 1.026 | 1.023 / 1.029 | pass, both |
+| `uniform25` | 1.058 / 1.001 | 1.089 / 1.055 | pass, both |
+| `rmat26` | 1.053 / 1.036 | 1.035 / 1.018 | **fail, both** |
+| `rmat27` | 1.025 / 1.048 | 1.025 / 1.025 | **fail, both** |
+
+What the failures are made of:
+
+- **`rmat26`**: each allocation fails on one source, and a different one each
+  time (1.053 on source 1 in A, 1.036 on source 4 in B); the other sources are
+  0.97–1.01. No launch was slow. Fast-mode medians put the candidate at 1.027×
+  frozen in A and 0.978× in B.
+- **`rmat27`**: the slow launch mode returned at 16 nodes on this graph, and
+  more often for the candidate (7/16 and 4/16) than for frozen (4/16, 0/16) or
+  control (2/16, 0/16); pooled, 11/32 against 6/64 (Fisher p = 0.004). In fast
+  mode the candidate is 0.992× and 0.994× frozen, so its fast solves did not
+  regress. The opposite imbalance appeared on `uniform25` in B (candidate 0/32
+  against R0 11/64 pooled over allocations, p = 0.014), so a mode-rate
+  difference is not yet shown to be a property of the candidate.
+- Predictions: every floor lay in 1.00–1.10 (met); every graph passes (missed
+  on `rmat26`, `rmat27`); at most 2 slow launches of 48 per graph (missed on
+  `rmat27` in A, 13/48, and `uniform25` in B, 11/48).
+
+The regressions are 2.5–5% on single sources, at the resolution limit the plan
+stated for this gate. The recorded rule decides this run; a mode-aware rule
+(fast-mode ratio within the floor and no higher slow rate) or more allocations
+would have to be recorded before a new run, not applied to this one.
+
+**Spanning-tree screen** (jobs 5538468/5538469, road, 8 nodes, training
+sources; tree = `acic_slice` on the campaign runtime, flat = `acic_flat` on the
+same Reconverse/LCI built with `SPANTREE=OFF`). The tree lowers round cost on
+every arm in both allocations, but by 0.002–0.027 ms, not the predicted
+≥ 0.05 ms. `w32k` is 8–10% faster with the tree (predicted ≥ 20%), `w128k`
+0.5–4% (≥ 10%), and `4x14_cap7` −1 to +1% (≥ 10%). Work stays within 10%,
+repeats within 2%, and `w64k` within 10% of `w128k`. By the plan's rule
+`SPANTREE=ON` stays the campaign setting, and the screen stops here: the
+broadcast tree is not what makes road's rounds cost 0.16–0.31 ms. The
+remaining per-round cost is in the reduction or Main's per-round work.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
@@ -242,6 +292,8 @@ plain candidate does 10.8–11.0 attempts per edge and is 1.45–2.15× slower.
 | Frontier scale-free held-out vs RIKEN | `design/onenode-data/frontier-scalefree-heldout-{5538389,5538390,5538391,5538392}.json`, matching `-modes-` files, `frontier-scalefree-vs-riken-16n.json`; `benchmarks/frontier-scalefree-heldout-{4x14,8x7}-variants.json` |
 | Frontier road held-out | `design/onenode-data/frontier-road-heldout-5538405.json`, `-5538406.json`; `benchmarks/frontier-road-heldout-variants.json`, predictions in commit `8749a7d` |
 | Frontier mesh24-z | `design/onenode-data/frontier-mesh24-scaling-5538412.json`, `-5538413.json`, `frontier-gap-mesh24-5538410.json`, `frontier-wasp-mesh24-5538411.json`; `benchmarks/frontier-mesh24-scaling-variants.json` |
+| Frontier RMAT gate | `design/onenode-data/frontier-rmat-gate-16n-5538463.json`, `-5538464.json`, `-modes-` files, `frontier-accept-16n.json`; `benchmarks/frontier-rmat-gate-16n-variants.json`; GAPBS second allocation 5538465 |
+| Frontier spanning-tree screen | `design/onenode-data/frontier-road-spantree-5538468.json`, `-5538469.json`; `benchmarks/frontier-road-spantree-8n-variants.json` |
 | Frontier RMAT behavior | `design/onenode-data/frontier-rmat-regression-5534333.json` and 5534334 plus probe configurations named `benchmarks/frontier-*-probe-variants.json` |
 
 Anvil raw logs are rooted at `/anvil/scratch/x-rrao/acic/`; Frontier raw logs
@@ -272,7 +324,8 @@ and paths are consolidated in [configurations.md](configurations.md).
 - High-diameter graphs generally favor ACIC; the real road graph still loses.
 - ACIC has demonstrated a fixed-candidate strong-scaling curve beyond 16
   Frontier nodes, or any strong-scaling curve on Anvil.
-- The current candidate is regression-free on RMAT; its formal frozen-binary
-  gate is incomplete.
+- The current candidate is regression-free on RMAT. The Frontier frozen-binary
+  gate returned NO-GO by its recorded rule (`rmat26`, `rmat27`, 2.5–5% on
+  single sources, §10).
 - Frontier launch bimodality is caused by LCI, the network or ACIC. Evidence
   localizes it only to remote tail progress.
