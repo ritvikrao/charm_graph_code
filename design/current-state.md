@@ -326,12 +326,14 @@ road inputs are the next test (`road-eu`, `road-na`; `scripts/frontier/prepare_o
 The September 24 rebuild uses latest Charm++ `f6c74074f` and Reconverse
 `0c97c4d`, production/shared-memory/spanning-tree settings and `+old-scheduler`.
 Unmodified upstream SSSP `7a4da59` and the output-only sensitivity build passed
-224 serial-verified solves in job 22354859; all 56 launches confirmed the old
-scheduler. A two-PE local profiler smoke passed four serial checks including
+448 serial-verified solves across one-node job 22354859 and two-node job
+22354910; all 112 launches confirmed the old scheduler. A two-PE local profiler smoke passed four serial checks including
 a disconnected source and a repeated source, with per-source timer counts
-matching controller rounds. Two-node gate 22354910 and one-node road probe
-22354907 are queued. Phase attribution and the intervention decision are
-pending; no speedup is claimed. See the Delta section of the forward plan and
+matching controller rounds. One-node road probe 22354907 is queued;
+eight-node probe 22354948 depends on its success and the completed two-node
+gate. The workspace `sssp_smp` and ignored `config.mk` now use the new runtime;
+previous copies are preserved in the campaign. Phase attribution and the
+intervention decision are pending; no speedup is claimed. See the Delta section of the forward plan and
 `benchmarks/delta-road-rounds-protocol.json`.
 
 ## Evidence and provenance

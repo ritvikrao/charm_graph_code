@@ -207,3 +207,7 @@ its counters for every source. `round_trip` measures an unloaded collective
 cycle. `scripts/delta/build_round_probe.sh` reproduces the instrumented set
 with an explicitly supplied runtime and source revision. Diagnostic timing
 is not substituted for production timing.
+
+The workspace `sssp_smp` is installed from `acic_latest`, and the ignored
+`config.mk` points to the new compiler. Previous copies are preserved as
+`bin/acic_previous_workspace` and `build/previous-workspace-config.mk`.
