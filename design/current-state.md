@@ -363,8 +363,8 @@ on the two sources (controls 0.996/1.000×), missing the 1.05–1.20× predictio
 It then stopped in the audit harness because that assumed an 8-process
 default while this driver recorded 16. The auditor now takes explicit default
 layout arguments; the retained road results pass all 40 digest checks and
-16 work-accounting checks. Mesh and matched baseline/prototype backlog traces resume in job
-**22355144**. The earlier pending continuation 22355117 was cancelled before
+16 work-accounting checks. Mesh and matched baseline/prototype backlog traces completed in job
+**22355144** (results below). The earlier pending continuation 22355117 was cancelled before
 execution to add the matched baseline trace; no completed timing was rerun.
 The round loop becomes much faster (388–433 us to 102–106 us), but rounds
 increase from 688/842 to 2,940/3,109; threshold changes stay around 300–412.
@@ -391,10 +391,49 @@ layout, `+old-scheduler` and 20-minute limit. This is an intermediate scale;
 the eight-node jobs remain in `cpu` because `cpu-interactive` permits at most
 four nodes. Its other current limits are one hour, one running job and two
 submitted jobs per user. Its configured CPU billing weight is twice that of
-`cpu`. At the September 24 11:19 CDT check both interactive jobs were accepted
-but pending, with no start estimate; higher priority has not yet demonstrated
-a shorter wait. The four-node extension is recorded in the attribution
-protocol before execution.
+`cpu`. Continuation 22355144 started at 11:25 CDT, about seven minutes after
+the partition move, and completed in 2:55. Four-node 22355241 became eligible
+at 11:28 and started at 11:58, while both eight-node jobs still wait in `cpu`.
+This obtained earlier results, but does not establish a matched queue-time
+comparison across node counts. The four-node extension was recorded in the
+attribution protocol before execution.
+
+**Coalescing fails the one-node performance gate.** Job 22355144 passes all
+40 new mesh digests, 16 work-accounting checks and both single-source road
+trace digests. Its combined 80-solve audit includes the 40 road solves from
+22355092; these are not another 40 new solves. On mesh, baseline/coalesced
+times are 1.102/1.276 s and 0.839/0.997 s, or **0.864/0.842× speedup**
+(controls 1.002/0.992×). Median rounds grow from 806/515 to 11,864/8,220.
+The matched road traces verify the intended mechanism on all 112 PEs:
+maximum pending heap callbacks fall from **94 to 1**, with duplicate callbacks
+on 112 baseline PEs and none in the prototype. Heap callback p90 wait falls
+from 331 to 4 us; controller callback p90 from 181 to 31 us. Yet the trace
+has 656 versus 2,781 rounds and 169,036 versus 334,539 HTram receive messages.
+Less backlog permits more polling and smaller/more frequent deliveries; it
+does not by itself reduce total work or solve time. These are diagnostic
+traces, not new production timing trials. Keep coalescing disabled and do
+not spend second-allocation/held-out trials on this version. The queued
+eight-node comparison can still test the distributed mechanism, but cannot
+reverse the failed general regression gate. Evidence:
+`design/onenode-data/delta-heap-coalesce-continuation-22355144.json`.
+
+**Four-node attribution is partial, with valid timings.** Job 22355241
+failed after 1:36 when Slurm interleaved long `ROUND_PROFILE` lines from
+different ranks and the strict parser rejected them. All 24 production/quiet/
+control solves and both profile solve digests pass on recheck; all 12 empty
+cycle launches pass. The complete PE phase profile, work-cost run and trace
+are missing. Production medians are **0.219/0.267 s**, with 545/806 rounds
+and 2.14/2.29 attempts/edge. Quiet speedup is 0.969/0.984× (controls
+0.997/0.977×): no logging improvement. At 16 × 7 per node, empty 267-long
+cycles average 165–229 us across launches (median 193 us), versus real
+rounds of 330–402 us. At 8 × 15 they average 97–101 us. This motivates a
+full-solver process-layout comparison; it does not establish one from the
+unloaded test alone. The phase driver now captures per-rank logs and checks
+exactly one record per PE per source; retained one-node data reproduce the
+previous summaries, and missing/duplicate/corrupt records are rejected.
+Pending eight-node attribution will use this correction; it has not yet
+been exercised on Slurm. No new jobs were submitted during this review.
+Evidence: `design/onenode-data/delta-road-rounds-22355241.json`.
 
 ## Evidence and provenance
 

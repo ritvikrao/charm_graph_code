@@ -1,0 +1,4577 @@
+{
+  "job": 22355144,
+  "partition": "cpu-interactive",
+  "state": "COMPLETED",
+  "elapsed_seconds": 175,
+  "runtime": {
+    "revisions": {
+      "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+      "reconverse": "0c97c4d1f58dc5599b15a687cf328a7e05d60f90",
+      "lci": "ca88ce2c4b429ce72dfc3233fa21f8833299440c",
+      "htram": "7db9c0af69777b43e17dec110e6298fc09c91c54",
+      "sssp": "7a4da59ebbf6094e716e327af34b3c6bbc98f33d"
+    },
+    "runtime": "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64",
+    "scheduler": "+old-scheduler",
+    "build_command": "CC=gcc CXX=g++ ./build charm++ reconverse-linux-x86_64 --with-production --enable-tracing --enable-shmem --with-fetch-reconverse-dir=/u/rao1/.tmp/road-rounds-20260924/reconverse --with-cmake-args=\"-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF\" -j8",
+    "cache": [
+      "CMAKE_BUILD_TYPE:STRING=Release",
+      "CMAKE_CXX_COMPILER:FILEPATH=/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+      "CMK_USE_SHMEM:BOOL=1",
+      "RECONVERSE_AUTOFETCH_LCI2_TAG:STRING=ca88ce2c4b429ce72dfc3233fa21f8833299440c",
+      "RECONVERSE_ENABLE_CPU_AFFINITY:BOOL=ON",
+      "SPANTREE:BOOL=ON"
+    ],
+    "libraries": {
+      "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/libreconverse.so": "43ee00d5e99d258914821e80c80e7b19604fb6ae107475c2f4a051edad926a82",
+      "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/liblci.so": "083e911056b3d798d38eef827603323e8ccffb503d415928345e440bf96dc99f",
+      "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/liblct.so": "c731e80abc9deeb16ed62dbe8a4a7cce3f337845a70edd32055f63696c1f01ea",
+      "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/libck.a": "aafc40688291f80ae7d217d3f74fdf63c9ee50f8d83006eacd6ab9e237a957d9"
+    }
+  },
+  "mesh": {
+    "22442342": {
+      "arms": {
+        "base": {
+          "seconds": 1.102431,
+          "rounds": 806,
+          "runs": [
+            {
+              "rep": 0,
+              "seconds": 1.102431,
+              "rounds": 822
+            },
+            {
+              "rep": 1,
+              "seconds": 1.142912,
+              "rounds": 806
+            },
+            {
+              "rep": 2,
+              "seconds": 1.085013,
+              "rounds": 738
+            }
+          ]
+        },
+        "coalesce": {
+          "seconds": 1.275606,
+          "rounds": 11864,
+          "runs": [
+            {
+              "rep": 0,
+              "seconds": 1.170223,
+              "rounds": 8866
+            },
+            {
+              "rep": 1,
+              "seconds": 1.354585,
+              "rounds": 11864
+            },
+            {
+              "rep": 2,
+              "seconds": 1.275606,
+              "rounds": 12741
+            }
+          ]
+        },
+        "control": {
+          "seconds": 1.10011,
+          "rounds": 802,
+          "runs": [
+            {
+              "rep": 0,
+              "seconds": 1.10011,
+              "rounds": 751
+            },
+            {
+              "rep": 1,
+              "seconds": 1.137229,
+              "rounds": 802
+            },
+            {
+              "rep": 2,
+              "seconds": 1.075714,
+              "rounds": 821
+            }
+          ]
+        }
+      },
+      "speedup": 0.864240996044233,
+      "control_speedup": 1.002109789021098
+    },
+    "41856222": {
+      "arms": {
+        "base": {
+          "seconds": 0.838828,
+          "rounds": 515,
+          "runs": [
+            {
+              "rep": 0,
+              "seconds": 0.857476,
+              "rounds": 530
+            },
+            {
+              "rep": 1,
+              "seconds": 0.838828,
+              "rounds": 515
+            },
+            {
+              "rep": 2,
+              "seconds": 0.838539,
+              "rounds": 508
+            }
+          ]
+        },
+        "coalesce": {
+          "seconds": 0.996644,
+          "rounds": 8220,
+          "runs": [
+            {
+              "rep": 0,
+              "seconds": 0.96602,
+              "rounds": 6824
+            },
+            {
+              "rep": 1,
+              "seconds": 0.996644,
+              "rounds": 8220
+            },
+            {
+              "rep": 2,
+              "seconds": 1.011851,
+              "rounds": 10025
+            }
+          ]
+        },
+        "control": {
+          "seconds": 0.845206,
+          "rounds": 557,
+          "runs": [
+            {
+              "rep": 0,
+              "seconds": 0.863795,
+              "rounds": 557
+            },
+            {
+              "rep": 1,
+              "seconds": 0.845206,
+              "rounds": 542
+            },
+            {
+              "rep": 2,
+              "seconds": 0.844661,
+              "rounds": 562
+            }
+          ]
+        }
+      },
+      "speedup": 0.8416525860788807,
+      "control_speedup": 0.992453910644269
+    }
+  },
+  "mesh_audit": {
+    "allocations": [
+      {
+        "job": 22355144,
+        "graph": "mesh26-z",
+        "manifest": {
+          "variants": [
+            {
+              "label": "base",
+              "binary": "acic_latest",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+              "nodes": 1
+            },
+            {
+              "label": "coalesce",
+              "binary": "acic_coalesce",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "ef5c6cd40dce05cbb74dfd6d01069ced85477ac981708af2ded251cb1e91891a",
+              "nodes": 1
+            },
+            {
+              "label": "control",
+              "binary": "acic_latest",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+              "nodes": 1
+            },
+            {
+              "label": "base_cost",
+              "binary": "acic_cost",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": true,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "b4ba9e8eeeb24f64e7afb84692daad8c869f3b4e97bddae564c5fdc5cd90689f",
+              "nodes": 1
+            },
+            {
+              "label": "coalesce_cost",
+              "binary": "acic_coalesce_diag",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": true,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "111791d8f28037029bb4eb8121d3e5eb595dc6a11d71d9e677178cbd813c31c0",
+              "nodes": 1
+            }
+          ],
+          "nodes": 1,
+          "workers": 112,
+          "rpn": 16,
+          "sources": 2,
+          "reps": 3,
+          "source_role": "tune",
+          "batch": true,
+          "hosts": "cn072"
+        },
+        "runtime_warnings": {
+          "warn:reg_cache": 960
+        },
+        "summary": {
+          "base": {
+            "sources": {
+              "22442342": {
+                "seconds": 1.102431,
+                "edge_attempts": 418403953,
+                "attempts_per_edge": 1.5588664782671624
+              },
+              "41856222": {
+                "seconds": 0.838828,
+                "edge_attempts": 383923880,
+                "attempts_per_edge": 1.4304025151938866
+              }
+            },
+            "medians": {
+              "seconds": 0.9706295,
+              "edge_attempts": 401163916.5,
+              "attempts_per_edge": 1.4946344967305245
+            }
+          },
+          "base_cost": {
+            "sources": {
+              "22442342": {
+                "seconds": 1.141464,
+                "edge_attempts": 408958256,
+                "attempts_per_edge": 1.5236742189407582,
+                "expansions_per_vertex": 1.5236338526010513,
+                "stale_pop_fraction": 0.26736306867853343,
+                "cpu_ns_per_attempt": 289.47296399067574,
+                "work_ns_per_attempt": 247.54545659599304,
+                "queue_ns_per_attempt": 157.30234392786707,
+                "queue_work_fraction": 0.6330099890240692,
+                "lock_miss_fraction": 0.030594219030154107,
+                "work_share": 0.784128,
+                "idle_share": 0.142867,
+                "send_share": 0.002207,
+                "inter_node_fraction": 0.0,
+                "pops_per_removal_call": 2.560429748963369,
+                "pop_queue_time_fraction": 0.4116605465896551
+              },
+              "41856222": {
+                "seconds": 0.914784,
+                "edge_attempts": 382438847,
+                "attempts_per_edge": 1.424869660768822,
+                "expansions_per_vertex": 1.4248531013727188,
+                "stale_pop_fraction": 0.2668466131336099,
+                "cpu_ns_per_attempt": 242.3692313291841,
+                "work_ns_per_attempt": 227.43773089993823,
+                "queue_ns_per_attempt": 141.00364151660943,
+                "queue_work_fraction": 0.6217665669384683,
+                "lock_miss_fraction": 0.05279754589294677,
+                "work_share": 0.84502,
+                "idle_share": 0.081474,
+                "send_share": 0.002653,
+                "inter_node_fraction": 0.0,
+                "pops_per_removal_call": 3.7501846838235973,
+                "pop_queue_time_fraction": 0.41116373363238895
+              }
+            },
+            "medians": {
+              "seconds": 1.028124,
+              "edge_attempts": 395698551.5,
+              "attempts_per_edge": 1.47427193985479,
+              "expansions_per_vertex": 1.474243476986885,
+              "stale_pop_fraction": 0.26710484090607167,
+              "cpu_ns_per_attempt": 265.9210976599299,
+              "work_ns_per_attempt": 237.49159374796562,
+              "queue_ns_per_attempt": 149.15299272223825,
+              "queue_work_fraction": 0.6273882779812687,
+              "lock_miss_fraction": 0.04169588246155044,
+              "work_share": 0.814574,
+              "idle_share": 0.1121705,
+              "send_share": 0.00243,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.155307216393483,
+              "pop_queue_time_fraction": 0.411412140111022
+            }
+          },
+          "coalesce": {
+            "sources": {
+              "22442342": {
+                "seconds": 1.275606,
+                "edge_attempts": 434603750,
+                "attempts_per_edge": 1.6192227925824647
+              },
+              "41856222": {
+                "seconds": 0.996644,
+                "edge_attempts": 395482876,
+                "attempts_per_edge": 1.4734683879171881
+              }
+            },
+            "medians": {
+              "seconds": 1.136125,
+              "edge_attempts": 415043313.0,
+              "attempts_per_edge": 1.5463455902498264
+            }
+          },
+          "coalesce_cost": {
+            "sources": {
+              "22442342": {
+                "seconds": 1.295121,
+                "edge_attempts": 431964366,
+                "attempts_per_edge": 1.6093891205739341,
+                "expansions_per_vertex": 1.6093515157699585,
+                "stale_pop_fraction": 0.26772737381070155,
+                "cpu_ns_per_attempt": 308.6779817238584,
+                "work_ns_per_attempt": 240.7038639849288,
+                "queue_ns_per_attempt": 149.45834343921493,
+                "queue_work_fraction": 0.6209220781290531,
+                "lock_miss_fraction": 0.04384934421727887,
+                "work_share": 0.71358,
+                "idle_share": 0.088606,
+                "send_share": 0.014151,
+                "inter_node_fraction": 0.0,
+                "pops_per_removal_call": 3.405562162957752,
+                "pop_queue_time_fraction": 0.4250639010970837
+              },
+              "41856222": {
+                "seconds": 1.074538,
+                "edge_attempts": 396945105,
+                "attempts_per_edge": 1.478916280450962,
+                "expansions_per_vertex": 1.4788914322853088,
+                "stale_pop_fraction": 0.26749621995276407,
+                "cpu_ns_per_attempt": 277.94933968010514,
+                "work_ns_per_attempt": 221.09237347047923,
+                "queue_ns_per_attempt": 137.4556246026974,
+                "queue_work_fraction": 0.6229173023573087,
+                "lock_miss_fraction": 0.05486693688340259,
+                "work_share": 0.730541,
+                "idle_share": 0.067821,
+                "send_share": 0.016151,
+                "inter_node_fraction": 0.0,
+                "pops_per_removal_call": 3.9252110112939427,
+                "pop_queue_time_fraction": 0.41651119880169213
+              }
+            },
+            "medians": {
+              "seconds": 1.1848295,
+              "edge_attempts": 414454735.5,
+              "attempts_per_edge": 1.544152700512448,
+              "expansions_per_vertex": 1.5441214740276337,
+              "stale_pop_fraction": 0.2676117968817328,
+              "cpu_ns_per_attempt": 293.3136607019818,
+              "work_ns_per_attempt": 230.898118727704,
+              "queue_ns_per_attempt": 143.45698402095616,
+              "queue_work_fraction": 0.621919690243181,
+              "lock_miss_fraction": 0.049358140550340726,
+              "work_share": 0.7220605,
+              "idle_share": 0.0782135,
+              "send_share": 0.015151,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.6653865871258473,
+              "pop_queue_time_fraction": 0.42078754994938794
+            }
+          },
+          "control": {
+            "sources": {
+              "22442342": {
+                "seconds": 1.10011,
+                "edge_attempts": 418313292,
+                "attempts_per_edge": 1.5585286984905307
+              },
+              "41856222": {
+                "seconds": 0.845206,
+                "edge_attempts": 384478565,
+                "attempts_per_edge": 1.4324691301154182
+              }
+            },
+            "medians": {
+              "seconds": 0.972658,
+              "edge_attempts": 401395928.5,
+              "attempts_per_edge": 1.4954989143029744
+            }
+          }
+        },
+        "comparisons": {},
+        "rows": [
+          {
+            "variant": "coalesce_cost",
+            "source": "22442342",
+            "rep": -1,
+            "metrics": {
+              "seconds": 1.321385,
+              "edge_attempts": 418521831,
+              "attempts_per_edge": 1.5593056616482173,
+              "expansions_per_vertex": 1.559275045990944,
+              "stale_pop_fraction": 0.2683886067657394,
+              "cpu_ns_per_attempt": 326.018738267443,
+              "work_ns_per_attempt": 248.60614260286937,
+              "queue_ns_per_attempt": 152.89785629620138,
+              "queue_work_fraction": 0.6150204282781734,
+              "lock_miss_fraction": 0.0387028703449374,
+              "work_share": 0.703044,
+              "idle_share": 0.098442,
+              "send_share": 0.011897,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.153679694962493,
+              "pop_queue_time_fraction": 0.42318649978510786
+            }
+          },
+          {
+            "variant": "coalesce_cost",
+            "source": "41856222",
+            "rep": -1,
+            "metrics": {
+              "seconds": 1.115715,
+              "edge_attempts": 405011038,
+              "attempts_per_edge": 1.5089678908133737,
+              "expansions_per_vertex": 1.5089445859193802,
+              "stale_pop_fraction": 0.2667727923755738,
+              "cpu_ns_per_attempt": 283.7036812290533,
+              "work_ns_per_attempt": 225.53258412675657,
+              "queue_ns_per_attempt": 139.92345171786147,
+              "queue_work_fraction": 0.6204134638000688,
+              "lock_miss_fraction": 0.05554848252936875,
+              "work_share": 0.730979,
+              "idle_share": 0.065857,
+              "send_share": 0.01406,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.9774598907187233,
+              "pop_queue_time_fraction": 0.42001260845633975
+            }
+          },
+          {
+            "variant": "base",
+            "source": "22442342",
+            "rep": -1,
+            "metrics": {
+              "seconds": 1.130703,
+              "edge_attempts": 412206099,
+              "attempts_per_edge": 1.5357748540878995
+            }
+          },
+          {
+            "variant": "base",
+            "source": "41856222",
+            "rep": -1,
+            "metrics": {
+              "seconds": 0.847272,
+              "edge_attempts": 383720951,
+              "attempts_per_edge": 1.4296464534662185
+            }
+          },
+          {
+            "variant": "coalesce",
+            "source": "22442342",
+            "rep": -1,
+            "metrics": {
+              "seconds": 1.143342,
+              "edge_attempts": 417391574,
+              "attempts_per_edge": 1.5550946121672224
+            }
+          },
+          {
+            "variant": "coalesce",
+            "source": "41856222",
+            "rep": -1,
+            "metrics": {
+              "seconds": 0.981363,
+              "edge_attempts": 394888424,
+              "attempts_per_edge": 1.471253611290212
+            }
+          },
+          {
+            "variant": "control",
+            "source": "22442342",
+            "rep": -1,
+            "metrics": {
+              "seconds": 1.087625,
+              "edge_attempts": 425600646,
+              "attempts_per_edge": 1.5856795219576936
+            }
+          },
+          {
+            "variant": "control",
+            "source": "41856222",
+            "rep": -1,
+            "metrics": {
+              "seconds": 0.853834,
+              "edge_attempts": 382429952,
+              "attempts_per_edge": 1.4248365202661457
+            }
+          },
+          {
+            "variant": "base_cost",
+            "source": "22442342",
+            "rep": -1,
+            "metrics": {
+              "seconds": 1.161359,
+              "edge_attempts": 426984765,
+              "attempts_per_edge": 1.5908363965416024,
+              "expansions_per_vertex": 1.5908096879720688,
+              "stale_pop_fraction": 0.2673853147352328,
+              "cpu_ns_per_attempt": 277.43289938225314,
+              "work_ns_per_attempt": 249.24912016474406,
+              "queue_ns_per_attempt": 156.55694166324622,
+              "queue_work_fraction": 0.6281143201619653,
+              "lock_miss_fraction": 0.04188035136054609,
+              "work_share": 0.818204,
+              "idle_share": 0.105943,
+              "send_share": 0.002734,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.216360235586206,
+              "pop_queue_time_fraction": 0.4053019983032684
+            }
+          },
+          {
+            "variant": "base_cost",
+            "source": "41856222",
+            "rep": -1,
+            "metrics": {
+              "seconds": 0.919322,
+              "edge_attempts": 387027428,
+              "attempts_per_edge": 1.4419655439516315,
+              "expansions_per_vertex": 1.441943421959877,
+              "stale_pop_fraction": 0.2667499728196305,
+              "cpu_ns_per_attempt": 241.7291000290553,
+              "work_ns_per_attempt": 225.88823601411525,
+              "queue_ns_per_attempt": 139.4266538985437,
+              "queue_work_fraction": 0.617237339840182,
+              "lock_miss_fraction": 0.05562322262982818,
+              "work_share": 0.849083,
+              "idle_share": 0.077906,
+              "send_share": 0.002251,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.8671526937304534,
+              "pop_queue_time_fraction": 0.4150679589122632
+            }
+          },
+          {
+            "variant": "base",
+            "source": "22442342",
+            "rep": 0,
+            "metrics": {
+              "seconds": 1.102431,
+              "edge_attempts": 407799525,
+              "attempts_per_edge": 1.5193570825937481
+            }
+          },
+          {
+            "variant": "base",
+            "source": "41856222",
+            "rep": 0,
+            "metrics": {
+              "seconds": 0.857476,
+              "edge_attempts": 386419309,
+              "attempts_per_edge": 1.4396998475663552
+            }
+          },
+          {
+            "variant": "coalesce",
+            "source": "22442342",
+            "rep": 0,
+            "metrics": {
+              "seconds": 1.170223,
+              "edge_attempts": 428033807,
+              "attempts_per_edge": 1.5947448596341927
+            }
+          },
+          {
+            "variant": "coalesce",
+            "source": "41856222",
+            "rep": 0,
+            "metrics": {
+              "seconds": 0.96602,
+              "edge_attempts": 394185508,
+              "attempts_per_edge": 1.4686347254465648
+            }
+          },
+          {
+            "variant": "control",
+            "source": "22442342",
+            "rep": 0,
+            "metrics": {
+              "seconds": 1.10011,
+              "edge_attempts": 419014369,
+              "attempts_per_edge": 1.5611407326889364
+            }
+          },
+          {
+            "variant": "control",
+            "source": "41856222",
+            "rep": 0,
+            "metrics": {
+              "seconds": 0.863795,
+              "edge_attempts": 383982136,
+              "attempts_per_edge": 1.4306195622005098
+            }
+          },
+          {
+            "variant": "base_cost",
+            "source": "22442342",
+            "rep": 0,
+            "metrics": {
+              "seconds": 1.209912,
+              "edge_attempts": 408958256,
+              "attempts_per_edge": 1.5236742189407582,
+              "expansions_per_vertex": 1.5236338526010513,
+              "stale_pop_fraction": 0.26736306867853343,
+              "cpu_ns_per_attempt": 302.609447686514,
+              "work_ns_per_attempt": 259.82434256077227,
+              "queue_ns_per_attempt": 164.47140423258045,
+              "queue_work_fraction": 0.6330099890240692,
+              "lock_miss_fraction": 0.030594219030154107,
+              "work_share": 0.784128,
+              "idle_share": 0.142867,
+              "send_share": 0.002122,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 2.560429748963369,
+              "pop_queue_time_fraction": 0.4116605465896551
+            }
+          },
+          {
+            "variant": "base_cost",
+            "source": "41856222",
+            "rep": 0,
+            "metrics": {
+              "seconds": 0.902951,
+              "edge_attempts": 382438847,
+              "attempts_per_edge": 1.424869660768822,
+              "expansions_per_vertex": 1.4248531013727188,
+              "stale_pop_fraction": 0.2672119313681023,
+              "cpu_ns_per_attempt": 240.62023444757432,
+              "work_ns_per_attempt": 221.99104946051676,
+              "queue_ns_per_attempt": 138.02661271413322,
+              "queue_work_fraction": 0.6217665669384683,
+              "lock_miss_fraction": 0.051517688285245736,
+              "work_share": 0.839489,
+              "idle_share": 0.087525,
+              "send_share": 0.002038,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.6535136413847087,
+              "pop_queue_time_fraction": 0.41229822369446845
+            }
+          },
+          {
+            "variant": "coalesce_cost",
+            "source": "22442342",
+            "rep": 0,
+            "metrics": {
+              "seconds": 1.295121,
+              "edge_attempts": 431964366,
+              "attempts_per_edge": 1.6093891205739341,
+              "expansions_per_vertex": 1.6093515157699585,
+              "stale_pop_fraction": 0.2674913364112803,
+              "cpu_ns_per_attempt": 307.94091498047317,
+              "work_ns_per_attempt": 240.7038639849288,
+              "queue_ns_per_attempt": 149.45834343921493,
+              "queue_work_fraction": 0.6209220781290531,
+              "lock_miss_fraction": 0.044250050540606725,
+              "work_share": 0.716808,
+              "idle_share": 0.088606,
+              "send_share": 0.014284,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.4208798631805095,
+              "pop_queue_time_fraction": 0.4250639010970837
+            }
+          },
+          {
+            "variant": "coalesce_cost",
+            "source": "41856222",
+            "rep": 0,
+            "metrics": {
+              "seconds": 1.079054,
+              "edge_attempts": 398741083,
+              "attempts_per_edge": 1.4856076366865596,
+              "expansions_per_vertex": 1.485585242509842,
+              "stale_pop_fraction": 0.2672141478679653,
+              "cpu_ns_per_attempt": 278.3785437830092,
+              "work_ns_per_attempt": 220.6643226677498,
+              "queue_ns_per_attempt": 137.4556246026974,
+              "queue_work_fraction": 0.6229173023573087,
+              "lock_miss_fraction": 0.05480858586540654,
+              "work_share": 0.728051,
+              "idle_share": 0.067821,
+              "send_share": 0.016298,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.9252110112939427,
+              "pop_queue_time_fraction": 0.41651119880169213
+            }
+          },
+          {
+            "variant": "coalesce",
+            "source": "22442342",
+            "rep": 1,
+            "metrics": {
+              "seconds": 1.354585,
+              "edge_attempts": 434603750,
+              "attempts_per_edge": 1.6192227925824647
+            }
+          },
+          {
+            "variant": "coalesce",
+            "source": "41856222",
+            "rep": 1,
+            "metrics": {
+              "seconds": 0.996644,
+              "edge_attempts": 395482876,
+              "attempts_per_edge": 1.4734683879171881
+            }
+          },
+          {
+            "variant": "control",
+            "source": "22442342",
+            "rep": 1,
+            "metrics": {
+              "seconds": 1.137229,
+              "edge_attempts": 418313292,
+              "attempts_per_edge": 1.5585286984905307
+            }
+          },
+          {
+            "variant": "control",
+            "source": "41856222",
+            "rep": 1,
+            "metrics": {
+              "seconds": 0.845206,
+              "edge_attempts": 387393108,
+              "attempts_per_edge": 1.443327974420286
+            }
+          },
+          {
+            "variant": "base_cost",
+            "source": "22442342",
+            "rep": 1,
+            "metrics": {
+              "seconds": 1.121791,
+              "edge_attempts": 411231255,
+              "attempts_per_edge": 1.5321428338303378,
+              "expansions_per_vertex": 1.5321109741926193,
+              "stale_pop_fraction": 0.26746894757866957,
+              "cpu_ns_per_attempt": 278.4745458878119,
+              "work_ns_per_attempt": 243.70356528469608,
+              "queue_ns_per_attempt": 152.60106144244716,
+              "queue_work_fraction": 0.6261749238841772,
+              "lock_miss_fraction": 0.03416689250553502,
+              "work_share": 0.79766,
+              "idle_share": 0.126971,
+              "send_share": 0.003007,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 2.809607938630705,
+              "pop_queue_time_fraction": 0.4121964802835506
+            }
+          },
+          {
+            "variant": "base_cost",
+            "source": "41856222",
+            "rep": 1,
+            "metrics": {
+              "seconds": 0.914784,
+              "edge_attempts": 383493498,
+              "attempts_per_edge": 1.4287990215656856,
+              "expansions_per_vertex": 1.428778886795044,
+              "stale_pop_fraction": 0.2665867337460277,
+              "cpu_ns_per_attempt": 242.3692313291841,
+              "work_ns_per_attempt": 227.43773089993823,
+              "queue_ns_per_attempt": 141.00364151660943,
+              "queue_work_fraction": 0.6199659175224728,
+              "lock_miss_fraction": 0.05713132316551951,
+              "work_share": 0.851303,
+              "idle_share": 0.074479,
+              "send_share": 0.002713,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.9542262181655183,
+              "pop_queue_time_fraction": 0.4104246373509186
+            }
+          },
+          {
+            "variant": "coalesce_cost",
+            "source": "22442342",
+            "rep": 1,
+            "metrics": {
+              "seconds": 1.312165,
+              "edge_attempts": 433979681,
+              "attempts_per_edge": 1.6168976705628224,
+              "expansions_per_vertex": 1.6168586164712906,
+              "stale_pop_fraction": 0.26772737381070155,
+              "cpu_ns_per_attempt": 311.27813242251773,
+              "work_ns_per_attempt": 241.64588249466914,
+              "queue_ns_per_attempt": 151.8602315964344,
+              "queue_work_fraction": 0.6284412133518745,
+              "lock_miss_fraction": 0.04384934421727887,
+              "work_share": 0.71358,
+              "idle_share": 0.087021,
+              "send_share": 0.014151,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.405562162957752,
+              "pop_queue_time_fraction": 0.4157605022958585
+            }
+          },
+          {
+            "variant": "coalesce_cost",
+            "source": "41856222",
+            "rep": 1,
+            "metrics": {
+              "seconds": 1.074538,
+              "edge_attempts": 396945105,
+              "attempts_per_edge": 1.478916280450962,
+              "expansions_per_vertex": 1.4788914322853088,
+              "stale_pop_fraction": 0.26749621995276407,
+              "cpu_ns_per_attempt": 277.94933968010514,
+              "work_ns_per_attempt": 221.48997403557854,
+              "queue_ns_per_attempt": 139.70725667865264,
+              "queue_work_fraction": 0.6307610865321204,
+              "lock_miss_fraction": 0.055718349857367705,
+              "work_share": 0.730541,
+              "idle_share": 0.065743,
+              "send_share": 0.016151,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.98354248617863,
+              "pop_queue_time_fraction": 0.41557014885177823
+            }
+          },
+          {
+            "variant": "base",
+            "source": "22442342",
+            "rep": 1,
+            "metrics": {
+              "seconds": 1.142912,
+              "edge_attempts": 421983049,
+              "attempts_per_edge": 1.572201277656355
+            }
+          },
+          {
+            "variant": "base",
+            "source": "41856222",
+            "rep": 1,
+            "metrics": {
+              "seconds": 0.838828,
+              "edge_attempts": 383443438,
+              "attempts_per_edge": 1.4286125107659131
+            }
+          },
+          {
+            "variant": "control",
+            "source": "22442342",
+            "rep": 2,
+            "metrics": {
+              "seconds": 1.075714,
+              "edge_attempts": 406424193,
+              "attempts_per_edge": 1.5142329461320447
+            }
+          },
+          {
+            "variant": "control",
+            "source": "41856222",
+            "rep": 2,
+            "metrics": {
+              "seconds": 0.844661,
+              "edge_attempts": 384478565,
+              "attempts_per_edge": 1.4324691301154182
+            }
+          },
+          {
+            "variant": "base_cost",
+            "source": "22442342",
+            "rep": 2,
+            "metrics": {
+              "seconds": 1.141464,
+              "edge_attempts": 403663365,
+              "attempts_per_edge": 1.503946804735428,
+              "expansions_per_vertex": 1.5039070844650269,
+              "stale_pop_fraction": 0.26721640546614595,
+              "cpu_ns_per_attempt": 289.47296399067574,
+              "work_ns_per_attempt": 247.54545659599304,
+              "queue_ns_per_attempt": 157.30234392786707,
+              "queue_work_fraction": 0.6354483176178531,
+              "lock_miss_fraction": 0.02945878400744419,
+              "work_share": 0.781617,
+              "idle_share": 0.146423,
+              "send_share": 0.002207,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 2.4924861803745246,
+              "pop_queue_time_fraction": 0.4101831905223325
+            }
+          },
+          {
+            "variant": "base_cost",
+            "source": "41856222",
+            "rep": 2,
+            "metrics": {
+              "seconds": 0.920859,
+              "edge_attempts": 381969803,
+              "attempts_per_edge": 1.4231221223835135,
+              "expansions_per_vertex": 1.4230999946594238,
+              "stale_pop_fraction": 0.2668466131336099,
+              "cpu_ns_per_attempt": 244.8347519450379,
+              "work_ns_per_attempt": 228.16525629906928,
+              "queue_ns_per_attempt": 141.9438946094159,
+              "queue_work_fraction": 0.6221100307373789,
+              "lock_miss_fraction": 0.05279754589294677,
+              "work_share": 0.84502,
+              "idle_share": 0.081474,
+              "send_share": 0.002653,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.7501846838235973,
+              "pop_queue_time_fraction": 0.41116373363238895
+            }
+          },
+          {
+            "variant": "coalesce_cost",
+            "source": "22442342",
+            "rep": 2,
+            "metrics": {
+              "seconds": 1.271364,
+              "edge_attempts": 425260658,
+              "attempts_per_edge": 1.5844128133321824,
+              "expansions_per_vertex": 1.584379404783249,
+              "stale_pop_fraction": 0.26794348586801414,
+              "cpu_ns_per_attempt": 308.6779817238584,
+              "work_ns_per_attempt": 237.66071255056,
+              "queue_ns_per_attempt": 145.35284463682572,
+              "queue_work_fraction": 0.6115981184980387,
+              "lock_miss_fraction": 0.04044063888445955,
+              "work_share": 0.709782,
+              "idle_share": 0.096958,
+              "send_share": 0.011273,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.2302140681298046,
+              "pop_queue_time_fraction": 0.4252499965820327
+            }
+          },
+          {
+            "variant": "coalesce_cost",
+            "source": "41856222",
+            "rep": 2,
+            "metrics": {
+              "seconds": 1.057958,
+              "edge_attempts": 396459555,
+              "attempts_per_edge": 1.4771072449170106,
+              "expansions_per_vertex": 1.4770847111940384,
+              "stale_pop_fraction": 0.2678962410454632,
+              "cpu_ns_per_attempt": 274.136823253005,
+              "work_ns_per_attempt": 221.09237347047923,
+              "queue_ns_per_attempt": 137.14046025325595,
+              "queue_work_fraction": 0.6202858022670207,
+              "lock_miss_fraction": 0.05486693688340259,
+              "work_share": 0.739752,
+              "idle_share": 0.069007,
+              "send_share": 0.012602,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 3.9212068054557543,
+              "pop_queue_time_fraction": 0.41672509822522513
+            }
+          },
+          {
+            "variant": "base",
+            "source": "22442342",
+            "rep": 2,
+            "metrics": {
+              "seconds": 1.085013,
+              "edge_attempts": 418403953,
+              "attempts_per_edge": 1.5588664782671624
+            }
+          },
+          {
+            "variant": "base",
+            "source": "41856222",
+            "rep": 2,
+            "metrics": {
+              "seconds": 0.838539,
+              "edge_attempts": 383923880,
+              "attempts_per_edge": 1.4304025151938866
+            }
+          },
+          {
+            "variant": "coalesce",
+            "source": "22442342",
+            "rep": 2,
+            "metrics": {
+              "seconds": 1.275606,
+              "edge_attempts": 442351108,
+              "attempts_per_edge": 1.6480874736992202
+            }
+          },
+          {
+            "variant": "coalesce",
+            "source": "41856222",
+            "rep": 2,
+            "metrics": {
+              "seconds": 1.011851,
+              "edge_attempts": 397619600,
+              "attempts_per_edge": 1.481429276893084
+            }
+          }
+        ]
+      }
+    ],
+    "checked_solves": 40,
+    "diagnostic_solves": 16,
+    "checked_launches": 20,
+    "raw_sha256": {
+      "logs/AB-mesh26-z-1n-22355144/base-g0-r-1.launch.out": "99bf1e4b7989be156af66c915b2ff48c196a567117c0adcdb857d6f10066ebe5",
+      "logs/AB-mesh26-z-1n-22355144/base-g0-r0.launch.out": "a53a59254b1fb71a1010c92869740897d2fdf668c7a3e51c7240aca53797161a",
+      "logs/AB-mesh26-z-1n-22355144/base-g0-r1.launch.out": "754c0ed375524979991367ee03a72bb7a1ad30caf78af4afa1026c17935cdecf",
+      "logs/AB-mesh26-z-1n-22355144/base-g0-r2.launch.out": "84fc3f4900030e73e6d9ca0d78d77b82ed39304216bc03abe6b0ee81edac5bf5",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-g0-r-1.launch.out": "19e9a69d2249a141925a960b971cfad6d216ddeb92e69471c911b5a539e5e29b",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-g0-r0.launch.out": "c5616611954ef253e6458c1ea53fcc6cc3c8582c6c0b2bfffc07c904c770359e",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-g0-r1.launch.out": "8607308670d75de08843e5db4d536c4e33f1e0c7d8bc364b7e92c515fdc24e47",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-g0-r2.launch.out": "e3befab79086c79419299ac7394546123b3ad879d66b8205091df04ea4412f98",
+      "logs/AB-mesh26-z-1n-22355144/control-g0-r-1.launch.out": "239ca783346c122df6b0b726d4fe96df49b3baa3a254e1a1e850ae5550344357",
+      "logs/AB-mesh26-z-1n-22355144/control-g0-r0.launch.out": "ddcab23b6ae087118bbbac543a008476435d544a73538a17edfa810512a32593",
+      "logs/AB-mesh26-z-1n-22355144/control-g0-r1.launch.out": "4c2fd31b3c1e2d60bf9182cb77e290a41e22de315c19524b9ec32313212a39f4",
+      "logs/AB-mesh26-z-1n-22355144/control-g0-r2.launch.out": "f4bea3b5b5b3b8cde77c722f43be52a46d05a2878a277a27da24d7234da754dd",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-g0-r-1.launch.out": "ec937699e2de5c1dca731d55b299b8860ac533d7f94820bbbb2cd5a97c017261",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-g0-r0.launch.out": "03bf8075e24ca438984ee9b2675422391380032762cf4f815659452542b74b66",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-g0-r1.launch.out": "b3ac8b9ec5eff403f3381310b77f5e65816b9d796dd0d72f720c0b7ba1776a84",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-g0-r2.launch.out": "3c09070b5ec9b31f5211274ee1c9e83161a84f807ea89e57b70ca2ad56e71ba9",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-g0-r-1.launch.out": "5e899dcfbfc6281470d72a1c8372b068db944978b00083d5839bcee43dcf278b",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-g0-r0.launch.out": "f84a54d47a4cf3defdbdd1a08bc4f7700c16091ceb0ee645eb01c5b25aa11884",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-g0-r1.launch.out": "283b09b6dcdcc0de491393f9bcb2502f31abec3d1fd83cbd91173ae3e0004235",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-g0-r2.launch.out": "a31eaad0a2b0b5f84d5a12c5ba84305a1d2723bad535c6d0180bc24cf61382ab",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-s0-r-1.out": "0ff3e1e9ee54bf0c5546af7376af2f744f7c8bab91c7e13bde8062855d151ab3",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-s1-r-1.out": "9c2a9bd4f1e7d95fbb46e646f66f89787e21bff98e7e7652f4c1ecf120625be3",
+      "logs/AB-mesh26-z-1n-22355144/base-s0-r-1.out": "564a46b416b4dc87f14cb87ab0a7558bc93aab805f44f67bfc85aa6135e22ba6",
+      "logs/AB-mesh26-z-1n-22355144/base-s1-r-1.out": "52986b56fc48a757a8301d8b4436c1db4f15d7c897d32c7c20733e03137318cd",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-s0-r-1.out": "7e4a9861068ba0478a85003fb65c249cade687cc041a848fbcd8375df2caf125",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-s1-r-1.out": "ce542b21367a19c60393d2e84ccef7c278b6f63833f3a80851c0d921807b4938",
+      "logs/AB-mesh26-z-1n-22355144/control-s0-r-1.out": "e6fdf962486ba39e1fdb217fd1fc8fc27cbd79e0d0893f8ce403348059f5d885",
+      "logs/AB-mesh26-z-1n-22355144/control-s1-r-1.out": "0ddcdf879ddf8567a34ac65f451e3c0ad918fde5dafd65827227974e530b1efd",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-s0-r-1.out": "a341b5e11931b27bced50fe023b5aad5e9a8594c15bea5ed4813a6d6afccba65",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-s1-r-1.out": "019405b9fb9efcb76a2f2dab7944060079f042e5bf1fdf129ccb247289606bac",
+      "logs/AB-mesh26-z-1n-22355144/base-s0-r0.out": "910791854c0b923c2115ea6200f6bd5d5b08125bc5f507977ead803d21c82b08",
+      "logs/AB-mesh26-z-1n-22355144/base-s1-r0.out": "848457ddcedb533b71617ec9a7ec9c368bee6017bedf16f2b030534557cda98c",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-s0-r0.out": "109a8acba06069e9875554d57ec45c5b410fe92636ef657f016ef0a704828089",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-s1-r0.out": "5e8ef36d4005ab547e1a75f4dd7e4ba68a2f3a8884b25e6907400a56d0764c20",
+      "logs/AB-mesh26-z-1n-22355144/control-s0-r0.out": "ff1872104dcabed2818ebffa380a087d020c0a816f1cc230240b48f6213af9ae",
+      "logs/AB-mesh26-z-1n-22355144/control-s1-r0.out": "358691784f1a6c0076c1bdf6c10fee97e9308349b5d4cfa7014e0fa7b6c5d027",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-s0-r0.out": "685eea18c57966fed8538db764bee2f9b02705d40b037472f5e379b3846af3da",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-s1-r0.out": "024b4b368bca5a804cce9fdb15d905566eb6ec085c99e8d64f6049348f244721",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-s0-r0.out": "83e726961b1297273ac03f0d2fa90abd763e55c222cef77983f3ed0d48b3e163",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-s1-r0.out": "fb4d49a6993cae73b5b3642910cae46e8911161397bf4c59c68ca727e1c70b05",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-s0-r1.out": "a498ef06e2f7506da667f2b4c70fb285b5920a1f2febe5e5ea71c5db860bf2c6",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-s1-r1.out": "a8bd9e730cb3a99cf0d71448190404715b80be29cf1e2439364c57cf94595516",
+      "logs/AB-mesh26-z-1n-22355144/control-s0-r1.out": "68ed0271b8247ab459b663614bf435a56580944ae67d49ea2e8d95d7609bd640",
+      "logs/AB-mesh26-z-1n-22355144/control-s1-r1.out": "be79784875c75630eac98e51b264a0235df445f88eb9c4868313194854882579",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-s0-r1.out": "69d33802ec56da15387b6ca30aa5a751c7aec698e8944535572d449674639655",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-s1-r1.out": "f6ef4485a991e40907948d4c52c6117160740875be1815ee21b8630ef1b26772",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-s0-r1.out": "b86d83a257b354ca8536139a2267119677a3b72d574a40c43d753dd959c99a78",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-s1-r1.out": "36f3fc05cbca1fd5b9c051ea24452734e6b8d3084b3de76ed9ab1170a898c187",
+      "logs/AB-mesh26-z-1n-22355144/base-s0-r1.out": "4da531c29fb7dd8763ca281e8a47311beaee8639d1ae2080196a90a6e3e0226f",
+      "logs/AB-mesh26-z-1n-22355144/base-s1-r1.out": "40f3713f2833232200db95c4ffce868530c2867c862aa7dfae0bc3ff4d22a31f",
+      "logs/AB-mesh26-z-1n-22355144/control-s0-r2.out": "1f68842f7aff2f295e3b61a320d00423bc86ec9db3d65e1a84303d0606f98c5e",
+      "logs/AB-mesh26-z-1n-22355144/control-s1-r2.out": "f5910d99a032f964fbe1057c103bd41ae7ae64b225aec3260e8a6ac5edf7c1f8",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-s0-r2.out": "fee62e3d225d4265ba5b3402ae680376512505b84e464552593a1b44264a7200",
+      "logs/AB-mesh26-z-1n-22355144/base_cost-s1-r2.out": "cf2006efa7c7165e6be0a6469d87c8c7d89159ce3977c3e11be374ad031b7930",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-s0-r2.out": "5fe4c4787239f03b7aed702f49585a971cafede8fb3a80ebbe12474f420582dc",
+      "logs/AB-mesh26-z-1n-22355144/coalesce_cost-s1-r2.out": "c954553d425ee4892bd8b4bca1daf8bf7bd7ea3c0af2d21cff58fc8fbcb00af6",
+      "logs/AB-mesh26-z-1n-22355144/base-s0-r2.out": "b627caadff615630f1261d450bb96bdc6600abbaac2a8ff5d068dfaf70a801aa",
+      "logs/AB-mesh26-z-1n-22355144/base-s1-r2.out": "4ac4f6a2d4ff64076bd049ea1dd067fd77b4e7deb53045daca0caabe99b65777",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-s0-r2.out": "0a19321e05752552ecd5378b8ed9d70afc8ff75d7e4ebdd1d76fbb26f354c0cf",
+      "logs/AB-mesh26-z-1n-22355144/coalesce-s1-r2.out": "fcca1b3012cd28a86900e8c3a541d2230fd4189576fe0b6dec5b5243c2dcb35a"
+    }
+  },
+  "road_trace": {
+    "base": {
+      "seconds": 0.410629,
+      "rounds": 656,
+      "edge_attempts": 90285873,
+      "summary": {
+        "pes": 112,
+        "processes": 16,
+        "nodes": 1,
+        "window_s_mean": 0.4103055446428572,
+        "time": [
+          {
+            "activity": "SsspChares::process_heap",
+            "pe_seconds": 28.379853,
+            "share": 0.6175679270028318,
+            "calls": 5128747
+          },
+          {
+            "activity": "idle",
+            "pe_seconds": 12.127538,
+            "share": 0.2639047673117993,
+            "calls": 101865
+          },
+          {
+            "activity": "untraced",
+            "pe_seconds": 3.85505,
+            "share": 0.08388892067172676,
+            "calls": 0
+          },
+          {
+            "activity": "SsspChares::current_thresholds",
+            "pe_seconds": 0.500028,
+            "share": 0.010881002639561663,
+            "calls": 73360
+          },
+          {
+            "activity": "HTramRecv::receive",
+            "pe_seconds": 0.498148,
+            "share": 0.010840092360612532,
+            "calls": 169037
+          },
+          {
+            "activity": "HTram::receivePerPE",
+            "pe_seconds": 0.431954,
+            "share": 0.00939965884744298,
+            "calls": 1183259
+          },
+          {
+            "activity": "CkReductionMgr::RecvMsg",
+            "pe_seconds": 0.053081,
+            "share": 0.0011550843174993654,
+            "calls": 72812
+          },
+          {
+            "activity": "SsspChares::clear_pq_hold",
+            "pe_seconds": 0.03045,
+            "share": 0.0006626159542558669,
+            "calls": 73360
+          },
+          {
+            "activity": "CkArray::recvNoKeepBroadcast",
+            "pe_seconds": 0.028287,
+            "share": 0.0006155473726776916,
+            "calls": 146720
+          },
+          {
+            "activity": "unpack",
+            "pe_seconds": 0.020664,
+            "share": 0.0004496648958536366,
+            "calls": 252336
+          },
+          {
+            "activity": "pack",
+            "pe_seconds": 0.018527,
+            "share": 0.00040316209472901303,
+            "calls": 242508
+          },
+          {
+            "activity": "Main::redn_wrapper_reduce_histogram",
+            "pe_seconds": 0.005888,
+            "share": 0.00012812751194280934,
+            "calls": 1312
+          },
+          {
+            "activity": "dummy_thread_chare::dummy_thread_ep",
+            "pe_seconds": 0.004096,
+            "share": 8.913218222108477e-05,
+            "calls": 656
+          },
+          {
+            "activity": "SsspChares::contribute_histogram",
+            "pe_seconds": 0.000589,
+            "share": 1.2817103351615948e-05,
+            "calls": 112
+          },
+          {
+            "activity": "CkArray::recvNoKeepExpeditedBroadcast",
+            "pe_seconds": 5.7e-05,
+            "share": 1.2403648404789628e-06,
+            "calls": 150
+          },
+          {
+            "activity": "SsspChares::start_algo",
+            "pe_seconds": 1.1e-05,
+            "share": 2.3936865342576475e-07,
+            "calls": 1
+          }
+        ],
+        "spread": {
+          "busy (entries+pack)": [
+            0.253339,
+            0.2583025,
+            0.26593999999999995,
+            0.28041659999999996,
+            0.295678
+          ],
+          "idle": [
+            0.078599,
+            0.0940081,
+            0.11063049999999999,
+            0.1199319,
+            0.124559
+          ],
+          "untraced": [
+            0.03065000000000001,
+            0.03223880000000002,
+            0.033873000000000014,
+            0.03735990000000001,
+            0.040832999999999994
+          ],
+          "window": [
+            0.410102,
+            0.4101231,
+            0.410315,
+            0.410531,
+            0.410582
+          ]
+        },
+        "busy_by_process": [
+          1.9107049999999999,
+          1.8583479999999999,
+          1.959447,
+          1.87526,
+          1.8064779999999998,
+          1.866293,
+          1.8424109999999998,
+          1.838368,
+          1.780334,
+          1.8833140000000002,
+          1.840788,
+          1.8503119999999997,
+          1.832633,
+          2.018625,
+          1.907982,
+          1.9003349999999999
+        ],
+        "timeline": [
+          [
+            0.0,
+            0.6323348214285714,
+            0.05457187500000005,
+            0.27610580357142855,
+            0.01622232142857143,
+            0.007951339285714286,
+            0.0067165178571428575
+          ],
+          [
+            0.02,
+            0.49871205357142856,
+            0.06941562499999998,
+            0.39344776785714286,
+            0.013984375,
+            0.010850446428571428,
+            0.008573214285714286
+          ],
+          [
+            0.04,
+            0.18103616071428572,
+            0.09988169642857148,
+            0.6752758928571428,
+            0.013819196428571429,
+            0.014728125,
+            0.011511160714285715
+          ],
+          [
+            0.06,
+            0.4983964285714286,
+            0.05590312500000005,
+            0.4273830357142857,
+            0.00396875,
+            0.0069709821428571425,
+            0.006241517857142857
+          ],
+          [
+            0.08,
+            0.9832339285714286,
+            0.0011401785714285628,
+            0.011528571428571428,
+            2.6785714285714285e-06,
+            0.0002924107142857143,
+            0.0037950892857142858
+          ],
+          [
+            0.1,
+            0.06024196428571429,
+            0.10617991071428567,
+            0.7853058035714285,
+            0.017895982142857144,
+            0.015309375,
+            0.011525446428571428
+          ],
+          [
+            0.12,
+            0.03873839285714286,
+            0.10179821428571434,
+            0.8238879464285714,
+            0.011076785714285714,
+            0.012160714285714285,
+            0.010386607142857144
+          ],
+          [
+            0.14,
+            0.07524107142857143,
+            0.09806160714285717,
+            0.7912933035714286,
+            0.011332142857142857,
+            0.011916964285714286,
+            0.010198660714285714
+          ],
+          [
+            0.16,
+            0.15675178571428572,
+            0.08682098214285716,
+            0.72839375,
+            0.008374553571428571,
+            0.009558035714285715,
+            0.008692410714285715
+          ],
+          [
+            0.18,
+            0.22320446428571428,
+            0.09040223214285714,
+            0.6455424107142858,
+            0.013888839285714286,
+            0.012769196428571428,
+            0.009844196428571428
+          ],
+          [
+            0.2,
+            0.06529241071428571,
+            0.11300401785714287,
+            0.766690625,
+            0.018326785714285716,
+            0.0186875,
+            0.013349107142857143
+          ],
+          [
+            0.22,
+            0.04069151785714286,
+            0.10151919642857143,
+            0.8207946428571429,
+            0.011330803571428572,
+            0.01246294642857143,
+            0.011139285714285714
+          ],
+          [
+            0.24,
+            0.10402767857142857,
+            0.09302500000000002,
+            0.7725683035714286,
+            0.008692410714285715,
+            0.010032142857142858,
+            0.0100375
+          ],
+          [
+            0.26,
+            0.2688723214285714,
+            0.08006205357142859,
+            0.623378125,
+            0.007566964285714285,
+            0.009630357142857144,
+            0.008482589285714286
+          ],
+          [
+            0.28,
+            0.10523214285714286,
+            0.1022888392857143,
+            0.7505584821428571,
+            0.013114732142857143,
+            0.013624107142857143,
+            0.011883482142857144
+          ],
+          [
+            0.3,
+            0.17512410714285714,
+            0.09324687499999995,
+            0.6964053571428571,
+            0.010384375,
+            0.011885714285714286,
+            0.010448660714285714
+          ],
+          [
+            0.32,
+            0.17536294642857142,
+            0.09584642857142855,
+            0.6894691964285714,
+            0.01209375,
+            0.012609821428571429,
+            0.011234375
+          ],
+          [
+            0.34,
+            0.17859151785714286,
+            0.09166785714285719,
+            0.6955558035714285,
+            0.010351785714285714,
+            0.010736160714285714,
+            0.01041294642857143
+          ],
+          [
+            0.36,
+            0.21586919642857144,
+            0.08826562500000001,
+            0.6630375,
+            0.010497321428571429,
+            0.010106696428571428,
+            0.009468303571428572
+          ],
+          [
+            0.38,
+            0.31228125,
+            0.07997767857142857,
+            0.5768098214285714,
+            0.010238392857142857,
+            0.009027232142857142,
+            0.008013839285714286
+          ],
+          [
+            0.4,
+            0.42584375,
+            0.5026482142857143,
+            0.05614508928571429,
+            0.007058035714285715,
+            0.0010772321428571428,
+            0.0008816964285714285
+          ]
+        ],
+        "sent": [
+          {
+            "ep": "SsspChares::process_heap",
+            "messages": 5128740,
+            "bytes": 410299200
+          },
+          {
+            "ep": "HTram::receivePerPE",
+            "messages": 1183259,
+            "bytes": 258300560
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "messages": 169036,
+            "bytes": 23312272
+          },
+          {
+            "ep": "SsspChares::clear_pq_hold",
+            "messages": 73360,
+            "bytes": 5868800
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "messages": 72816,
+            "bytes": 171263232
+          },
+          {
+            "ep": "CkArray::recvNoKeepBroadcast",
+            "messages": 11135,
+            "bytes": 1603440
+          },
+          {
+            "ep": "Main::redn_wrapper_reduce_histogram",
+            "messages": 656,
+            "bytes": 1542912
+          },
+          {
+            "ep": "SsspChares::current_thresholds",
+            "messages": 655,
+            "bytes": 94320
+          },
+          {
+            "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+            "messages": 8,
+            "bytes": 896
+          },
+          {
+            "ep": "SsspChares::print_distances",
+            "messages": 1,
+            "bytes": 80
+          },
+          {
+            "ep": "SsspChares::contribute_histogram",
+            "messages": 1,
+            "bytes": 112
+          }
+        ],
+        "latency": [
+          {
+            "ep": "SsspChares::process_heap",
+            "locality": "same process",
+            "messages": 5128741,
+            "p50_p90_p99_max_ms": [
+              0.083,
+              0.331,
+              0.625,
+              32.335
+            ]
+          },
+          {
+            "ep": "HTram::receivePerPE",
+            "locality": "same process",
+            "messages": 1183259,
+            "p50_p90_p99_max_ms": [
+              0.006,
+              0.172,
+              0.495,
+              32.278
+            ]
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "locality": "same node",
+            "messages": 169035,
+            "p50_p90_p99_max_ms": [
+              0.0025,
+              0.007,
+              0.0165,
+              0.71
+            ]
+          },
+          {
+            "ep": "CkArray::recvNoKeepBroadcast",
+            "locality": "same process",
+            "messages": 146720,
+            "p50_p90_p99_max_ms": [
+              0.006,
+              0.029,
+              0.302,
+              24.065
+            ]
+          },
+          {
+            "ep": "SsspChares::current_thresholds",
+            "locality": "same process",
+            "messages": 73360,
+            "p50_p90_p99_max_ms": [
+              0.003,
+              0.019,
+              0.292,
+              24.058
+            ]
+          },
+          {
+            "ep": "SsspChares::clear_pq_hold",
+            "locality": "same process",
+            "messages": 73360,
+            "p50_p90_p99_max_ms": [
+              0.032,
+              0.242,
+              0.53,
+              8.068
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "same process",
+            "messages": 62970,
+            "p50_p90_p99_max_ms": [
+              0.004,
+              0.012,
+              0.027,
+              24.001
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "same node",
+            "messages": 9842,
+            "p50_p90_p99_max_ms": [
+              0.00375,
+              0.01125,
+              0.02475,
+              387.9865
+            ]
+          },
+          {
+            "ep": "Main::redn_wrapper_reduce_histogram",
+            "locality": "same process",
+            "messages": 1312,
+            "p50_p90_p99_max_ms": [
+              0.0285,
+              0.1809000000000001,
+              0.3395600000000004,
+              8.085
+            ]
+          },
+          {
+            "ep": "dummy_thread_chare::dummy_thread_ep",
+            "locality": "same process",
+            "messages": 656,
+            "p50_p90_p99_max_ms": [
+              0.0,
+              0.001,
+              0.001,
+              0.002
+            ]
+          },
+          {
+            "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+            "locality": "same process",
+            "messages": 150,
+            "p50_p90_p99_max_ms": [
+              0.004,
+              0.014,
+              0.09919999999999891,
+              0.163
+            ]
+          },
+          {
+            "ep": "SsspChares::contribute_histogram",
+            "locality": "same process",
+            "messages": 112,
+            "p50_p90_p99_max_ms": [
+              -0.0755,
+              0.009,
+              0.059810000000000016,
+              0.159
+            ]
+          }
+        ]
+      },
+      "backlog": {
+        "pes": 112,
+        "max_pending": 94,
+        "duplicate_pes": 112,
+        "per_pe": [
+          {
+            "pe": 0,
+            "max_pending": 64,
+            "median_pending_at_execution": 14.0,
+            "median_pending_at_threshold": 3,
+            "executed": 49086,
+            "median_delay_us": 84.0,
+            "max_delay_us": 32335,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 1,
+            "max_pending": 64,
+            "median_pending_at_execution": 15,
+            "median_pending_at_threshold": 3,
+            "executed": 45133,
+            "median_delay_us": 96,
+            "max_delay_us": 512,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 2,
+            "max_pending": 64,
+            "median_pending_at_execution": 14.0,
+            "median_pending_at_threshold": 3,
+            "executed": 46830,
+            "median_delay_us": 91.0,
+            "max_delay_us": 1302,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 3,
+            "max_pending": 64,
+            "median_pending_at_execution": 14.0,
+            "median_pending_at_threshold": 3,
+            "executed": 45052,
+            "median_delay_us": 96.0,
+            "max_delay_us": 508,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 4,
+            "max_pending": 64,
+            "median_pending_at_execution": 14,
+            "median_pending_at_threshold": 3,
+            "executed": 46551,
+            "median_delay_us": 92,
+            "max_delay_us": 581,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 5,
+            "max_pending": 64,
+            "median_pending_at_execution": 15.0,
+            "median_pending_at_threshold": 3,
+            "executed": 44932,
+            "median_delay_us": 96.0,
+            "max_delay_us": 474,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 6,
+            "max_pending": 64,
+            "median_pending_at_execution": 14,
+            "median_pending_at_threshold": 3,
+            "executed": 47461,
+            "median_delay_us": 92,
+            "max_delay_us": 533,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 7,
+            "max_pending": 94,
+            "median_pending_at_execution": 27.0,
+            "median_pending_at_threshold": 3,
+            "executed": 47946,
+            "median_delay_us": 171.0,
+            "max_delay_us": 683,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 8,
+            "max_pending": 71,
+            "median_pending_at_execution": 27,
+            "median_pending_at_threshold": 3,
+            "executed": 41067,
+            "median_delay_us": 201,
+            "max_delay_us": 947,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 9,
+            "max_pending": 94,
+            "median_pending_at_execution": 27.0,
+            "median_pending_at_threshold": 3,
+            "executed": 42476,
+            "median_delay_us": 192.0,
+            "max_delay_us": 817,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 10,
+            "max_pending": 94,
+            "median_pending_at_execution": 28,
+            "median_pending_at_threshold": 3,
+            "executed": 40731,
+            "median_delay_us": 209,
+            "max_delay_us": 856,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 11,
+            "max_pending": 94,
+            "median_pending_at_execution": 27.0,
+            "median_pending_at_threshold": 3,
+            "executed": 42004,
+            "median_delay_us": 191.0,
+            "max_delay_us": 924,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 12,
+            "max_pending": 94,
+            "median_pending_at_execution": 27,
+            "median_pending_at_threshold": 3,
+            "executed": 40603,
+            "median_delay_us": 210,
+            "max_delay_us": 836,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 13,
+            "max_pending": 94,
+            "median_pending_at_execution": 27.0,
+            "median_pending_at_threshold": 3,
+            "executed": 43102,
+            "median_delay_us": 191.0,
+            "max_delay_us": 833,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 14,
+            "max_pending": 79,
+            "median_pending_at_execution": 21.0,
+            "median_pending_at_threshold": 6,
+            "executed": 49244,
+            "median_delay_us": 136.0,
+            "max_delay_us": 653,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 15,
+            "max_pending": 79,
+            "median_pending_at_execution": 20,
+            "median_pending_at_threshold": 6,
+            "executed": 41593,
+            "median_delay_us": 157,
+            "max_delay_us": 661,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 16,
+            "max_pending": 79,
+            "median_pending_at_execution": 20.0,
+            "median_pending_at_threshold": 6,
+            "executed": 42812,
+            "median_delay_us": 154.0,
+            "max_delay_us": 682,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 17,
+            "max_pending": 79,
+            "median_pending_at_execution": 20,
+            "median_pending_at_threshold": 6,
+            "executed": 42001,
+            "median_delay_us": 157,
+            "max_delay_us": 705,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 18,
+            "max_pending": 79,
+            "median_pending_at_execution": 20.0,
+            "median_pending_at_threshold": 6,
+            "executed": 43444,
+            "median_delay_us": 152.0,
+            "max_delay_us": 664,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 19,
+            "max_pending": 79,
+            "median_pending_at_execution": 21.0,
+            "median_pending_at_threshold": 6,
+            "executed": 41818,
+            "median_delay_us": 157.0,
+            "max_delay_us": 692,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 20,
+            "max_pending": 79,
+            "median_pending_at_execution": 21,
+            "median_pending_at_threshold": 6,
+            "executed": 43873,
+            "median_delay_us": 151,
+            "max_delay_us": 681,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 21,
+            "max_pending": 56,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 3,
+            "executed": 53404,
+            "median_delay_us": 70.0,
+            "max_delay_us": 494,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 22,
+            "max_pending": 59,
+            "median_pending_at_execution": 13,
+            "median_pending_at_threshold": 3,
+            "executed": 48733,
+            "median_delay_us": 78,
+            "max_delay_us": 680,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 23,
+            "max_pending": 59,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 3,
+            "executed": 46502,
+            "median_delay_us": 80.0,
+            "max_delay_us": 477,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 24,
+            "max_pending": 57,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 3,
+            "executed": 48934,
+            "median_delay_us": 77.0,
+            "max_delay_us": 654,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 25,
+            "max_pending": 59,
+            "median_pending_at_execution": 13,
+            "median_pending_at_threshold": 3,
+            "executed": 45467,
+            "median_delay_us": 81,
+            "max_delay_us": 977,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 26,
+            "max_pending": 59,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 3,
+            "executed": 48632,
+            "median_delay_us": 78.0,
+            "max_delay_us": 653,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 27,
+            "max_pending": 59,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 3,
+            "executed": 49424,
+            "median_delay_us": 76.0,
+            "max_delay_us": 510,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 28,
+            "max_pending": 72,
+            "median_pending_at_execution": 14,
+            "median_pending_at_threshold": 2,
+            "executed": 53347,
+            "median_delay_us": 75,
+            "max_delay_us": 464,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 29,
+            "max_pending": 72,
+            "median_pending_at_execution": 14.0,
+            "median_pending_at_threshold": 2,
+            "executed": 44828,
+            "median_delay_us": 90.0,
+            "max_delay_us": 567,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 30,
+            "max_pending": 72,
+            "median_pending_at_execution": 14,
+            "median_pending_at_threshold": 2,
+            "executed": 46499,
+            "median_delay_us": 87,
+            "max_delay_us": 552,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 31,
+            "max_pending": 71,
+            "median_pending_at_execution": 14,
+            "median_pending_at_threshold": 2,
+            "executed": 43949,
+            "median_delay_us": 93,
+            "max_delay_us": 765,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 32,
+            "max_pending": 71,
+            "median_pending_at_execution": 14,
+            "median_pending_at_threshold": 2,
+            "executed": 46207,
+            "median_delay_us": 88,
+            "max_delay_us": 510,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 33,
+            "max_pending": 72,
+            "median_pending_at_execution": 14.0,
+            "median_pending_at_threshold": 2,
+            "executed": 43684,
+            "median_delay_us": 93.0,
+            "max_delay_us": 830,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 34,
+            "max_pending": 72,
+            "median_pending_at_execution": 14.0,
+            "median_pending_at_threshold": 2,
+            "executed": 46690,
+            "median_delay_us": 85.0,
+            "max_delay_us": 791,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 35,
+            "max_pending": 49,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 2,
+            "executed": 54482,
+            "median_delay_us": 69.0,
+            "max_delay_us": 502,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 36,
+            "max_pending": 58,
+            "median_pending_at_execution": 13,
+            "median_pending_at_threshold": 2,
+            "executed": 48271,
+            "median_delay_us": 83,
+            "max_delay_us": 849,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 37,
+            "max_pending": 56,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 2,
+            "executed": 46860,
+            "median_delay_us": 85.0,
+            "max_delay_us": 443,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 38,
+            "max_pending": 58,
+            "median_pending_at_execution": 13,
+            "median_pending_at_threshold": 2,
+            "executed": 47811,
+            "median_delay_us": 83,
+            "max_delay_us": 531,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 39,
+            "max_pending": 58,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 2,
+            "executed": 46366,
+            "median_delay_us": 87.0,
+            "max_delay_us": 809,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 40,
+            "max_pending": 58,
+            "median_pending_at_execution": 13,
+            "median_pending_at_threshold": 2,
+            "executed": 48001,
+            "median_delay_us": 82,
+            "max_delay_us": 535,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 41,
+            "max_pending": 58,
+            "median_pending_at_execution": 13.0,
+            "median_pending_at_threshold": 2,
+            "executed": 48868,
+            "median_delay_us": 81.0,
+            "max_delay_us": 530,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 42,
+            "max_pending": 60,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 52967,
+            "median_delay_us": 48,
+            "max_delay_us": 413,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 43,
+            "max_pending": 60,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 44157,
+            "median_delay_us": 57,
+            "max_delay_us": 557,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 44,
+            "max_pending": 60,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 46223,
+            "median_delay_us": 54,
+            "max_delay_us": 783,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 45,
+            "max_pending": 60,
+            "median_pending_at_execution": 9.0,
+            "median_pending_at_threshold": 3,
+            "executed": 43986,
+            "median_delay_us": 57.0,
+            "max_delay_us": 665,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 46,
+            "max_pending": 60,
+            "median_pending_at_execution": 9.0,
+            "median_pending_at_threshold": 3,
+            "executed": 45562,
+            "median_delay_us": 56.0,
+            "max_delay_us": 747,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 47,
+            "max_pending": 60,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 43683,
+            "median_delay_us": 58,
+            "max_delay_us": 777,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 48,
+            "max_pending": 60,
+            "median_pending_at_execution": 9.0,
+            "median_pending_at_threshold": 3,
+            "executed": 46084,
+            "median_delay_us": 55.0,
+            "max_delay_us": 673,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 49,
+            "max_pending": 69,
+            "median_pending_at_execution": 10,
+            "median_pending_at_threshold": 3,
+            "executed": 50953,
+            "median_delay_us": 56,
+            "max_delay_us": 565,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 50,
+            "max_pending": 69,
+            "median_pending_at_execution": 10.0,
+            "median_pending_at_threshold": 3,
+            "executed": 45460,
+            "median_delay_us": 64.0,
+            "max_delay_us": 594,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 51,
+            "max_pending": 69,
+            "median_pending_at_execution": 10,
+            "median_pending_at_threshold": 2,
+            "executed": 43753,
+            "median_delay_us": 67,
+            "max_delay_us": 552,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 52,
+            "max_pending": 69,
+            "median_pending_at_execution": 10,
+            "median_pending_at_threshold": 3,
+            "executed": 45487,
+            "median_delay_us": 63,
+            "max_delay_us": 551,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 53,
+            "max_pending": 69,
+            "median_pending_at_execution": 10,
+            "median_pending_at_threshold": 3,
+            "executed": 43665,
+            "median_delay_us": 68,
+            "max_delay_us": 518,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 54,
+            "max_pending": 69,
+            "median_pending_at_execution": 10,
+            "median_pending_at_threshold": 3,
+            "executed": 44931,
+            "median_delay_us": 68,
+            "max_delay_us": 529,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 55,
+            "max_pending": 69,
+            "median_pending_at_execution": 9.0,
+            "median_pending_at_threshold": 2,
+            "executed": 46318,
+            "median_delay_us": 63.0,
+            "max_delay_us": 509,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 56,
+            "max_pending": 63,
+            "median_pending_at_execution": 6,
+            "median_pending_at_threshold": 1,
+            "executed": 51137,
+            "median_delay_us": 36,
+            "max_delay_us": 486,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 57,
+            "max_pending": 63,
+            "median_pending_at_execution": 6.0,
+            "median_pending_at_threshold": 1,
+            "executed": 45304,
+            "median_delay_us": 40.0,
+            "max_delay_us": 690,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 58,
+            "max_pending": 63,
+            "median_pending_at_execution": 6.0,
+            "median_pending_at_threshold": 1,
+            "executed": 43790,
+            "median_delay_us": 41.0,
+            "max_delay_us": 690,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 59,
+            "max_pending": 63,
+            "median_pending_at_execution": 6,
+            "median_pending_at_threshold": 1,
+            "executed": 45031,
+            "median_delay_us": 40,
+            "max_delay_us": 681,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 60,
+            "max_pending": 63,
+            "median_pending_at_execution": 6.0,
+            "median_pending_at_threshold": 1,
+            "executed": 43494,
+            "median_delay_us": 42.0,
+            "max_delay_us": 692,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 61,
+            "max_pending": 63,
+            "median_pending_at_execution": 6,
+            "median_pending_at_threshold": 1,
+            "executed": 44961,
+            "median_delay_us": 41,
+            "max_delay_us": 696,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 62,
+            "max_pending": 63,
+            "median_pending_at_execution": 6.0,
+            "median_pending_at_threshold": 1,
+            "executed": 46232,
+            "median_delay_us": 39.0,
+            "max_delay_us": 687,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 63,
+            "max_pending": 57,
+            "median_pending_at_execution": 12.0,
+            "median_pending_at_threshold": 4,
+            "executed": 52018,
+            "median_delay_us": 66.0,
+            "max_delay_us": 417,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 64,
+            "max_pending": 57,
+            "median_pending_at_execution": 12.0,
+            "median_pending_at_threshold": 4,
+            "executed": 46784,
+            "median_delay_us": 77.0,
+            "max_delay_us": 430,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 65,
+            "max_pending": 57,
+            "median_pending_at_execution": 12.0,
+            "median_pending_at_threshold": 4,
+            "executed": 44300,
+            "median_delay_us": 81.0,
+            "max_delay_us": 1122,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 66,
+            "max_pending": 57,
+            "median_pending_at_execution": 12.0,
+            "median_pending_at_threshold": 4,
+            "executed": 46090,
+            "median_delay_us": 79.0,
+            "max_delay_us": 468,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 67,
+            "max_pending": 57,
+            "median_pending_at_execution": 12,
+            "median_pending_at_threshold": 4,
+            "executed": 44175,
+            "median_delay_us": 81,
+            "max_delay_us": 505,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 68,
+            "max_pending": 57,
+            "median_pending_at_execution": 12,
+            "median_pending_at_threshold": 4,
+            "executed": 45781,
+            "median_delay_us": 78,
+            "max_delay_us": 449,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 69,
+            "max_pending": 57,
+            "median_pending_at_execution": 12,
+            "median_pending_at_threshold": 4,
+            "executed": 46695,
+            "median_delay_us": 75,
+            "max_delay_us": 617,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 70,
+            "max_pending": 41,
+            "median_pending_at_execution": 9.0,
+            "median_pending_at_threshold": 2,
+            "executed": 52022,
+            "median_delay_us": 49.0,
+            "max_delay_us": 434,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 71,
+            "max_pending": 40,
+            "median_pending_at_execution": 9.0,
+            "median_pending_at_threshold": 2,
+            "executed": 48226,
+            "median_delay_us": 53.0,
+            "max_delay_us": 887,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 72,
+            "max_pending": 47,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 45845,
+            "median_delay_us": 56,
+            "max_delay_us": 957,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 73,
+            "max_pending": 41,
+            "median_pending_at_execution": 8.0,
+            "median_pending_at_threshold": 2,
+            "executed": 47982,
+            "median_delay_us": 52.0,
+            "max_delay_us": 868,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 74,
+            "max_pending": 41,
+            "median_pending_at_execution": 8,
+            "median_pending_at_threshold": 2,
+            "executed": 45369,
+            "median_delay_us": 55,
+            "max_delay_us": 909,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 75,
+            "max_pending": 41,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 2,
+            "executed": 47605,
+            "median_delay_us": 53,
+            "max_delay_us": 436,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 76,
+            "max_pending": 41,
+            "median_pending_at_execution": 8.0,
+            "median_pending_at_threshold": 2,
+            "executed": 48278,
+            "median_delay_us": 52.0,
+            "max_delay_us": 945,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 77,
+            "max_pending": 77,
+            "median_pending_at_execution": 15.0,
+            "median_pending_at_threshold": 4,
+            "executed": 53036,
+            "median_delay_us": 84.0,
+            "max_delay_us": 554,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 78,
+            "max_pending": 77,
+            "median_pending_at_execution": 15.0,
+            "median_pending_at_threshold": 5,
+            "executed": 43818,
+            "median_delay_us": 103.0,
+            "max_delay_us": 553,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 79,
+            "max_pending": 76,
+            "median_pending_at_execution": 15.0,
+            "median_pending_at_threshold": 5,
+            "executed": 45670,
+            "median_delay_us": 98.0,
+            "max_delay_us": 701,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 80,
+            "max_pending": 76,
+            "median_pending_at_execution": 15,
+            "median_pending_at_threshold": 5,
+            "executed": 43725,
+            "median_delay_us": 100,
+            "max_delay_us": 629,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 81,
+            "max_pending": 77,
+            "median_pending_at_execution": 15.0,
+            "median_pending_at_threshold": 4,
+            "executed": 45610,
+            "median_delay_us": 98.0,
+            "max_delay_us": 592,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 82,
+            "max_pending": 76,
+            "median_pending_at_execution": 15.0,
+            "median_pending_at_threshold": 5,
+            "executed": 43446,
+            "median_delay_us": 103.0,
+            "max_delay_us": 589,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 83,
+            "max_pending": 77,
+            "median_pending_at_execution": 15.0,
+            "median_pending_at_threshold": 5,
+            "executed": 45832,
+            "median_delay_us": 97.0,
+            "max_delay_us": 623,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 84,
+            "max_pending": 73,
+            "median_pending_at_execution": 11.0,
+            "median_pending_at_threshold": 3,
+            "executed": 52822,
+            "median_delay_us": 59.0,
+            "max_delay_us": 468,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 85,
+            "max_pending": 73,
+            "median_pending_at_execution": 10,
+            "median_pending_at_threshold": 3,
+            "executed": 47683,
+            "median_delay_us": 63,
+            "max_delay_us": 470,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 86,
+            "max_pending": 73,
+            "median_pending_at_execution": 11,
+            "median_pending_at_threshold": 3,
+            "executed": 45045,
+            "median_delay_us": 69,
+            "max_delay_us": 536,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 87,
+            "max_pending": 73,
+            "median_pending_at_execution": 10,
+            "median_pending_at_threshold": 3,
+            "executed": 47129,
+            "median_delay_us": 65,
+            "max_delay_us": 501,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 88,
+            "max_pending": 73,
+            "median_pending_at_execution": 10.0,
+            "median_pending_at_threshold": 3,
+            "executed": 44480,
+            "median_delay_us": 69.0,
+            "max_delay_us": 520,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 89,
+            "max_pending": 73,
+            "median_pending_at_execution": 11.0,
+            "median_pending_at_threshold": 3,
+            "executed": 46674,
+            "median_delay_us": 66.0,
+            "max_delay_us": 486,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 90,
+            "max_pending": 73,
+            "median_pending_at_execution": 11.0,
+            "median_pending_at_threshold": 3,
+            "executed": 47396,
+            "median_delay_us": 65.0,
+            "max_delay_us": 492,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 91,
+            "max_pending": 94,
+            "median_pending_at_execution": 30.0,
+            "median_pending_at_threshold": 6,
+            "executed": 46770,
+            "median_delay_us": 201.0,
+            "max_delay_us": 798,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 92,
+            "max_pending": 94,
+            "median_pending_at_execution": 31,
+            "median_pending_at_threshold": 6,
+            "executed": 41295,
+            "median_delay_us": 239,
+            "max_delay_us": 887,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 93,
+            "max_pending": 94,
+            "median_pending_at_execution": 32,
+            "median_pending_at_threshold": 6,
+            "executed": 39749,
+            "median_delay_us": 252,
+            "max_delay_us": 923,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 94,
+            "max_pending": 94,
+            "median_pending_at_execution": 33.0,
+            "median_pending_at_threshold": 7,
+            "executed": 41198,
+            "median_delay_us": 246.0,
+            "max_delay_us": 916,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 95,
+            "max_pending": 94,
+            "median_pending_at_execution": 32,
+            "median_pending_at_threshold": 7,
+            "executed": 39669,
+            "median_delay_us": 249,
+            "max_delay_us": 915,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 96,
+            "max_pending": 94,
+            "median_pending_at_execution": 33,
+            "median_pending_at_threshold": 7,
+            "executed": 41295,
+            "median_delay_us": 246,
+            "max_delay_us": 856,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 97,
+            "max_pending": 94,
+            "median_pending_at_execution": 32.0,
+            "median_pending_at_threshold": 7,
+            "executed": 41808,
+            "median_delay_us": 246.0,
+            "max_delay_us": 876,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 98,
+            "max_pending": 52,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 57039,
+            "median_delay_us": 46,
+            "max_delay_us": 365,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 99,
+            "max_pending": 51,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 47445,
+            "median_delay_us": 57,
+            "max_delay_us": 464,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 100,
+            "max_pending": 52,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 49433,
+            "median_delay_us": 54,
+            "max_delay_us": 569,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 101,
+            "max_pending": 52,
+            "median_pending_at_execution": 9.0,
+            "median_pending_at_threshold": 3,
+            "executed": 46948,
+            "median_delay_us": 57.0,
+            "max_delay_us": 440,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 102,
+            "max_pending": 52,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 48947,
+            "median_delay_us": 55,
+            "max_delay_us": 458,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 103,
+            "max_pending": 52,
+            "median_pending_at_execution": 9.0,
+            "median_pending_at_threshold": 3,
+            "executed": 46434,
+            "median_delay_us": 58.0,
+            "max_delay_us": 527,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 104,
+            "max_pending": 52,
+            "median_pending_at_execution": 9,
+            "median_pending_at_threshold": 3,
+            "executed": 49511,
+            "median_delay_us": 54,
+            "max_delay_us": 391,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 105,
+            "max_pending": 93,
+            "median_pending_at_execution": 30.0,
+            "median_pending_at_threshold": 7,
+            "executed": 44176,
+            "median_delay_us": 208.0,
+            "max_delay_us": 753,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 106,
+            "max_pending": 92,
+            "median_pending_at_execution": 30.0,
+            "median_pending_at_threshold": 7,
+            "executed": 38196,
+            "median_delay_us": 235.0,
+            "max_delay_us": 952,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 107,
+            "max_pending": 94,
+            "median_pending_at_execution": 30.0,
+            "median_pending_at_threshold": 7,
+            "executed": 39746,
+            "median_delay_us": 226.0,
+            "max_delay_us": 894,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 108,
+            "max_pending": 94,
+            "median_pending_at_execution": 29,
+            "median_pending_at_threshold": 7,
+            "executed": 39573,
+            "median_delay_us": 228,
+            "max_delay_us": 1407,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 109,
+            "max_pending": 94,
+            "median_pending_at_execution": 30,
+            "median_pending_at_threshold": 7,
+            "executed": 39401,
+            "median_delay_us": 230,
+            "max_delay_us": 799,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 110,
+            "max_pending": 94,
+            "median_pending_at_execution": 30.0,
+            "median_pending_at_threshold": 7,
+            "executed": 38210,
+            "median_delay_us": 236.0,
+            "max_delay_us": 874,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 111,
+            "max_pending": 94,
+            "median_pending_at_execution": 30,
+            "median_pending_at_threshold": 7,
+            "executed": 40465,
+            "median_delay_us": 226,
+            "max_delay_us": 854,
+            "pending_at_end": 0
+          }
+        ]
+      },
+      "raw_sha256": {
+        "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355144/base/run.out": "f6575b3541af3e4baf86ba42193577fc75c2a2b28e75f79e1db39260d2bcc9fc",
+        "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355144/base/summary.json": "6a68ba0a876c357e64ac4c29b24501e4889e723cb4c4c6271fd1a22224ffc5f0",
+        "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355144/base/heap-backlog.json": "bf45d58826615e102e4bf27a585f1e93a99e907bde784a3cf44d4753e62545d0"
+      }
+    },
+    "coalesce": {
+      "seconds": 0.486591,
+      "rounds": 2781,
+      "edge_attempts": 95443861,
+      "summary": {
+        "pes": 112,
+        "processes": 16,
+        "nodes": 1,
+        "window_s_mean": 0.4864887589285714,
+        "time": [
+          {
+            "activity": "SsspChares::process_heap",
+            "pe_seconds": 36.195734,
+            "share": 0.6643035229433157,
+            "calls": 5437454
+          },
+          {
+            "activity": "idle",
+            "pe_seconds": 7.076279,
+            "share": 0.12987157738063285,
+            "calls": 100551
+          },
+          {
+            "activity": "untraced",
+            "pe_seconds": 6.930168,
+            "share": 0.1271899892122379,
+            "calls": 0
+          },
+          {
+            "activity": "SsspChares::current_thresholds",
+            "pe_seconds": 1.5687,
+            "share": 0.028790490515848616,
+            "calls": 311360
+          },
+          {
+            "activity": "HTramRecv::receive",
+            "pe_seconds": 1.168253,
+            "share": 0.021441051135724927,
+            "calls": 334539
+          },
+          {
+            "activity": "HTram::receivePerPE",
+            "pe_seconds": 0.790682,
+            "share": 0.014511457016671267,
+            "calls": 2341773
+          },
+          {
+            "activity": "CkReductionMgr::RecvMsg",
+            "pe_seconds": 0.301454,
+            "share": 0.0055326120532699875,
+            "calls": 308691
+          },
+          {
+            "activity": "SsspChares::clear_pq_hold",
+            "pe_seconds": 0.151285,
+            "share": 0.0027765470502264028,
+            "calls": 311360
+          },
+          {
+            "activity": "CkArray::recvNoKeepBroadcast",
+            "pe_seconds": 0.128585,
+            "share": 0.0023599319327981096,
+            "calls": 622720
+          },
+          {
+            "activity": "unpack",
+            "pe_seconds": 0.0629,
+            "share": 0.0011544092901427155,
+            "calls": 687726
+          },
+          {
+            "activity": "pack",
+            "pe_seconds": 0.056661,
+            "share": 0.0010399043686609923,
+            "calls": 646011
+          },
+          {
+            "activity": "Main::redn_wrapper_reduce_histogram",
+            "pe_seconds": 0.028388,
+            "share": 0.000521007486940722,
+            "calls": 5562
+          },
+          {
+            "activity": "dummy_thread_chare::dummy_thread_ep",
+            "pe_seconds": 0.026898,
+            "share": 0.0004936613845192173,
+            "calls": 2781
+          },
+          {
+            "activity": "SsspChares::contribute_histogram",
+            "pe_seconds": 0.000652,
+            "share": 1.1966213945517498e-05,
+            "calls": 112
+          },
+          {
+            "activity": "CkArray::recvNoKeepExpeditedBroadcast",
+            "pe_seconds": 9.1e-05,
+            "share": 1.6701310874878716e-06,
+            "calls": 224
+          },
+          {
+            "activity": "SsspChares::start_algo",
+            "pe_seconds": 1.1e-05,
+            "share": 2.0188397760842404e-07,
+            "calls": 1
+          }
+        ],
+        "spread": {
+          "busy (entries+pack)": [
+            0.316646,
+            0.34762319999999997,
+            0.362651,
+            0.37564970000000003,
+            0.380523
+          ],
+          "idle": [
+            0.037154,
+            0.0469197,
+            0.06461900000000001,
+            0.07644229999999999,
+            0.091907
+          ],
+          "untraced": [
+            0.05188099999999997,
+            0.05369490000000001,
+            0.05915750000000003,
+            0.07501300000000002,
+            0.09260300000000002
+          ],
+          "window": [
+            0.486376,
+            0.4863971,
+            0.486506,
+            0.4865329,
+            0.486572
+          ]
+        },
+        "busy_by_process": [
+          2.4580029999999997,
+          2.341321,
+          2.522245,
+          2.480282,
+          2.463523,
+          2.5344040000000003,
+          2.565647,
+          2.461925,
+          2.530836,
+          2.581601,
+          2.577104,
+          2.621242,
+          2.5361909999999996,
+          2.5595170000000005,
+          2.611883,
+          2.63457
+        ],
+        "timeline": [
+          [
+            0.0,
+            0.35354508928571426,
+            0.10791026785714286,
+            0.4648892857142857,
+            0.029870089285714285,
+            0.016583482142857143,
+            0.011247767857142857
+          ],
+          [
+            0.02,
+            0.083065625,
+            0.1390584821428571,
+            0.6897584821428572,
+            0.03306919642857143,
+            0.024088392857142857,
+            0.016147767857142857
+          ],
+          [
+            0.04,
+            0.009225892857142858,
+            0.14637187500000004,
+            0.7589790178571428,
+            0.030351339285714287,
+            0.0259625,
+            0.016834375
+          ],
+          [
+            0.06,
+            0.034566517857142855,
+            0.14390982142857145,
+            0.7312183035714286,
+            0.03339732142857143,
+            0.026825446428571428,
+            0.01691607142857143
+          ],
+          [
+            0.08,
+            0.013226785714285713,
+            0.13638303571428567,
+            0.767115625,
+            0.031598660714285715,
+            0.025398660714285714,
+            0.016011607142857143
+          ],
+          [
+            0.1,
+            0.12950982142857143,
+            0.11770446428571424,
+            0.6850066964285715,
+            0.0263625,
+            0.01906339285714286,
+            0.012794196428571429
+          ],
+          [
+            0.12,
+            0.15384776785714285,
+            0.11610624999999997,
+            0.6598459821428572,
+            0.027926339285714287,
+            0.020520535714285713,
+            0.013365625
+          ],
+          [
+            0.14,
+            0.01607276785714286,
+            0.1313683035714286,
+            0.7800276785714285,
+            0.027294642857142858,
+            0.02154330357142857,
+            0.014583482142857143
+          ],
+          [
+            0.16,
+            0.3484245535714286,
+            0.10115401785714284,
+            0.4827330357142857,
+            0.027366964285714286,
+            0.015832589285714287,
+            0.010582142857142858
+          ],
+          [
+            0.18,
+            0.3435924107142857,
+            0.10081205357142853,
+            0.48828080357142856,
+            0.025321875,
+            0.017529017857142858,
+            0.012222321428571428
+          ],
+          [
+            0.2,
+            0.2951683035714286,
+            0.11377678571428573,
+            0.5123383928571429,
+            0.030132142857142857,
+            0.019554910714285716,
+            0.0135875
+          ],
+          [
+            0.22,
+            3.125e-06,
+            0.145440625,
+            0.7625674107142857,
+            0.033728125,
+            0.02780982142857143,
+            0.018101785714285713
+          ],
+          [
+            0.24,
+            0.037013839285714285,
+            0.1441147321428572,
+            0.7288883928571429,
+            0.032515625,
+            0.0256875,
+            0.017463392857142858
+          ],
+          [
+            0.26,
+            0.017677232142857144,
+            0.1434227678571428,
+            0.7528178571428571,
+            0.030654464285714285,
+            0.02516875,
+            0.01729955357142857
+          ],
+          [
+            0.28,
+            0.00859642857142857,
+            0.147434375,
+            0.7525446428571428,
+            0.03238571428571429,
+            0.026236160714285715,
+            0.017483035714285715
+          ],
+          [
+            0.3,
+            0.02505357142857143,
+            0.12845401785714283,
+            0.7792901785714286,
+            0.024892857142857144,
+            0.019625892857142856,
+            0.013357142857142857
+          ],
+          [
+            0.32,
+            0.08197142857142857,
+            0.12870982142857146,
+            0.6934973214285715,
+            0.04878526785714286,
+            0.021041517857142856,
+            0.015233482142857142
+          ],
+          [
+            0.34,
+            0.02408125,
+            0.1393098214285714,
+            0.7552991071428572,
+            0.028709375,
+            0.02409017857142857,
+            0.016826785714285714
+          ],
+          [
+            0.36,
+            0.06294642857142857,
+            0.1269616071428571,
+            0.7410263392857143,
+            0.024470535714285716,
+            0.020027232142857142,
+            0.014404910714285714
+          ],
+          [
+            0.38,
+            0.10072142857142857,
+            0.12986026785714289,
+            0.6923558035714286,
+            0.026947767857142858,
+            0.022036607142857143,
+            0.015854910714285714
+          ],
+          [
+            0.4,
+            0.10910714285714286,
+            0.12859508928571428,
+            0.6870147321428571,
+            0.026810267857142855,
+            0.02169910714285714,
+            0.014392410714285713
+          ],
+          [
+            0.42,
+            0.15278794642857144,
+            0.12962767857142854,
+            0.6360790178571428,
+            0.030088839285714285,
+            0.021535714285714287,
+            0.014686607142857144
+          ],
+          [
+            0.44,
+            0.094334375,
+            0.13071116071428568,
+            0.6985678571428572,
+            0.026887946428571428,
+            0.02037544642857143,
+            0.014341517857142856
+          ],
+          [
+            0.46,
+            0.40601339285714283,
+            0.09908303571428567,
+            0.42827410714285713,
+            0.026187053571428573,
+            0.012758035714285715,
+            0.008843303571428571
+          ],
+          [
+            0.48,
+            0.25894464285714286,
+            0.6931066964285715,
+            0.03039375,
+            0.00796875,
+            0.0005473214285714286,
+            0.00040133928571428574
+          ]
+        ],
+        "sent": [
+          {
+            "ep": "SsspChares::process_heap",
+            "messages": 5437453,
+            "bytes": 434996240
+          },
+          {
+            "ep": "HTram::receivePerPE",
+            "messages": 2341773,
+            "bytes": 428323840
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "messages": 334539,
+            "bytes": 40410064
+          },
+          {
+            "ep": "SsspChares::clear_pq_hold",
+            "messages": 311360,
+            "bytes": 24908800
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "messages": 308691,
+            "bytes": 726041232
+          },
+          {
+            "ep": "CkArray::recvNoKeepBroadcast",
+            "messages": 47260,
+            "bytes": 6805440
+          },
+          {
+            "ep": "Main::redn_wrapper_reduce_histogram",
+            "messages": 2781,
+            "bytes": 6540912
+          },
+          {
+            "ep": "SsspChares::current_thresholds",
+            "messages": 2780,
+            "bytes": 400320
+          },
+          {
+            "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+            "messages": 17,
+            "bytes": 1904
+          },
+          {
+            "ep": "SsspChares::print_distances",
+            "messages": 1,
+            "bytes": 80
+          },
+          {
+            "ep": "SsspChares::contribute_histogram",
+            "messages": 1,
+            "bytes": 112
+          }
+        ],
+        "latency": [
+          {
+            "ep": "SsspChares::process_heap",
+            "locality": "same process",
+            "messages": 5437454,
+            "p50_p90_p99_max_ms": [
+              0.001,
+              0.004,
+              0.025,
+              2.166
+            ]
+          },
+          {
+            "ep": "HTram::receivePerPE",
+            "locality": "same process",
+            "messages": 2341773,
+            "p50_p90_p99_max_ms": [
+              0.008,
+              0.026,
+              0.062,
+              2.66
+            ]
+          },
+          {
+            "ep": "CkArray::recvNoKeepBroadcast",
+            "locality": "same process",
+            "messages": 622720,
+            "p50_p90_p99_max_ms": [
+              0.007,
+              0.02,
+              0.044,
+              2.477
+            ]
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "locality": "same node",
+            "messages": 334539,
+            "p50_p90_p99_max_ms": [
+              0.002828125,
+              0.008,
+              0.02275,
+              1.54925
+            ]
+          },
+          {
+            "ep": "SsspChares::clear_pq_hold",
+            "locality": "same process",
+            "messages": 311360,
+            "p50_p90_p99_max_ms": [
+              0.015,
+              0.034,
+              0.061,
+              2.655
+            ]
+          },
+          {
+            "ep": "SsspChares::current_thresholds",
+            "locality": "same process",
+            "messages": 311360,
+            "p50_p90_p99_max_ms": [
+              0.005,
+              0.016,
+              0.038,
+              2.229
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "same process",
+            "messages": 266976,
+            "p50_p90_p99_max_ms": [
+              0.006,
+              0.018,
+              0.039,
+              2.464
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "same node",
+            "messages": 41715,
+            "p50_p90_p99_max_ms": [
+              0.0050625,
+              0.015,
+              0.0330625,
+              2.346328125
+            ]
+          },
+          {
+            "ep": "Main::redn_wrapper_reduce_histogram",
+            "locality": "same process",
+            "messages": 5562,
+            "p50_p90_p99_max_ms": [
+              0.018,
+              0.031,
+              0.047,
+              0.189
+            ]
+          },
+          {
+            "ep": "dummy_thread_chare::dummy_thread_ep",
+            "locality": "same process",
+            "messages": 2781,
+            "p50_p90_p99_max_ms": [
+              0.0,
+              0.001,
+              0.001,
+              0.005
+            ]
+          },
+          {
+            "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+            "locality": "same process",
+            "messages": 224,
+            "p50_p90_p99_max_ms": [
+              0.011,
+              0.022,
+              0.03,
+              0.031
+            ]
+          },
+          {
+            "ep": "SsspChares::contribute_histogram",
+            "locality": "same process",
+            "messages": 112,
+            "p50_p90_p99_max_ms": [
+              0.006,
+              0.019,
+              0.02578,
+              0.026
+            ]
+          },
+          {
+            "ep": "SsspChares::print_distances",
+            "locality": "same process",
+            "messages": 98,
+            "p50_p90_p99_max_ms": [
+              77.5405,
+              91.917,
+              92.622,
+              92.622
+            ]
+          }
+        ]
+      },
+      "backlog": {
+        "pes": 112,
+        "max_pending": 1,
+        "duplicate_pes": 0,
+        "per_pe": [
+          {
+            "pe": 0,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 33023,
+            "median_delay_us": 1,
+            "max_delay_us": 296,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 1,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 44045,
+            "median_delay_us": 1,
+            "max_delay_us": 1573,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 2,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46124,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1564,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 3,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 43750,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1566,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 4,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 52001,
+            "median_delay_us": 1,
+            "max_delay_us": 530,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 5,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 43656,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1596,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 6,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46446,
+            "median_delay_us": 1.0,
+            "max_delay_us": 243,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 7,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 38507,
+            "median_delay_us": 1,
+            "max_delay_us": 1991,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 8,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 41067,
+            "median_delay_us": 1,
+            "max_delay_us": 534,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 9,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 50920,
+            "median_delay_us": 1.0,
+            "max_delay_us": 560,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 10,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 43059,
+            "median_delay_us": 1,
+            "max_delay_us": 630,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 11,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 44015,
+            "median_delay_us": 1,
+            "max_delay_us": 523,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 12,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 42823,
+            "median_delay_us": 1,
+            "max_delay_us": 635,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 13,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 51512,
+            "median_delay_us": 1.0,
+            "max_delay_us": 676,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 14,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 50457,
+            "median_delay_us": 1,
+            "max_delay_us": 444,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 15,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 44423,
+            "median_delay_us": 1,
+            "max_delay_us": 458,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 16,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 55184,
+            "median_delay_us": 1.0,
+            "max_delay_us": 235,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 17,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 47111,
+            "median_delay_us": 1,
+            "max_delay_us": 577,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 18,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 56157,
+            "median_delay_us": 1,
+            "max_delay_us": 318,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 19,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54533,
+            "median_delay_us": 1,
+            "max_delay_us": 459,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 20,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 57349,
+            "median_delay_us": 1,
+            "max_delay_us": 497,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 21,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 49709,
+            "median_delay_us": 1,
+            "max_delay_us": 1458,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 22,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 51680,
+            "median_delay_us": 1.0,
+            "max_delay_us": 456,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 23,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 47583,
+            "median_delay_us": 1,
+            "max_delay_us": 516,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 24,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 45864,
+            "median_delay_us": 1.0,
+            "max_delay_us": 504,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 25,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46825,
+            "median_delay_us": 1,
+            "max_delay_us": 525,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 26,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 52753,
+            "median_delay_us": 1,
+            "max_delay_us": 448,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 27,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 55878,
+            "median_delay_us": 1.0,
+            "max_delay_us": 443,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 28,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 49807,
+            "median_delay_us": 1,
+            "max_delay_us": 2039,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 29,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 45150,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1505,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 30,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54802,
+            "median_delay_us": 1.0,
+            "max_delay_us": 338,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 31,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 53252,
+            "median_delay_us": 1.0,
+            "max_delay_us": 211,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 32,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46984,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1151,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 33,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 45063,
+            "median_delay_us": 1,
+            "max_delay_us": 1509,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 34,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 55497,
+            "median_delay_us": 1,
+            "max_delay_us": 1499,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 35,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 42951,
+            "median_delay_us": 1,
+            "max_delay_us": 2166,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 36,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 55037,
+            "median_delay_us": 1,
+            "max_delay_us": 1527,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 37,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46478,
+            "median_delay_us": 1.0,
+            "max_delay_us": 521,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 38,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 48145,
+            "median_delay_us": 1,
+            "max_delay_us": 1543,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 39,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 45437,
+            "median_delay_us": 1,
+            "max_delay_us": 1691,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 40,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 55179,
+            "median_delay_us": 1,
+            "max_delay_us": 520,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 41,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 55956,
+            "median_delay_us": 1.0,
+            "max_delay_us": 526,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 42,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 44369,
+            "median_delay_us": 1,
+            "max_delay_us": 1504,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 43,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 45340,
+            "median_delay_us": 1.0,
+            "max_delay_us": 265,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 44,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 48329,
+            "median_delay_us": 1,
+            "max_delay_us": 1495,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 45,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 45599,
+            "median_delay_us": 1,
+            "max_delay_us": 1494,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 46,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 55018,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1506,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 47,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54129,
+            "median_delay_us": 1,
+            "max_delay_us": 478,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 48,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 48690,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1494,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 49,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 50331,
+            "median_delay_us": 1,
+            "max_delay_us": 1371,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 50,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 52045,
+            "median_delay_us": 1,
+            "max_delay_us": 257,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 51,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54318,
+            "median_delay_us": 1.0,
+            "max_delay_us": 292,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 52,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 52323,
+            "median_delay_us": 1,
+            "max_delay_us": 292,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 53,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54368,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1520,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 54,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 44564,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1529,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 55,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54643,
+            "median_delay_us": 1,
+            "max_delay_us": 1517,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 56,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 42877,
+            "median_delay_us": 1,
+            "max_delay_us": 1523,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 57,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 44707,
+            "median_delay_us": 1,
+            "max_delay_us": 1513,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 58,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46844,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1495,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 59,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 45027,
+            "median_delay_us": 1,
+            "max_delay_us": 1530,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 60,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46785,
+            "median_delay_us": 1,
+            "max_delay_us": 1447,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 61,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 52329,
+            "median_delay_us": 1,
+            "max_delay_us": 1521,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 62,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 48339,
+            "median_delay_us": 1,
+            "max_delay_us": 1518,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 63,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 50675,
+            "median_delay_us": 1,
+            "max_delay_us": 1673,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 64,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 56337,
+            "median_delay_us": 1,
+            "max_delay_us": 381,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 65,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46659,
+            "median_delay_us": 1,
+            "max_delay_us": 548,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 66,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 49240,
+            "median_delay_us": 1.0,
+            "max_delay_us": 531,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 67,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54673,
+            "median_delay_us": 1,
+            "max_delay_us": 413,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 68,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 56702,
+            "median_delay_us": 1.0,
+            "max_delay_us": 241,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 69,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 58136,
+            "median_delay_us": 1.0,
+            "max_delay_us": 227,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 70,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 40816,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1562,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 71,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 55817,
+            "median_delay_us": 1,
+            "max_delay_us": 1532,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 72,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54680,
+            "median_delay_us": 1.0,
+            "max_delay_us": 493,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 73,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 57287,
+            "median_delay_us": 1,
+            "max_delay_us": 554,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 74,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46349,
+            "median_delay_us": 1,
+            "max_delay_us": 1559,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 75,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 48670,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1551,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 76,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 57579,
+            "median_delay_us": 1,
+            "max_delay_us": 191,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 77,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46563,
+            "median_delay_us": 1,
+            "max_delay_us": 263,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 78,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54217,
+            "median_delay_us": 1,
+            "max_delay_us": 1530,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 79,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 56972,
+            "median_delay_us": 1.0,
+            "max_delay_us": 476,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 80,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 47050,
+            "median_delay_us": 1.0,
+            "max_delay_us": 542,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 81,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 48985,
+            "median_delay_us": 1,
+            "max_delay_us": 1539,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 82,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46992,
+            "median_delay_us": 1.0,
+            "max_delay_us": 261,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 83,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 57273,
+            "median_delay_us": 1,
+            "max_delay_us": 242,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 84,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 42104,
+            "median_delay_us": 1.0,
+            "max_delay_us": 485,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 85,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 53729,
+            "median_delay_us": 1,
+            "max_delay_us": 210,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 86,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 45066,
+            "median_delay_us": 1.0,
+            "max_delay_us": 523,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 87,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 47094,
+            "median_delay_us": 1.0,
+            "max_delay_us": 509,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 88,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 51637,
+            "median_delay_us": 1,
+            "max_delay_us": 1562,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 89,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46770,
+            "median_delay_us": 1.0,
+            "max_delay_us": 1521,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 90,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 47591,
+            "median_delay_us": 1,
+            "max_delay_us": 567,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 91,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 51585,
+            "median_delay_us": 1,
+            "max_delay_us": 253,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 92,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 49068,
+            "median_delay_us": 1.0,
+            "max_delay_us": 354,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 93,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 54262,
+            "median_delay_us": 1.0,
+            "max_delay_us": 316,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 94,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 56343,
+            "median_delay_us": 1,
+            "max_delay_us": 431,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 95,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 46203,
+            "median_delay_us": 1,
+            "max_delay_us": 535,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 96,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 48786,
+            "median_delay_us": 1.0,
+            "max_delay_us": 512,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 97,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 56693,
+            "median_delay_us": 1,
+            "max_delay_us": 429,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 98,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 36927,
+            "median_delay_us": 1,
+            "max_delay_us": 495,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 99,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 42817,
+            "median_delay_us": 1,
+            "max_delay_us": 820,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 100,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 42363,
+            "median_delay_us": 1,
+            "max_delay_us": 820,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 101,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 43385,
+            "median_delay_us": 1,
+            "max_delay_us": 296,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 102,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 41166,
+            "median_delay_us": 1.0,
+            "max_delay_us": 851,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 103,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 43047,
+            "median_delay_us": 1,
+            "max_delay_us": 285,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 104,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 44350,
+            "median_delay_us": 1.0,
+            "max_delay_us": 265,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 105,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 40405,
+            "median_delay_us": 1,
+            "max_delay_us": 243,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 106,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 39938,
+            "median_delay_us": 1.0,
+            "max_delay_us": 234,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 107,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 42012,
+            "median_delay_us": 1.0,
+            "max_delay_us": 274,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 108,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 40419,
+            "median_delay_us": 1,
+            "max_delay_us": 289,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 109,
+            "max_pending": 1,
+            "median_pending_at_execution": 0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 41663,
+            "median_delay_us": 1,
+            "max_delay_us": 272,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 110,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 40432,
+            "median_delay_us": 1.0,
+            "max_delay_us": 257,
+            "pending_at_end": 0
+          },
+          {
+            "pe": 111,
+            "max_pending": 1,
+            "median_pending_at_execution": 0.0,
+            "median_pending_at_threshold": 1.0,
+            "executed": 42760,
+            "median_delay_us": 1.0,
+            "max_delay_us": 233,
+            "pending_at_end": 0
+          }
+        ]
+      },
+      "raw_sha256": {
+        "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355144/coalesce/run.out": "d39d236f8ef71d81fae92fa0bff60649167834920bc38bef6240f8a06904c1dd",
+        "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355144/coalesce/summary.json": "a3eb1a7998477393b0fddb64691e0d2b2c354c19bfb65f6607021e64467301a8",
+        "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355144/coalesce/heap-backlog.json": "afa0791e1b383221d4d821994ed64721bb06fb0923a5ea06d835ef4f4a3cfd6c"
+      }
+    }
+  },
+  "decision": "NO-GO for general coalescing: mesh speedup below 0.95 on both sources, outside controls; prior road production speedup unresolved. Keep disabled. Distributed job remains mechanism evidence only.",
+  "caveats": [
+    "Road traces are diagnostic runs, not additional production timings; their ratio is not an accepted performance result.",
+    "Road production data came from 22355092; this continuation adds 40 mesh solves and two road trace solves. Its 80-solve audit includes those 40 retained road solves."
+  ]
+}

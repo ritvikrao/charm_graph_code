@@ -1,0 +1,682 @@
+{
+  "job": 22355241,
+  "partition": "cpu-interactive",
+  "state": "FAILED",
+  "exit_code": "1:0",
+  "elapsed_seconds": 96,
+  "failure": "Merged Slurm stdout interleaved ROUND_PROFILE lines; strict parser rejected them after all production timings. Solver profile launch itself exited successfully.",
+  "complete": false,
+  "checked_solves": 26,
+  "checked_empty_launches": 12,
+  "manifest": {
+    "nodes": 4,
+    "rpn": 16,
+    "workers": 112,
+    "sources": [
+      "5620086",
+      "1294456"
+    ],
+    "reps": 3,
+    "hosts": "cn[031,047,072,115]",
+    "graph_sha256": "20f9102b40689c8ea496aaa122a4329413022d0ef59cc77ef142d313a43781b9",
+    "reference_sha256": "415bc7468e7cc65bb345daf6c01070b0464ccda828a6ca7b6bdb06a61bd3550a",
+    "harness_sha256": "a8a091b5a8e4ed326b3bf6dfce1ca7eabc417abae3ded91cfa56f9edeaff6f3d",
+    "vertices": 23947347,
+    "stored_directed_edges": 57708624,
+    "binaries": {
+      "acic_latest": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+      "acic_quiet_rounds": "721a511595355f4a9af303fe2d66005eac4a7fdf27711cff89f2833b98c06b00",
+      "acic_round_profile_v2": "8f3a05d8c96e119b7761f9c93f367346331a24385c819c70e92f0293209f981c",
+      "acic_cost": "b4ba9e8eeeb24f64e7afb84692daad8c869f3b4e97bddae564c5fdc5cd90689f",
+      "round_trip": "ec8a14cc35aee2b7c424d26389e56b11f31c534b0a617ded23c5bdbada796299",
+      "acic_round_trace": "1c5c47dbe41ea91310157b8856ead9c381c16b78d465511b08c9620020fb54bb"
+    },
+    "runtime": {
+      "revisions": {
+        "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+        "reconverse": "0c97c4d1f58dc5599b15a687cf328a7e05d60f90",
+        "lci": "ca88ce2c4b429ce72dfc3233fa21f8833299440c",
+        "htram": "7db9c0af69777b43e17dec110e6298fc09c91c54",
+        "sssp": "7a4da59ebbf6094e716e327af34b3c6bbc98f33d"
+      },
+      "runtime": "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64",
+      "scheduler": "+old-scheduler",
+      "build_command": "CC=gcc CXX=g++ ./build charm++ reconverse-linux-x86_64 --with-production --enable-tracing --enable-shmem --with-fetch-reconverse-dir=/u/rao1/.tmp/road-rounds-20260924/reconverse --with-cmake-args=\"-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF\" -j8",
+      "cache": [
+        "CMAKE_BUILD_TYPE:STRING=Release",
+        "CMAKE_CXX_COMPILER:FILEPATH=/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+        "CMK_USE_SHMEM:BOOL=1",
+        "RECONVERSE_AUTOFETCH_LCI2_TAG:STRING=ca88ce2c4b429ce72dfc3233fa21f8833299440c",
+        "RECONVERSE_ENABLE_CPU_AFFINITY:BOOL=ON",
+        "SPANTREE:BOOL=ON"
+      ],
+      "libraries": {
+        "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/libreconverse.so": "43ee00d5e99d258914821e80c80e7b19604fb6ae107475c2f4a051edad926a82",
+        "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/liblci.so": "083e911056b3d798d38eef827603323e8ccffb503d415928345e440bf96dc99f",
+        "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/liblct.so": "c731e80abc9deeb16ed62dbe8a4a7cce3f337845a70edd32055f63696c1f01ea",
+        "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/libck.a": "aafc40688291f80ae7d217d3f74fdf63c9ee50f8d83006eacd6ab9e237a957d9"
+      }
+    }
+  },
+  "records": [
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p11-r0",
+      "rpn": 8,
+      "result": {
+        "pes": "480",
+        "processes": "32",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "144.728661",
+        "p50_us": "102.281570",
+        "p95_us": "463.485718",
+        "min_us": "87.022781",
+        "max_us": "6950.855255"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p11-r1",
+      "rpn": 8,
+      "result": {
+        "pes": "480",
+        "processes": "32",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "90.645552",
+        "p50_us": "87.499619",
+        "p95_us": "109.910965",
+        "min_us": "77.486038",
+        "max_us": "285.863876"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p11-r2",
+      "rpn": 8,
+      "result": {
+        "pes": "480",
+        "processes": "32",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "97.463608",
+        "p50_us": "92.506409",
+        "p95_us": "122.308731",
+        "min_us": "80.108643",
+        "max_us": "384.330750"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p267-r0",
+      "rpn": 8,
+      "result": {
+        "pes": "480",
+        "processes": "32",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "97.060919",
+        "p50_us": "93.221664",
+        "p95_us": "117.063522",
+        "min_us": "79.870224",
+        "max_us": "538.587570"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p267-r1",
+      "rpn": 8,
+      "result": {
+        "pes": "480",
+        "processes": "32",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "100.572824",
+        "p50_us": "96.321106",
+        "p95_us": "122.070312",
+        "min_us": "82.731247",
+        "max_us": "364.780426"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-8x15-p267-r2",
+      "rpn": 8,
+      "result": {
+        "pes": "480",
+        "processes": "32",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "100.898743",
+        "p50_us": "96.321106",
+        "p95_us": "119.924545",
+        "min_us": "84.161758",
+        "max_us": "600.814819"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p11-r0",
+      "rpn": 16,
+      "result": {
+        "pes": "448",
+        "processes": "64",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "150.150299",
+        "p50_us": "68.664551",
+        "p95_us": "519.752502",
+        "min_us": "53.644180",
+        "max_us": "12068.271637"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p11-r1",
+      "rpn": 16,
+      "result": {
+        "pes": "448",
+        "processes": "64",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "210.104942",
+        "p50_us": "79.154968",
+        "p95_us": "541.687012",
+        "min_us": "57.935715",
+        "max_us": "16055.822372"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p11-r2",
+      "rpn": 16,
+      "result": {
+        "pes": "448",
+        "processes": "64",
+        "payload_longs": "11",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "168.655396",
+        "p50_us": "85.115433",
+        "p95_us": "553.131104",
+        "min_us": "61.035156",
+        "max_us": "1528.263092"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p267-r0",
+      "rpn": 16,
+      "result": {
+        "pes": "448",
+        "processes": "64",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "193.495274",
+        "p50_us": "92.267990",
+        "p95_us": "554.561615",
+        "min_us": "68.187714",
+        "max_us": "3770.112991"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p267-r1",
+      "rpn": 16,
+      "result": {
+        "pes": "448",
+        "processes": "64",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "228.931427",
+        "p50_us": "95.367432",
+        "p95_us": "598.907471",
+        "min_us": "60.081482",
+        "max_us": "2473.354340"
+      }
+    },
+    {
+      "kind": "empty",
+      "label": "empty-16x7-p267-r2",
+      "rpn": 16,
+      "result": {
+        "pes": "448",
+        "processes": "64",
+        "payload_longs": "267",
+        "rounds": "1000",
+        "warmup": "100",
+        "mean_us": "165.084124",
+        "p50_us": "87.261200",
+        "p95_us": "545.740128",
+        "min_us": "64.611435",
+        "max_us": "2085.924149"
+      }
+    },
+    {
+      "kind": "road",
+      "label": "control-r-1",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.217627,
+      "rounds": 542,
+      "us_per_round": 401.52583025830256,
+      "edge_attempts": 125948326,
+      "attempts_per_edge": 2.182487075068711
+    },
+    {
+      "kind": "road",
+      "label": "control-r-1",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.271025,
+      "rounds": 808,
+      "us_per_round": 335.4269801980198,
+      "edge_attempts": 133020874,
+      "attempts_per_edge": 2.30504324622261
+    },
+    {
+      "kind": "road",
+      "label": "base-r-1",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.222189,
+      "rounds": 541,
+      "us_per_round": 410.7005545286506,
+      "edge_attempts": 121934059,
+      "attempts_per_edge": 2.112926120019774
+    },
+    {
+      "kind": "road",
+      "label": "base-r-1",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.271873,
+      "rounds": 809,
+      "us_per_round": 336.0605686032138,
+      "edge_attempts": 131283245,
+      "attempts_per_edge": 2.2749328592551437
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r-1",
+      "binary": "acic_quiet_rounds",
+      "source": "5620086",
+      "seconds": 0.24608,
+      "rounds": 548,
+      "us_per_round": 449.05109489051097,
+      "edge_attempts": 123217964,
+      "attempts_per_edge": 2.1351741812454237
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r-1",
+      "binary": "acic_quiet_rounds",
+      "source": "1294456",
+      "seconds": 0.266208,
+      "rounds": 805,
+      "us_per_round": 330.69316770186333,
+      "edge_attempts": 136807818,
+      "attempts_per_edge": 2.370665049993221
+    },
+    {
+      "kind": "road",
+      "label": "base-r0",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.219292,
+      "rounds": 545,
+      "us_per_round": 402.37064220183487,
+      "edge_attempts": 124271307,
+      "attempts_per_edge": 2.153426964399636
+    },
+    {
+      "kind": "road",
+      "label": "base-r0",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.265288,
+      "rounds": 805,
+      "us_per_round": 329.5503105590062,
+      "edge_attempts": 129897424,
+      "attempts_per_edge": 2.250918753495145
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r0",
+      "binary": "acic_quiet_rounds",
+      "source": "5620086",
+      "seconds": 0.232412,
+      "rounds": 547,
+      "us_per_round": 424.8848263254113,
+      "edge_attempts": 128578155,
+      "attempts_per_edge": 2.2280578895799006
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r0",
+      "binary": "acic_quiet_rounds",
+      "source": "1294456",
+      "seconds": 0.271159,
+      "rounds": 808,
+      "us_per_round": 335.5928217821782,
+      "edge_attempts": 133988958,
+      "attempts_per_edge": 2.321818624543881
+    },
+    {
+      "kind": "road",
+      "label": "control-r0",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.220004,
+      "rounds": 546,
+      "us_per_round": 402.93772893772893,
+      "edge_attempts": 124429470,
+      "attempts_per_edge": 2.1561676812810506
+    },
+    {
+      "kind": "road",
+      "label": "control-r0",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.273074,
+      "rounds": 804,
+      "us_per_round": 339.6442786069652,
+      "edge_attempts": 128289588,
+      "attempts_per_edge": 2.2230574757769306
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r1",
+      "binary": "acic_quiet_rounds",
+      "source": "5620086",
+      "seconds": 0.226418,
+      "rounds": 546,
+      "us_per_round": 414.68498168498166,
+      "edge_attempts": 121843479,
+      "attempts_per_edge": 2.111356510597099
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r1",
+      "binary": "acic_quiet_rounds",
+      "source": "1294456",
+      "seconds": 0.272379,
+      "rounds": 808,
+      "us_per_round": 337.1027227722772,
+      "edge_attempts": 130389889,
+      "attempts_per_edge": 2.2594524000433625
+    },
+    {
+      "kind": "road",
+      "label": "control-r1",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.219649,
+      "rounds": 546,
+      "us_per_round": 402.2875457875458,
+      "edge_attempts": 123395419,
+      "attempts_per_edge": 2.1382491982480816
+    },
+    {
+      "kind": "road",
+      "label": "control-r1",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.271262,
+      "rounds": 803,
+      "us_per_round": 337.8107098381071,
+      "edge_attempts": 126864411,
+      "attempts_per_edge": 2.1983613922244967
+    },
+    {
+      "kind": "road",
+      "label": "base-r1",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.220094,
+      "rounds": 546,
+      "us_per_round": 403.1025641025641,
+      "edge_attempts": 123354280,
+      "attempts_per_edge": 2.1375363238603646
+    },
+    {
+      "kind": "road",
+      "label": "base-r1",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.27587,
+      "rounds": 806,
+      "us_per_round": 342.27047146401986,
+      "edge_attempts": 132016256,
+      "attempts_per_edge": 2.2876347909456305
+    },
+    {
+      "kind": "road",
+      "label": "control-r2",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.228215,
+      "rounds": 545,
+      "us_per_round": 418.74311926605503,
+      "edge_attempts": 120257066,
+      "attempts_per_edge": 2.0838664598899466
+    },
+    {
+      "kind": "road",
+      "label": "control-r2",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.276256,
+      "rounds": 807,
+      "us_per_round": 342.3246592317224,
+      "edge_attempts": 130621676,
+      "attempts_per_edge": 2.2634689054447046
+    },
+    {
+      "kind": "road",
+      "label": "base-r2",
+      "binary": "acic_latest",
+      "source": "5620086",
+      "seconds": 0.21753,
+      "rounds": 543,
+      "us_per_round": 400.6077348066298,
+      "edge_attempts": 122853198,
+      "attempts_per_edge": 2.128853358208645
+    },
+    {
+      "kind": "road",
+      "label": "base-r2",
+      "binary": "acic_latest",
+      "source": "1294456",
+      "seconds": 0.266718,
+      "rounds": 810,
+      "us_per_round": 329.2814814814815,
+      "edge_attempts": 135760299,
+      "attempts_per_edge": 2.3525131876303274
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r2",
+      "binary": "acic_quiet_rounds",
+      "source": "5620086",
+      "seconds": 0.215494,
+      "rounds": 545,
+      "us_per_round": 395.40183486238533,
+      "edge_attempts": 128797114,
+      "attempts_per_edge": 2.2318521058481657
+    },
+    {
+      "kind": "road",
+      "label": "quiet-r2",
+      "binary": "acic_quiet_rounds",
+      "source": "1294456",
+      "seconds": 0.269451,
+      "rounds": 807,
+      "us_per_round": 333.8921933085502,
+      "edge_attempts": 136451471,
+      "attempts_per_edge": 2.364490115030294
+    }
+  ],
+  "summary": {
+    "5620086": {
+      "arms": {
+        "base": {
+          "seconds": 0.219292,
+          "rounds": 545,
+          "us_per_round": 402.37064220183487,
+          "attempts_per_edge": 2.1375363238603646
+        },
+        "quiet": {
+          "seconds": 0.226418,
+          "rounds": 546,
+          "us_per_round": 414.68498168498166,
+          "attempts_per_edge": 2.2280578895799006
+        },
+        "control": {
+          "seconds": 0.220004,
+          "rounds": 546,
+          "us_per_round": 402.93772893772893,
+          "attempts_per_edge": 2.1382491982480816
+        }
+      },
+      "quiet_speedup": 0.9685272372337888,
+      "control_speedup": 0.9967636952055416
+    },
+    "1294456": {
+      "arms": {
+        "base": {
+          "seconds": 0.266718,
+          "rounds": 806,
+          "us_per_round": 329.5503105590062,
+          "attempts_per_edge": 2.2876347909456305
+        },
+        "quiet": {
+          "seconds": 0.271159,
+          "rounds": 808,
+          "us_per_round": 335.5928217821782,
+          "attempts_per_edge": 2.321818624543881
+        },
+        "control": {
+          "seconds": 0.273074,
+          "rounds": 804,
+          "us_per_round": 339.6442786069652,
+          "attempts_per_edge": 2.2230574757769306
+        }
+      },
+      "quiet_speedup": 0.9836221552668362,
+      "control_speedup": 0.9767242578934648
+    }
+  },
+  "empty": {
+    "8x15-p11": {
+      "launch_mean_us": [
+        144.728661,
+        90.645552,
+        97.463608
+      ],
+      "median_launch_mean_us": 97.463608,
+      "median_launch_p50_us": 92.506409
+    },
+    "8x15-p267": {
+      "launch_mean_us": [
+        97.060919,
+        100.572824,
+        100.898743
+      ],
+      "median_launch_mean_us": 100.572824,
+      "median_launch_p50_us": 96.321106
+    },
+    "16x7-p11": {
+      "launch_mean_us": [
+        150.150299,
+        210.104942,
+        168.655396
+      ],
+      "median_launch_mean_us": 168.655396,
+      "median_launch_p50_us": 79.154968
+    },
+    "16x7-p267": {
+      "launch_mean_us": [
+        193.495274,
+        228.931427,
+        165.084124
+      ],
+      "median_launch_mean_us": 193.495274,
+      "median_launch_p50_us": 92.26799
+    }
+  },
+  "raw_sha256": {
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/base-r-1.out": "2b85c029dcdf438ea6e0e625611cc8d3f8543c5b48296467a59a973d49122a98",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/base-r-1.command.json": "77aab23fb13f0ee9235a5cc0eec392567f36f5a1a1cebb390e1d4fb68280be0e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/base-r0.out": "68775d9401b733a21547d3eb99de303658eeed4d80c098d65ca15fa9b8c6f547",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/base-r0.command.json": "77aab23fb13f0ee9235a5cc0eec392567f36f5a1a1cebb390e1d4fb68280be0e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/base-r1.out": "01088284d0bb15e93ba52bd2d013d9d243e702df8ccb793017140d90f278f70b",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/base-r1.command.json": "77aab23fb13f0ee9235a5cc0eec392567f36f5a1a1cebb390e1d4fb68280be0e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/base-r2.out": "d7b61462b41cb0d2398821c4104c78068c842ad3d59ec82941d325fd4b379b3e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/base-r2.command.json": "77aab23fb13f0ee9235a5cc0eec392567f36f5a1a1cebb390e1d4fb68280be0e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/control-r-1.out": "71b86655525fbb6e9dbf412d166d9123c68bda0cc58ccfc31869ef140337ad55",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/control-r-1.command.json": "77aab23fb13f0ee9235a5cc0eec392567f36f5a1a1cebb390e1d4fb68280be0e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/control-r0.out": "de0c9b69b923137bbdfc674f12b699d2a67123ec07ea693f778b0a1328f0d6bc",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/control-r0.command.json": "77aab23fb13f0ee9235a5cc0eec392567f36f5a1a1cebb390e1d4fb68280be0e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/control-r1.out": "69e29c9405a1e28f917c37beae643f905264884813a52b441183e6e6a467cfb2",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/control-r1.command.json": "77aab23fb13f0ee9235a5cc0eec392567f36f5a1a1cebb390e1d4fb68280be0e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/control-r2.out": "b298b627c5513fbb2c6adfc4ed4ddfe8225d1dbc86fb0c901e5d2ef0d6de33eb",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/control-r2.command.json": "77aab23fb13f0ee9235a5cc0eec392567f36f5a1a1cebb390e1d4fb68280be0e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p11-r0.out": "a0fccfc58ff4dacc5a552d216d09fa0e0c8247ff223dddcfed8b77f613bf9159",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p11-r0.command.json": "dee7977f32e51ca806b1352e18895d9968bad821e46b687cdc0378b5a56ddb86",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p11-r1.out": "1bbe0e4fbb2d4b9f1a6e86aeea74a8da261bc8d58ee58d2e11789411c80678aa",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p11-r1.command.json": "dee7977f32e51ca806b1352e18895d9968bad821e46b687cdc0378b5a56ddb86",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p11-r2.out": "c6db5cc83c865c8cfbfb14d7fc3a95b9a5423d799ef16da7c72833925d9a58e2",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p11-r2.command.json": "dee7977f32e51ca806b1352e18895d9968bad821e46b687cdc0378b5a56ddb86",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p267-r0.out": "de67621d517ff2c46e799e4fd4bfb5a3ba307eebe52f64c208601792c33fad36",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p267-r0.command.json": "77458b7670475a71c838e0dc7531033613be6f30dfcd82f2e06cee90e471c97d",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p267-r1.out": "11ba78f2cf2938ebd7ccb103bc1f2dc613da9d3fe6ad7c9d12086b434074db95",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p267-r1.command.json": "77458b7670475a71c838e0dc7531033613be6f30dfcd82f2e06cee90e471c97d",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p267-r2.out": "f3c88a21f690b3a499fcea1d326bd7f5271b64d1c0eff92b6367655a05205700",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-16x7-p267-r2.command.json": "77458b7670475a71c838e0dc7531033613be6f30dfcd82f2e06cee90e471c97d",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p11-r0.out": "7fcba5a4b0bd11a53b7c8b836cb1303a2d9c006e550503d51ae721f39d017a2e",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p11-r0.command.json": "2ad78d993f6c09273d90c09e407bfe9db165b06984fca3e2af614962b2548961",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p11-r1.out": "d977bc8590e145396b0249c56f4cabee2e72df905950bd5f89d9fee2cc957813",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p11-r1.command.json": "2ad78d993f6c09273d90c09e407bfe9db165b06984fca3e2af614962b2548961",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p11-r2.out": "351eae3c75db9c5e9ebe0f4cd5280221ee514519a871e8462adb119465f4cb77",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p11-r2.command.json": "2ad78d993f6c09273d90c09e407bfe9db165b06984fca3e2af614962b2548961",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p267-r0.out": "705d490fa01065751289412c6f4c32b0a044e3fa86740400853786f638c79dc3",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p267-r0.command.json": "5cbb1a1613174c9a198d818146022041b1bc7c898f91b28972b1004906cae92d",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p267-r1.out": "ab295f15263e42d89c1dd906efc311cd55341189bb30328a88a5aa342226eebb",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p267-r1.command.json": "5cbb1a1613174c9a198d818146022041b1bc7c898f91b28972b1004906cae92d",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p267-r2.out": "8c7089eadaebdb89a454f3654690c14086b85a3abce62c2a73d3e3e73f041cc8",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/empty-8x15-p267-r2.command.json": "5cbb1a1613174c9a198d818146022041b1bc7c898f91b28972b1004906cae92d",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/profile.out": "070fe2176c520b1b3ea07f573ca45b00e5e75cabf757edf4eae05e0082a742b7",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/profile.command.json": "00285eed1239bfed25bfa4dd1d76e37ff6012f6f17d6dcaa0e27e362ad050f82",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/quiet-r-1.out": "52c88e40e6f2fccc4140518f817b42a15a11517783ee7f3f71457e4f7ee54003",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/quiet-r-1.command.json": "28c412df918be156f062d681b8d642db9c4beeac8d922d20816e949b32c1b097",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/quiet-r0.out": "e76d378d52c28979bd3ba0fed989b53594637b2a7dbff4d771216bee75ea2577",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/quiet-r0.command.json": "28c412df918be156f062d681b8d642db9c4beeac8d922d20816e949b32c1b097",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/quiet-r1.out": "9c990b2afe84529245601bdbf17ae8f56584c2691cf89a5dc032f832cb9f802b",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/quiet-r1.command.json": "28c412df918be156f062d681b8d642db9c4beeac8d922d20816e949b32c1b097",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/quiet-r2.out": "2e0d9e777bfa07795dd716f9fe7903a0f4be6c4e9e7731fcd5a0a6cd93828b08",
+    "/u/rao1/.tmp/road-rounds-20260924/logs/road-rounds-22355241/quiet-r2.command.json": "28c412df918be156f062d681b8d642db9c4beeac8d922d20816e949b32c1b097"
+  },
+  "missing": [
+    "Complete per-PE phase profile",
+    "work-cost run",
+    "Projections trace"
+  ],
+  "decision": "Retain validated timing and unloaded-cycle data as partial evidence; quiet output has no improvement. 16x7 unloaded mean is near half of loaded round time; prioritize distributed collective/layout attribution.",
+  "caveats": [
+    "Unloaded cycles are not subtractable communication overhead.",
+    "Cross-allocation absolute timings do not establish strong scaling.",
+    "Profile solve digests pass but interleaved phase data are unusable."
+  ]
+}

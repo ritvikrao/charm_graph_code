@@ -452,3 +452,23 @@ of how the round floor changes with distribution; retain the eight-node
 endpoint and its coalescing comparison in `cpu`. The configured interactive
 CPU billing weight is twice that of `cpu`; queue priority is higher, but an
 earlier start is not guaranteed. Keep `+old-scheduler` on every run.
+
+The completed continuation 22355144 rejects general heap coalescing: its
+mechanism works (maximum pending callbacks 94 → 1; controller p90 wait
+181 → 31 us), but mesh speedup is 0.864/0.842×, outside controls and below
+the 0.95 floor. Road already missed its speedup prediction. Keep this version
+disabled; skip second-allocation and held-out acceptance runs. The existing
+eight-node comparison remains a bounded test of the distributed mechanism,
+not a route to accepting this version as a general optimization.
+
+Four-node 22355241 supplies valid production/quiet/control timing and unloaded
+cycle data, but stdout interleaving broke the subsequent phase audit. The
+driver now captures profile output per rank; use that fix in pending eight-node
+attribution 22354948. Retain all completed timings; rerun only missing four-node
+diagnostics if the eight-node evidence leaves a relevant question unresolved.
+At four nodes, the 267-long empty cycle averages about 193 us at 16 × 7
+versus 101 us at 8 × 15. A matched full-solver comparison of those layouts is
+the next concrete candidate, subject to the eight-node attribution. Distinguish
+useful threshold advances from repeated controller polls and report work as
+well as rounds. Do not infer a solve speedup from the unloaded benchmark or
+lower callback latency alone. No new jobs were submitted in this review.
