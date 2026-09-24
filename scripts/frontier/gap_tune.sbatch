@@ -9,6 +9,8 @@
 # 2.7 GB), which dominates the solve.
 #
 # ENGINE=wasp tunes the Wasp SC25 artifact (bin/wasp_sssp) the same way.
+# SELECTION_JOB=<job> skips the search and reruns that job's frozen selection
+# on the held-out sources, as a second allocation of the reference.
 #
 #   sbatch scripts/frontier/gap_tune.sbatch CAMPAIGN [graphs] [threads]
 #SBATCH --account=csc710
@@ -27,5 +29,6 @@ module swap PrgEnv-cray PrgEnv-gnu/8.6.0 >/dev/null 2>&1
 module load gcc-native/13.2 cray-mpich/8.1.31 libfabric/2.3.1 >/dev/null 2>&1
 export OMP_PLACES=cores OMP_PROC_BIND=close NO_AFFINITY=1
 "$PY" "$APP/benchmarks/onenode_gap_tune.py" "$ROOT" --graphs "$GRAPHS" \
-  --threads "$THREADS" --sources 4 --reps 3 --timeout 300 --launch-timeout 180 --engine "${ENGINE:-gap}"
+  --threads "$THREADS" --sources 4 --reps 3 --timeout 300 --launch-timeout 180 --engine "${ENGINE:-gap}" \
+  ${SELECTION_JOB:+--selection-job "$SELECTION_JOB"}
 echo "GAP TUNE COMPLETE $SLURM_JOB_ID"

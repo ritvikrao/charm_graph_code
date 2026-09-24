@@ -1,0 +1,59 @@
+[
+  {
+    "label": "n16_s8",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Frontier frozen-binary RMAT regression gate (plan, machine decision of 2026-09-24): the Frontier C6/scaling candidate (label n16_s8, acic_slice, 16 nodes, 8 x 7) against frozen R0 (acic_r0_control, source 598f13b) and a repeat of R0, five scale-free graphs, four held-out sources, 16 timed launches per arm, two allocations. Pass rule: benchmarks/onenode_accept.py --nodes 16 --variant n16_s8 --one-node-variant n1_s8 --regression-reps 16 (worst per-source candidate/frozen ratio at or below the frozen/control floor, in both allocations). launch_modes.py fast-mode medians are reported beside it. Predictions: every graph passes in both allocations, because the high-diameter mechanisms print inactive on all five graphs; every allocation floor lies between 1.00 and 1.10; at most 2 of 48 launches per graph and allocation are classified slow."
+  },
+  {
+    "label": "frozen",
+    "binary": "acic_r0_control",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "+old-scheduler"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Frontier frozen-binary RMAT regression gate (plan, machine decision of 2026-09-24): the Frontier C6/scaling candidate (label n16_s8, acic_slice, 16 nodes, 8 x 7) against frozen R0 (acic_r0_control, source 598f13b) and a repeat of R0, five scale-free graphs, four held-out sources, 16 timed launches per arm, two allocations. Pass rule: benchmarks/onenode_accept.py --nodes 16 --variant n16_s8 --one-node-variant n1_s8 --regression-reps 16 (worst per-source candidate/frozen ratio at or below the frozen/control floor, in both allocations). launch_modes.py fast-mode medians are reported beside it. Predictions: every graph passes in both allocations, because the high-diameter mechanisms print inactive on all five graphs; every allocation floor lies between 1.00 and 1.10; at most 2 of 48 launches per graph and allocation are classified slow."
+  },
+  {
+    "label": "control",
+    "binary": "acic_r0_control",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "+old-scheduler"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Frontier frozen-binary RMAT regression gate (plan, machine decision of 2026-09-24): the Frontier C6/scaling candidate (label n16_s8, acic_slice, 16 nodes, 8 x 7) against frozen R0 (acic_r0_control, source 598f13b) and a repeat of R0, five scale-free graphs, four held-out sources, 16 timed launches per arm, two allocations. Pass rule: benchmarks/onenode_accept.py --nodes 16 --variant n16_s8 --one-node-variant n1_s8 --regression-reps 16 (worst per-source candidate/frozen ratio at or below the frozen/control floor, in both allocations). launch_modes.py fast-mode medians are reported beside it. Predictions: every graph passes in both allocations, because the high-diameter mechanisms print inactive on all five graphs; every allocation floor lies between 1.00 and 1.10; at most 2 of 48 launches per graph and allocation are classified slow."
+  }
+]

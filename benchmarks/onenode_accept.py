@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Fail-closed paper acceptance, with explicit paired allocation IDs.
 
-Each --allocation is ACIC_8_JOB,GAP_1_JOB,ACIC_1_JOB,REGRESSION_8_JOB.
+Each --allocation is ACIC_N_JOB,GAP_1_JOB,ACIC_1_JOB,REGRESSION_N_JOB, where N is
+--nodes (8 on Anvil, 16 on Frontier). ACIC_N_JOB and ACIC_1_JOB may be the same
+scaling job; --one-node-variant names its one-node arm.
 All selected cells need four held-out sources and three repetitions. Regression
 noise is the largest absolute log-ratio of the repeated baseline's source
 medians in that allocation. No missing cell, input, or second allocation passes.
@@ -38,19 +40,25 @@ def medians(rows, sources, reps):
 
 
 def acic(root, graph, nodes, job, label, sources, reps):
-    path = root/'logs'/f'AB-{graph}-{nodes}n-{job}'
-    if not (path/'summary.json').exists():
-        raise ValueError(f'{path.name}: incomplete comparison')
+    # One job may hold several node counts (a scaling job runs 1..16 nodes in
+    # one allocation), so the arm's own node count and layout are checked.
+    paths = list((root/'logs').glob(f'AB-{graph}-*n-{job}'))
+    if len(paths) != 1 or not (paths[0]/'summary.json').exists():
+        raise ValueError(f'{graph}/{job}: missing or incomplete comparison')
+    path = paths[0]
     manifest = json.loads((path/'manifest.json').read_text())
-    if (manifest.get('source_role') != 'test' or manifest['nodes'] != nodes
+    if (manifest.get('source_role') != 'test'
             or manifest['sources'] != len(sources) or manifest['reps'] != reps):
-        raise ValueError(f'{path.name}: wrong role/layout/sample counts')
+        raise ValueError(f'{path.name}: wrong role/sample counts')
     variant = next(v for v in manifest['variants'] if v['label'] == label)
+    if variant.get('nodes', manifest['nodes']) != nodes:
+        raise ValueError(f'{path.name}/{label}: expected {nodes} nodes')
     if variant.get('graph', graph) != graph:
         raise ValueError('acceptance requires original graph IDs from the reader path')
     rows = [json.loads(line) for line in (path/'runs.jsonl').read_text().splitlines()]
     timing = medians([r for r in rows if r['variant'] == label], sources, reps)
-    identity = (variant['sha256'], tuple(variant.get('flags', [])), manifest['workers'], manifest['rpn'])
+    identity = (variant['sha256'], tuple(variant.get('flags', [])),
+                variant.get('workers', manifest['workers']), variant.get('rpn', manifest['rpn']))
     return timing, identity
 
 
@@ -75,6 +83,8 @@ def main():
     ap.add_argument('--sources', type=int, default=4)
     ap.add_argument('--reps', type=int, default=3)
     ap.add_argument('--regression-reps', type=int, help='timed launches per regression arm (default --reps)')
+    ap.add_argument('--nodes', type=int, default=8, help='node count of the multi-node and regression cells')
+    ap.add_argument('--one-node-variant', help='label of the one-node arm (default --variant)')
     args = ap.parse_args()
     allocations = [a.split(',') for a in args.allocation]
     if len(allocations) != 2 or any(len(a) != 4 for a in allocations):
@@ -90,8 +100,9 @@ def main():
         for number, (eight_job, gap_job, one_job, regression_job) in enumerate(allocations, 1):
             for graph in args.graphs.split(','):
                 sources = references(root, graph, args.sources)
-                eight, identity = acic(root, graph, 8, eight_job, args.variant, sources, args.reps)
-                one, one_identity = acic(root, graph, 1, one_job, args.variant, sources, args.reps)
+                eight, identity = acic(root, graph, args.nodes, eight_job, args.variant, sources, args.reps)
+                one, one_identity = acic(root, graph, 1, one_job, args.one_node_variant or args.variant,
+                                         sources, args.reps)
                 identities.update([identity, one_identity])
                 baseline, baseline_identity = gap(root, graph, gap_job, sources, args.reps)
                 if graph in baselines and baselines[graph] != baseline_identity:
@@ -104,10 +115,10 @@ def main():
                     worst_gap_ratio=max(ratios), own_one_node_ratio=statistics.median(own_ratios), passed=passed))
             for graph in args.regressions.split(','):
                 sources = references(root, graph, args.sources)
-                candidate, identity = acic(root, graph, 8, regression_job, args.variant, sources, args.regression_reps)
+                candidate, identity = acic(root, graph, args.nodes, regression_job, args.variant, sources, args.regression_reps)
                 identities.add(identity)
-                frozen, frozen_identity = acic(root, graph, 8, regression_job, 'frozen', sources, args.regression_reps)
-                control, control_identity = acic(root, graph, 8, regression_job, 'control', sources, args.regression_reps)
+                frozen, frozen_identity = acic(root, graph, args.nodes, regression_job, 'frozen', sources, args.regression_reps)
+                control, control_identity = acic(root, graph, args.nodes, regression_job, 'control', sources, args.regression_reps)
                 if frozen_identity != control_identity:
                     raise ValueError('repeated control differs from frozen configuration')
                 frozen_hashes.add(frozen_identity)
