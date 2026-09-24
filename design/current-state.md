@@ -20,9 +20,10 @@ allocations, so ACIC is faster on three of four held-out sources and 2–4%
 slower on one. The claim against the best multicore code is a narrow median
 win, not a win on every source.
 
-The result is specific to sparse meshes. Road remains 1.45–1.51× slower than
-GAPBS after its work is brought close to the useful-work floor, and 2.5–2.8×
-slower than tuned Wasp on the same sources. Scale-free
+The result is specific to sparse meshes. On held-out road sources at 16 Frontier
+nodes, ACIC is 1.19–1.39× slower than tuned GAPBS and 2.0–2.55× slower than
+tuned Wasp, so road misses the plan's 1.5× local-efficiency gate, which is set
+against the faster of the two. Scale-free
 graphs remain 1.87–3.65× slower than RIKEN in the last complete comparison.
 No measured live adaptive policy causes the accepted result.
 
@@ -33,7 +34,8 @@ No measured live adaptive policy causes the accepted result.
 | `mesh26-z`, Anvil | 8 nodes, 16 processes/node × 7 workers/process; ACIC/GAPBS 0.71–0.83 | Accepted win on four held-out sources in jobs 20866513/20866514. GAPBS references are jobs 20866515/20866516 plus the earlier fixed-setting cells. |
 | `mesh26-z`, Frontier | 16 nodes, 8 × 7; ACIC/GAPBS 0.70–0.79 | Independent-machine reproduction at the same 896 PEs, jobs 5534022/5534023. Eight Frontier nodes reach parity rather than a win. |
 | `road-usa-z`, Anvil | Best fixed width/cap arms remain about 1.5× behind GAPBS | Width 32K reaches about 1.5 attempts/edge but needs 889–1,444 rounds. Width 128K trades 1.7–2.0 attempts/edge for 520–800 rounds and ties cap 7 with 40–60% less work. Jobs 20868020–22 and 20876828–30. |
-| `road-usa-z`, Frontier | Width 128K is 1.45–1.51× behind GAPBS | Two allocations agree within about 1%; jobs 5534016/5534017. |
+| `road-usa-z`, Frontier | Width 128K is 1.45–1.51× behind GAPBS | Two allocations agree within about 1%; jobs 5534016/5534017. Training sources, 8 nodes. |
+| `road-usa-z`, Frontier held-out | Width 128K, 16 nodes: 0.146–0.148 s; ACIC/GAPBS 1.19–1.39, ACIC/Wasp 2.00–2.55 | Jobs 5538405/5538406, four held-out sources, two allocations within 1%. 16 nodes is 13–14% faster than 8; the plain mesh candidate is 1.45–2.15× slower than width 128K at 10.8–11.0 attempts per edge against 3.1. |
 | Scale-free suite | ACIC speeds up from 2 to 8 nodes but trails RIKEN by 1.87–3.65× | Last complete 8g comparison at application revision `de0ed1c`. The newer high-diameter paths resolve inactive, but the formal frozen-binary regression is incomplete. |
 | Scale-free suite, Frontier | 16 nodes, current candidate, layout tuned on training sources; ACIC/RIKEN 1.17–1.30 (`uniform25`), 2.09–3.56 (orkut, RMAT 25–27) | Held-out sources, two allocations, jobs 5538389–5538392 against RIKEN 5536474/5536475. A counter-regime result: ACIC loses on every source. |
 
@@ -206,6 +208,13 @@ same source spread about ±6% in both directions (control/candidate
 for a few-percent regression decision at this layout, but not for these
 comparisons.
 
+**Road on held-out sources** (jobs 5538405/5538406): width 131072 at 16 nodes
+takes 0.140–0.197 s by source, 13–14% faster than at 8 nodes, with repeats
+within 2%. At 16 nodes ACIC/GAPBS is 1.19–1.39 and ACIC/Wasp 2.00–2.55. Both
+ratio predictions (GAPBS 1.3–1.8, Wasp 2.2–3.2) missed on the favorable side;
+the node-count, width and control predictions were met. Without the width, the
+plain candidate does 10.8–11.0 attempts per edge and is 1.45–2.15× slower.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
@@ -219,6 +228,7 @@ comparisons.
 | Frontier Wasp and RIKEN references | `design/onenode-data/frontier-wasp-1n-5536541.json`, `frontier-riken-16n-5536474.json`, `-5536475.json`, `-5536476.json`; smoke job 5536535 |
 | Frontier scale-free layout selection | `design/onenode-data/frontier-scalefree-layout-5536460.json` and `frontier-scalefree-layout-modes-5536460.json`; `benchmarks/frontier-scalefree-layout-variants.json` |
 | Frontier scale-free held-out vs RIKEN | `design/onenode-data/frontier-scalefree-heldout-{5538389,5538390,5538391,5538392}.json`, matching `-modes-` files, `frontier-scalefree-vs-riken-16n.json`; `benchmarks/frontier-scalefree-heldout-{4x14,8x7}-variants.json` |
+| Frontier road held-out | `design/onenode-data/frontier-road-heldout-5538405.json`, `-5538406.json`; `benchmarks/frontier-road-heldout-variants.json`, predictions in commit `8749a7d` |
 | Frontier RMAT behavior | `design/onenode-data/frontier-rmat-regression-5534333.json` and 5534334 plus probe configurations named `benchmarks/frontier-*-probe-variants.json` |
 
 Anvil raw logs are rooted at `/anvil/scratch/x-rrao/acic/`; Frontier raw logs

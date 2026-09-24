@@ -1,0 +1,969 @@
+{
+  "allocations": [
+    {
+      "job": 5538405,
+      "graph": "road-usa-z",
+      "manifest": {
+        "variants": [
+          {
+            "label": "n8_w128k",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "131072"
+            ],
+            "nodes": 8,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Road-usa-z on four held-out sources, one warmup and three repetitions, two allocations; the ordered road profile (width 131072, selected on training sources in jobs 5534016/5534017) and the plain mesh candidate. References on the same held-out sources: tuned GAPBS 0.116-0.142 s (job 5529591), tuned Wasp 0.067-0.077 s (job 5536541). Predictions (median over sources): n8_w128k 0.16-0.23 s; n16_w128k within 15% of n8_w128k on every source (round-bound: more PEs do not shorten rounds); n16_s8 at least 1.15x n16_w128k on every source; repeated control within 2% on every source; at the faster node count ACIC/Wasp 2.2-3.2 and ACIC/GAPBS 1.3-1.8.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_w128k",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "131072"
+            ],
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Road-usa-z on four held-out sources, one warmup and three repetitions, two allocations; the ordered road profile (width 131072, selected on training sources in jobs 5534016/5534017) and the plain mesh candidate. References on the same held-out sources: tuned GAPBS 0.116-0.142 s (job 5529591), tuned Wasp 0.067-0.077 s (job 5536541). Predictions (median over sources): n8_w128k 0.16-0.23 s; n16_w128k within 15% of n8_w128k on every source (round-bound: more PEs do not shorten rounds); n16_s8 at least 1.15x n16_w128k on every source; repeated control within 2% on every source; at the faster node count ACIC/Wasp 2.2-3.2 and ACIC/GAPBS 1.3-1.8.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_w128k_control",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--bucket-width",
+              "131072"
+            ],
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Road-usa-z on four held-out sources, one warmup and three repetitions, two allocations; the ordered road profile (width 131072, selected on training sources in jobs 5534016/5534017) and the plain mesh candidate. References on the same held-out sources: tuned GAPBS 0.116-0.142 s (job 5529591), tuned Wasp 0.067-0.077 s (job 5536541). Predictions (median over sources): n8_w128k 0.16-0.23 s; n16_w128k within 15% of n8_w128k on every source (round-bound: more PEs do not shorten rounds); n16_s8 at least 1.15x n16_w128k on every source; repeated control within 2% on every source; at the faster node count ACIC/Wasp 2.2-3.2 and ACIC/GAPBS 1.3-1.8.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          },
+          {
+            "label": "n16_s8",
+            "binary": "acic_slice",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8"
+            ],
+            "nodes": 16,
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-24 before submission. Road-usa-z on four held-out sources, one warmup and three repetitions, two allocations; the ordered road profile (width 131072, selected on training sources in jobs 5534016/5534017) and the plain mesh candidate. References on the same held-out sources: tuned GAPBS 0.116-0.142 s (job 5529591), tuned Wasp 0.067-0.077 s (job 5536541). Predictions (median over sources): n8_w128k 0.16-0.23 s; n16_w128k within 15% of n8_w128k on every source (round-bound: more PEs do not shorten rounds); n16_s8 at least 1.15x n16_w128k on every source; repeated control within 2% on every source; at the faster node count ACIC/Wasp 2.2-3.2 and ACIC/GAPBS 1.3-1.8.",
+            "sha256": "460c7b1588c0f826ddbf25bbedec489860de0552d2a7063d833a1f0f0802f56e"
+          }
+        ],
+        "nodes": 16,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": true,
+        "hosts": "frontier[00071,00601,01529,01661,01685,02042,02130,02209,02429,02466,02593,02811,02843,03061,03076,03304]"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "n16_s8": {
+          "sources": {
+            "10159848": {
+              "seconds": 0.228168,
+              "edge_attempts": 582627814,
+              "attempts_per_edge": 10.096026791420291
+            },
+            "22613654": {
+              "seconds": 0.241487,
+              "edge_attempts": 614879239,
+              "attempts_per_edge": 10.654893434991623
+            },
+            "3073839": {
+              "seconds": 0.242074,
+              "edge_attempts": 625557910,
+              "attempts_per_edge": 10.839938065409427
+            },
+            "8718204": {
+              "seconds": 0.417179,
+              "edge_attempts": 1105654258,
+              "attempts_per_edge": 19.159255261397327
+            }
+          },
+          "medians": {
+            "seconds": 0.2417805,
+            "edge_attempts": 620218574.5,
+            "attempts_per_edge": 10.747415750200524
+          }
+        },
+        "n16_w128k": {
+          "sources": {
+            "10159848": {
+              "seconds": 0.139988,
+              "edge_attempts": 177054164,
+              "attempts_per_edge": 3.0680711430582717
+            },
+            "22613654": {
+              "seconds": 0.145742,
+              "edge_attempts": 179581055,
+              "attempts_per_edge": 3.1118582033770203
+            },
+            "3073839": {
+              "seconds": 0.149135,
+              "edge_attempts": 185522641,
+              "attempts_per_edge": 3.2148165757686407
+            },
+            "8718204": {
+              "seconds": 0.194056,
+              "edge_attempts": 169232742,
+              "attempts_per_edge": 2.932538159287943
+            }
+          },
+          "medians": {
+            "seconds": 0.1474385,
+            "edge_attempts": 178317609.5,
+            "attempts_per_edge": 3.0899646732176462
+          }
+        },
+        "n16_w128k_control": {
+          "sources": {
+            "10159848": {
+              "seconds": 0.141572,
+              "edge_attempts": 179174984,
+              "attempts_per_edge": 3.104821629432717
+            },
+            "22613654": {
+              "seconds": 0.145134,
+              "edge_attempts": 178512617,
+              "attempts_per_edge": 3.093343847533083
+            },
+            "3073839": {
+              "seconds": 0.147511,
+              "edge_attempts": 181382115,
+              "attempts_per_edge": 3.1430677501511735
+            },
+            "8718204": {
+              "seconds": 0.196661,
+              "edge_attempts": 169785270,
+              "attempts_per_edge": 2.9421126034819336
+            }
+          },
+          "medians": {
+            "seconds": 0.14632250000000002,
+            "edge_attempts": 178843800.5,
+            "attempts_per_edge": 3.0990827384829
+          }
+        },
+        "n8_w128k": {
+          "sources": {
+            "10159848": {
+              "seconds": 0.161982,
+              "edge_attempts": 127523655,
+              "attempts_per_edge": 2.209785057429198
+            },
+            "22613654": {
+              "seconds": 0.169091,
+              "edge_attempts": 134783928,
+              "attempts_per_edge": 2.335594208588304
+            },
+            "3073839": {
+              "seconds": 0.170136,
+              "edge_attempts": 136860075,
+              "attempts_per_edge": 2.371570581894311
+            },
+            "8718204": {
+              "seconds": 0.225841,
+              "edge_attempts": 136632596,
+              "attempts_per_edge": 2.3676287273805037
+            }
+          },
+          "medians": {
+            "seconds": 0.1696135,
+            "edge_attempts": 135708262.0,
+            "attempts_per_edge": 2.351611467984404
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "n16_s8",
+          "source": "8718204",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.369734,
+            "edge_attempts": 938559251,
+            "attempts_per_edge": 16.26376069892084
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "22613654",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.253025,
+            "edge_attempts": 636996511,
+            "attempts_per_edge": 11.038151091594212
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "10159848",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.247167,
+            "edge_attempts": 641641238,
+            "attempts_per_edge": 11.118636930244602
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "3073839",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.234548,
+            "edge_attempts": 602518628,
+            "attempts_per_edge": 10.440703420688042
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "8718204",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.230457,
+            "edge_attempts": 134700160,
+            "attempts_per_edge": 2.334142640448332
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "22613654",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.17152,
+            "edge_attempts": 132542420,
+            "attempts_per_edge": 2.296752388343205
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "10159848",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.164587,
+            "edge_attempts": 131081833,
+            "attempts_per_edge": 2.271442704993278
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "3073839",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.175529,
+            "edge_attempts": 144952178,
+            "attempts_per_edge": 2.511794043122567
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "8718204",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.191618,
+            "edge_attempts": 171320457,
+            "attempts_per_edge": 2.9687149879019814
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "22613654",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.145702,
+            "edge_attempts": 177884513,
+            "attempts_per_edge": 3.0824597897187775
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "10159848",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.14188,
+            "edge_attempts": 190331590,
+            "attempts_per_edge": 3.298148124273419
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "3073839",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.150022,
+            "edge_attempts": 186939957,
+            "attempts_per_edge": 3.2393764405126
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "8718204",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.19376,
+            "edge_attempts": 166706310,
+            "attempts_per_edge": 2.888759052719746
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "22613654",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.146703,
+            "edge_attempts": 172628253,
+            "attempts_per_edge": 2.991377042710289
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "10159848",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.141969,
+            "edge_attempts": 171690855,
+            "attempts_per_edge": 2.9751334046710247
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "3073839",
+          "rep": -1,
+          "metrics": {
+            "seconds": 0.150812,
+            "edge_attempts": 186731119,
+            "attempts_per_edge": 3.2357576053104298
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "8718204",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.225772,
+            "edge_attempts": 136828253,
+            "attempts_per_edge": 2.371019156512898
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "22613654",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.169091,
+            "edge_attempts": 134783928,
+            "attempts_per_edge": 2.335594208588304
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "10159848",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.162069,
+            "edge_attempts": 127523655,
+            "attempts_per_edge": 2.209785057429198
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "3073839",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.168607,
+            "edge_attempts": 136279601,
+            "attempts_per_edge": 2.3615118773235695
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "8718204",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.194056,
+            "edge_attempts": 169665302,
+            "attempts_per_edge": 2.9400337460827344
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "22613654",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.143986,
+            "edge_attempts": 173396815,
+            "attempts_per_edge": 3.004695017507262
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "10159848",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.139988,
+            "edge_attempts": 177054164,
+            "attempts_per_edge": 3.0680711430582717
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "3073839",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.148328,
+            "edge_attempts": 187301153,
+            "attempts_per_edge": 3.2456354010450847
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "8718204",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.193683,
+            "edge_attempts": 169785270,
+            "attempts_per_edge": 2.9421126034819336
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "22613654",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.145905,
+            "edge_attempts": 178512617,
+            "attempts_per_edge": 3.093343847533083
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "10159848",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.141572,
+            "edge_attempts": 179174984,
+            "attempts_per_edge": 3.104821629432717
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "3073839",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.149874,
+            "edge_attempts": 185993185,
+            "attempts_per_edge": 3.222970365746374
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "8718204",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.417179,
+            "edge_attempts": 1105654258,
+            "attempts_per_edge": 19.159255261397327
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "22613654",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.241487,
+            "edge_attempts": 614879239,
+            "attempts_per_edge": 10.654893434991623
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "10159848",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.252176,
+            "edge_attempts": 660176775,
+            "attempts_per_edge": 11.439828733396936
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "3073839",
+          "rep": 0,
+          "metrics": {
+            "seconds": 0.246933,
+            "edge_attempts": 643131104,
+            "attempts_per_edge": 11.144453972771903
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "8718204",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.195416,
+            "edge_attempts": 169091662,
+            "attempts_per_edge": 2.930093464020213
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "22613654",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.146879,
+            "edge_attempts": 182471325,
+            "attempts_per_edge": 3.161942052196566
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "10159848",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.142675,
+            "edge_attempts": 179200048,
+            "attempts_per_edge": 3.1052559492667857
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "3073839",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.150352,
+            "edge_attempts": 185522641,
+            "attempts_per_edge": 3.2148165757686407
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "8718204",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.196661,
+            "edge_attempts": 173174987,
+            "attempts_per_edge": 3.0008510859659383
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "22613654",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.144935,
+            "edge_attempts": 176155350,
+            "attempts_per_edge": 3.0524961052614943
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "10159848",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.141853,
+            "edge_attempts": 175344511,
+            "attempts_per_edge": 3.038445536320533
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "3073839",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.146321,
+            "edge_attempts": 181382115,
+            "attempts_per_edge": 3.1430677501511735
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "8718204",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.442166,
+            "edge_attempts": 1171220485,
+            "attempts_per_edge": 20.295415205186664
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "22613654",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.25917,
+            "edge_attempts": 661453427,
+            "attempts_per_edge": 11.461951111501117
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "10159848",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.228168,
+            "edge_attempts": 582627814,
+            "attempts_per_edge": 10.096026791420291
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "3073839",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.24078,
+            "edge_attempts": 622044740,
+            "attempts_per_edge": 10.779060335938699
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "8718204",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.228503,
+            "edge_attempts": 136632596,
+            "attempts_per_edge": 2.3676287273805037
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "22613654",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.166502,
+            "edge_attempts": 131083888,
+            "attempts_per_edge": 2.2714783149222204
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "10159848",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.160566,
+            "edge_attempts": 127828856,
+            "attempts_per_edge": 2.2150737123796262
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "3073839",
+          "rep": 1,
+          "metrics": {
+            "seconds": 0.170136,
+            "edge_attempts": 136860075,
+            "attempts_per_edge": 2.371570581894311
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "8718204",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.196837,
+            "edge_attempts": 168236281,
+            "attempts_per_edge": 2.915271052035481
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "22613654",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.145134,
+            "edge_attempts": 178783938,
+            "attempts_per_edge": 3.0980454151878583
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "10159848",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.141409,
+            "edge_attempts": 179238240,
+            "attempts_per_edge": 3.105917756763703
+          }
+        },
+        {
+          "variant": "n16_w128k_control",
+          "source": "3073839",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.147511,
+            "edge_attempts": 178214646,
+            "attempts_per_edge": 3.0881804771501744
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "8718204",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.341477,
+            "edge_attempts": 888649749,
+            "attempts_per_edge": 15.398907258644739
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "22613654",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.231436,
+            "edge_attempts": 591651081,
+            "attempts_per_edge": 10.252385865239136
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "10159848",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.226743,
+            "edge_attempts": 573948870,
+            "attempts_per_edge": 9.945634295491086
+          }
+        },
+        {
+          "variant": "n16_s8",
+          "source": "3073839",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.242074,
+            "edge_attempts": 625557910,
+            "attempts_per_edge": 10.839938065409427
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "8718204",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.225841,
+            "edge_attempts": 135985701,
+            "attempts_per_edge": 2.3564190509896754
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "22613654",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.170083,
+            "edge_attempts": 135949478,
+            "attempts_per_edge": 2.3557913631764986
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "10159848",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.161982,
+            "edge_attempts": 125899765,
+            "attempts_per_edge": 2.1816455890544195
+          }
+        },
+        {
+          "variant": "n8_w128k",
+          "source": "3073839",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.172655,
+            "edge_attempts": 139393193,
+            "attempts_per_edge": 2.4154655463627064
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "8718204",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.193402,
+            "edge_attempts": 169232742,
+            "attempts_per_edge": 2.932538159287943
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "22613654",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.145742,
+            "edge_attempts": 179581055,
+            "attempts_per_edge": 3.1118582033770203
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "10159848",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.13904,
+            "edge_attempts": 172166012,
+            "attempts_per_edge": 2.983367130708228
+          }
+        },
+        {
+          "variant": "n16_w128k",
+          "source": "3073839",
+          "rep": 2,
+          "metrics": {
+            "seconds": 0.149135,
+            "edge_attempts": 178818189,
+            "attempts_per_edge": 3.098638931331996
+          }
+        }
+      ]
+    }
+  ],
+  "checked_solves": 64,
+  "diagnostic_solves": 0,
+  "checked_launches": 16,
+  "raw_sha256": {
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-g0-r-1.launch.out": "93ff770523c96cdf6fb9deb597adafc625a8291cb1aa3c5dbfebdc1e828c9c85",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-g0-r0.launch.out": "c991363497cd24e5ddd9fc93e5c0ed833aeb98eaeaa229050248ff1794c5082a",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-g0-r1.launch.out": "544daaf841dc0119f5d95a8af90f71cb0b5167623544c182c7654ea4f9860d88",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-g0-r2.launch.out": "b2a227414ba10fc98be9b268fed6e246331708def401229fadb6d85fe94840f0",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-g0-r-1.launch.out": "62afcf0cd5b1123a40b6526bde78abc698c06ffc0a9fa6b436d9f20fb9d25a1f",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-g0-r0.launch.out": "8a4563a5fbb992dda1bf35e329c1f4a9f69dd35d5966d87dc0b2ccad6f757d58",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-g0-r1.launch.out": "d27b9e38d71aa2901982b3bca9d5b012e605a3ce7ea68146f2daf5e06c140df6",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-g0-r2.launch.out": "4096805371c49dfb0a7b9af475bfa7846df86e5d468df744ca2b649de6d106c4",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-g0-r-1.launch.out": "918045f8f200a0e9499392dc93c942d0c072b734a2e91be8bbc92631e16e451a",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-g0-r0.launch.out": "e7aa04c94639f6e22934a2f9627509a5222244e9f75504f8a75509dda050546c",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-g0-r1.launch.out": "8a451ebd0c3a16104e94394804954b8acf2e10a96e747ef4527c214dbcb24eb6",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-g0-r2.launch.out": "7377075908a07f7f85cb0ceeb337adfa1fca8f61007d1cd1e683cbc1186f5826",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-g0-r-1.launch.out": "4246429b99fbcc2c0d0057dda4aec975dd8f8a87b770b2136ae98fc40f748d13",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-g0-r0.launch.out": "35b818129578ea3ae40ffac0d1c5ede09daf559eb413128022d454002fa4c047",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-g0-r1.launch.out": "8b0e9f87c40493341a6196d26aee283a9fb1d92e5db6d419fb9c78587af04b5f",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-g0-r2.launch.out": "727b3cfaff0909c56a5ec2b2ae5aea40467d10d8dda1c038e0a0ca55b365db09",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s0-r-1.out": "40e1aeb2e1e387b092beb6b257ac662001073a95df56ee21b8f17bd61a047cf0",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s1-r-1.out": "42fcb5ad7c6658fab387f54d2f7d1ba04574b096340cb42d5663c3b15c974f21",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s2-r-1.out": "836859e9c878303cb4d26ca051f4f7fd0dfa3fcb2f655e1c21cde5cd56b1c319",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s3-r-1.out": "aa7f7bb673562c06536f2cb090e7779f826a984e4a5736e2a43f9ccc128b235e",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s0-r-1.out": "61606a148cddf14ac4c5f9f853fcb4c00f2546e7c18f999c46835cc87fc997a8",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s1-r-1.out": "49a8efd4c273fa0827a84bacd4cebf8729fc1d47c795a4d2940b9b9592385768",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s2-r-1.out": "0925b6c91fb06355c0575365de50ff1d13e53d4a67c38d359d169ad916b66e55",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s3-r-1.out": "ea654c9740ca00f0521b5332f696706077bc1700a58b8a6260e459ededc4d7c6",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s0-r-1.out": "ceb74fe717e428988f93734a929f0c5a4afbace77e03635589f2d32db9420826",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s1-r-1.out": "ba0c1d68342d23c757f62b926b44e28d53ef08e88ebab4d6b66bc810e32b9498",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s2-r-1.out": "743f036dbde578c671e6ab8e521e3f990a76f4a6ab1f08ec8efb9a0151c3737e",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s3-r-1.out": "2d9bcfad7c31158dc3ae0d5924fce55e5cb78fd1c647832bc6dd76517741a50a",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s0-r-1.out": "1195f6dc6f0e90eb7102245099508b0a7730189f4f803c67b85ac06af9cc912a",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s1-r-1.out": "5b687f4e12a5ad84e50adb7a86ba364f15c4c87eea565c6c0a32db39ff3457d6",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s2-r-1.out": "cfe98009ad8039272fb826552e76929480fdfe1eea43fa16bf37f3279d97cc3d",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s3-r-1.out": "d17ac542fac72784ee2fe4d2769c4f1e0fda36a019d872b8be66c836324981f5",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s0-r0.out": "02b3dcfb31e3d6e8476dcfb8d1337cfec94cdf8c2cbf24d3862f7adde371a623",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s1-r0.out": "d149042dea3da9bf8be91ab9226157a856980c137a537a92162fb438fc380d05",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s2-r0.out": "9eb6686d89923dc1a2eac65d90eca4be87bb54f80a40ad4a6911b6d35d6e9068",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s3-r0.out": "00b6975bcfdf30885e9e08063f642ae0867382e9b6f0d42bf049b176f8b80242",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s0-r0.out": "cba5b5392efa1a24aa0c978bbff2921c7d7dd07fd40224d8b04d6bb447ce4355",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s1-r0.out": "632d220ef609dedc2f0ade10f06389d98be6c6f7399b5c6852a9b6a112051a40",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s2-r0.out": "d7863b38b0bcb21d570c4ecabfd9bedf415d32a00517b60e5ff4be3e0bec174e",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s3-r0.out": "4ac27e9c28c1f07f275f2fd7983830ea3a7d5ebd9f6361095f366d28194fe5bc",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s0-r0.out": "299eed7de68f14a2e5df9f734dc1c1d592938022f704181e87e51182672066a6",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s1-r0.out": "73289b88e1b3eb8657c792dcf011227cf61c3788d8c4ca48a1ea735265ac6860",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s2-r0.out": "377a20ba9f02eaf42dc6f7d7f35a34303e92b9e57d83fa09aeb50de1241ca937",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s3-r0.out": "87a617f0ecf92d1882bff442aae56d5bf18f6bffc5a16384c732d7a82b1be436",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s0-r0.out": "712341d0761ae8e3710a0ce38a88289f5ff2c52ea95b6589161f6b612d3f2c84",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s1-r0.out": "91fcd1f5dd719fda0e1ede5cd0409f85c4e2c72411a895b44a91a418dccda52f",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s2-r0.out": "e703ef0cc87de4826ec0ffdb4f7b405ab09b192739b6646105e5ee2c1c4c667d",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s3-r0.out": "3324e67bed6df6d8b2c1327c84f4aa3cde1818e89d144dc3b392adbfd5de1b70",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s0-r1.out": "b187ee2766fcd1d335daca10983753b7bf4b7f6b96e9fe981a0798e4723ef832",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s1-r1.out": "5dc39a9b505a6b54849d7d69926fd2c9d940ecd264eecad68ce07dfcf8edba80",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s2-r1.out": "72beb370f89a15d870f778e455ac18a7b4c340cb8076ac62d0aaff9a46ffa4b8",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s3-r1.out": "3331239128e11dfee93865cd3222e10b6955bde5bf6b54d8d36e552a5ffa21dc",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s0-r1.out": "8475a7e3e8fddb64a812a78b9703b06564c9ead13649247152d0c405ed7cb677",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s1-r1.out": "c0a120c0074f9d148779b55abd9e944226fd15fb835ce4da3fb91f9ceba26ed8",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s2-r1.out": "03c8585c0d4b36c0ecec6fbde504d007bb845256c177b8325f66a0625bb1634a",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s3-r1.out": "88d35da87b69813c6b003dd4c58bfb8302b073053cf37c7b146124e04157f5b3",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s0-r1.out": "2f5ec2b9c6f7e4fe472e24b34574ba982f63f2efb9ca7110eb96913d46b0fe89",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s1-r1.out": "f8b5416c5166fcf626d950bb4bfca5aee59e20ab6c9ce19f46b5aba69a9f5bf3",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s2-r1.out": "8c831c8ef6840230ae152310d01b00a6ebafa27e2c44a390d63996f7119519f3",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s3-r1.out": "4cb9123b7847e47fcb20c0463196b5afa021e8620fc2afe45bcc70db6845bfb3",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s0-r1.out": "ea47d89226ef4c6df40d583eef4404513ee528d79335a625a25999a28ae9f57e",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s1-r1.out": "086f7d2867b493e5db13bd60dc2625b3bfd7fa2ea98e923b070b71c9ffc0dcbb",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s2-r1.out": "95f527db4645775175dd3b73354e96f5c4f0867214a671a53dcafc27db139626",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s3-r1.out": "221fbfcfd426324c8eb10d071934d8b16cf9d047d65ea385e4278f594ddfe684",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s0-r2.out": "bf0831ba6f743e9b942f66cdfc5da5542b61b1cd3e6bb0c169ebf890500bbac1",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s1-r2.out": "ddb239be28655fbd029b1af88809a40d95fd1ed6011e4221b05dad648c51260d",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s2-r2.out": "04356ceebe258833031e8a4519fb4de09c3c73abe5c234b301b73c5ad21b2ee8",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k_control-s3-r2.out": "cad0c36bd3e8d0ece440a749fe91f40a4f79d2500b9faf22a3ddfbe3b038a915",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s0-r2.out": "a864b8fa1cffd23c2cbb2a785eae9f95826596d2ff5860478fb8da68d43e023f",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s1-r2.out": "f76a6d64b3058a802844a3f919d02a69bdd63156c898689cbb0d50c1fcd5e155",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s2-r2.out": "963dd1fd4942e010c8d9b2fb5d33c7bba295352876d001ddd429b395c348ea1d",
+    "logs/AB-road-usa-z-16n-5538405/n16_s8-s3-r2.out": "78da6ca6a6a39a72e826760afa66202176a79f1b1607e4f3b591bb42fa866802",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s0-r2.out": "08cd1059a01f25d3aa483773dc142cea7f0a4ddf7142c512e6e529c6aead4abc",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s1-r2.out": "512e5d3af99b754bac005d3df05e377a0e3feda20aec706a8bb4b39ed59e956d",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s2-r2.out": "02859e01d1c6e5108005ea06b91a57979bf2a447e228c4326272e4a24d942d92",
+    "logs/AB-road-usa-z-16n-5538405/n8_w128k-s3-r2.out": "4173ead7710349e9d1527a626138b21b9d4743d845bc04c97a7de8bedb754d45",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s0-r2.out": "7e428150cd0751c50f68383c13181ad4a34a673847de90f6d001127a7d4722ac",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s1-r2.out": "14263b81e7e488c518d355474ae2b61af7b25298e578eb1de919458a5cd27fe4",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s2-r2.out": "497861af7ddd0e77b81f4206b00a9805d82e7fde16266a5000e08fab81547577",
+    "logs/AB-road-usa-z-16n-5538405/n16_w128k-s3-r2.out": "dc8fbaee2bd279027af9d018b48746a580b1fee8405599fad0ec312ea4160f3b"
+  }
+}
