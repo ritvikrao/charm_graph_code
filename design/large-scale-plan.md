@@ -30,7 +30,7 @@ Galois files and RIKEN a wide `.wsg` adapter first.
 
 | Series | Points | Baselines in the allocation |
 |---|---|---|
-| Road, strong | road-usa-z, road-na-z, road-eu-z at 4, 16, 64 nodes | Gluon-Async (full search), RIKEN on road-na/eu (full search) |
+| Road, strong | road-usa-z, road-na-z, road-eu-z at 4, 16, 64 nodes | Gluon-Async (full search; 8 ranks per node, oec pinned at 4 nodes), RIKEN on road-na/eu (inexact, separate jobs) |
 | Mesh, weak (~4.2M vertices/node) | mesh24-z@4, mesh26-z@16, mesh28-z@64 | Gluon-Async, RIKEN |
 | Mesh, strong | mesh26-z@64; mesh28-z@16; mesh30-z@32, @64 | Gluon-Async, RIKEN (pinned on mesh28/30) |
 | One node | every graph | GAPBS and Wasp, 56 threads, delta tuned on training sources |
@@ -55,9 +55,11 @@ mesh26-z at 16 nodes in both allocations); RIKEN uses 8 ranks per node, delta
 
 | Stage | Jobs | Notes |
 |---|---|---|
-| 1 | 5541369 (4n, done), 5541370 (16n), 5541371 (64n) | mesh24/26-z, road-usa-z |
-| 2 | 5541426 (4n), 5541428 (16n), 5541429 (64n) | road-na-z, road-eu-z |
+| 1 | 5541369 (4n, done), 5541370 (16n, done), 5541371 (64n) | mesh24/26-z, road-usa-z |
+| 2 | 5541426 (4n, cancelled), 5541428 (16n), 5541429 (64n, done) | road-na-z, road-eu-z |
 | 64-node ACIC rerun | 5541660 | 5541371 and 5541429 lost their ACIC arms: every 512-process launch aborted in Cray PMI (`_pmi2_add_kvs`, LCI's bootstrap needs ranks^2 KVS entries; the harness pinned 100000). Fixed in cf42624; their Gluon and RIKEN runs are valid |
+| 2, 4-node rerun | 5541712 (ACIC + Gluon-Async) | 5541426 was cancelled at 40 min: 60-85 s Gluon solves and RIKEN timeouts left no room for the search. ACIC in 5541426 finished (64 valid rows). The rerun pins Gluon to 8 ranks per node, oec (every 16- and 64-node search chose it) and searches deltas 0, 131072 and 2097152, which the 16- and 64-node runs split between |
+| RIKEN on OSM roads | 4n: 5541713 (NA), 5541714 (EU, 2 sources x 1 rep); 16n: 5541715 (NA), 5541716 (EU, 2 reps); 64n: 5541717 (both, 2 reps) | Every RIKEN run in stage 2 was inexact or timed out: all vertices reached, the distance sum high by 2.6e-5 (NA) and 5.9e-5 (EU), at every layout and node count. RIKEN aims at Graph500 accuracy (validate.hpp, relative 1e-5 per edge). The "hangs" were launch timeouts at 330 s on slow layouts (the 8-rank layout took 358 s at 4 nodes). These jobs run with `run.py --riken-tolerance 1e-3` (every vertex reached, distance sum high by at most 0.1%; recorded `exact=false` with its error), 8 and 56 ranks per node (56 only at 4 nodes), delta 131072 |
 | 3 | 5541663 (mesh28-z@16), 5541664 (@64); mesh30-z@32: 5541665 (ACIC + Gluon), 5541666 (RIKEN); @64: 5541667, 5541668 | pinned Gluon/RIKEN; mesh30-z at two repetitions |
 | One node | GAPBS 5541358 / Wasp 5541359 (road-na/eu); 5541661 / 5541662 (mesh28/30) | 56 threads |
 

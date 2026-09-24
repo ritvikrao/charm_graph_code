@@ -219,6 +219,18 @@ class Campaign:
         record['digest'] = digest
         record['expected'] = {k: int(expected[k]) for k in KEYS}
         record['valid'] = record['returncode'] == 0 and digest == record['expected']
+        # RIKEN aims only at Graph500 accuracy (validate.hpp: relative 1e-5 per
+        # edge), and on the OSM roads it leaves a few distances slightly long.
+        # --riken-tolerance accepts such a run as timed but inexact: every
+        # vertex reached, and the distance sum high by at most that fraction.
+        if engine.startswith('riken') and record['returncode'] == 0 and digest:
+            expected_sum = record['expected']['distance_sum']
+            record['exact'] = digest == record['expected']
+            record['relative_distance_error'] = (digest['distance_sum']-expected_sum) / max(1, expected_sum)
+            if (not record['exact'] and self.args.riken_tolerance > 0 and
+                    digest['reachable'] == record['expected']['reachable'] and
+                    0 <= record['relative_distance_error'] <= self.args.riken_tolerance):
+                record['valid'] = True
         t = re.search(r'^Compute time: ([\d.eE+-]+)', output, re.M) if engine.startswith('acic') else re.search(r'^BENCH .*?\bsolve_seconds=([\d.eE+-]+)', output, re.M)
         if t:
             record['seconds'] = float(t[1])
@@ -1486,6 +1498,8 @@ if __name__ == '__main__':
     # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
     # fair-baseline re-take extends the grid downward.
     parser.add_argument('--delta-divisors', default='64,16,4,1')
+    parser.add_argument('--riken-tolerance', type=float, default=0.0,
+                        help='accept a RIKEN run whose distance sum is high by at most this fraction (recorded as exact=False)')
     parser.add_argument('--gluon-partitions', default='oec,cvc',
                         help='Gluon partitioners tried beyond one node')
     parser.add_argument('--gluon-deltas', default='',
