@@ -50,6 +50,9 @@ mainmodule sssp_smp
   readonly int control_mode;
   readonly double control_interval_ms;
   readonly CProxy_ControlNode controlProxy;
+  readonly long hub_hint_degree;
+  readonly int hub_hint_bits;
+  readonly CProxy_HubHints hintProxy;
   readonly int bufsize_policy;
   readonly double bufsize_acc_items;
   readonly int bufsize_min;
@@ -112,6 +115,11 @@ mainmodule sssp_smp
     entry ControlNode();
     entry void collect(int n, long values[n]);
     entry void thresholds(int gen, int heap, int tram, int bfs, int behind, int phase, int starved, int coarsen, int extend, int bufsize);
+  };
+  nodegroup HubHints
+  {
+    entry HubHints();
+    entry void receive(int n, unsigned long items[n]);
   };
   group SharedInfo
   {

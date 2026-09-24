@@ -1,0 +1,94 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Profile-driven per-update fixes (PC profile and Projections, jobs 5538732/5538734). acic_tb = acic_slice source + a per-vertex table of --lazy-heavy range boundaries built in reset_for_source (replaces two binary searches per token release; same work, same digests). acic_tbh = acic_tb + htram hold queues as a vector-backed FIFO instead of std::queue/deque. 16 nodes, 4 x 14, two training sources, 8 launches per arm, two allocations. Speedup = frozen time / arm time, median over sources of per-source medians. Predictions: tb over frozen 1.03-1.12x on rmat25, rmat26, rmat27; within the control floor on uniform25 (lazy-heavy resolves inactive there). tbh over tb 1.00-1.06x on every graph. Control over frozen within 0.94-1.06x on every source. Every solve returns the reference digest; updates created by tb/tbh within 5% of frozen."
+  },
+  {
+    "label": "tb",
+    "binary": "acic_tb",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Profile-driven per-update fixes (PC profile and Projections, jobs 5538732/5538734). acic_tb = acic_slice source + a per-vertex table of --lazy-heavy range boundaries built in reset_for_source (replaces two binary searches per token release; same work, same digests). acic_tbh = acic_tb + htram hold queues as a vector-backed FIFO instead of std::queue/deque. 16 nodes, 4 x 14, two training sources, 8 launches per arm, two allocations. Speedup = frozen time / arm time, median over sources of per-source medians. Predictions: tb over frozen 1.03-1.12x on rmat25, rmat26, rmat27; within the control floor on uniform25 (lazy-heavy resolves inactive there). tbh over tb 1.00-1.06x on every graph. Control over frozen within 0.94-1.06x on every source. Every solve returns the reference digest; updates created by tb/tbh within 5% of frozen."
+  },
+  {
+    "label": "tbh",
+    "binary": "acic_tbh",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Profile-driven per-update fixes (PC profile and Projections, jobs 5538732/5538734). acic_tb = acic_slice source + a per-vertex table of --lazy-heavy range boundaries built in reset_for_source (replaces two binary searches per token release; same work, same digests). acic_tbh = acic_tb + htram hold queues as a vector-backed FIFO instead of std::queue/deque. 16 nodes, 4 x 14, two training sources, 8 launches per arm, two allocations. Speedup = frozen time / arm time, median over sources of per-source medians. Predictions: tb over frozen 1.03-1.12x on rmat25, rmat26, rmat27; within the control floor on uniform25 (lazy-heavy resolves inactive there). tbh over tb 1.00-1.06x on every graph. Control over frozen within 0.94-1.06x on every source. Every solve returns the reference digest; updates created by tb/tbh within 5% of frozen."
+  },
+  {
+    "label": "control",
+    "binary": "acic_slice",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-24 before submission. Profile-driven per-update fixes (PC profile and Projections, jobs 5538732/5538734). acic_tb = acic_slice source + a per-vertex table of --lazy-heavy range boundaries built in reset_for_source (replaces two binary searches per token release; same work, same digests). acic_tbh = acic_tb + htram hold queues as a vector-backed FIFO instead of std::queue/deque. 16 nodes, 4 x 14, two training sources, 8 launches per arm, two allocations. Speedup = frozen time / arm time, median over sources of per-source medians. Predictions: tb over frozen 1.03-1.12x on rmat25, rmat26, rmat27; within the control floor on uniform25 (lazy-heavy resolves inactive there). tbh over tb 1.00-1.06x on every graph. Control over frozen within 0.94-1.06x on every source. Every solve returns the reference digest; updates created by tb/tbh within 5% of frozen."
+  }
+]

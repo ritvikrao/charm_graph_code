@@ -59,7 +59,7 @@ prepare_one() {
   case $name in
     mesh20|rmat20|uniform20|mesh22|rmat22|rmat20-s2|uniform20-s2|road-ny|youtube) sources=10 ;;
   esac
-  [ "$name" = road-usa ] && range=any-range  # distances exceed binary32; ACIC/GAPBS/Gluon only
+  case $name in road-usa|road-eu|road-na) range=any-range ;; esac  # distances exceed binary32; ACIC/GAPBS/Gluon only
   if [ ! -s "$base.wsg" ] || [ ! -s "$base.meta" ]; then
     case $name in
       uniform20)    generate "$name" 1 1048576 1 ;;
@@ -81,6 +81,9 @@ prepare_one() {
       # road-usa's topology with each native weight divided by four, rounded
       # up, so every distance stays below 2^24 and RIKEN's binary32 path is exact.
       road-usa-w4)  dimacs "$name" USA-road-d.USA.gr.gz 23947347 '$1 == "a" { $4 = int(($4 + 3) / 4) } { print }' ;;
+      # OSM car graphs, largest connected component (prepare_osm.sbatch).
+      road-eu)      dimacs "$name" OSM-road-d.EU.gr.gz "$(cat "$RAW/OSM-road-d.EU.vertices")" ;;
+      road-na)      dimacs "$name" OSM-road-d.NA.gr.gz "$(cat "$RAW/OSM-road-d.NA.vertices")" ;;
       youtube)      snap "$name" com-youtube.ungraph.txt.gz 1134890 ;;
       orkut)        snap "$name" com-orkut.ungraph.txt.gz 3072441 ;;
       *) echo "UNKNOWN $name"; return 1 ;;
@@ -98,6 +101,8 @@ prepare_one() {
   case $name in
     mesh24|mesh26) z=(mesh "$((1 << (${name#mesh} / 2)))") ;;
     road-usa|road-usa-w4) z=(coords "$RAW/USA-road-d.USA.co.gz") ;;
+    road-eu) z=(coords "$RAW/OSM-road-d.EU.co.gz") ;;
+    road-na) z=(coords "$RAW/OSM-road-d.NA.co.gz") ;;
   esac
   if [ -n "$z" ] && [ ! -s "$base-z.reference.txt" ]; then
     "$PY" "$APP/benchmarks/reorder_graph.py" "$CAMPAIGN" "$name" "$name-z" "${z[@]}" \

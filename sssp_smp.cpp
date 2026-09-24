@@ -259,10 +259,24 @@ int skip_empty_mode = SKIP_EMPTY_AUTO;
 // (a single PE livelocked that way). So a PE keeps at most one heap pass and
 // one fallback message queued, and process 0 leaves at least
 // --control-interval ms between broadcasts.
+// --hub-hints off|D (default off). On rmat26 at 16 nodes 89% of the updates
+// that arrive find their target already final, and 1.33B of the 1.81B land on
+// vertices of degree 128 or more (acic_slice_diag, job 5538765): the targets
+// are the hubs, settled early and hit by every process for the rest of the
+// solve. With hints on, every vertex of degree >= D publishes its distance
+// once per controller round, whenever it has fallen, to a table in every
+// process (HubHints), and a sender drops an update whose distance is no better
+// than its target's published one. That needs no notion of settled: distances
+// only fall, so a target that has already reached d rejects anything at d or
+// above wherever and whenever it arrives. RIKEN's settled-vertex bitmap is the
+// same idea restricted to final vertices.
+long hub_hint_degree = 0;  // 0: off
+int hub_hint_bits = 0;     // table size per process, log2 entries; 0: from |V|
 enum { CONTROL_REDUCTION = 0, CONTROL_NODE = 1 };
 int control_mode = CONTROL_REDUCTION;
 double control_interval_ms = 0.25;
 CProxy_ControlNode controlProxy;
+CProxy_HubHints hintProxy;
 class Main;
 Main *main_instance = nullptr;
 // --warm-links on|off (step 8e). Before the solve, every PE sends one small
@@ -603,6 +617,8 @@ enum {
   STAT_SEND_FILTERED, // updates dropped by --send-filter-bits, 7.6j
   STAT_TOKENS,        // --lazy-heavy tokens queued, 8d
   STAT_TOKENS_STALE,  // ... and dropped because their vertex had moved
+  STAT_HINT_FILTERED, // updates dropped by --hub-hints
+  STAT_HINTS_PUBLISHED, // hub distances published by --hub-hints
   STAT_INSTRUCTIONS,  // PAPI builds only
   STAT_BATCH_ITEMS,   // ACIC_DIAG builds only, from here down
   STAT_BATCH_ABSORBABLE,
@@ -1393,6 +1409,24 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg == "--hub-hints") {
+        const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
+        if (value == "off")
+          hub_hint_degree = 0;
+        else if (!value.empty() && std::stol(value) > 0)
+          hub_hint_degree = std::stol(value);
+        else {
+          ckout << "--hub-hints must be off or a minimum degree" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg == "--hub-hint-bits") {
+        if (i + 1 >= m->argc || std::stoi(m->argv[i + 1]) < 10 || std::stoi(m->argv[i + 1]) > 30) {
+          ckout << "--hub-hint-bits needs 10..30" << endl;
+          CkExit(1);
+          return;
+        }
+        hub_hint_bits = std::stoi(m->argv[++i]);
       } else if (arg == "--lazy-growth") {
         if (i + 1 >= m->argc || std::stoi(m->argv[i + 1]) < 2) {
           ckout << "--lazy-growth needs an integer of at least 2" << endl;
@@ -1613,6 +1647,7 @@ public:
     shared = CProxy_SharedInfo::ckNew();
     main_instance = this;
     controlProxy = CProxy_ControlNode::ckNew();
+    hintProxy = CProxy_HubHints::ckNew();
     arr = CProxy_SsspChares::ckNew(tram_proxy, N);
     mainProxy = thisProxy;
     arr.initiate_pointers();
@@ -1928,6 +1963,10 @@ public:
     ckout << (process_share_active() ? "" : " (inactive)") << endl;
     ckout << "Heap slice: " << heap_slice
           << (process_share_active() ? "" : " (inactive)") << endl;
+    ckout << "Hub hints: ";
+    if (hub_hint_degree > 0) ckout << "degree >= " << hub_hint_degree;
+    else ckout << "off";
+    ckout << endl;
 #ifdef INFO_PRINTS
     ckout << "The heaviest edge in the graph weighs " << max_edge_weight << endl;
 #endif
@@ -2693,6 +2732,9 @@ public:
     ckout << "Send-filtered updates: " << msg_stats[STAT_SEND_FILTERED]
           << ", normalized to |E|: "
           << msg_stats[STAT_SEND_FILTERED] * 1.0 / msg_stats[STAT_EDGES] << endl;
+    ckout << "Hub hints: published " << msg_stats[STAT_HINTS_PUBLISHED]
+          << ", filtered " << msg_stats[STAT_HINT_FILTERED] << ", normalized to |E|: "
+          << msg_stats[STAT_HINT_FILTERED] * 1.0 / msg_stats[STAT_EDGES] << endl;
 #ifdef ACIC_COMM_SHARE
     {
       const double s_per_tick =
@@ -3112,6 +3154,87 @@ public:
   }
 };
 
+/**
+ * --hub-hints: one table per process of (vertex, distance) pairs, packed in a
+ * word so a lookup is one load. An entry says its vertex has reached that
+ * distance in this solve; it is only ever lowered, and cleared between
+ * sources (after quiescence, so no hint from the last source is in flight).
+ * Two probes per vertex; when both slots hold other vertices the hint is
+ * dropped, which only costs filtering. Vertices and distances must fit in 32
+ * bits, which the compact wire already requires.
+ */
+class HubHints : public CBase_HubHints {
+  static constexpr uint64_t kEmpty = ~0ULL;
+  std::unique_ptr<std::atomic<uint64_t>[]> table;
+  int shift = 64;
+  std::mutex outbox_lock;
+  std::vector<uint64_t> outbox;
+
+  size_t slot(uint64_t v) const { return (size_t)((v * 0x9E3779B97F4A7C15ULL) >> shift); }
+
+public:
+  HubHints() {}
+  size_t size() const { return table ? (size_t)1 << (64 - shift) : 0; }
+  // Allocated at the first reset, when V is known, by the process's first PE.
+  void reset() {
+    if (!table) {
+      int bits = hub_hint_bits;
+      if (bits == 0) {
+        bits = 16;
+        while (bits < 28 && (1L << bits) < V / 8)
+          bits++;
+      }
+      shift = 64 - bits;
+      table.reset(new std::atomic<uint64_t>[1UL << bits]);
+    }
+    for (size_t i = 0; i < size(); i++)
+      table[i].store(kEmpty, std::memory_order_relaxed);
+    std::lock_guard<std::mutex> g(outbox_lock);
+    outbox.clear();
+  }
+  const void *where(uint64_t v) const { return &table[slot(v)]; }
+  // Whether v is known to have reached a distance no greater than d.
+  bool covers(uint64_t v, uint64_t d) const {
+    const size_t s = slot(v);
+    uint64_t e = table[s].load(std::memory_order_relaxed);
+    if ((e >> 32) == v) return (e & 0xffffffffULL) <= d;
+    e = table[s ^ 1].load(std::memory_order_relaxed);
+    if ((e >> 32) == v) return (e & 0xffffffffULL) <= d;
+    return false;
+  }
+  void insert(uint64_t v, uint64_t d) {
+    const uint64_t want = (v << 32) | d;
+    size_t s = slot(v);
+    for (int probe = 0; probe < 2; probe++, s ^= 1) {
+      uint64_t e = table[s].load(std::memory_order_relaxed);
+      while (e == kEmpty || (e >> 32) == v) {
+        if (e != kEmpty && (e & 0xffffffffULL) <= d)
+          return;
+        if (table[s].compare_exchange_weak(e, want, std::memory_order_relaxed))
+          return;
+      }
+    }
+  }
+  // Called by any PE of this process; sent by flush().
+  void publish(uint64_t v, uint64_t d) {
+    std::lock_guard<std::mutex> g(outbox_lock);
+    outbox.push_back((v << 32) | d);
+  }
+  void flush() {
+    std::vector<uint64_t> out;
+    {
+      std::lock_guard<std::mutex> g(outbox_lock);
+      out.swap(outbox);
+    }
+    if (!out.empty())
+      thisProxy.receive((int)out.size(), (unsigned long *)out.data());
+  }
+  void receive(int n, unsigned long *items) {
+    for (int i = 0; i < n; i++)
+      insert(items[i] >> 32, items[i] & 0xffffffffULL);
+  }
+};
+
 class SharedInfo : public CBase_SharedInfo {
 public:
   int event_id;
@@ -3142,6 +3265,13 @@ private:
     uint32_t distance = 0;
   };
   std::vector<SentEntry> sent_cache; // --send-filter-bits
+  // --hub-hints: this PE's vertices of degree >= D (local indices) and the
+  // distance each last published; the process table; what was dropped.
+  HubHints *hints = nullptr;
+  bool hints_on = false;
+  std::vector<uint32_t> hub_local;
+  std::vector<cost> hub_sent;
+  long hint_filtered = 0, hints_published = 0;
   int sent_cache_shift = 64;
   // Whether generate_updates() consults the table now: always under
   // --send-filter-bits, per regime under --send-filter auto.
@@ -3163,6 +3293,14 @@ private:
   long *histogram; // local histogram of data, from 0 to max_size, divided into
                    // HISTO_BUCKET_COUNT buckets
   cost light_cut = 0;       // --lazy-heavy's L on this PE; 0 is off
+  // --lazy-heavy range boundaries, built once per light_cut: entry
+  // [v * token_levels + j] is edges_up_to(v, range_low(j)). Every level from
+  // token_levels on starts at or above this PE's heaviest edge, so its
+  // boundary is the degree. Releasing a token was two binary searches over the
+  // row, 8-17% of all samples on rmat22/rmat26 (PC profile, jobs 5538732/34).
+  std::vector<uint32_t> token_bounds;
+  int token_levels = 0;     // 0: not built; range_end() searches instead
+  cost token_bounds_cut = 0;
 
   long tokens_created = 0;  // --lazy-heavy tokens queued
   long tokens_stale = 0;    // ... and found stale when admitted
@@ -3357,6 +3495,7 @@ public:
                                      : skip_empty_mode == SKIP_EMPTY_ON);
     shared_local = shared.ckLocalBranch();
     control_local = controlProxy.ckLocalBranch();
+    hints = hintProxy.ckLocalBranch();
   }
 
   ControlNode *control_local = nullptr;
@@ -3673,6 +3812,9 @@ public:
       if (degree > 0 && local_graph.edges(i)[degree - 1].distance > heaviest_edge)
         heaviest_edge = local_graph.edges(i)[degree - 1].distance;
     }
+    // The first source starts from here, not from reset_for_source().
+    build_token_bounds();
+    reset_hub_hints();
     CkCallback cb(CkReductionTarget(Main, begin), mainProxy);
     contribute(sizeof(cost), &heaviest_edge, CkReduction::max_long, cb);
   }
@@ -3685,6 +3827,7 @@ public:
    */
   void seed_bucket_width(cost max_edge_weight) {
     set_bucket_width(std::max(log((double)V), (double)max_edge_weight));
+    build_token_bounds();
     contribute(CkCallback(CkReductionTarget(Main, width_seeded), mainProxy));
   }
 
@@ -3710,6 +3853,7 @@ public:
     updates_created_locally = updates_processed_locally = processed_at_contribution = 0;
     wasted_updates = rejected_updates = absorbed_updates = folded_updates = 0;
     send_filtered = tokens_created = tokens_stale = clamped_created_locally = 0;
+    hint_filtered = hints_published = 0;
     deferred_peak = deferred_total = skew_top_arrivals = bfs_created = bfs_processed = 0;
     updates_noted = bfs_noted = distance_changes = updates_in_tram = 0;
     heap_threshold = bfs_threshold = initial_threshold;
@@ -3722,6 +3866,8 @@ public:
     send_filter_on = send_filter_bits > 0 ||
                     (send_filter_auto && initial_buffer_size() >= SEND_FILTER_MIN_BUFFER);
     set_bucket_width(initial_width);
+    build_token_bounds();
+    reset_hub_hints();
     tram->changeThreshold(0, tram_threshold, 1.0);
     tram->setBufferSize(initial_buffer_size());
     tram->last_idle_flush = -1.0;
@@ -4160,10 +4306,89 @@ public:
       relax_edges(local_index, 0, degree, bfs);
       return;
     }
-    const long light_end = edges_up_to(local_index, light_cut);
+    const long light_end = range_end(local_index, 0);
     relax_edges(local_index, 0, light_end, bfs);
     if (light_end < degree)
       queue_token(local_index, distances[local_index], 0);
+  }
+
+  // Between sources: the process table is cleared by its first PE (every PE
+  // is here, and none is solving), and this PE's hubs are listed once.
+  void reset_hub_hints() {
+    hints_on = hints && hub_hint_degree > 0 && V < 0xffffffffL;
+    if (!hints_on)
+      return;
+    if (CkMyRank() == 0)
+      hints->reset();
+    if (hub_sent.empty()) {
+      for (long v = 0; v < num_vertices; v++)
+        if (local_graph.degree(v) >= hub_hint_degree)
+          hub_local.push_back((uint32_t)v);
+      hub_sent.resize(hub_local.size());
+    }
+    std::fill(hub_sent.begin(), hub_sent.end(), lmax);
+  }
+
+  // Once per round: queue every hub whose distance fell since it was last
+  // published; the process's first PE sends what its process has queued.
+  void publish_hub_hints() {
+    if (!hints_on)
+      return;
+    for (size_t i = 0; i < hub_local.size(); i++) {
+      const cost d = distances[hub_local[i]];
+      if (d < hub_sent[i] && (unsigned long)d < 0xffffffffUL) {
+        hints->publish((uint64_t)(start_vertex + hub_local[i]), (uint64_t)d);
+        hub_sent[i] = d;
+        hints_published++;
+      }
+    }
+    if (CkMyRank() == 0)
+      hints->flush();
+  }
+
+  // One pass over the rows; the solve never pays for it (reset_for_source).
+  // Skipped, and the searches kept, when a row or level count would not fit.
+  void build_token_bounds() {
+    if (light_cut <= 0 || light_cut == token_bounds_cut)
+      return;
+    token_bounds_cut = light_cut;
+    token_levels = 0;
+    std::vector<uint32_t>().swap(token_bounds);
+    cost heaviest = 0;
+    for (long v = 0; v < num_vertices; v++) {
+      const long degree = local_graph.degree(v);
+      if (degree >= (1L << 32))
+        return;
+      if (degree > 0)
+        heaviest = std::max(heaviest, local_graph.edges(v)[degree - 1].distance);
+    }
+    int levels = 1;
+    while (range_low(levels - 1) < heaviest && levels <= 30)
+      levels++;
+    if (levels > 16)
+      return;
+    token_bounds.resize((size_t)num_vertices * levels);
+    for (long v = 0; v < num_vertices; v++) {
+      const Edge *adjacency = local_graph.edges(v);
+      const long degree = local_graph.degree(v);
+      long e = 0;
+      for (int j = 0; j < levels; j++) {
+        const cost w = range_low(j);
+        while (e < degree && adjacency[e].distance <= w)
+          e++;
+        token_bounds[(size_t)v * levels + j] = (uint32_t)e;
+      }
+    }
+    token_levels = levels;
+  }
+
+  // edges_up_to(local_index, range_low(level)), from the table when it is built.
+  long range_end(long local_index, int level) {
+    if (token_levels == 0 || token_bounds_cut != light_cut)
+      return edges_up_to(local_index, range_low(level));
+    if (level < token_levels)
+      return token_bounds[(size_t)local_index * token_levels + level];
+    return local_graph.degree(local_index);
   }
 
   // Index of the first edge of local_index heavier than w; edges are sorted by
@@ -4217,11 +4442,11 @@ public:
       return;
     }
     const long degree = local_graph.degree(local_index);
-    const long begin = edges_up_to(local_index, lo);
+    const long begin = range_end(local_index, level);
     // Five bits hold the level; the last range reaches the end of the row.
     const long end = (level >= 30 || range_low(level + 1) > ((cost)1 << 40))
                          ? degree
-                         : edges_up_to(local_index, range_low(level + 1));
+                         : range_end(local_index, level + 1);
     relax_edges(local_index, begin, end, false);
     if (end < degree)
       queue_token(local_index, d, level + 1);
@@ -4259,6 +4484,14 @@ public:
         else COST_ADD(INTER_NODE, 1);
       }
 #endif
+      if (hints_on && !bfs) {
+        if (i + 8 < degree)
+          __builtin_prefetch(hints->where((uint64_t)adjacency[i + 8].end));
+        if (hints->covers((uint64_t)new_update.dest_vertex, (uint64_t)new_update.distance)) {
+          hint_filtered++;
+          continue;
+        }
+      }
       if (send_filter_on) {
         // The table is read at random; the targets a few edges on are
         // already known, so start those reads now.
@@ -4710,7 +4943,7 @@ public:
     // round-over-round difference is the only thing that says whether the
     // range is still too small.
     info_array[histo_reduction_width + 8] = clamped_created_locally;
-    info_array[histo_reduction_width + 9] = send_filtered;
+    info_array[histo_reduction_width + 9] = send_filtered + hint_filtered;
     info_array[histo_reduction_width + 10] =
         updates_processed_locally != processed_at_contribution;
     processed_at_contribution = updates_processed_locally;
@@ -4880,6 +5113,7 @@ public:
     bfs_threshold = _bfs_threshold;
     current_phase = phase;
     last_round_starved = starved;
+    publish_hub_hints();
     // after every reduction, push out messages in hold that are in limit
     // replace this loop with call to tram->changethreshold(tram_threshold)
     tram->setHistoBucketCount(HISTO_BUCKET_COUNT);
@@ -4995,6 +5229,8 @@ public:
     msg_stats[STAT_SEND_FILTERED] = send_filtered;
     msg_stats[STAT_TOKENS] = tokens_created;
     msg_stats[STAT_TOKENS_STALE] = tokens_stale;
+    msg_stats[STAT_HINT_FILTERED] = hint_filtered;
+    msg_stats[STAT_HINTS_PUBLISHED] = hints_published;
 #ifdef PAPI
     msg_stats[STAT_INSTRUCTIONS] = instructions;
 #endif
