@@ -321,6 +321,33 @@ The same instruments on `road-usa-z` at 16 nodes (job 5538868) show PEs idle
 Road at this size is bound by round latency, not work, which is why larger
 road inputs are the next test (`road-eu`, `road-na`; `scripts/frontier/prepare_osm.sbatch`).
 
+### 12. 64-bit vertex ids and a distributed certificate
+
+The compact htram wire (8 bytes, step 7.6j) held vertex ids below 2^31 and
+distances below 2^32. `make WIRE=compact64` builds a 12-byte wire (47-bit
+vertex, 48-bit distance, overflow flag; `weighted_node_struct.h`), and the
+GAPBS reader accepts the 64-bit-id layout a GAPBS built with `int64_t` NodeID
+writes (`graph_convert gen ... --wide` writes it). A graph too large for serial
+Dijkstra proves its own answer with `--certify`: every PE sends d(u) + w along
+every edge; no candidate below d(v), a tight edge into every reached vertex but
+the source, d(source) = 0 and positive weights make the distances exact.
+Also fixed: the send filter treated vertex 0xffffffff as its empty entry (a
+wrong answer past 2^32 vertices), and the owner-table divisor now grows with V.
+
+| Test | Result |
+|---|---|
+| Wire round trips, both widths (`tests/test_wire.cpp`) | exact at every field boundary |
+| 2 nodes, road-ny, youtube, mesh22, rmat22, two held-out sources, `acic_w32` and `acic_w64` (job 5540134) | reference digest and `CERTIFY PASS` on all 16 solves |
+| Same generated mesh and RMAT with 32- and 64-bit id files | identical digests; serial `--verify` passes |
+| `ACIC_CERTIFY_PERTURB` (one distance + 1) | `CERTIFY FAIL`, exit 1 |
+| In-memory mesh, V = 2^32 + 2^30 (73271^2 reachable, 21.5B edges, 430 GB of graph), sources 5,000,000,000 and 17, 8 and 16 nodes, 8 x 7 (job 5540170) | `CERTIFY PASS` on all four solves; digests identical at 8 and 16 nodes; `acic_w32` refuses the graph |
+
+The certificate is cheap: 0.26 s for 21.5B edges at 16 nodes. The solve is not
+tuned at this size: 88 s (source 5e9) and 54 s (source 17) at 16 nodes, a
+1.5x speedup over 8 nodes, with the generated mesh's row-major strip
+partition and the default width rule. The 12-byte wire's cost on graphs that
+fit the 8-byte one is not yet measured.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
