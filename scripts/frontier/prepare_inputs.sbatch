@@ -50,6 +50,9 @@ dimacs() {    # name file vertices [awk weight filter]
   gzip -dc "$RAW/$2" | { if [ -n "${4:-}" ]; then awk "$4"; else cat; fi; } |
     "$BIN/prepare_graph" dimacs "$3" 0 1 "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
 }
+meshz() {     # name vertices seed: Morton-ordered mesh written directly (prepare_graph meshz)
+  "$BIN/prepare_graph" meshz 2 "$2" "$3" "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
+}
 snap() {      # name file vertices
   gzip -dc "$RAW/$2" | "$BIN/prepare_graph" snap "$3" 0 1 "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
 }
@@ -71,6 +74,10 @@ prepare_one() {
       uniform20-s2) generate "$name" 1 1048576 2 ;;
       mesh24)       generate "$name" 2 16777216 1 ;;
       mesh26)       generate "$name" 2 67108864 1 ;;
+      # Larger meshes are generated in Morton order directly: byte-identical
+      # to gen + reorder_graph.py at 2^24 and 2^26, which do not fit past 2^28.
+      mesh28-z)     meshz "$name" 268435456 1 ;;
+      mesh30-z)     meshz "$name" 1073741824 1 ;;
       rmat24)       generate "$name" 3 16777216 1 ;;
       rmat25)       generate "$name" 3 33554432 1 ;;
       rmat26)       generate "$name" 3 67108864 1 ;;
@@ -115,7 +122,7 @@ galois_one() {
   "$PY" "$APP/benchmarks/to_galois.py" "$DATA/$1.wsg" && touch "$DATA/$1.gr.done" ||
     { echo "CONVERSION FAILED $1"; return 1; }
 }
-export -f generate dimacs snap prepare_one galois_one
+export -f generate dimacs snap meshz prepare_one galois_one
 export CAMPAIGN
 
 printf '%s\n' ${NAMES//,/ } | xargs -P "$PARALLEL" -I{} bash -c 'prepare_one {}'
