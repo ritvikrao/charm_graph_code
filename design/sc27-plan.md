@@ -49,7 +49,9 @@ the current winning profile does not make such a decision.
 Make the final go/no-go call on **September 26**. Submit only if all of these
 are true:
 
-1. The fixed candidate passes the Anvil frozen-binary RMAT regression gate.
+1. The fixed candidate passes the frozen-binary RMAT regression gate on
+   Frontier at 16 nodes (see *Machine decision* below); an Anvil gate is
+   optional replication.
 2. The matched spanning-tree screen either closes with a clear result or is
    omitted; it must not remain an unresolved dependency in the paper.
 3. A fixed-candidate strong-scaling figure and its work/round explanation can
@@ -70,6 +72,17 @@ memory audit and distributed comparison are complete before the data freeze.
 
 ## Work through September 26
 
+**Machine decision (2026-09-24).** Anvil jobs have waited in the Slurm queue
+too long to gate the September 26 decision, so every remaining gate runs on
+Frontier. Anvil cells become optional replication if its queue moves; nothing
+waits on them. Two measured facts make this workable: at 16 Frontier nodes the
+launch bimodality almost vanishes (1 slow launch in 160, current-state §9), and
+Frontier's campaign runtime is already built with `SPANTREE=ON`, so the
+spanning-tree question can be answered there by building the opposite runtime.
+The cost is gate resolution: repeated 16-node RMAT launches vary 4–9%
+(coefficient of variation), so the gate uses 16 launches per arm and resolves
+regressions of roughly 5% or more. State that limit in the paper.
+
 ### P0. Freeze documentation and artifacts — September 23
 
 - Use [configurations.md](configurations.md) for all builds and
@@ -81,29 +94,33 @@ memory audit and distributed comparison are complete before the data freeze.
 
 ### P1. Run two bounded mechanism screens — September 23–24
 
-1. **Anvil spanning tree.** Compare `acic_slice` and `acic_span` on the
-   preregistered road arms. Accept the runtime change only if it lowers round
-   cost in two allocations without changing work, correctness or the selected
-   algorithm settings. Stop after this screen.
-2. **Frontier progress.** Test the documented backend polling controls at two
-   and four nodes with candidate and frozen R0 arms. The question is whether
-   the launch mode follows progress policy. Do not repeat the nine closed
-   probes. If the modes remain, mark Frontier RMAT timing unusable and stop.
+1. **Spanning tree, on Frontier.** Frontier's runtime has `SPANTREE=ON`;
+   build the same Reconverse source with `SPANTREE=OFF` and compare the two on
+   the preregistered road arms. Accept `SPANTREE=ON` as the campaign setting
+   only if it lowers round cost in two allocations without changing work,
+   correctness or the selected algorithm settings. Stop after this screen. The
+   Anvil `acic_span` screen is optional replication.
+2. **Frontier progress.** *Not run.* The launch modes nearly vanish at 16
+   nodes, where the remaining gates run, so the screen is no longer a
+   dependency. It stays the bounded hypothesis for the 8-node modes.
 
 Neither screen licenses a parameter search. Their combined purpose is to close
 known runtime uncertainty before freezing the paper candidate.
 
 ### P2. Complete the submission gates — September 24–25
 
-- Run the frozen candidate/R0 regression suite on Anvil: `rmat25`, Orkut,
-  `uniform25`, `rmat26` and `rmat27`, four held-out sources, repeated candidate
-  control, two allocations.
+- Run the frozen candidate/R0 regression suite on Frontier at 16 nodes and
+  8 × 7 (the Frontier C6 candidate's layout): `rmat25`, Orkut, `uniform25`,
+  `rmat26` and `rmat27`, four held-out sources, frozen R0 with a repeated R0
+  control, 16 launches per arm, two allocations. The Anvil package
+  (`scripts/anvil/rmat_gate.sbatch`) is optional replication.
 - Run one fixed-candidate strong-scaling curve for `mesh26-z`: 1, 2, 4 and 8
   Anvil nodes, plus the existing equal-PE Frontier point. Report time, attempts
   per edge, rounds, messages and parallel efficiency. Keep layout policy fixed
   by the documented machine mapping. *Frontier curve done at 1–16 nodes, jobs
-  5536321/5536322 ([current-state §8](current-state.md#8-the-fixed-mesh-candidate-strong-scales-and-each-mechanism-is-causal));
-  the Anvil curve remains.*
+  5536321/5536322 ([current-state §8](current-state.md#8-the-fixed-mesh-candidate-strong-scales-and-each-mechanism-is-causal)),
+  and for `mesh24-z` in 5538412/5538413. Under the machine decision this is
+  the paper's curve; an Anvil curve is optional replication.*
 - Produce the causal ablation at the scale where the win appears: local queue;
   nearest queue without batching; batch 8; batch 8 plus slice 8. Reuse accepted
   cells where protocols match. New cells use training sources for selection
