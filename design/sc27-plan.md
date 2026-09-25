@@ -860,37 +860,37 @@ previous mesh binaries remain unchanged.
 
 The queue training phase freezes the original heap under its predeclared
 ≤25% edge-work growth gate. Preserve that result. However, **full-only
-chunks/band65536/slice64** are **1.217–1.293× faster** on the two training
-sources (geomeans: original0.469996 s, control0.468384 s, wide chunks0.374699 s),
+chunks/band 65536/slice 64** are **1.217–1.293× faster** on the two training
+sources (geomeans: original 0.469996 s, control 0.468384 s, wide chunks 0.374699 s),
 with **1.704–1.811×** as many edge attempts. Requested-partial wide chunks
-are slower at0.414447 s; heap/slice64 also loses. Because the user's goal
+are slower at 0.414447 s; heap/slice 64 also loses. Because the user's goal
 is solve time, the work cap is too restrictive as the sole performance
 decision. This motivates a separate time-focused confirmation, not a
 retroactive change to the frozen work-capped protocol. No test-source
 results select the queue.
 
-`benchmarks/delta-road-time-protocol.json` freezes full-only band65536.
-Recheck that queue's layout on training sources at16×7,8×14 and8×7: prior
-best, runner-up at112 workers and best56-worker option. Warmup plus three
-randomized repeats per training source. Change layout only with≥5% benefit
-on both sources. Then compare original16×7, wide chunks16×7, wide chunks
+`benchmarks/delta-road-time-protocol.json` freezes full-only band 65536.
+Recheck that queue's layout on training sources at 16×7, 8×14 and 8×7: prior
+best, runner-up at 112 workers and best 56-worker option. Warmup plus three
+randomized repeats per training source. Change layout only with ≥5% benefit
+on both sources. Then compare original 16×7, wide chunks16×7, wide chunks
 at selected layout, duplicate original and Wasp on the four test sources,
 warmup plus three repeats. Diagnose original/new/combined on two sources.
-All110 full solves require digest and affinity validation. This adds a
+All 110 full solves require digest and affinity validation. This adds a
 sequential one-node allocation, with no new binary or global default change.
-Prediction:≥1.10× held-out speedup beyond control noise, explicitly trading
+Prediction: ≥1.10× held-out speedup beyond control noise, explicitly trading
 extra work for faster per-operation execution; no distributed claim.
 
 
-Queue job **22401233** completed164/164 full solves and112 serial/112
-certificate gates, with all12 work ledgers conserved. Full band256
-publishes only4480–5376 updates per solve; full band65536 publishes9.83–10.15M,
-of which6.90–7.17M are taken by peers. Partial publication reduces idle
+Queue job **22401233** completed 164/164 full solves and 112 serial/112
+certificate gates, with all 12 work ledgers conserved. Full band 256
+publishes only 4480–5376 updates per solve; full band 65536 publishes 9.83–10.15M,
+of which 6.90–7.17M are taken by peers. Partial publication reduces idle
 further but increases queue costs and loses to full-only at the wider band.
 The conservative work-growth gate retains the original heap; its held-out
 arms are identical controls, not a wide-band performance result.
 Full details and the factual work/time tradeoff are in current-state §19.
 
-Follow-up **22401351** is submitted afterok22401233, with all110 planned
+Follow-up **22401351** is submitted afterok 22401233, with all 110 planned
 solves on one node. At this checkpoint it waits for Slurm priority.
 No more experiments are planned beyond this bounded confirmation.

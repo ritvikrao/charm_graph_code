@@ -51,13 +51,18 @@ def main():
     bx.set_xlabel('Test source (not used for selection)')
     bx.set_ylabel('Solve seconds; median with min–max across three launches')
     bx.set_title('Fresh matched confirmation; lower is faster')
-    bx.legend(fontsize=8)
+    bx.legend(fontsize=8,loc='upper right')
+    if len(variants)>4:
+        bx.set_ylim(top=max(max(v['seconds']) for source in data['sources']
+                           for v in source['variants'].values())*1.5)
     for axis in (ax,bx):
         axis.spines[['top','right']].set_visible(False)
     selected=data['selection']['winner']['label']
     fig.suptitle(f"Delta road-usa-z · job {data['manifest']['job']} · {data['manifest']['hosts']}\nTraining-selected {'queue' if queue else 'layout'}: {selected}",fontsize=14)
     fig.text(.5,.015,'One exclusive node; +old-scheduler; every solve and worker affinity validated. Production timings only.',ha='center',fontsize=10)
-    fig.tight_layout(rect=(0,.04,1,.92))
+    if queue and data['selection']['winner']['label']=='heap8':
+        fig.text(.5,.04,'All held-out ACIC arms selected the original heap; the faster wide-band training candidate needs separate confirmation.',ha='center',fontsize=9)
+    fig.tight_layout(rect=(0,.065,1,.92))
     a.output.parent.mkdir(parents=True,exist_ok=True)
     for ext in ('.png','.pdf'): fig.savefig(a.output.with_suffix(ext),dpi=160)
 

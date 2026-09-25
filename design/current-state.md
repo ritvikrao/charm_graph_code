@@ -1384,35 +1384,35 @@ tests, ASan/UBSan and TSan also pass. The implementation is compile-time
 opt-in (`ACIC_CHUNK_PARTIAL`); existing mesh binaries and the original heap
 remain unchanged.
 
-The 16×7 queue screen keeps admission width 131072 and batch8 fixed. It
-compares heap/slice8, heap/slice64 and the 2×2 of band256/65536 and
-full-only/requested-partial chunks, with chunk slice64. Idle workers request
+The 16×7 queue screen keeps admission width 131072 and batch 8 fixed. It
+compares heap/slice 8, heap/slice 64 and the 2×2 of band 256/65536 and
+full-only/requested-partial chunks, with chunk slice 64. Idle workers request
 work through per-producer atomic flags; only owners access private queues
 and publish admitted partial chunks under the existing bin mutex. No peer
 reads private storage. Original charges and termination remain intact.
 
 | Training arm | Geomean seconds | Speedup over original, source range | Edge work / original, source range |
 |---|---:|---:|---:|
-| Original heap/slice8 | 0.469996 | 1.000× | 1.000× |
+| Original heap/slice 8 | 0.469996 | 1.000× | 1.000× |
 | Duplicate original | 0.468384 | control | control |
-| Heap/slice64 | 0.503523 | 0.897–0.971× | 0.841–0.854× |
-| Full chunks/band256 | 0.631787 | 0.726–0.763× | 1.090–1.140× |
-| Requested partial/band256 | 0.490550 | 0.902–1.018× | 1.616–1.901× |
-| Full chunks/band65536 | **0.374699** | **1.217–1.293×** | **1.704–1.811×** |
-| Requested partial/band65536 | 0.414447 | 1.124–1.144× | 1.748–1.838× |
+| Heap/slice 64 | 0.503523 | 0.897–0.971× | 0.841–0.854× |
+| Full chunks/band 256 | 0.631787 | 0.726–0.763× | 1.090–1.140× |
+| Requested partial/band 256 | 0.490550 | 0.902–1.018× | 1.616–1.901× |
+| Full chunks/band 65536 | **0.374699** | **1.217–1.293×** | **1.704–1.811×** |
+| Requested partial/band 65536 | 0.414447 | 1.124–1.144× | 1.748–1.838× |
 
 Each arm/source has a warmup plus three randomized measured launches, on
 only the two training sources. The initial protocol requires no more than
 25% additional work, so **its formal choice remains the original heap**.
 Preserve this negative result. Its subsequent original/queue/layout/combined/
-control arms are therefore all the same original16×7 configuration; apparent
+control arms are therefore all the same original 16×7 configuration; apparent
 0.98–1.04× differences are noise, not accepted optimizations. Fresh Wasp
 remains 4.67–5.19× faster than that original baseline.
 
 Separate cost builds strongly support insufficient publication in the
 mesh-tuned queue:
 
-| Metric, two training sources | Full band256 | Partial band256 | Full band65536 | Partial band65536 |
+| Metric, two training sources | Full band 256 | Partial band 256 | Full band 65536 | Partial band 65536 |
 |---|---:|---:|---:|---:|
 | Published updates | 4,480–5,376 | 372,170–483,798 | 9.83–10.15M | 8.39–8.49M |
 | Updates taken by peers | 4,480–5,376 | 345,143–454,925 | 6.90–7.17M | 6.02M |
@@ -1421,10 +1421,10 @@ mesh-tuned queue:
 | Estimated inclusive queue PE share | 14.3–14.8% | 46.6–46.9% | 19.1–26.4% | 37.4–39.5% |
 | Updates removed per pop call | 0.48–0.53 | 2.45–2.77 | 1.95–2.03 | 2.63–2.77 |
 
-At pop-entry samples, full band256 has roughly2 private items per band;
-full band65536 has roughly21. Narrow partial donations average only about
+At pop-entry samples, full band 256 has roughly 2 private items per band;
+full band 65536 has roughly 21. Narrow partial donations average only about
 1.5–1.6 updates each, so they restore sharing at poor amortization. Wider
-full chunks restore substantial peer access while retaining64-item
+full chunks restore substantial peer access while retaining 64-item
 transfers. Partial publication lowers idle share still further but costs
 more queue time and loses elapsed time to full-only publication. These
 shares overlap and do not form an additive wall-time decomposition.
@@ -1432,19 +1432,19 @@ Sampling describes pop-entry occupancy, not time-weighted global occupancy.
 
 Changing the band changes both sharing and ordering: the wide-band speedup
 cannot be attributed to sharing alone. It scans more edges and records
-**1010–1185 observations versus670–839** in training, yet finishes faster.
+**1010–1185 observations versus 670–839** in training, yet finishes faster.
 Thus neither edge count nor round count alone predicts the execution time.
-Reject the requested-partial policy and heap/slice64 as selected road
+Reject the requested-partial policy and heap/slice 64 as selected road
 optimizations; retain them as measured ablations.
 
 **Time-focused confirmation is pending.** The user prioritizes solve time,
 so the original work cap should not be the sole decision for a one-node
 profile. A separate, predeclared follow-up **22401351** selects the fastest
-training-only candidate: full chunks/band65536/slice64. This does not alter
-the previous work-capped result. Recheck that queue at16×7,8×14 and8×7 on
+training-only candidate: full chunks/band 65536/slice 64. This does not alter
+the previous work-capped result. Recheck that queue at 16×7, 8×14 and 8×7 on
 training sources, then freeze and compare on all four test sources with
-original16×7, duplicate control and Wasp. The job requests one exclusive
-`cpu-interactive` node after22401233, and is pending for priority at this
+original 16×7, duplicate control and Wasp. The job requests one exclusive
+`cpu-interactive` node after 22401233, and is pending for priority at this
 checkpoint. No held-out wide-band performance claim or global/distributed
 default change is made before it completes.
 
@@ -1461,7 +1461,7 @@ Campaign: `/work/hdd/mzu/rao1/acic-road-opt-20260925`. Layout raw logs,
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
-| Delta road layout / queue ablation | `design/onenode-data/delta-road-layout-22401042.json` and `delta-road-queue-22401233.json`; time-focused confirmation22401351 pending |
+| Delta road layout / queue ablation | `design/onenode-data/delta-road-layout-22401042.json` and `delta-road-queue-22401233.json`; time-focused confirmation 22401351 pending |
 | Delta road/uniform chunk transfer | `design/onenode-data/delta-chunks-road-uniform-22392217.json`; `benchmarks/delta-chunks-road-uniform-protocol.json`; sequential Wasp boundary job 22398569 |
 | Delta mesh28 private chunks / slice 64 | `design/onenode-data/delta-mesh28-optimized-22379656.json`; training records `delta-mesh28-chunks-training.json`, `delta-mesh28-slices-training.json`; `benchmarks/delta-mesh28-selected.json` |
 | Anvil mesh C6 | `design/onenode-data/c6-mesh-8n-anvil-20866513.json` and matching 20866514 record; `benchmarks/c6-mesh-8n-variants.json` |
