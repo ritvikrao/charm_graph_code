@@ -17,6 +17,7 @@ def main():
     a=ap.parse_args()
     data=json.loads(a.audit.read_text())
     queue='candidates' in data['manifest']['protocol']
+    time_first=data['manifest']['protocol'].get('time_first',False)
     scores={label:statistics.geometric_mean(r['seconds'] for r in values)
             for label,values in data['training'].items()}
     labels=sorted(scores,key=scores.get)
@@ -27,8 +28,8 @@ def main():
     ax.bar_label(bars,fmt='%.3f',padding=3,fontsize=9)
     ax.set_xlim(0,max(scores.values())*1.19)
     ax.set_xlabel('Solve seconds (geomean of two training-source medians)')
-    ax.set_title('Training screen: '+('queue / distance-band ablation' if queue else 'processes × workers per process / placement'))
-    time_first=data['manifest']['protocol'].get('time_first',False)
+    ax.set_title('Training screen: '+('wide queue at different layouts' if time_first else
+                 'queue / distance-band ablation' if queue else 'processes × workers per process / placement'))
     variants=(['base','queue','combined','control','wasp'] if time_first else
               ['base','queue','layout','combined','control','wasp'] if queue else
               ['base','selected','control','wasp'])
@@ -58,8 +59,12 @@ def main():
     for axis in (ax,bx):
         axis.spines[['top','right']].set_visible(False)
     selected=data['selection']['winner']['label']
-    fig.suptitle(f"Delta road-usa-z · job {data['manifest']['job']} · {data['manifest']['hosts']}\nTraining-selected {'queue' if queue else 'layout'}: {selected}",fontsize=14)
+    description=(f'Full chunks / band 65536 / slice 64; selected layout {selected}' if time_first else
+                 f"Training-selected {'queue' if queue else 'layout'}: {selected}")
+    fig.suptitle(f"Delta road-usa-z · job {data['manifest']['job']} · {data['manifest']['hosts']}\n{description}",fontsize=14)
     fig.text(.5,.015,'One exclusive node; +old-scheduler; every solve and worker affinity validated. Production timings only.',ha='center',fontsize=10)
+    if time_first:
+        fig.text(.5,.04,'16×7 retained: 8×14 missed the ≥5% benefit requirement on both training sources; the two wide-queue arms share the same layout.',ha='center',fontsize=9)
     if queue and data['selection']['winner']['label']=='heap8':
         fig.text(.5,.04,'All held-out ACIC arms selected the original heap; the faster wide-band training candidate needs separate confirmation.',ha='center',fontsize=9)
     fig.tight_layout(rect=(0,.065,1,.92))

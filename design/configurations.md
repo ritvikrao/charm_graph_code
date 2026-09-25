@@ -290,8 +290,34 @@ engines receive the entire 128-core node. See current-state §17 for results.
 
 The road/uniform transfer check (22392217) **rejects using this profile on
 road-usa-z**: chunks/slice 64 has speedup 0.719–0.836× over the original,
-while retaining road width 131072. Use the original heap/slice-8 road profile.
+while retaining road width 131072. Retain the original heap/slice-8 default;
+the separately measured road-specific band-65536 opt-in is documented below.
 On uniform25, process sharing and heap slice resolve inactive under `auto`;
 0.990–1.029× is a regression check, not evidence that chunks accelerate dense
 graphs. The mesh result therefore remains graph-specific. See current-state
 §18 and `benchmarks/delta-chunks-road-uniform-protocol.json`.
+
+
+### Delta road time profile — September 25
+
+The band 256 mesh profile above remains rejected for road. A separate
+road study (22401042/22401233/22401351) accepts an opt-in one-node time
+profile: **full chunks, distance band 65536, batch 8, slice 64,16×7**, with
+`+old-scheduler`, process-sharing/reader-tile/hub-hints `auto`, nearest
+queue, slack off and road admission width 131072. The runtime is the same
+September 25 production/tracing/shared-memory build used by the mesh study.
+
+Compile `-DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=65536`. Do not
+define `ACIC_CHUNK_PARTIAL` for this selected profile. The frozen binary is
+`/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_65536`; its hash and
+complete options are in `benchmarks/delta-road-selected.json`. It was built
+from the committed 551571d source with the existing isolated build helper.
+The workspace `sssp_smp` is not replaced.
+
+Four test sources give 1.116–1.286× over original heap/slice 8, with 64–78%
+more edge work and more rounds. This is a time-focused graph-specific
+one-node choice, not a work-efficiency or distributed default. Keep
+band 256 for mesh and the existing nonshared auto path for uniform.
+Layouts with fewer active cores lose; 8×14's small training trend did not
+meet the predeclared threshold, so retain 16×7. All three study allocations
+ran on cn071 sequentially; cross-host replication remains unmeasured.

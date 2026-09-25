@@ -33,9 +33,12 @@ well behind Wasp (0.27–0.70×). Road time barely falls beyond 16 nodes.
 reduces `mesh28-z` time by 61% on four held-out sources: 2.53–2.55× over the
 original ACIC, reaching 0.608–0.704× speedup over Wasp (§17). This result is
 separate from the Frontier tables and has no multi-node confirmation yet.
-The same queue regresses on road (0.719–0.836×); uniform disables it under
-`auto` and shows no systematic change. Its existing path beats the verified
-Wasp uniform baseline by 1.10–1.21× in the follow-up (§18).
+The mesh-tuned band 256 regresses on road (0.719–0.836×); a separate road
+study accepts full chunks/band 65536/slice 64 as a one-node opt-in, giving
+1.116–1.286× speedup while doing 64–78% more edge work (§19). Fourteen
+layouts and a queue-specific recheck support retaining 16×7; reduced cores
+lose time. Uniform disables chunks under `auto` and shows no systematic
+change; its existing path beats verified Wasp by 1.10–1.21× (§18).
 
 **Builds.** The TLS builds are 1.1–1.3× faster than production on meshes and
 roads (cheaper rounds; the hub hints resolve off), 1.0–1.1× on orkut and
@@ -1437,16 +1440,63 @@ Thus neither edge count nor round count alone predicts the execution time.
 Reject the requested-partial policy and heap/slice 64 as selected road
 optimizations; retain them as measured ablations.
 
-**Time-focused confirmation is pending.** The user prioritizes solve time,
-so the original work cap should not be the sole decision for a one-node
-profile. A separate, predeclared follow-up **22401351** selects the fastest
-training-only candidate: full chunks/band 65536/slice 64. This does not alter
-the previous work-capped result. Recheck that queue at 16×7, 8×14 and 8×7 on
-training sources, then freeze and compare on all four test sources with
-original 16×7, duplicate control and Wasp. The job requests one exclusive
-`cpu-interactive` node after 22401233, and is pending for priority at this
-checkpoint. No held-out wide-band performance claim or global/distributed
-default change is made before it completes.
+**Time-focused confirmation passed.** Follow-up **22401351** completed
+**110/110** full solves on cn071 in **7:11**, after the other allocation
+ended. All six work ledgers conserve. The full campaign therefore has
+**438 validated full solves**, plus the 112 serial checks/112 certificates;
+the 19 revalidated pilot solves are excluded from these study totals. All
+three successful allocations used cn071 sequentially. This establishes
+repeatability across allocations on this host, not cross-host replication.
+
+The wider queue's training recheck gives 16×7 **0.376396 s**, 8×14
+**0.362415 s**, and 8×7 **0.668043 s** by geometric mean. Although 8×14
+trends 3.8% faster overall, its per-source speedups are 1.064/1.014×; it
+fails the predeclared ≥5% benefit on both sources. Retain **16×7**. The
+56-worker option is 1.75–1.80× slower here as well. The queue and layout
+choices are frozen before the four test sources are examined.
+
+| Test source | Original heap (s) | Selected road profile (s) | Wasp (s) | Speedup over original | Speedup over Wasp |
+|---:|---:|---:|---:|---:|---:|
+| 8718204 | 0.516508 | 0.401571 | 0.105776 | 1.286× | 0.263× |
+| 22613654 | 0.447372 | 0.365957 | 0.093568 | 1.222× | 0.256× |
+| 10159848 | 0.435735 | 0.385598 | 0.090307 | 1.130× | 0.234× |
+| 3073839 | 0.446241 | 0.399825 | 0.092756 | 1.116× | 0.232× |
+
+These are three-repeat medians after one warmup, with all arms and sources
+randomly interleaved. The selected (`combined`) arm is the primary result:
+**1.116–1.286×** over original, **1.187×** geometrically, or about **15.7%
+less time** geometrically. The original-control ratio is 0.998–1.044×.
+The `queue` arm is now an identical second instance of the selected
+configuration: it gives 1.100–1.306×. Its source-matched times differ from
+the primary arm by −9.6% to +3.3%, so the improvement is modest and its
+per-source magnitude should not be presented with false precision. Both
+new arms beat both original arms on every source median. The predicted
+≥1.10× gain holds for the primary arm on all four sources.
+
+Primary edge work rises **63.6–77.5%**, with rounds
+**819/597/694/684 → 1129/1304/1237/1531** in source order above. This is
+a time optimization with extra work, not a work-efficiency improvement.
+Wasp remains faster: ACIC's selected speedup over Wasp is **0.232–0.263×**,
+equivalent to taking **3.80–4.31×** as long, versus 4.78–4.88× originally
+in this allocation. Wasp remains at its independently training-selected
+64 threads/delta 32768, on the same exclusive node.
+
+Held-out work builds reproduce the mechanism: roughly 9.84–10.16M items
+published and 6.90–7.21M taken by peers, with estimated queue PE share
+19.7–26.0%, versus 53.4–54.1% for the original heap. Idle share is still
+higher than the original (36.8–43.1% versus 13.3–18.3%), despite lower
+elapsed time; it is substantially below the bad band-256 queue. Do not
+add these overlapping measurements or describe this as eliminating idle
+time. Queue cost and access to work must be considered together.
+
+**Decision.** Keep **full chunks, band 65536, batch 8, heap slice 64,
+16×7, +old-scheduler, road admission width 131072** as an opt-in Delta
+one-node road time profile. `benchmarks/delta-road-selected.json` records
+the exact binary hash, settings and scope. Requested partial publication
+is off; the ordinary heap and distributed defaults remain unchanged.
+Keep the mesh band-256 profile separate. The wider band is a bounded
+parameter choice, not a proven optimum or a new algorithmic contribution.
+Stop this screen: no additional jobs remain active or queued.
 
 Campaign: `/work/hdd/mzu/rao1/acic-road-opt-20260925`. Layout raw logs,
 `audit.json` and `report.md`: `logs/layout-22401042/`; plots:
@@ -1455,13 +1505,16 @@ Campaign: `/work/hdd/mzu/rao1/acic-road-opt-20260925`. Layout raw logs,
 `benchmarks/delta-road-layout-protocol.json`. Queue logs and audit:
 `logs/queue-22401233/`; plots `figures/queue-22401233.{png,pdf}`; archive
 `design/onenode-data/delta-road-queue-22401233.json`. Queue/time protocols:
-`benchmarks/delta-road-{queue,time}-protocol.json`.
+`benchmarks/delta-road-{queue,time}-protocol.json`. Final confirmation:
+`logs/time-22401351/{audit.json,report.md,runs.jsonl}` and
+`figures/time-22401351.{png,pdf}`; compact archive:
+`design/onenode-data/delta-road-time-22401351.json`.
 
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
-| Delta road layout / queue ablation | `design/onenode-data/delta-road-layout-22401042.json` and `delta-road-queue-22401233.json`; time-focused confirmation 22401351 pending |
+| Delta road layout / queue ablation | `design/onenode-data/delta-road-layout-22401042.json` and `delta-road-queue-22401233.json`; completed time-focused confirmation `delta-road-time-22401351.json` |
 | Delta road/uniform chunk transfer | `design/onenode-data/delta-chunks-road-uniform-22392217.json`; `benchmarks/delta-chunks-road-uniform-protocol.json`; sequential Wasp boundary job 22398569 |
 | Delta mesh28 private chunks / slice 64 | `design/onenode-data/delta-mesh28-optimized-22379656.json`; training records `delta-mesh28-chunks-training.json`, `delta-mesh28-slices-training.json`; `benchmarks/delta-mesh28-selected.json` |
 | Anvil mesh C6 | `design/onenode-data/c6-mesh-8n-anvil-20866513.json` and matching 20866514 record; `benchmarks/c6-mesh-8n-variants.json` |

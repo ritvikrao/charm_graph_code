@@ -1,0 +1,2256 @@
+{
+  "manifest": {
+    "job": "22401351",
+    "hosts": "cn071",
+    "protocol": {
+      "recorded": "2026-09-25",
+      "time_first": true,
+      "order_seed": 20260929,
+      "common_flags": [
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072"
+      ],
+      "wasp": {
+        "threads": 64,
+        "delta": 32768
+      },
+      "baseline": {
+        "label": "heap8",
+        "binary": "acic_base",
+        "cost_binary": "acic_base_cost",
+        "layout": {
+          "label": "16x7-span128",
+          "ranks": 16,
+          "ppn": 7,
+          "span": 128,
+          "workers": 112
+        },
+        "flags": [
+          "--heap-slice",
+          "8"
+        ],
+        "band": 0,
+        "partial": false
+      },
+      "queue_candidate": {
+        "label": "full65536",
+        "binary": "acic_full_65536",
+        "cost_binary": "acic_full_65536_cost",
+        "layout": {
+          "label": "16x7-span128",
+          "ranks": 16,
+          "ppn": 7,
+          "span": 128,
+          "workers": 112
+        },
+        "flags": [
+          "--heap-slice",
+          "64"
+        ],
+        "band": 65536,
+        "partial": false
+      },
+      "layouts": [
+        {
+          "label": "16x7-span128",
+          "ranks": 16,
+          "ppn": 7,
+          "span": 128,
+          "workers": 112
+        },
+        {
+          "label": "8x14-span128",
+          "ranks": 8,
+          "ppn": 14,
+          "span": 128,
+          "workers": 112
+        },
+        {
+          "label": "8x7-span128",
+          "ranks": 8,
+          "ppn": 7,
+          "span": 128,
+          "workers": 56
+        }
+      ],
+      "queue_selection": {
+        "winner": {
+          "label": "heap8",
+          "binary": "acic_base",
+          "cost_binary": "acic_base_cost",
+          "layout": {
+            "label": "16x7-span128",
+            "ranks": 16,
+            "ppn": 7,
+            "span": 128,
+            "workers": 112
+          },
+          "flags": [
+            "--heap-slice",
+            "8"
+          ],
+          "band": 0,
+          "partial": false
+        },
+        "scores": {
+          "heap8": 0.46999647615700274,
+          "heap64": 0.5035230161531844,
+          "full256": 0.6317869379893827,
+          "partial256": 0.4905498725746445,
+          "full65536": 0.37469856260065904,
+          "partial65536": 0.41444711160774184,
+          "train_control": 0.468383536047116
+        },
+        "diagnostics": {
+          "heap8": {
+            "per_source_speedups": [
+              1.0,
+              1.0
+            ],
+            "edge_work_ratios": [
+              1.0,
+              1.0
+            ]
+          },
+          "heap64": {
+            "per_source_speedups": [
+              0.9714580654115821,
+              0.8968637921125572
+            ],
+            "edge_work_ratios": [
+              0.8544213251508472,
+              0.8409547932191714
+            ]
+          },
+          "full256": {
+            "per_source_speedups": [
+              0.7625732228613648,
+              0.7257154462212254
+            ],
+            "edge_work_ratios": [
+              1.0899245142831289,
+              1.139590923584943
+            ]
+          },
+          "partial256": {
+            "per_source_speedups": [
+              1.018227858459622,
+              0.9015252480379092
+            ],
+            "edge_work_ratios": [
+              1.6161295883641482,
+              1.901214329488749
+            ]
+          },
+          "full65536": {
+            "per_source_speedups": [
+              1.2166107633183505,
+              1.2932232237219952
+            ],
+            "edge_work_ratios": [
+              1.7037817355210023,
+              1.8110384956224665
+            ]
+          },
+          "partial65536": {
+            "per_source_speedups": [
+              1.144013688834406,
+              1.1241383083488348
+            ],
+            "edge_work_ratios": [
+              1.7480548691428655,
+              1.838250926309856
+            ]
+          }
+        },
+        "layout": {
+          "label": "16x7-span128",
+          "ranks": 16,
+          "ppn": 7,
+          "span": 128,
+          "workers": 112
+        },
+        "layout_summary": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042/summary.json"
+      },
+      "selection_source": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/queue-22401233/selection.json",
+      "rationale": "The original screen retains its predeclared <=25% edge-work growth gate and all results. The user goal is road solve time; independently test the fastest training-only queue even though it exceeds that work gate. Do not promote it for distributed runs.",
+      "queue_choice": "Fastest geometric mean among candidates improving both training-source medians >=5% and beating both original/control geometric means >=5%, ignoring work growth for this explicitly time-focused follow-up. No held-out data used.",
+      "layout_choice": "For that frozen queue only, test 16x7,8x14,8x7: previous best, runner-up at 112 workers, and best reduced-core choice (56). Each training source: warmup+3 randomized repetitions. Change from16x7 only if >=5% faster on both training sources. Otherwise retain16x7.",
+      "heldout": "Base heap16x7, new queue16x7, queue at selected layout, duplicate base, Wasp; four test sources, warmup+3 randomized repeats. Retain all repetitions. Every solve independently validated; actual affinity checked.",
+      "work": "Original, queue16x7 and combined cost builds on first two test sources. Conservation and publication accounting; instrumented timing separate.",
+      "acceptance": "Report solve time jointly with additional edge work, rounds, occupancy and publication behavior. A time improvement does not make this a work-efficient or distributed default. No further tuning on these test sources.",
+      "prediction": "Band65536 full-only chunks showed training speedup1.217-1.293 with1.704-1.811x edge work. Confirm >=1.10x held-out speedup beyond control noise; partial requests were slower than full-only at this band and are not selected.",
+      "scope": "Separate sequential allocation on one exclusive Delta cpu-interactive node; +old-scheduler; no additional rebuild."
+    },
+    "runtime": {
+      "revisions": {
+        "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+        "reconverse": "b30ad319503220bd1a2c0b5db38bd73dbe449c34",
+        "lci": "dfb924cf3ee25aece37b85473b41d406ad810252"
+      },
+      "charm_branch": "reconverse-specific-build",
+      "runtime": "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64",
+      "build_command": [
+        "./build",
+        "charm++",
+        "reconverse-linux-x86_64",
+        "--with-production",
+        "--enable-tracing",
+        "--enable-shmem",
+        "--with-fetch-reconverse-dir=/u/rao1/charm_reconverse/reconverse",
+        "--with-cmake-args=-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF",
+        "-j8"
+      ],
+      "environment": {
+        "CC": "gcc",
+        "CXX": "g++"
+      },
+      "scheduler_for_tests": "+old-scheduler",
+      "reconverse_local_patch": {
+        "path": "/u/rao1/.tmp/runtime-refresh-20260925/reconverse-local-built.patch",
+        "sha256": "49ee2bfcc5586fd3cd69e2f2ec57e36267158562a92669da5f368bd6e725110d"
+      },
+      "cache": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+        "TRACING": "1",
+        "CMK_USE_SHMEM": "1",
+        "SPANTREE": "ON",
+        "RECONVERSE_ENABLE_CPU_AFFINITY": "ON",
+        "RECONVERSE_AUTOFETCH_LCI2_TAG": "dfb924cf3ee25aece37b85473b41d406ad810252",
+        "RECONVERSE_TRY_ENABLE_COMM_LCW": "OFF",
+        "FETCHCONTENT_SOURCE_DIR_RECONVERSE": "/u/rao1/charm_reconverse/reconverse"
+      },
+      "libraries": {
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libreconverse.so": "b8564e2731b3683d9a07364a163170fd8a16ff8454c3f215d86c9159058158d9",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblci.so": "7918b1ad26a1f3be1575bb6c18a79fe26cd5b11dfaf11cd4d0eabfa94558c4c5",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblct.so": "fdf5f2034b7711fcb337f6710705096c1c85f4295a60ee3cf07547a5438ae844",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libck.a": "eec2d79e9b700fc7983ff747949833bcb19ed83dea6e4f574c155ce95b4e1db3",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libtrace-projections.a": "8ae93a441daa2cc0ccde4b7ed7605440ffc0783a90944b5170799fee94572ff1"
+      },
+      "notes": [
+        "Charm++ current tracking branch was already up to date; no branch switch was assumed.",
+        "Reconverse local LCI pin was preserved.",
+        "Reconverse main now defaults backend_poll_freq to 64; the prior runtime default was 4.",
+        "Previous campaign runtime and application binaries remain intact."
+      ],
+      "validation": {
+        "local_runtime_rounds": 1000,
+        "runtime_pes": 2,
+        "trace_files": 4,
+        "serial_sssp_checks": 4,
+        "certified_sssp_checks": 4,
+        "sources": [
+          0,
+          512,
+          1024,
+          0
+        ],
+        "old_scheduler": true,
+        "scope": "Local-only runtime checks; distributed shared-memory communication has not been rerun on compute nodes in this refresh."
+      },
+      "active_compiler": "/u/rao1/charm_reconverse/bin/charmc",
+      "sssp_config": "/u/rao1/charm_graph_code/config.mk"
+    },
+    "binaries": {
+      "acic_full_256_cost": "7fa4ad721f1f55f982c5f3459d8d0ae6d3870f6c88f738f58826ee1856e395e0",
+      "acic_base_cost": "98972d0e407607d466aedac8d540c58edecfb36c1a8da62ba4421ebdaed92d69",
+      "acic_chunks_256_cost": "50250f4e5ab227a3616ef81aac90c8b7133ea4135fa00a9bd85fa7b2a70cef64",
+      "acic_partial_256": "d50e6b11d69ba2b771b7e8a57025f1cf8394f149e5e30aa47ad27d67d0625755",
+      "acic_partial_65536_cost": "6459861398fc74a83d4500050f09250bf0d291d067377ea9912ef6c0ee22ffb8",
+      "acic_base": "e862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a",
+      "acic_partial_65536": "5cce8d3ab2c3caa7137d6fd51abdda8edca474199bb278ef2ddaa9ce312bf53b",
+      "acic_chunks_256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+      "acic_full_65536": "8a92b978dbc4ecfdb9e0339863798c0c86b944358900b50a410876690202c18f",
+      "acic_partial_256_cost": "93ba6ff0d93151bf0ca91e807783044ca2bf5f1ac240f7af079c560d2ee3074d",
+      "acic_full_65536_cost": "b5911cc562c18fd0e342ef8ea0ecd333cf3e07680d774d254e89ab9201802a17",
+      "wasp_sssp": "2803195e25c967d286d2d45118905b2bd5252c799f5d900af03dd69998dc2529"
+    },
+    "graphs": {
+      ".wsg": "20f9102b40689c8ea496aaa122a4329413022d0ef59cc77ef142d313a43781b9",
+      ".meta": "fc1a5f0a1f7ac46c32ca27ab52f8a92b1dc421843238fa6ff81be66c2eccc7b5",
+      ".reference.txt": "415bc7468e7cc65bb345daf6c01070b0464ccda828a6ca7b6bdb06a61bd3550a"
+    },
+    "harness": {
+      "road_layout_launch.py": "e0a4a18fb671723e2706d4be720475a63c0b97f2df6c654da0f8f2bca6dd281c",
+      "road_layout_study.py": "6dada2386f148cba03b38dc7ec1928f52f9e347c1949582e9be586d398a625eb",
+      "road_queue_study.py": "30e399d38c31f55f72cb461f892b9bf2cb91da13c64d3be5a2cacfe78457b0bc",
+      "road_time_study.py": "1696dd109ca07accc578c69a78a7886516f3755afbf30cebf96003a95a928ef0",
+      "road_round_probe.py": "2e97c45abdc4972d1736ecbc7c1f18b237f46b23c1c9138390760dc6e77b3ce5",
+      "road_experiment.py": "d5683cc8746817d4e42a366c09cade0fc258cb95f0085750811ffc40081cb9b3",
+      "road_study_report.py": "ea534b799507d9132c4f5d7c2cebfd00dcf36f6f522142950239d342db339463",
+      "road_study_plot.py": "50dc982b2a674c78d91f49eb1cba963f9ceb1d2d01ef1ade9345aeee290e6053"
+    },
+    "build_manifests": {
+      "acic_partial_65536_cost.manifest": "revision=HEAD kind=work-cost build=/work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_65536_cost.Wg11ep\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=65536 -DACIC_CHUNK_PARTIAL wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87bf717f308633f74bb8b18efd62e83150057c2f\n7db9c0af69777b43e17dec110e6298fc09c91c54\n6459861398fc74a83d4500050f09250bf0d291d067377ea9912ef6c0ee22ffb8  /work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_partial_65536_cost\nbbad6e85bfe6648bfe38a3d6c8b9fd7608c6ef0f910397c6950419e2af7decee  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_65536_cost.Wg11ep/source-files.sha256\n1c20ae68e6ac8239a89116f8bfb35c029c73d91642d8d51367cc64cdf4a0c6af  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_65536_cost.Wg11ep/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_65536_cost.Wg11ep/src/weighted_node_struct.h\n",
+      "acic_partial_256.manifest": "revision=HEAD kind=production build=/work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_256.EjqFCk\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 -DACIC_CHUNK_PARTIAL wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n551571d7924eee448bc5ad2bbfd3ae9f99bb3613\n7db9c0af69777b43e17dec110e6298fc09c91c54\nd50e6b11d69ba2b771b7e8a57025f1cf8394f149e5e30aa47ad27d67d0625755  /work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_partial_256\n954999823cc32a09f637bfbe16aae39c0eab815fa4afe081240cac96a56e2a2d  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_256.EjqFCk/source-files.sha256\n1c20ae68e6ac8239a89116f8bfb35c029c73d91642d8d51367cc64cdf4a0c6af  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_256.EjqFCk/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_256.EjqFCk/src/weighted_node_struct.h\n",
+      "acic_chunks_256_cost.manifest": "revision=working kind=work-cost build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n50250f4e5ab227a3616ef81aac90c8b7133ea4135fa00a9bd85fa7b2a70cef64  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_cost\nd644f298f311f42630c98b60e1bf3ed518ea1fcfb023a7cfb5956828ca8ccf55  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/src/weighted_node_struct.h\n",
+      "acic_full_65536.manifest": "revision=HEAD kind=production build=/work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_65536.ouZ47a\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=65536 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n551571d7924eee448bc5ad2bbfd3ae9f99bb3613\n7db9c0af69777b43e17dec110e6298fc09c91c54\n benchmarks/mesh28_opt_gate.py | 12 ++++++++----\n benchmarks/road_experiment.py | 10 ++++++++++\n 2 files changed, 18 insertions(+), 4 deletions(-)\n8a92b978dbc4ecfdb9e0339863798c0c86b944358900b50a410876690202c18f  /work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_65536\n954999823cc32a09f637bfbe16aae39c0eab815fa4afe081240cac96a56e2a2d  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_65536.ouZ47a/source-files.sha256\n1c20ae68e6ac8239a89116f8bfb35c029c73d91642d8d51367cc64cdf4a0c6af  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_65536.ouZ47a/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_65536.ouZ47a/src/weighted_node_struct.h\n",
+      "acic_base.manifest": "revision=87f04af kind=production build=/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87f04affa6a6a261a030b5d66107b73195b4af73\n7db9c0af69777b43e17dec110e6298fc09c91c54\ne862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic\nd090910ebdc879776dd815522ae0c2c7a3070ec8b6e469ab041aa582380b1d6b  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/src/weighted_node_struct.h\n",
+      "acic_chunks_256.manifest": "revision=working kind=production build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256\ndadefccc661720faa494afafef88bba40c98d7d426bcc1b6866407259225c62d  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/src/weighted_node_struct.h\n",
+      "acic_full_65536_cost.manifest": "revision=HEAD kind=work-cost build=/work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_65536_cost.4ZFisc\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=65536 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87bf717f308633f74bb8b18efd62e83150057c2f\n7db9c0af69777b43e17dec110e6298fc09c91c54\nb5911cc562c18fd0e342ef8ea0ecd333cf3e07680d774d254e89ab9201802a17  /work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_65536_cost\nbbad6e85bfe6648bfe38a3d6c8b9fd7608c6ef0f910397c6950419e2af7decee  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_65536_cost.4ZFisc/source-files.sha256\n1c20ae68e6ac8239a89116f8bfb35c029c73d91642d8d51367cc64cdf4a0c6af  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_65536_cost.4ZFisc/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_65536_cost.4ZFisc/src/weighted_node_struct.h\n",
+      "acic_partial_256_cost.manifest": "revision=HEAD kind=work-cost build=/work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_256_cost.8lyLhh\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 -DACIC_CHUNK_PARTIAL wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87bf717f308633f74bb8b18efd62e83150057c2f\n7db9c0af69777b43e17dec110e6298fc09c91c54\n93ba6ff0d93151bf0ca91e807783044ca2bf5f1ac240f7af079c560d2ee3074d  /work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_partial_256_cost\nbbad6e85bfe6648bfe38a3d6c8b9fd7608c6ef0f910397c6950419e2af7decee  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_256_cost.8lyLhh/source-files.sha256\n1c20ae68e6ac8239a89116f8bfb35c029c73d91642d8d51367cc64cdf4a0c6af  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_256_cost.8lyLhh/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_256_cost.8lyLhh/src/weighted_node_struct.h\n",
+      "acic_base_cost.manifest": "revision=87f04af kind=work-cost build=/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87f04affa6a6a261a030b5d66107b73195b4af73\n7db9c0af69777b43e17dec110e6298fc09c91c54\n98972d0e407607d466aedac8d540c58edecfb36c1a8da62ba4421ebdaed92d69  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic_cost\nd090910ebdc879776dd815522ae0c2c7a3070ec8b6e469ab041aa582380b1d6b  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/src/weighted_node_struct.h\n",
+      "acic_partial_65536.manifest": "revision=HEAD kind=production build=/work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_65536.7lpwXq\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=65536 -DACIC_CHUNK_PARTIAL wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87bf717f308633f74bb8b18efd62e83150057c2f\n7db9c0af69777b43e17dec110e6298fc09c91c54\n5cce8d3ab2c3caa7137d6fd51abdda8edca474199bb278ef2ddaa9ce312bf53b  /work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_partial_65536\n954999823cc32a09f637bfbe16aae39c0eab815fa4afe081240cac96a56e2a2d  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_65536.7lpwXq/source-files.sha256\n1c20ae68e6ac8239a89116f8bfb35c029c73d91642d8d51367cc64cdf4a0c6af  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_65536.7lpwXq/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_partial_65536.7lpwXq/src/weighted_node_struct.h\n",
+      "acic_full_256_cost.manifest": "revision=HEAD kind=work-cost build=/work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_256_cost.XcleOr\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87bf717f308633f74bb8b18efd62e83150057c2f\n7db9c0af69777b43e17dec110e6298fc09c91c54\n7fa4ad721f1f55f982c5f3459d8d0ae6d3870f6c88f738f58826ee1856e395e0  /work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_256_cost\nbbad6e85bfe6648bfe38a3d6c8b9fd7608c6ef0f910397c6950419e2af7decee  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_256_cost.XcleOr/source-files.sha256\n1c20ae68e6ac8239a89116f8bfb35c029c73d91642d8d51367cc64cdf4a0c6af  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_256_cost.XcleOr/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-road-opt-20260925/build/acic_full_256_cost.XcleOr/src/weighted_node_struct.h\n"
+    }
+  },
+  "validated_solves": 110,
+  "selection": {
+    "winner": {
+      "label": "16x7-span128",
+      "binary": "acic_full_65536",
+      "cost_binary": "acic_full_65536_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 65536,
+      "partial": false
+    },
+    "screen_scores": {
+      "16x7-span128": 0.37639582941366395,
+      "8x14-span128": 0.3624150128581872,
+      "8x7-span128": 0.6680433119686179
+    },
+    "confirmation_scores": {},
+    "layout_speedups": {
+      "8x14-span128": [
+        1.0642375269805682,
+        1.0135348278094083
+      ],
+      "8x7-span128": [
+        0.5547693943955222,
+        0.5722263738919144
+      ]
+    },
+    "queue_selection": {
+      "winner": {
+        "label": "heap8",
+        "binary": "acic_base",
+        "cost_binary": "acic_base_cost",
+        "layout": {
+          "label": "16x7-span128",
+          "ranks": 16,
+          "ppn": 7,
+          "span": 128,
+          "workers": 112
+        },
+        "flags": [
+          "--heap-slice",
+          "8"
+        ],
+        "band": 0,
+        "partial": false
+      },
+      "scores": {
+        "heap8": 0.46999647615700274,
+        "heap64": 0.5035230161531844,
+        "full256": 0.6317869379893827,
+        "partial256": 0.4905498725746445,
+        "full65536": 0.37469856260065904,
+        "partial65536": 0.41444711160774184,
+        "train_control": 0.468383536047116
+      },
+      "diagnostics": {
+        "heap8": {
+          "per_source_speedups": [
+            1.0,
+            1.0
+          ],
+          "edge_work_ratios": [
+            1.0,
+            1.0
+          ]
+        },
+        "heap64": {
+          "per_source_speedups": [
+            0.9714580654115821,
+            0.8968637921125572
+          ],
+          "edge_work_ratios": [
+            0.8544213251508472,
+            0.8409547932191714
+          ]
+        },
+        "full256": {
+          "per_source_speedups": [
+            0.7625732228613648,
+            0.7257154462212254
+          ],
+          "edge_work_ratios": [
+            1.0899245142831289,
+            1.139590923584943
+          ]
+        },
+        "partial256": {
+          "per_source_speedups": [
+            1.018227858459622,
+            0.9015252480379092
+          ],
+          "edge_work_ratios": [
+            1.6161295883641482,
+            1.901214329488749
+          ]
+        },
+        "full65536": {
+          "per_source_speedups": [
+            1.2166107633183505,
+            1.2932232237219952
+          ],
+          "edge_work_ratios": [
+            1.7037817355210023,
+            1.8110384956224665
+          ]
+        },
+        "partial65536": {
+          "per_source_speedups": [
+            1.144013688834406,
+            1.1241383083488348
+          ],
+          "edge_work_ratios": [
+            1.7480548691428655,
+            1.838250926309856
+          ]
+        }
+      },
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "layout_summary": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042/summary.json"
+    }
+  },
+  "sources": [
+    {
+      "source": "8718204",
+      "variants": {
+        "base": {
+          "median": 0.516508,
+          "seconds": [
+            0.516508,
+            0.513422,
+            0.520342
+          ],
+          "scans": [
+            1.6336565917773398,
+            1.6329025970191215,
+            1.658197568529792
+          ],
+          "rounds": [
+            804,
+            819,
+            825
+          ]
+        },
+        "queue": {
+          "median": 0.395467,
+          "seconds": [
+            0.39918,
+            0.395467,
+            0.375614
+          ],
+          "scans": [
+            2.8507208385353286,
+            2.9089127995843396,
+            2.841874985617401
+          ],
+          "rounds": [
+            1180,
+            1253,
+            1157
+          ]
+        },
+        "combined": {
+          "median": 0.401571,
+          "seconds": [
+            0.41589,
+            0.401571,
+            0.393079
+          ],
+          "scans": [
+            2.943206963312797,
+            2.899919464376763,
+            2.848230517504628
+          ],
+          "rounds": [
+            1306,
+            1129,
+            1074
+          ]
+        },
+        "control": {
+          "median": 0.517755,
+          "seconds": [
+            0.529101,
+            0.517755,
+            0.486981
+          ],
+          "scans": [
+            1.6067148126768713,
+            1.6300715990039893,
+            1.6324151135539118
+          ],
+          "rounds": [
+            809,
+            804,
+            799
+          ]
+        },
+        "wasp": {
+          "median": 0.105775973,
+          "seconds": [
+            0.105775973,
+            0.107527941,
+            0.100594551
+          ],
+          "scans": [
+            null,
+            null,
+            null
+          ],
+          "rounds": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "source": "22613654",
+      "variants": {
+        "base": {
+          "median": 0.447372,
+          "seconds": [
+            0.447372,
+            0.415814,
+            0.486195
+          ],
+          "scans": [
+            1.5489769085466325,
+            1.5682492620167134,
+            1.5349354716896386
+          ],
+          "rounds": [
+            597,
+            612,
+            569
+          ]
+        },
+        "queue": {
+          "median": 0.378019,
+          "seconds": [
+            0.397856,
+            0.378019,
+            0.367324
+          ],
+          "scans": [
+            2.643912528567654,
+            2.642148528788349,
+            2.662981047685351
+          ],
+          "rounds": [
+            1429,
+            1305,
+            1362
+          ]
+        },
+        "combined": {
+          "median": 0.365957,
+          "seconds": [
+            0.365957,
+            0.391347,
+            0.351539
+          ],
+          "scans": [
+            2.643220084401943,
+            2.632848722922245,
+            2.6484746196686304
+          ],
+          "rounds": [
+            1423,
+            1262,
+            1304
+          ]
+        },
+        "control": {
+          "median": 0.441142,
+          "seconds": [
+            0.441142,
+            0.464179,
+            0.440358
+          ],
+          "scans": [
+            1.5528312024906363,
+            1.599312574148363,
+            1.5758643976678426
+          ],
+          "rounds": [
+            581,
+            599,
+            605
+          ]
+        },
+        "wasp": {
+          "median": 0.093567971,
+          "seconds": [
+            0.093567971,
+            0.089293435,
+            0.117452056
+          ],
+          "scans": [
+            null,
+            null,
+            null
+          ],
+          "rounds": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "source": "10159848",
+      "variants": {
+        "base": {
+          "median": 0.435735,
+          "seconds": [
+            0.439074,
+            0.435735,
+            0.42291
+          ],
+          "scans": [
+            1.5041644728871026,
+            1.5327799359762937,
+            1.5126887100964321
+          ],
+          "rounds": [
+            615,
+            694,
+            758
+          ]
+        },
+        "queue": {
+          "median": 0.396117,
+          "seconds": [
+            0.409274,
+            0.396117,
+            0.368675
+          ],
+          "scans": [
+            2.4440494370477452,
+            2.4534776812560977,
+            2.4438753902709585
+          ],
+          "rounds": [
+            1369,
+            1352,
+            1379
+          ]
+        },
+        "combined": {
+          "median": 0.385598,
+          "seconds": [
+            0.385598,
+            0.392451,
+            0.356224
+          ],
+          "scans": [
+            2.474570091984865,
+            2.4465714864384913,
+            2.4879332766624276
+          ],
+          "rounds": [
+            1237,
+            1174,
+            1458
+          ]
+        },
+        "control": {
+          "median": 0.424709,
+          "seconds": [
+            0.424709,
+            0.447933,
+            0.410592
+          ],
+          "scans": [
+            1.5378474454701951,
+            1.5528971025197205,
+            1.5341818235000717
+          ],
+          "rounds": [
+            698,
+            640,
+            702
+          ]
+        },
+        "wasp": {
+          "median": 0.090306934,
+          "seconds": [
+            0.090306934,
+            0.086150451,
+            0.092753935
+          ],
+          "scans": [
+            null,
+            null,
+            null
+          ],
+          "rounds": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "source": "3073839",
+      "variants": {
+        "base": {
+          "median": 0.446241,
+          "seconds": [
+            0.446241,
+            0.455914,
+            0.445389
+          ],
+          "scans": [
+            1.5841639544204,
+            1.558120862490154,
+            1.6200888969385234
+          ],
+          "rounds": [
+            684,
+            713,
+            634
+          ]
+        },
+        "queue": {
+          "median": 0.361435,
+          "seconds": [
+            0.37238,
+            0.361435,
+            0.343504
+          ],
+          "scans": [
+            2.740657011679918,
+            2.6504028236750194,
+            2.666126834006647
+          ],
+          "rounds": [
+            1431,
+            1317,
+            1257
+          ]
+        },
+        "combined": {
+          "median": 0.399825,
+          "seconds": [
+            0.382346,
+            0.419376,
+            0.399825
+          ],
+          "scans": [
+            2.78228408287815,
+            2.7433248451739205,
+            2.7434078137090916
+          ],
+          "rounds": [
+            1509,
+            1531,
+            1601
+          ]
+        },
+        "control": {
+          "median": 0.427358,
+          "seconds": [
+            0.455716,
+            0.427358,
+            0.41906
+          ],
+          "scans": [
+            1.5850490734279161,
+            1.562908136572447,
+            1.5715297075875523
+          ],
+          "rounds": [
+            666,
+            654,
+            668
+          ]
+        },
+        "wasp": {
+          "median": 0.092755642,
+          "seconds": [
+            0.1126779,
+            0.092755642,
+            0.088273767
+          ],
+          "scans": [
+            null,
+            null,
+            null
+          ],
+          "rounds": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    }
+  ],
+  "work": [
+    {
+      "index": 104,
+      "label": "combined_cost",
+      "binary": "acic_full_65536_cost",
+      "cost_binary": "acic_full_65536_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 65536,
+      "partial": false,
+      "work_cost": true,
+      "source": "22613654",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-time/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_65536_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "22613654",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "64"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/time-22401351/104-work-combined_cost-s22613654-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.390454,
+      "edge_attempts": 151594281,
+      "rounds": 1387,
+      "affinity_verified": true,
+      "scan_factor": 2.626891277116571,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 151594281,
+        "expansions": 60209311,
+        "changes": 66715649,
+        "queue_pushes": 66715649,
+        "queue_pops": 66715649,
+        "stale_pops": 6506338,
+        "cas_attempts": 66717360,
+        "cas_failures": 1711,
+        "intra_process": 150667324,
+        "intra_node": 926957,
+        "inter_node": 0,
+        "queue_probes": 191646875,
+        "lock_misses": 15620514,
+        "cpu_ns": 43038438734,
+        "push_calls": 66715649,
+        "push_samples": 65152,
+        "push_ticks": 3883330,
+        "pop_calls": 35851640,
+        "pop_samples": 35010,
+        "pop_ticks": 23278411,
+        "chunk_publications": 153817,
+        "chunk_published_items": 9844288,
+        "chunk_partial_publications": 0,
+        "chunk_takes": 153817,
+        "chunk_taken_items": 9844288,
+        "chunk_peer_taken_items": 6905408,
+        "chunk_share_requests": 0,
+        "chunk_share_checks": 0,
+        "chunk_private_samples": 35066,
+        "chunk_private_items": 1266633,
+        "chunk_private_bands": 59906,
+        "chunk_failed_searches": 27197433
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.390454,
+        "pe_seconds": 43.730801,
+        "work_seconds": 24.742741,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.179138,
+        "window_pe_seconds": 43.793162,
+        "compute_share": 0.565797,
+        "send_share": 0.004096,
+        "other_share": 0.430107,
+        "idle_share": 0.3753
+      },
+      "queue": {
+        "push": {
+          "ns": 24.374076534893213,
+          "estimated_share": 0.03713210603064178
+        },
+        "pop": {
+          "ns": 271.90227767425864,
+          "estimated_share": 0.22259508400780828
+        }
+      }
+    },
+    {
+      "index": 105,
+      "label": "queue_cost",
+      "binary": "acic_full_65536_cost",
+      "cost_binary": "acic_full_65536_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 65536,
+      "partial": false,
+      "work_cost": true,
+      "source": "22613654",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-time/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_65536_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "22613654",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "64"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/time-22401351/105-work-queue_cost-s22613654-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.403513,
+      "edge_attempts": 153145873,
+      "rounds": 1524,
+      "affinity_verified": true,
+      "scan_factor": 2.6537779344730175,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 153145873,
+        "expansions": 60925219,
+        "changes": 67468233,
+        "queue_pushes": 67468233,
+        "queue_pops": 67468233,
+        "stale_pops": 6543014,
+        "cas_attempts": 67469886,
+        "cas_failures": 1653,
+        "intra_process": 152214151,
+        "intra_node": 931722,
+        "inter_node": 0,
+        "queue_probes": 183102408,
+        "lock_misses": 15132806,
+        "cpu_ns": 44593588770,
+        "push_calls": 67468233,
+        "push_samples": 65886,
+        "push_ticks": 4158772,
+        "pop_calls": 34715218,
+        "pop_samples": 33905,
+        "pop_ticks": 23767336,
+        "chunk_publications": 153973,
+        "chunk_published_items": 9854272,
+        "chunk_partial_publications": 0,
+        "chunk_takes": 153973,
+        "chunk_taken_items": 9854272,
+        "chunk_peer_taken_items": 6902592,
+        "chunk_share_requests": 0,
+        "chunk_share_checks": 0,
+        "chunk_private_samples": 33960,
+        "chunk_private_items": 1312369,
+        "chunk_private_bands": 64572,
+        "chunk_failed_searches": 25982007
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.403513,
+        "pe_seconds": 45.193424,
+        "work_seconds": 25.804635,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.156704,
+        "window_pe_seconds": 45.256037,
+        "compute_share": 0.570982,
+        "send_share": 0.003467,
+        "other_share": 0.425551,
+        "idle_share": 0.367737
+      },
+      "queue": {
+        "push": {
+          "ns": 25.812122780616214,
+          "estimated_share": 0.03848101666496389
+        },
+        "pop": {
+          "ns": 286.66093298292446,
+          "estimated_share": 0.21989324386900277
+        }
+      }
+    },
+    {
+      "index": 106,
+      "label": "base_cost",
+      "binary": "acic_base_cost",
+      "cost_binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ],
+      "band": 0,
+      "partial": false,
+      "work_cost": true,
+      "source": "22613654",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-time/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_base_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "22613654",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "8"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/time-22401351/106-work-base_cost-s22613654-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.41058,
+      "edge_attempts": 90196440,
+      "rounds": 571,
+      "affinity_verified": true,
+      "scan_factor": 1.5629629290762503,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 90196440,
+        "expansions": 36858600,
+        "changes": 40561249,
+        "queue_pushes": 40561249,
+        "queue_pops": 40561249,
+        "stale_pops": 3702649,
+        "cas_attempts": 40569979,
+        "cas_failures": 8730,
+        "intra_process": 89425891,
+        "intra_node": 770549,
+        "inter_node": 0,
+        "queue_probes": 76513005,
+        "lock_misses": 9027417,
+        "cpu_ns": 42486961191,
+        "push_calls": 40561249,
+        "push_samples": 39614,
+        "push_ticks": 31958762,
+        "pop_calls": 15574615,
+        "pop_samples": 15210,
+        "pop_ticks": 27354362
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.41058,
+        "pe_seconds": 45.984951,
+        "work_seconds": 34.872764,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.347164,
+        "window_pe_seconds": 45.920327,
+        "compute_share": 0.758352,
+        "send_share": 0.00755,
+        "other_share": 0.234099,
+        "idle_share": 0.133217
+      },
+      "queue": {
+        "push": {
+          "ns": 329.9079815482396,
+          "estimated_share": 0.29140645681084876
+        },
+        "pop": {
+          "ns": 735.4428808209948,
+          "estimated_share": 0.24943724210147455
+        }
+      }
+    },
+    {
+      "index": 107,
+      "label": "combined_cost",
+      "binary": "acic_full_65536_cost",
+      "cost_binary": "acic_full_65536_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 65536,
+      "partial": false,
+      "work_cost": true,
+      "source": "8718204",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-time/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_65536_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "8718204",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "64"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/time-22401351/107-work-combined_cost-s8718204-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.403289,
+      "edge_attempts": 164139238,
+      "rounds": 1141,
+      "affinity_verified": true,
+      "scan_factor": 2.844275718651687,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 164139238,
+        "expansions": 65377806,
+        "changes": 72303632,
+        "queue_pushes": 72303632,
+        "queue_pops": 72303632,
+        "stale_pops": 6925826,
+        "cas_attempts": 72305544,
+        "cas_failures": 1912,
+        "intra_process": 163115150,
+        "intra_node": 1024088,
+        "inter_node": 0,
+        "queue_probes": 235058011,
+        "lock_misses": 8470925,
+        "cpu_ns": 44414120860,
+        "push_calls": 72303632,
+        "push_samples": 70609,
+        "push_ticks": 4212555,
+        "pop_calls": 42793599,
+        "pop_samples": 41790,
+        "pop_ticks": 17095681,
+        "chunk_publications": 153781,
+        "chunk_published_items": 9841984,
+        "chunk_partial_publications": 0,
+        "chunk_takes": 153781,
+        "chunk_taken_items": 9841984,
+        "chunk_peer_taken_items": 6973312,
+        "chunk_share_requests": 0,
+        "chunk_share_checks": 0,
+        "chunk_private_samples": 41847,
+        "chunk_private_items": 1047940,
+        "chunk_private_bands": 48701,
+        "chunk_failed_searches": 33407148
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.403289,
+        "pe_seconds": 45.168377,
+        "work_seconds": 23.386813,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.16996,
+        "window_pe_seconds": 45.216247,
+        "compute_share": 0.51777,
+        "send_share": 0.003763,
+        "other_share": 0.478468,
+        "idle_share": 0.427809
+      },
+      "queue": {
+        "push": {
+          "ns": 24.397050196074858,
+          "estimated_share": 0.03901242266441361
+        },
+        "pop": {
+          "ns": 167.2884012583661,
+          "estimated_share": 0.15832523121172823
+        }
+      }
+    },
+    {
+      "index": 108,
+      "label": "base_cost",
+      "binary": "acic_base_cost",
+      "cost_binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ],
+      "band": 0,
+      "partial": false,
+      "work_cost": true,
+      "source": "8718204",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-time/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_base_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "8718204",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "8"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/time-22401351/108-work-base_cost-s8718204-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.488425,
+      "edge_attempts": 93457049,
+      "rounds": 803,
+      "affinity_verified": true,
+      "scan_factor": 1.619464172287317,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 93457049,
+        "expansions": 38262379,
+        "changes": 42125787,
+        "queue_pushes": 42125787,
+        "queue_pops": 42125787,
+        "stale_pops": 3863408,
+        "cas_attempts": 42136157,
+        "cas_failures": 10370,
+        "intra_process": 92637350,
+        "intra_node": 819699,
+        "inter_node": 0,
+        "queue_probes": 121794663,
+        "lock_misses": 16527217,
+        "cpu_ns": 51277535303,
+        "push_calls": 42125787,
+        "push_samples": 41138,
+        "push_ticks": 32459478,
+        "pop_calls": 22676971,
+        "pop_samples": 22145,
+        "pop_ticks": 37159819
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.488425,
+        "pe_seconds": 54.703602,
+        "work_seconds": 39.450219,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.353121,
+        "window_pe_seconds": 54.625508,
+        "compute_share": 0.721163,
+        "send_share": 0.006455,
+        "other_share": 0.272382,
+        "idle_share": 0.182617
+      },
+      "queue": {
+        "push": {
+          "ns": 322.66366611826686,
+          "estimated_share": 0.24882992157321862
+        },
+        "pop": {
+          "ns": 686.1982588246731,
+          "estimated_share": 0.2848650490466396
+        }
+      }
+    },
+    {
+      "index": 109,
+      "label": "queue_cost",
+      "binary": "acic_full_65536_cost",
+      "cost_binary": "acic_full_65536_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 65536,
+      "partial": false,
+      "work_cost": true,
+      "source": "8718204",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-time/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_65536_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "8718204",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "64"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/time-22401351/109-work-queue_cost-s8718204-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.391676,
+      "edge_attempts": 165611276,
+      "rounds": 1152,
+      "affinity_verified": true,
+      "scan_factor": 2.8697838298830343,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 165611276,
+        "expansions": 65968641,
+        "changes": 72955421,
+        "queue_pushes": 72955421,
+        "queue_pops": 72955421,
+        "stale_pops": 6986780,
+        "cas_attempts": 72957304,
+        "cas_failures": 1883,
+        "intra_process": 164583909,
+        "intra_node": 1027367,
+        "inter_node": 0,
+        "queue_probes": 241711626,
+        "lock_misses": 9307819,
+        "cpu_ns": 43304974594,
+        "push_calls": 72955421,
+        "push_samples": 71245,
+        "push_ticks": 3941961,
+        "pop_calls": 43820255,
+        "pop_samples": 42795,
+        "pop_ticks": 17083479,
+        "chunk_publications": 158690,
+        "chunk_published_items": 10156160,
+        "chunk_partial_publications": 0,
+        "chunk_takes": 158690,
+        "chunk_taken_items": 10156160,
+        "chunk_peer_taken_items": 7207488,
+        "chunk_share_requests": 0,
+        "chunk_share_checks": 0,
+        "chunk_private_samples": 42850,
+        "chunk_private_items": 1072946,
+        "chunk_private_bands": 50537,
+        "chunk_failed_searches": 34340274
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.391676,
+        "pe_seconds": 43.86768,
+        "work_seconds": 22.643082,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.146608,
+        "window_pe_seconds": 44.022973,
+        "compute_share": 0.516168,
+        "send_share": 0.003342,
+        "other_share": 0.48049,
+        "idle_share": 0.431395
+      },
+      "queue": {
+        "push": {
+          "ns": 22.626096668975634,
+          "estimated_share": 0.037496250152660414
+        },
+        "pop": {
+          "ns": 163.2431600732142,
+          "estimated_share": 0.16249145420992045
+        }
+      }
+    }
+  ],
+  "progress": [
+    {
+      "label": "queue",
+      "source": "8718204",
+      "rep": 0,
+      "observations": 1180,
+      "comparisons": 1178,
+      "unchanged_threshold": 691,
+      "unchanged_threshold_with_update_activity": 688,
+      "no_update_activity": 3,
+      "changed_threshold": 487
+    },
+    {
+      "label": "combined",
+      "source": "10159848",
+      "rep": 0,
+      "observations": 1237,
+      "comparisons": 1235,
+      "unchanged_threshold": 832,
+      "unchanged_threshold_with_update_activity": 817,
+      "no_update_activity": 15,
+      "changed_threshold": 403
+    },
+    {
+      "label": "queue",
+      "source": "3073839",
+      "rep": 0,
+      "observations": 1431,
+      "comparisons": 1429,
+      "unchanged_threshold": 931,
+      "unchanged_threshold_with_update_activity": 918,
+      "no_update_activity": 13,
+      "changed_threshold": 498
+    },
+    {
+      "label": "control",
+      "source": "22613654",
+      "rep": 0,
+      "observations": 581,
+      "comparisons": 579,
+      "unchanged_threshold": 304,
+      "unchanged_threshold_with_update_activity": 302,
+      "no_update_activity": 2,
+      "changed_threshold": 275
+    },
+    {
+      "label": "queue",
+      "source": "10159848",
+      "rep": 0,
+      "observations": 1369,
+      "comparisons": 1367,
+      "unchanged_threshold": 944,
+      "unchanged_threshold_with_update_activity": 935,
+      "no_update_activity": 9,
+      "changed_threshold": 423
+    },
+    {
+      "label": "combined",
+      "source": "22613654",
+      "rep": 0,
+      "observations": 1423,
+      "comparisons": 1421,
+      "unchanged_threshold": 949,
+      "unchanged_threshold_with_update_activity": 939,
+      "no_update_activity": 10,
+      "changed_threshold": 472
+    },
+    {
+      "label": "combined",
+      "source": "8718204",
+      "rep": 0,
+      "observations": 1306,
+      "comparisons": 1304,
+      "unchanged_threshold": 768,
+      "unchanged_threshold_with_update_activity": 764,
+      "no_update_activity": 4,
+      "changed_threshold": 536
+    },
+    {
+      "label": "control",
+      "source": "8718204",
+      "rep": 0,
+      "observations": 809,
+      "comparisons": 807,
+      "unchanged_threshold": 411,
+      "unchanged_threshold_with_update_activity": 410,
+      "no_update_activity": 1,
+      "changed_threshold": 396
+    },
+    {
+      "label": "base",
+      "source": "3073839",
+      "rep": 0,
+      "observations": 684,
+      "comparisons": 682,
+      "unchanged_threshold": 382,
+      "unchanged_threshold_with_update_activity": 381,
+      "no_update_activity": 1,
+      "changed_threshold": 300
+    },
+    {
+      "label": "combined",
+      "source": "3073839",
+      "rep": 0,
+      "observations": 1509,
+      "comparisons": 1507,
+      "unchanged_threshold": 1000,
+      "unchanged_threshold_with_update_activity": 988,
+      "no_update_activity": 12,
+      "changed_threshold": 507
+    },
+    {
+      "label": "base",
+      "source": "22613654",
+      "rep": 0,
+      "observations": 597,
+      "comparisons": 595,
+      "unchanged_threshold": 316,
+      "unchanged_threshold_with_update_activity": 314,
+      "no_update_activity": 2,
+      "changed_threshold": 279
+    },
+    {
+      "label": "base",
+      "source": "8718204",
+      "rep": 0,
+      "observations": 804,
+      "comparisons": 802,
+      "unchanged_threshold": 406,
+      "unchanged_threshold_with_update_activity": 405,
+      "no_update_activity": 1,
+      "changed_threshold": 396
+    },
+    {
+      "label": "base",
+      "source": "10159848",
+      "rep": 0,
+      "observations": 615,
+      "comparisons": 613,
+      "unchanged_threshold": 334,
+      "unchanged_threshold_with_update_activity": 334,
+      "no_update_activity": 0,
+      "changed_threshold": 279
+    },
+    {
+      "label": "control",
+      "source": "3073839",
+      "rep": 0,
+      "observations": 666,
+      "comparisons": 664,
+      "unchanged_threshold": 366,
+      "unchanged_threshold_with_update_activity": 364,
+      "no_update_activity": 2,
+      "changed_threshold": 298
+    },
+    {
+      "label": "control",
+      "source": "10159848",
+      "rep": 0,
+      "observations": 698,
+      "comparisons": 696,
+      "unchanged_threshold": 399,
+      "unchanged_threshold_with_update_activity": 398,
+      "no_update_activity": 1,
+      "changed_threshold": 297
+    },
+    {
+      "label": "queue",
+      "source": "22613654",
+      "rep": 0,
+      "observations": 1429,
+      "comparisons": 1427,
+      "unchanged_threshold": 968,
+      "unchanged_threshold_with_update_activity": 959,
+      "no_update_activity": 9,
+      "changed_threshold": 459
+    },
+    {
+      "label": "control",
+      "source": "10159848",
+      "rep": 1,
+      "observations": 640,
+      "comparisons": 638,
+      "unchanged_threshold": 356,
+      "unchanged_threshold_with_update_activity": 356,
+      "no_update_activity": 0,
+      "changed_threshold": 282
+    },
+    {
+      "label": "control",
+      "source": "8718204",
+      "rep": 1,
+      "observations": 804,
+      "comparisons": 802,
+      "unchanged_threshold": 405,
+      "unchanged_threshold_with_update_activity": 405,
+      "no_update_activity": 0,
+      "changed_threshold": 397
+    },
+    {
+      "label": "base",
+      "source": "10159848",
+      "rep": 1,
+      "observations": 694,
+      "comparisons": 692,
+      "unchanged_threshold": 404,
+      "unchanged_threshold_with_update_activity": 402,
+      "no_update_activity": 2,
+      "changed_threshold": 288
+    },
+    {
+      "label": "control",
+      "source": "22613654",
+      "rep": 1,
+      "observations": 599,
+      "comparisons": 597,
+      "unchanged_threshold": 321,
+      "unchanged_threshold_with_update_activity": 318,
+      "no_update_activity": 3,
+      "changed_threshold": 276
+    },
+    {
+      "label": "queue",
+      "source": "22613654",
+      "rep": 1,
+      "observations": 1305,
+      "comparisons": 1303,
+      "unchanged_threshold": 865,
+      "unchanged_threshold_with_update_activity": 856,
+      "no_update_activity": 9,
+      "changed_threshold": 438
+    },
+    {
+      "label": "combined",
+      "source": "10159848",
+      "rep": 1,
+      "observations": 1174,
+      "comparisons": 1172,
+      "unchanged_threshold": 750,
+      "unchanged_threshold_with_update_activity": 732,
+      "no_update_activity": 18,
+      "changed_threshold": 422
+    },
+    {
+      "label": "queue",
+      "source": "10159848",
+      "rep": 1,
+      "observations": 1352,
+      "comparisons": 1350,
+      "unchanged_threshold": 914,
+      "unchanged_threshold_with_update_activity": 909,
+      "no_update_activity": 5,
+      "changed_threshold": 436
+    },
+    {
+      "label": "queue",
+      "source": "3073839",
+      "rep": 1,
+      "observations": 1317,
+      "comparisons": 1315,
+      "unchanged_threshold": 858,
+      "unchanged_threshold_with_update_activity": 848,
+      "no_update_activity": 10,
+      "changed_threshold": 457
+    },
+    {
+      "label": "combined",
+      "source": "3073839",
+      "rep": 1,
+      "observations": 1531,
+      "comparisons": 1529,
+      "unchanged_threshold": 1014,
+      "unchanged_threshold_with_update_activity": 1001,
+      "no_update_activity": 13,
+      "changed_threshold": 515
+    },
+    {
+      "label": "base",
+      "source": "3073839",
+      "rep": 1,
+      "observations": 713,
+      "comparisons": 711,
+      "unchanged_threshold": 409,
+      "unchanged_threshold_with_update_activity": 407,
+      "no_update_activity": 2,
+      "changed_threshold": 302
+    },
+    {
+      "label": "base",
+      "source": "8718204",
+      "rep": 1,
+      "observations": 819,
+      "comparisons": 817,
+      "unchanged_threshold": 420,
+      "unchanged_threshold_with_update_activity": 420,
+      "no_update_activity": 0,
+      "changed_threshold": 397
+    },
+    {
+      "label": "combined",
+      "source": "22613654",
+      "rep": 1,
+      "observations": 1262,
+      "comparisons": 1260,
+      "unchanged_threshold": 821,
+      "unchanged_threshold_with_update_activity": 813,
+      "no_update_activity": 8,
+      "changed_threshold": 439
+    },
+    {
+      "label": "queue",
+      "source": "8718204",
+      "rep": 1,
+      "observations": 1253,
+      "comparisons": 1251,
+      "unchanged_threshold": 749,
+      "unchanged_threshold_with_update_activity": 740,
+      "no_update_activity": 9,
+      "changed_threshold": 502
+    },
+    {
+      "label": "combined",
+      "source": "8718204",
+      "rep": 1,
+      "observations": 1129,
+      "comparisons": 1127,
+      "unchanged_threshold": 655,
+      "unchanged_threshold_with_update_activity": 651,
+      "no_update_activity": 4,
+      "changed_threshold": 472
+    },
+    {
+      "label": "control",
+      "source": "3073839",
+      "rep": 1,
+      "observations": 654,
+      "comparisons": 652,
+      "unchanged_threshold": 361,
+      "unchanged_threshold_with_update_activity": 360,
+      "no_update_activity": 1,
+      "changed_threshold": 291
+    },
+    {
+      "label": "base",
+      "source": "22613654",
+      "rep": 1,
+      "observations": 612,
+      "comparisons": 610,
+      "unchanged_threshold": 332,
+      "unchanged_threshold_with_update_activity": 330,
+      "no_update_activity": 2,
+      "changed_threshold": 278
+    },
+    {
+      "label": "combined",
+      "source": "10159848",
+      "rep": 2,
+      "observations": 1458,
+      "comparisons": 1456,
+      "unchanged_threshold": 990,
+      "unchanged_threshold_with_update_activity": 982,
+      "no_update_activity": 8,
+      "changed_threshold": 466
+    },
+    {
+      "label": "base",
+      "source": "22613654",
+      "rep": 2,
+      "observations": 569,
+      "comparisons": 567,
+      "unchanged_threshold": 289,
+      "unchanged_threshold_with_update_activity": 286,
+      "no_update_activity": 3,
+      "changed_threshold": 278
+    },
+    {
+      "label": "control",
+      "source": "22613654",
+      "rep": 2,
+      "observations": 605,
+      "comparisons": 603,
+      "unchanged_threshold": 326,
+      "unchanged_threshold_with_update_activity": 323,
+      "no_update_activity": 3,
+      "changed_threshold": 277
+    },
+    {
+      "label": "base",
+      "source": "10159848",
+      "rep": 2,
+      "observations": 758,
+      "comparisons": 756,
+      "unchanged_threshold": 458,
+      "unchanged_threshold_with_update_activity": 456,
+      "no_update_activity": 2,
+      "changed_threshold": 298
+    },
+    {
+      "label": "control",
+      "source": "8718204",
+      "rep": 2,
+      "observations": 799,
+      "comparisons": 797,
+      "unchanged_threshold": 403,
+      "unchanged_threshold_with_update_activity": 403,
+      "no_update_activity": 0,
+      "changed_threshold": 394
+    },
+    {
+      "label": "combined",
+      "source": "22613654",
+      "rep": 2,
+      "observations": 1304,
+      "comparisons": 1302,
+      "unchanged_threshold": 855,
+      "unchanged_threshold_with_update_activity": 847,
+      "no_update_activity": 8,
+      "changed_threshold": 447
+    },
+    {
+      "label": "base",
+      "source": "3073839",
+      "rep": 2,
+      "observations": 634,
+      "comparisons": 632,
+      "unchanged_threshold": 339,
+      "unchanged_threshold_with_update_activity": 339,
+      "no_update_activity": 0,
+      "changed_threshold": 293
+    },
+    {
+      "label": "combined",
+      "source": "8718204",
+      "rep": 2,
+      "observations": 1074,
+      "comparisons": 1072,
+      "unchanged_threshold": 593,
+      "unchanged_threshold_with_update_activity": 587,
+      "no_update_activity": 6,
+      "changed_threshold": 479
+    },
+    {
+      "label": "queue",
+      "source": "22613654",
+      "rep": 2,
+      "observations": 1362,
+      "comparisons": 1360,
+      "unchanged_threshold": 916,
+      "unchanged_threshold_with_update_activity": 911,
+      "no_update_activity": 5,
+      "changed_threshold": 444
+    },
+    {
+      "label": "queue",
+      "source": "10159848",
+      "rep": 2,
+      "observations": 1379,
+      "comparisons": 1377,
+      "unchanged_threshold": 969,
+      "unchanged_threshold_with_update_activity": 960,
+      "no_update_activity": 9,
+      "changed_threshold": 408
+    },
+    {
+      "label": "queue",
+      "source": "8718204",
+      "rep": 2,
+      "observations": 1157,
+      "comparisons": 1155,
+      "unchanged_threshold": 662,
+      "unchanged_threshold_with_update_activity": 659,
+      "no_update_activity": 3,
+      "changed_threshold": 493
+    },
+    {
+      "label": "base",
+      "source": "8718204",
+      "rep": 2,
+      "observations": 825,
+      "comparisons": 823,
+      "unchanged_threshold": 427,
+      "unchanged_threshold_with_update_activity": 427,
+      "no_update_activity": 0,
+      "changed_threshold": 396
+    },
+    {
+      "label": "control",
+      "source": "3073839",
+      "rep": 2,
+      "observations": 668,
+      "comparisons": 666,
+      "unchanged_threshold": 364,
+      "unchanged_threshold_with_update_activity": 362,
+      "no_update_activity": 2,
+      "changed_threshold": 302
+    },
+    {
+      "label": "combined",
+      "source": "3073839",
+      "rep": 2,
+      "observations": 1601,
+      "comparisons": 1599,
+      "unchanged_threshold": 1060,
+      "unchanged_threshold_with_update_activity": 1051,
+      "no_update_activity": 9,
+      "changed_threshold": 539
+    },
+    {
+      "label": "queue",
+      "source": "3073839",
+      "rep": 2,
+      "observations": 1257,
+      "comparisons": 1255,
+      "unchanged_threshold": 810,
+      "unchanged_threshold_with_update_activity": 798,
+      "no_update_activity": 12,
+      "changed_threshold": 445
+    },
+    {
+      "label": "control",
+      "source": "10159848",
+      "rep": 2,
+      "observations": 702,
+      "comparisons": 700,
+      "unchanged_threshold": 400,
+      "unchanged_threshold_with_update_activity": 399,
+      "no_update_activity": 1,
+      "changed_threshold": 300
+    }
+  ],
+  "audit_script_sha256": "e2a18cc685d941fbcbd64a351a26f4e82143f18c14bb958f0141010d58273ba4",
+  "audit_dependencies": {
+    "road_experiment.py": "cc3af3118bc76d00e4bf395743827a3b19c620002de469ffd2d4c3be157da74b",
+    "road_layout_launch.py": "e0a4a18fb671723e2706d4be720475a63c0b97f2df6c654da0f8f2bca6dd281c",
+    "chunk_graph_report.py": "8e67e96975c8d6b2059cf126136f93870c27c9d95a6f01e9727dde59ff134663",
+    "check_onenode_digest.py": "4efdbead943aa7e6a45dce6645750ba726566c7ddfe2dba9c389af4cd48baa41",
+    "work_cost_report.py": "5ceee7f8e63fed3b5f585be8eed367b192176db5e6c7c6df9ff61f2ab2e528ba",
+    "onenode_report.py": "01abbb0327fc9e32c211e3e8562585b3f12d97f5e188f16ca05ea4dd3e6be50d"
+  },
+  "raw_directory": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/time-22401351",
+  "training": {
+    "16x7-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.383628,
+        "scans": 2.704901558560814,
+        "rounds": 955
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.3693,
+        "scans": 2.646783070065923,
+        "rounds": 1187
+      }
+    ],
+    "8x14-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.378505,
+        "scans": 2.933325286009245,
+        "rounds": 1021
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.347009,
+        "scans": 2.590759398456633,
+        "rounds": 1027
+      }
+    ],
+    "8x7-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.670413,
+        "scans": 2.3359111976054048,
+        "rounds": 2590
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.665682,
+        "scans": 2.1854899538065578,
+        "rounds": 2501
+      }
+    ]
+  },
+  "ranges": {
+    "base": {
+      "seconds": [
+        0.435735,
+        0.516508
+      ],
+      "speedup_over_base": [
+        1.0,
+        1.0
+      ],
+      "geomean_speedup": 1.0,
+      "speedup_over_wasp": [
+        0.20479058020398522,
+        0.2091502619743748
+      ]
+    },
+    "queue": {
+      "seconds": [
+        0.361435,
+        0.396117
+      ],
+      "speedup_over_base": [
+        1.1000159043918842,
+        1.3060710501761208
+      ],
+      "geomean_speedup": 1.2036911031902886,
+      "speedup_over_wasp": [
+        0.22798045526952898,
+        0.26747104815319606
+      ]
+    },
+    "combined": {
+      "seconds": [
+        0.365957,
+        0.401571
+      ],
+      "speedup_over_base": [
+        1.1160907897205028,
+        1.2862183773230635
+      ],
+      "geomean_speedup": 1.186684205395427,
+      "speedup_over_wasp": [
+        0.23199060088788845,
+        0.26340540776101856
+      ]
+    },
+    "control": {
+      "seconds": [
+        0.424709,
+        0.517755
+      ],
+      "speedup_over_base": [
+        0.9975915249490589,
+        1.0441854370340558
+      ],
+      "geomean_speedup": 1.0203236162779878,
+      "speedup_over_wasp": [
+        0.20429734720089618,
+        0.21704435625400717
+      ]
+    },
+    "wasp": {
+      "seconds": [
+        0.090306934,
+        0.105775973
+      ],
+      "speedup_over_base": [
+        4.781251481877276,
+        4.883037095768431
+      ],
+      "geomean_speedup": 4.824924514400837,
+      "speedup_over_wasp": [
+        1.0,
+        1.0
+      ]
+    }
+  }
+}

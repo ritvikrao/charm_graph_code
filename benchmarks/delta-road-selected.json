@@ -1,0 +1,68 @@
+{
+  "graph": "road-usa-z",
+  "nodes": 1,
+  "binary": "acic_full_65536",
+  "binary_path": "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_full_65536",
+  "sha256": "8a92b978dbc4ecfdb9e0339863798c0c86b944358900b50a410876690202c18f",
+  "build_revision": "551571d",
+  "compile_flags": [
+    "-DACIC_PROCESS_CHUNKS",
+    "-DACIC_CHUNK_DISTANCE_WIDTH=65536"
+  ],
+  "flags": [
+    "--process-share",
+    "auto",
+    "--reader-tile",
+    "auto",
+    "--slack-control",
+    "off",
+    "--process-queue",
+    "nearest",
+    "--process-queue-batch",
+    "8",
+    "--hub-hints",
+    "auto",
+    "+old-scheduler",
+    "--bucket-width",
+    "131072",
+    "--heap-slice",
+    "64"
+  ],
+  "layout": {
+    "label": "16x7-span128",
+    "ranks": 16,
+    "ppn": 7,
+    "span": 128,
+    "workers": 112
+  },
+  "chunk_size": 64,
+  "distance_width": 65536,
+  "slice": 64,
+  "batch": 8,
+  "partial_publication": false,
+  "selection_job": "22401233",
+  "confirmation_job": "22401351",
+  "layout_job": "22401042",
+  "status": "Accepted as a one-node Delta road time profile; opt-in, not a work-efficiency or distributed default.",
+  "evidence": {
+    "full_solves": 438,
+    "serial_checks": 112,
+    "bellman_certificates": 112,
+    "speedup_over_original": [
+      1.1160907897205028,
+      1.2862183773230635
+    ],
+    "geometric_mean_speedup": 1.186684205395427,
+    "extra_edge_factor": [
+      1.6358752963966485,
+      1.7751095787039246
+    ]
+  },
+  "caveats": [
+    "All three allocations ran sequentially on cn071; cross-host replication is unmeasured.",
+    "The faster queue performs substantially more edge work and more rounds.",
+    "8x14 showed a small training trend but failed the >=5% improvement requirement on both sources; retain16x7.",
+    "Distance band65536 was a bounded alternative, not an exhaustive optimum.",
+    "Keep band256 for the selected mesh profile; no graph/scale-wide auto-selection was added."
+  ]
+}

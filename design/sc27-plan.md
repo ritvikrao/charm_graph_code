@@ -894,3 +894,32 @@ Full details and the factual work/time tradeoff are in current-state §19.
 Follow-up **22401351** is submitted afterok 22401233, with all 110 planned
 solves on one node. At this checkpoint it waits for Slurm priority.
 No more experiments are planned beyond this bounded confirmation.
+
+
+### Road decision: accept a bounded one-node time profile
+
+Final job **22401351** completed 110/110 solves on cn071 in 7:11. Across the
+three completed studies, 438 full solves, 112 serial checks and 112 certificates
+pass; all 22 full-graph diagnostic work ledgers conserve. All allocations
+ran sequentially on cn071, and no jobs remain queued or running.
+
+The selected full-chunk/band 65536/slice 64 profile gives **1.116–1.286×**
+over the original on four test sources, geometric mean **1.187×**. It uses
+**63.6–77.5% more edge work**, with more rounds, and remains **0.232–0.263×**
+as fast as Wasp. The duplicate new arm also improves all source medians,
+though it differs by up to 9.6% on one source; report the modest gain with
+that variation. This confirms the time-focused prediction while preserving
+the earlier negative decision under the conservative work-growth cap.
+
+Retain **16×7**. The original-heap 14-layout search wins decisively at that
+point. With wide chunks, 8×14 trends 3.8% faster on training but fails ≥5%
+on both sources; 8×7 is 1.75–1.80× slower. No evidence supports reducing
+active cores for elapsed-time performance here. Requested partial chunks
+are not selected. Wider full chunks restore millions of peer transfers
+and retain 64-item amortization; they do not reduce edge work or rounds.
+
+Exact opt-in settings/binary: `benchmarks/delta-road-selected.json`.
+Full result: current-state §19 and `onenode-data/delta-road-time-22401351.json`.
+The source implementation, experiments and results are committed stepwise.
+Stop the bounded study. The ordinary/distributed default is unchanged;
+no new global gate or distributed performance claim follows from this test.

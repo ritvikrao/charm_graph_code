@@ -68,7 +68,8 @@ def audit(directory):
         data['ranges'][label]=dict(seconds=[min(v[label]['median'] for v in source_data),max(v[label]['median'] for v in source_data)],
             speedup_over_base=[min(ratios),max(ratios)],geomean_speedup=statistics.geometric_mean(ratios),
             speedup_over_wasp=[min(wasp),max(wasp)])
-    lines=[f'# Delta road {"queue" if queue else "layout"} study','',
+    kind='time-focused queue confirmation' if protocol.get('time_first') else ('queue' if queue else 'layout')
+    lines=[f'# Delta road {kind} study','',
            f"Job {data['manifest']['job']} on {data['manifest']['hosts']}: {len(rows)} full solves validated.",
            'All ACIC solves use +old-scheduler and have verified worker affinity. Medians of three timed launches per test source.','',
            'Training-only selection: '+json.dumps(data['selection']['winner']), '',
