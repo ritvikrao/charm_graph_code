@@ -211,3 +211,43 @@ is not substituted for production timing.
 The workspace `sssp_smp` is installed from `acic_latest`, and the ignored
 `config.mk` points to the new compiler. Previous copies are preserved as
 `bin/acic_previous_workspace` and `build/previous-workspace-config.mk`.
+
+
+### Delta runtime refresh — September 25
+
+Charm++'s current `reconverse-specific-build` tracking branch remains at
+`f6c74074f0c505d21d1c898836c1509d951dd44a` after pull. Reconverse `main` was
+fast-forwarded to `b30ad319503220bd1a2c0b5db38bd73dbe449c34`. No Charm++
+branch switch was assumed; the newer `reviewed-with-reconverse` branch is
+separate from this checkout's upstream.
+
+A fresh build lives at
+`/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64`.
+The command used `--with-production --enable-tracing --enable-shmem`, with
+Release, `SPANTREE=ON`, CPU affinity on, LCI on and LCW off. Generated headers
+confirm `CMK_ERROR_CHECKING=0`, `CMK_TRACE_ENABLED=1`, `CMK_USE_SHMEM=1`;
+release flags are `-O3 -DNDEBUG`. GCC is 14.2.1 and CMake is 3.30.1.
+
+The existing Reconverse `CMakeLists.txt` edit was restored after pull: LCI
+stays pinned to `dfb924cf3ee25aece37b85473b41d406ad810252`, rather than the
+upstream default `ca88ce2c4b429ce72dfc3233fa21f8833299440c` used in the
+September 24 campaign. This local dependency difference is recorded in the
+manifest; do not describe this runtime as an unmodified upstream dependency
+configuration. Reconverse also now defaults `+backend_poll_freq` to 64
+(previously 4), including under `+old-scheduler`.
+
+`/u/rao1/charm_reconverse/bin/charmc` and SSSP's ignored `config.mk` now point
+to this build for subsequent compilation. The previous campaign runtime
+and frozen binaries retain their original paths. This refresh only installs
+the runtime compiler; the compatibility SSSP binary is isolated in the new
+refresh directory.
+
+Validation: 1,000 local two-PE collective rounds with the full 267-long
+payload; CPU-affinity setup and Projections output; four tiny-graph serial
+Dijkstra checks plus four distributed-certificate checks in local-only mode,
+including a repeated source and a disconnected source. All use
+`+old-scheduler`. These are local smoke checks, not new distributed performance
+runs. Exact revisions, build command, CMake settings, preserved patch and
+library hashes are in `runtime-refresh-20260925/runtime-manifest.json` under
+`/u/rao1/.tmp/`; logs and validation commands are in its `checks/` directory.
+The old compiler links and SSSP configuration are backed up there as well.
