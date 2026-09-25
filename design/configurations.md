@@ -286,3 +286,12 @@ It does not replace the distributed mesh/road profiles or establish a road,
 RMAT, cross-machine or multi-node improvement. Wasp's fixed comparison is
 128 threads with delta 4096, selected previously on training sources; both
 engines receive the entire 128-core node. See current-state §17 for results.
+
+
+The road/uniform transfer check (22392217) **rejects using this profile on
+road-usa-z**: chunks/slice 64 has speedup 0.719–0.836× over the original,
+while retaining road width 131072. Use the original heap/slice-8 road profile.
+On uniform25, process sharing and heap slice resolve inactive under `auto`;
+0.990–1.029× is a regression check, not evidence that chunks accelerate dense
+graphs. The mesh result therefore remains graph-specific. See current-state
+§18 and `benchmarks/delta-chunks-road-uniform-protocol.json`.

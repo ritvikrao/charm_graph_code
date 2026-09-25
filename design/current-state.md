@@ -33,6 +33,9 @@ well behind Wasp (0.27–0.70×). Road time barely falls beyond 16 nodes.
 reduces `mesh28-z` time by 61% on four held-out sources: 2.53–2.55× over the
 original ACIC, reaching 0.608–0.704× speedup over Wasp (§17). This result is
 separate from the Frontier tables and has no multi-node confirmation yet.
+The same queue regresses on road (0.719–0.836×); uniform disables it under
+`auto` and shows no systematic change. Its existing path beats the verified
+Wasp uniform baseline by 1.10–1.21× in the follow-up (§18).
 
 **Builds.** The TLS builds are 1.1–1.3× faster than production on meshes and
 roads (cheaper rounds; the hub hints resolve off), 1.0–1.1× on orkut and
@@ -1191,10 +1194,133 @@ in `benchmarks/delta-mesh28-selected.json`. Application source and runtime
 hashes are retained in the archive and per-build manifests. The frozen
 executable is `bin/acic_chunks_256`; workspace `sssp_smp` was not replaced.
 
+### 18. Delta road/uniform: the private-chunk win does not transfer to road
+
+The user requested the same frozen one-node profiles on `road-usa-z` and
+`uniform25`. Job **22392217** completed on one exclusive `cpu-interactive`
+node, **cn115**, in 18:17. All **228 solves** pass their independent reference;
+all eight diagnostic work ledgers conserve queue and edge work. Binaries,
+runtime, graph hashes, commands and every repetition are archived. ACIC
+remains **16 × 7**, `+old-scheduler`; road retains bucket width **131072**.
+
+The test compares original heap/slice 8, chunks/slice 8, chunks/slice 64 and
+a duplicate original control. Chunk size 64, distance band 256 and queue
+batch 8 are frozen from the mesh study. Each has four held-out sources,
+one warmup and three measured launches, randomly interleaved with Wasp.
+Wasp is selected separately using only the two training sources: 64/96/128
+threads, road delta 8192/32768/131072 and uniform 16/64/256/1024, followed by
+repeating the two best settings. Road selects **64 threads / delta 32768**.
+
+**Road: reject transfer of this queue configuration.** Source-matched
+speedup of chunks/slice 64 over original ACIC is **0.719–0.836×**, or
+19.6–39.0% more time. Duplicate controls give 0.959–1.041×, so this regression
+is much larger than their variation. Chunk-only/slice 8 is worse still:
+0.612–0.671×. Slice 64 helps relative to slice 8 (1.175–1.245×), but does not
+recover the original heap's performance.
+
+| Road source | Original ACIC (s) | Chunks/slice 8 (s) | Chunks/slice 64 (s) | Wasp (s) | New speedup over original | New speedup over Wasp |
+|---:|---:|---:|---:|---:|---:|---:|
+| 8718204 | 0.484983 | 0.758256 | 0.636723 | 0.103718 | 0.762× | 0.163× |
+| 22613654 | 0.439548 | 0.718059 | 0.611089 | 0.090855 | 0.719× | 0.149× |
+| 10159848 | 0.435835 | 0.649100 | 0.521354 | 0.091265 | 0.836× | 0.175× |
+| 3073839 | 0.446933 | 0.718035 | 0.607701 | 0.087200 | 0.735× | 0.143× |
+
+Production edge scans rise by just **1.1–9.6%**, but controller observations
+rise from **604–802 to 2,070–2,373** by source median (2.58–3.53×). Across the
+12 measured solves, unchanged thresholds account for 53.9% of baseline
+comparisons and 83.4% with chunks/slice 64. **99.8% of the latter still create
+or retire updates**: these are not thousands of empty rounds. The progress
+parser excludes the initial observation and final termination record.
+
+Separate work builds explain why cheaper queues are insufficient:
+
+| Diagnostic metric (two road sources) | Original | Chunks/slice 64 |
+|---|---:|---:|
+| Queue push, sampled inclusive ns/call | 367–371 | 106–111 |
+| Queue pop, sampled inclusive ns/call | 745–832 | 71–76 |
+| Estimated queue PE-time share | 52.9–53.2% | 14.3% |
+| Queue pop calls | 15.2–21.5M | 83.1–96.8M |
+| Updates removed per pop call | 1.97–2.67 | 0.48–0.50 |
+| Measured idle share | 12.9–17.7% | 67.8–68.5% |
+| Work-entry PE-seconds | 39.4–43.3 | 21.4–22.9 |
+
+Work becomes cheaper, yet a much larger fraction of worker time is idle and
+more calls find little/no removable work. Queue/entry/idle metrics overlap
+and are not an additive critical-path decomposition; these diagnostic times
+are separate from the production medians above.
+
+The leading **hypothesis**, not an isolated causal result, is insufficient
+sharing of private partial chunks on road's thin frontier. Only full 64-item
+chunks are published for stealing; partial chunks remain owner-only. Native
+distance band 256 was tuned for mesh weights up to 1000; road weights reach
+368855. Fragmenting a small frontier among such bands may prevent useful
+chunks from filling. Road has plentiful update activity but loses parallel
+progress. If revisiting this mechanism, first measure publication/partial
+occupancy and test publishing short partial chunks when peers lack work,
+with original admission and accounting intact. A wider road-specific band
+is a separate ordering experiment. Do not tune on these held-out sources or
+revive the rejected callback-coalescing patch based on this result.
+
+**Uniform: no systematic change; the mechanism is inactive.** The average
+degree is about 32, so `--process-share auto` resolves off. The shared queue
+and configurable heap slice are therefore inactive in every uniform run.
+Original medians are **1.281927–1.306860 s**, chunks/slice-64 medians
+**1.270078–1.304228 s**: source-matched speedup **0.990–1.029×**, with duplicate
+control ratios 0.995–1.018×. Do not claim this small movement as a chunk
+improvement. Both versions scan roughly **1.007–1.015×** the stored edges.
+The queue-call sampler does not cover the nonshared path, so its empty queue
+timing record means unmeasured, not zero queue cost.
+
+The initial Wasp uniform search chose **128 threads / delta 16**, its lower
+delta boundary. Initial held-out Wasp medians are 1.424393–1.639651 s, giving
+selected ACIC speedup 1.092–1.270×. Follow-up **22398569**, also on cn115 but
+starting only after the first allocation ended, compares delta 16/4 and then
+4/1 on training sources with the selected thread count fixed. It selects
+**delta 4**: training geometric means 1.639610 (16), 1.563085 (4), 1.645741 (1).
+The bounded search does not prove a global optimum. All **65 follow-up
+solves** pass, bringing the total to **293**. The follow-up uses a fresh
+matched comparison, rather than substituting cross-allocation times:
+
+| Uniform source | Original ACIC (s) | Chunks/slice 64 (s) | Wasp, delta 4 (s) | New speedup over original | New speedup over Wasp |
+|---:|---:|---:|---:|---:|---:|
+| 9130980 | 1.304683 | 1.292384 | 1.447243 | 1.010× | 1.120× |
+| 7224676 | 1.310213 | 1.296130 | 1.488908 | 1.011× | 1.149× |
+| 26007212 | 1.326895 | 1.356487 | 1.463328 | 0.978× | 1.079× |
+| 23077392 | 1.283213 | 1.288501 | 1.553854 | 0.996× | 1.206× |
+
+The second allocation again shows no systematic chunk improvement
+(**0.978–1.011×**). Both ACIC binaries beat the newly selected Wasp baseline:
+original ACIC **1.103–1.211×**, chunk binary **1.079–1.206×**. This uniform
+advantage belongs to the existing nonshared path, not the chunk optimization.
+All repetitions, including slower Wasp runs, are retained. The smaller-delta
+verification fixes threads at the previously training-selected 128; it does
+not repeat the joint thread search for every new delta. Both Slurm jobs
+completed successfully and never overlapped in their node allocations.
+
+**Disposition.** Keep private chunks as a mesh-specific one-node opt-in;
+retain the original heap for road. Uniform's automatic gate prevents this
+regression but does not make the chunk mechanism beneficial there. A sparse
+graph gate alone is insufficient to enable the new queue globally. The
+road result reinforces the need to preserve access to work as queue costs
+fall; the distributed profile remains unchanged and no multi-node runs were
+submitted.
+
+Campaign: `/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925`.
+`logs/compare-22392217/` contains all raw runs, manifests, selections,
+`audit.json` and `report.md`; `figures/initial-22392217.{png,pdf}` shows the
+first allocation, explicitly using the initial uniform Wasp delta 16.
+`logs/wasp-boundary-22398569/` contains the smaller-delta check. Compact
+archive: `design/onenode-data/delta-chunks-road-uniform-22392217.json`.
+The same archive includes the boundary result and its raw-log paths.
+`figures/final-comparison.{png,pdf}` uses road from the first allocation and
+uniform from the second, with each panel labeled by job. Protocols and
+launch helpers are committed in `f038d88` / `4601f92`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta road/uniform chunk transfer | `design/onenode-data/delta-chunks-road-uniform-22392217.json`; `benchmarks/delta-chunks-road-uniform-protocol.json`; sequential Wasp boundary job 22398569 |
 | Delta mesh28 private chunks / slice 64 | `design/onenode-data/delta-mesh28-optimized-22379656.json`; training records `delta-mesh28-chunks-training.json`, `delta-mesh28-slices-training.json`; `benchmarks/delta-mesh28-selected.json` |
 | Anvil mesh C6 | `design/onenode-data/c6-mesh-8n-anvil-20866513.json` and matching 20866514 record; `benchmarks/c6-mesh-8n-variants.json` |
 | Frontier mesh C6 | Frontier summaries under `design/onenode-data/` with job IDs 5534022/5534023; `benchmarks/frontier-c6-mesh-variants.json` |

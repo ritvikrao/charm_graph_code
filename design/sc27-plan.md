@@ -718,3 +718,37 @@ This is baseline verification, not another ACIC tuning pass; no held-out
 source is used to choose delta. Follow-up job **22398569** depends on completion of
 22392217 so that only one node runs at a time. Protocol is archived at
 `protocol/wasp-boundary.json` in the same campaign.
+
+
+### Road/uniform result: retain mesh-only activation
+
+Both jobs completed, sequentially on cn115: **22392217 (228/228 valid)** and
+**22398569 (65/65 valid)**, with all eight work ledgers conserved. Road
+chunks/slice 64 has speedup **0.719–0.836×** over original, beyond duplicate
+control variation of 0.959–1.041×; chunks/slice 8 is worse (0.612–0.671×).
+Reject this road transfer and keep the original heap. Queue calls are cheaper
+but diagnostic idle time rises from 13–18% to about 68%, and production rounds
+rise 2.58–3.53×. Nearly all extra unchanged-threshold rounds still process
+updates, so removing nominally "empty" rounds is not a supported fix.
+
+The next road-specific hypothesis, if pursued, is to measure private partial
+occupancy/publication and make short chunks available when peers lack work.
+Native band 256 was mesh-tuned; thin road frontiers and larger native weights
+may prevent full 64-item chunks from forming. This explanation is an inference
+from the queue code, idle time and empty-pop behavior, not a completed causal
+ablation. A wider road band is a separate experiment. Do not make this queue
+a global sparse-graph default or tune on the held-out sources just measured.
+
+Uniform shares no process state under auto, so the chunk and slice changes
+are inactive. Both allocations show no systematic effect: speedups over
+original **0.990–1.029×** and **0.978–1.011×**. The Wasp boundary check chooses
+128 threads / delta **4**, with delta 1 slower, and repeats the held-out
+comparison in that allocation. Original ACIC is **1.103–1.211×** faster than
+Wasp, and the chunk binary **1.079–1.206×**; this is evidence for the existing
+uniform path, not for chunking. No additional jobs remain active or queued.
+
+Full analysis: current-state §18. Archive:
+`onenode-data/delta-chunks-road-uniform-22392217.json`, including both jobs,
+all per-source medians, training selections, work counters, controller
+progress classifications, and raw paths. The final report reaudit checks all
+293 digests, recorded times, work ledgers and effective old scheduler.
