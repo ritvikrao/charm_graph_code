@@ -706,3 +706,15 @@ binary and graph hashes and records commands, effective process-sharing mode,
 work and timing. This is a transfer/regression check in one allocation; a
 small gain within duplicate-control variation is not an adoption result.
 No other node is used concurrently and no solver default is changed.
+
+
+The initial uniform Wasp search selected 128 threads / delta 16, the lower
+boundary, on training sources. Before interpreting its held-out comparison,
+a sequential follow-up checks delta 16 versus 4 twice on both training
+sources at the selected thread count. Only if 4 wins, check 4 versus 1;
+stop there. If selection changes, remeasure original ACIC, chunks/slice 64
+and Wasp together on the four held-out sources (warmup plus three repeats).
+This is baseline verification, not another ACIC tuning pass; no held-out
+source is used to choose delta. Follow-up job **22398569** depends on completion of
+22392217 so that only one node runs at a time. Protocol is archived at
+`protocol/wasp-boundary.json` in the same campaign.
