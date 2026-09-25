@@ -80,6 +80,7 @@ mainmodule sssp_smp
     entry [reductiontarget] void done_verify(unsigned long long values[n], int n);
     entry void certify_quiet(); // --certify: every candidate has reached its owner
     entry [reductiontarget] void certify_done(long values[n], int n);
+    entry [reductiontarget] void certify_max(long value); // largest finite distance
     entry [reductiontarget] void done_tram_stats(unsigned long long values[n], int n);
   };
   array [1D] SsspChares

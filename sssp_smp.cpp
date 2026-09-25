@@ -3021,10 +3021,26 @@ public:
    * distance), with d(source) == 0. Unreached vertices are covered by the
    * first condition: a finite candidate below infinity is a violation.
    */
+  // The certificate's two reductions (sums, then the largest distance) may
+  // arrive in either order; the verdict waits for both.
+  std::vector<long> certify_values;
+  long certify_max_distance = -1;
+  int certify_parts = 0;
+  void certify_max(long value) {
+    certify_max_distance = value;
+    if (++certify_parts == 2) certify_finish();
+  }
   void certify_done(long *values, int n) {
+    certify_values.assign(values, values + n);
+    if (++certify_parts == 2) certify_finish();
+  }
+  void certify_finish() {
+    certify_parts = 0;
+    const long *values = certify_values.data();
     ckout << "CERTIFY edges=" << values[3] << " violations=" << values[0]
           << " untight=" << values[1] << " bad_source=" << values[2]
           << " nonpositive_weights=" << values[4]
+          << " max_distance=" << certify_max_distance
           << " (" << CkWallTimer() - certify_begin << " s)" << endl;
     // A zero-weight cycle could make vertices tight with no path behind them.
     if (values[0] || values[1] || values[2] || values[4]) {
@@ -5491,8 +5507,10 @@ public:
 
   void certify_collect(int epoch) {
     certify_prepare(epoch); // a PE that neither scanned nor received anything
-    long untight = 0, bad_source = 0;
+    long untight = 0, bad_source = 0, max_distance = 0;
     for (long i = 0; i < num_vertices; i++) {
+      if (distances[i] != lmax)
+        max_distance = std::max(max_distance, (long)distances[i]);
       if (start_vertex + i == certify_source) {
         if (distances[i] != 0)
           bad_source++;
@@ -5506,6 +5524,8 @@ public:
     std::vector<std::vector<long>>().swap(certify_out);
     contribute(sizeof values, values, CkReduction::sum_long,
                CkCallback(CkReductionTarget(Main, certify_done), mainProxy));
+    contribute(sizeof max_distance, &max_distance, CkReduction::max_long,
+               CkCallback(CkReductionTarget(Main, certify_max), mainProxy));
   }
 
   void verify_hash() {
