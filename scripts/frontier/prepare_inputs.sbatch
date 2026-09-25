@@ -62,7 +62,7 @@ prepare_one() {
   case $name in
     mesh20|rmat20|uniform20|mesh22|rmat22|rmat20-s2|uniform20-s2|road-ny|youtube) sources=10 ;;
   esac
-  case $name in road-usa|road-eu|road-na) range=any-range ;; esac  # distances exceed binary32; ACIC/GAPBS/Gluon only
+  case $name in road-usa|road-eu|road-na|road-planet) range=any-range ;; esac  # distances exceed binary32; ACIC/GAPBS/Gluon only
   if [ ! -s "$base.wsg" ] || [ ! -s "$base.meta" ]; then
     case $name in
       uniform20)    generate "$name" 1 1048576 1 ;;
