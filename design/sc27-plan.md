@@ -673,3 +673,36 @@ passed changed-file Python/shell/JSON syntax checks. It changes Frontier
 harness/input-preparation files, not the solver. The running job used frozen
 binaries and a frozen harness, so its provenance remains unchanged. Local
 unrelated files and the pending report changes were preserved.
+
+
+### Road/uniform transfer check queued (2026-09-25)
+
+The user requested the same one-node comparison on road-usa and uniform.
+Job **22392217** uses one exclusive `cpu-interactive` node, 16 × 7 and
+`+old-scheduler`, with the existing `road-usa-z` / `uniform25` graphs and
+independent references. Reuse the frozen original and private-chunk binaries
+from the mesh study: compare original/slice 8, chunks/slice 8, chunks/slice 64,
+and a duplicate original control. Chunk band 256, chunk size 64 and batch 8
+stay fixed; road retains its established bucket width 131072.
+
+Uniform's average degree 32 disables process sharing under `auto`, so chunk
+storage and the configurable shared-heap slice should be inactive. Expect no
+systematic uniform change beyond control variation; do not present this as a
+positive test of the chunk mechanism. Road may remain round-bound despite
+cheaper queue operations; no speedup is assumed before measurement.
+
+Wasp's joint training grid is 64/96/128 threads, with road delta
+8192/32768/131072 and uniform delta 16/64/256/1024. Repeat its best two settings
+once on both training sources, then freeze before testing. Every arm receives
+one warmup and three measured launches on each of four held-out sources,
+randomly interleaved within each repetition. Base and selected cost builds
+also run on the first two held-out sources. Every solve must pass the full
+reference digest; diagnostics must conserve queue and edge work. There are
+111 planned road and 117 planned uniform solves, including training/smoke.
+
+Protocol: `benchmarks/delta-chunks-road-uniform-protocol.json`. Campaign:
+`/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925`. The driver freezes
+binary and graph hashes and records commands, effective process-sharing mode,
+work and timing. This is a transfer/regression check in one allocation; a
+small gain within duplicate-control variation is not an adoption result.
+No other node is used concurrently and no solver default is changed.

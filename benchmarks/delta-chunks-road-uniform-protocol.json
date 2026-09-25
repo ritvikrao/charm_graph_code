@@ -1,0 +1,324 @@
+{
+  "campaign": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925",
+  "graphs": [
+    {
+      "name": "road-usa-z",
+      "vertices": 23947347,
+      "stored_directed_edges": 57708624,
+      "expected_process_sharing": "on",
+      "variants": [
+        {
+          "label": "base",
+          "binary": "acic_base",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ]
+        },
+        {
+          "label": "chunks8",
+          "binary": "acic_chunks_256",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ]
+        },
+        {
+          "label": "chunks64",
+          "binary": "acic_chunks_256",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ]
+        },
+        {
+          "label": "control",
+          "binary": "acic_base",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ]
+        }
+      ],
+      "work_variants": [
+        {
+          "label": "base_cost",
+          "binary": "acic_base_cost",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ],
+          "work_cost": true
+        },
+        {
+          "label": "chunks64_cost",
+          "binary": "acic_chunks_256_cost",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ],
+          "work_cost": true
+        }
+      ],
+      "wasp_deltas": [
+        8192,
+        32768,
+        131072
+      ]
+    },
+    {
+      "name": "uniform25",
+      "vertices": 33554432,
+      "stored_directed_edges": 1073654932,
+      "expected_process_sharing": "off",
+      "variants": [
+        {
+          "label": "base",
+          "binary": "acic_base",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ]
+        },
+        {
+          "label": "chunks8",
+          "binary": "acic_chunks_256",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ]
+        },
+        {
+          "label": "chunks64",
+          "binary": "acic_chunks_256",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ]
+        },
+        {
+          "label": "control",
+          "binary": "acic_base",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ]
+        }
+      ],
+      "work_variants": [
+        {
+          "label": "base_cost",
+          "binary": "acic_base_cost",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "work_cost": true
+        },
+        {
+          "label": "chunks64_cost",
+          "binary": "acic_chunks_256_cost",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "work_cost": true
+        }
+      ],
+      "wasp_deltas": [
+        16,
+        64,
+        256,
+        1024
+      ]
+    }
+  ],
+  "wasp_threads": [
+    64,
+    96,
+    128
+  ],
+  "order_seed": 20260926,
+  "layout": "One exclusive cpu-interactive node, ACIC 16 processes x 7 workers, +old-scheduler; Wasp uses entire node with selected thread count.",
+  "frozen_application": "Baseline from mesh28 attribution; private chunks match 8a6b02c, slice profile 98b80ea. Exact binary manifests retained; no rebuild or solver change.",
+  "chunk_width": 256,
+  "chunk_size": 64,
+  "queue_batch": 8,
+  "timing": "Each arm: one held-out warmup and three measured launches per source; four held-out sources. Randomized arm/source order within repetition; duplicate original control.",
+  "wasp_selection": "Joint grid on two training sources; one engine warmup; repeat top two settings once on both sources; freeze by geometric mean before held-out runs. No claim of global optimum.",
+  "prediction": {
+    "road-usa-z": "Chunks may reduce queue cost but road may remain round-bound; no guaranteed speedup. Preserve road bucket width 131072. Reject transfer if slower beyond duplicate-control spread.",
+    "uniform25": "Auto process sharing is off at average degree 32, so chunks and heap slice are inactive. Expected no systematic speed change beyond control variation; do not claim an inactive mechanism as an improvement."
+  },
+  "correctness": "Every solve must match independent reference hashes, reachable count and distance sum. Diagnostic base/selected runs on two held-out sources also require conserved edge and queue ledgers.",
+  "acceptance": "Graph transfer check in one allocation. Preserve original defaults; no one-node graph-specific adoption claim from a small gain within control variation. Multi-node behavior remains unmeasured.",
+  "prior_campaign": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925"
+}
