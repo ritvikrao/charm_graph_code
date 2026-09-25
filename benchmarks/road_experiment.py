@@ -37,7 +37,8 @@ def validate(reference, row):
         return result
     layout = row['layout']
     ranks, ppn = layout['ranks'], layout['ppn']
-    assert f'Starting Reconverse with {ranks} processes, {ranks*ppn} PEs' in t
+    process_word = 'process' if ranks == 1 else 'processes'
+    assert f'Starting Reconverse with {ranks} {process_word}, {ranks*ppn} PEs' in t
     assert 'Using the original scheduler (+old-scheduler)' in t
     assert 'Process sharing: on' in t
     maps = core_maps(layout)
