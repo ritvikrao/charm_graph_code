@@ -854,3 +854,29 @@ Queue job **22401233** is submitted with `afterok:22401042`. All seven
 new frozen binaries built successfully; exact source/binary/runtime hashes
 and final sanitizer logs are archived. The original global defaults and
 previous mesh binaries remain unchanged.
+
+
+### Road time-focused follow-up (training-only decision)
+
+The queue training phase freezes the original heap under its predeclared
+≤25% edge-work growth gate. Preserve that result. However, **full-only
+chunks/band65536/slice64** are **1.217–1.293× faster** on the two training
+sources (geomeans: original0.469996 s, control0.468384 s, wide chunks0.374699 s),
+with **1.704–1.811×** as many edge attempts. Requested-partial wide chunks
+are slower at0.414447 s; heap/slice64 also loses. Because the user's goal
+is solve time, the work cap is too restrictive as the sole performance
+decision. This motivates a separate time-focused confirmation, not a
+retroactive change to the frozen work-capped protocol. No test-source
+results select the queue.
+
+`benchmarks/delta-road-time-protocol.json` freezes full-only band65536.
+Recheck that queue's layout on training sources at16×7,8×14 and8×7: prior
+best, runner-up at112 workers and best56-worker option. Warmup plus three
+randomized repeats per training source. Change layout only with≥5% benefit
+on both sources. Then compare original16×7, wide chunks16×7, wide chunks
+at selected layout, duplicate original and Wasp on the four test sources,
+warmup plus three repeats. Diagnose original/new/combined on two sources.
+All110 full solves require digest and affinity validation. This adds a
+sequential one-node allocation, with no new binary or global default change.
+Prediction:≥1.10× held-out speedup beyond control noise, explicitly trading
+extra work for faster per-operation execution; no distributed claim.

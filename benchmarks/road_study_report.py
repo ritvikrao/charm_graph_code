@@ -20,7 +20,9 @@ def audit(directory):
     rows=[json.loads(x) for x in (out/'runs.jsonl').read_text().splitlines()]
     protocol=data['manifest']['protocol']
     queue='candidates' in protocol
-    if queue:
+    if protocol.get('time_first'):
+        expected=len(protocol['layouts'])*8+80+6
+    elif queue:
         extra=2 if data['selection']['layout']!=protocol['candidates'][0]['layout'] else 0
         expected=(len(protocol['candidates'])+1)*8+96+len(protocol['candidates'])*2+extra
     else:

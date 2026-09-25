@@ -28,13 +28,18 @@ def main():
     ax.set_xlim(0,max(scores.values())*1.19)
     ax.set_xlabel('Solve seconds (geomean of two training-source medians)')
     ax.set_title('Training screen: '+('queue / distance-band ablation' if queue else 'processes × workers per process / placement'))
-    variants=['base','queue','layout','combined','control','wasp'] if queue else ['base','selected','control','wasp']
+    time_first=data['manifest']['protocol'].get('time_first',False)
+    variants=(['base','queue','combined','control','wasp'] if time_first else
+              ['base','queue','layout','combined','control','wasp'] if queue else
+              ['base','selected','control','wasp'])
     names={'base':'Original 16×7','queue':'Selected queue, 16×7',
            'layout':'Original, selected layout','combined':'Selected queue + layout',
            'selected':'Selected layout','control':'Original 16×7 control','wasp':'Wasp 64 threads'}
     x=np.arange(len(data['sources']))
     width=.8/len(variants)
-    palette=['#536d8a','#328da0','#749e57','#db9447','#b6bec7','#8f639e'] if queue else ['#536d8a','#328da0','#b6bec7','#8f639e']
+    palette=(['#536d8a','#328da0','#db9447','#b6bec7','#8f639e'] if time_first else
+             ['#536d8a','#328da0','#749e57','#db9447','#b6bec7','#8f639e'] if queue else
+             ['#536d8a','#328da0','#b6bec7','#8f639e'])
     for i,label in enumerate(variants):
         vals=[source['variants'][label] for source in data['sources']]
         m=np.array([v['median'] for v in vals])

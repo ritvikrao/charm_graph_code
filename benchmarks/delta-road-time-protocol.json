@@ -1,0 +1,193 @@
+{
+  "recorded": "2026-09-25",
+  "time_first": true,
+  "order_seed": 20260929,
+  "common_flags": [
+    "--process-share",
+    "auto",
+    "--reader-tile",
+    "auto",
+    "--slack-control",
+    "off",
+    "--process-queue",
+    "nearest",
+    "--process-queue-batch",
+    "8",
+    "--hub-hints",
+    "auto",
+    "+old-scheduler",
+    "--bucket-width",
+    "131072"
+  ],
+  "wasp": {
+    "threads": 64,
+    "delta": 32768
+  },
+  "baseline": {
+    "label": "heap8",
+    "binary": "acic_base",
+    "cost_binary": "acic_base_cost",
+    "layout": {
+      "label": "16x7-span128",
+      "ranks": 16,
+      "ppn": 7,
+      "span": 128,
+      "workers": 112
+    },
+    "flags": [
+      "--heap-slice",
+      "8"
+    ],
+    "band": 0,
+    "partial": false
+  },
+  "queue_candidate": {
+    "label": "full65536",
+    "binary": "acic_full_65536",
+    "cost_binary": "acic_full_65536_cost",
+    "layout": {
+      "label": "16x7-span128",
+      "ranks": 16,
+      "ppn": 7,
+      "span": 128,
+      "workers": 112
+    },
+    "flags": [
+      "--heap-slice",
+      "64"
+    ],
+    "band": 65536,
+    "partial": false
+  },
+  "layouts": [
+    {
+      "label": "16x7-span128",
+      "ranks": 16,
+      "ppn": 7,
+      "span": 128,
+      "workers": 112
+    },
+    {
+      "label": "8x14-span128",
+      "ranks": 8,
+      "ppn": 14,
+      "span": 128,
+      "workers": 112
+    },
+    {
+      "label": "8x7-span128",
+      "ranks": 8,
+      "ppn": 7,
+      "span": 128,
+      "workers": 56
+    }
+  ],
+  "queue_selection": {
+    "winner": {
+      "label": "heap8",
+      "binary": "acic_base",
+      "cost_binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ],
+      "band": 0,
+      "partial": false
+    },
+    "scores": {
+      "heap8": 0.46999647615700274,
+      "heap64": 0.5035230161531844,
+      "full256": 0.6317869379893827,
+      "partial256": 0.4905498725746445,
+      "full65536": 0.37469856260065904,
+      "partial65536": 0.41444711160774184,
+      "train_control": 0.468383536047116
+    },
+    "diagnostics": {
+      "heap8": {
+        "per_source_speedups": [
+          1.0,
+          1.0
+        ],
+        "edge_work_ratios": [
+          1.0,
+          1.0
+        ]
+      },
+      "heap64": {
+        "per_source_speedups": [
+          0.9714580654115821,
+          0.8968637921125572
+        ],
+        "edge_work_ratios": [
+          0.8544213251508472,
+          0.8409547932191714
+        ]
+      },
+      "full256": {
+        "per_source_speedups": [
+          0.7625732228613648,
+          0.7257154462212254
+        ],
+        "edge_work_ratios": [
+          1.0899245142831289,
+          1.139590923584943
+        ]
+      },
+      "partial256": {
+        "per_source_speedups": [
+          1.018227858459622,
+          0.9015252480379092
+        ],
+        "edge_work_ratios": [
+          1.6161295883641482,
+          1.901214329488749
+        ]
+      },
+      "full65536": {
+        "per_source_speedups": [
+          1.2166107633183505,
+          1.2932232237219952
+        ],
+        "edge_work_ratios": [
+          1.7037817355210023,
+          1.8110384956224665
+        ]
+      },
+      "partial65536": {
+        "per_source_speedups": [
+          1.144013688834406,
+          1.1241383083488348
+        ],
+        "edge_work_ratios": [
+          1.7480548691428655,
+          1.838250926309856
+        ]
+      }
+    },
+    "layout": {
+      "label": "16x7-span128",
+      "ranks": 16,
+      "ppn": 7,
+      "span": 128,
+      "workers": 112
+    },
+    "layout_summary": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042/summary.json"
+  },
+  "selection_source": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/queue-22401233/selection.json",
+  "rationale": "The original screen retains its predeclared <=25% edge-work growth gate and all results. The user goal is road solve time; independently test the fastest training-only queue even though it exceeds that work gate. Do not promote it for distributed runs.",
+  "queue_choice": "Fastest geometric mean among candidates improving both training-source medians >=5% and beating both original/control geometric means >=5%, ignoring work growth for this explicitly time-focused follow-up. No held-out data used.",
+  "layout_choice": "For that frozen queue only, test 16x7,8x14,8x7: previous best, runner-up at 112 workers, and best reduced-core choice (56). Each training source: warmup+3 randomized repetitions. Change from16x7 only if >=5% faster on both training sources. Otherwise retain16x7.",
+  "heldout": "Base heap16x7, new queue16x7, queue at selected layout, duplicate base, Wasp; four test sources, warmup+3 randomized repeats. Retain all repetitions. Every solve independently validated; actual affinity checked.",
+  "work": "Original, queue16x7 and combined cost builds on first two test sources. Conservation and publication accounting; instrumented timing separate.",
+  "acceptance": "Report solve time jointly with additional edge work, rounds, occupancy and publication behavior. A time improvement does not make this a work-efficient or distributed default. No further tuning on these test sources.",
+  "prediction": "Band65536 full-only chunks showed training speedup1.217-1.293 with1.704-1.811x edge work. Confirm >=1.10x held-out speedup beyond control noise; partial requests were slower than full-only at this band and are not selected.",
+  "scope": "Separate sequential allocation on one exclusive Delta cpu-interactive node; +old-scheduler; no additional rebuild."
+}
