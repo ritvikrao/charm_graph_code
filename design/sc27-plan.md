@@ -525,3 +525,30 @@ opening another cadence sweep.
 The hypothesis and fixed settings are recorded in
 `benchmarks/delta-road-rounds-protocol.json`. The prototype is not implemented
 or queued. No new jobs were submitted in this review, and the queue is empty.
+
+
+## Delta mesh28-z versus Wasp: one-node attribution (2026-09-25)
+
+The user's next priority is the one-node mesh deficit. Keep ACIC at 16 × 7
+with `+old-scheduler`, process sharing/reader tiling auto, nearest queues,
+batch 8 and slice 8; use the refreshed production/tracing/shmem runtime.
+The road contribution-placement prototype remains unimplemented.
+
+`benchmarks/delta-mesh28-wasp-protocol.json` freezes a bounded Wasp search
+(64/96/128 threads × delta 1024/4096/16384), two training sources, and four
+held-out sources with three randomized paired timing repetitions. Build
+Wasp from the checksum-verified SC25 artifact and use its existing digest
+adapter. Both engines read the same deterministic Morton mesh (seed 1);
+six independent GAPBS-reader Dijkstra references gate every solve. Run only
+one `cpu-interactive` node at a time. Preparation job: 22378324.
+
+Separate binaries collect ACIC queue/edge counters, Wasp's existing
+COUNT_RELAX counter, and a full-solve Projections trace bracketed by plain
+controls. Wasp counts both its low-degree pull and push inspections; do not
+mislabel that as only outgoing push attempts. Compare measured work and
+callback costs before proposing an implementation change. Trace time shares
+are PE-time attribution, not additive critical-path fractions.
+
+Campaign: `/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925`. Hypothesis: heap
+work and runtime scheduling, rather than controller entry time alone, dominate
+this larger mesh; ACIC remains behind Wasp. These are predictions, not results.

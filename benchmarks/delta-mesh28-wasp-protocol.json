@@ -1,0 +1,61 @@
+{
+  "graph": "mesh28-z",
+  "vertices": 268435456,
+  "directed_edges": 1073676288,
+  "seed": 1,
+  "node_limit": 1,
+  "partition": "cpu-interactive",
+  "source_roles": "first two tune, next four held out; reference_gap seed 20260913",
+  "acic": {
+    "rpn": 16,
+    "workers": 112,
+    "binary_revision": "87f04af",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "--heap-slice",
+      "8",
+      "--hub-hints",
+      "auto",
+      "+old-scheduler"
+    ]
+  },
+  "wasp": {
+    "artifact": "https://zenodo.org/records/15872863",
+    "sha256": "5916ff79352b113a43ee71a2b9b12b899a74783ae5f70ad77e8d16c7497155cd",
+    "threads": [
+      64,
+      96,
+      128
+    ],
+    "delta": [
+      1024,
+      4096,
+      16384
+    ],
+    "selection": "geomean on two training sources, repeat top two once; freeze before held-out runs",
+    "affinity": "OMP_PLACES=cores OMP_PROC_BIND=close; srun -c128"
+  },
+  "timing": {
+    "warmups_per_source": 1,
+    "held_out_sources": 4,
+    "repetitions": 3,
+    "order": "randomized pairs within repetition, seed 20260925",
+    "metric": "solve only, exclude graph I/O; Wasp includes its distance/leaf/scheduler initialization"
+  },
+  "diagnostics": {
+    "sources": "first two held-out for work counters; first held-out for trace",
+    "trace": "one complete solve, +traceoff +logsize 8000000, production controls before/after",
+    "trace_analysis": "exclusive PE time, callbacks, locality/latency, heap callback backlog; do not equate PE-time share to critical-path share"
+  },
+  "prediction": "ACIC remains slower than Wasp on one node. Heap work plus scheduler overhead will outweigh controller entry time on mesh28. Work counters will test whether repeated scans or queue cost better explains the gap. Bounded Wasp search does not establish its global optimum.",
+  "runtime_manifest": "/u/rao1/.tmp/runtime-refresh-20260925/runtime-manifest.json"
+}
