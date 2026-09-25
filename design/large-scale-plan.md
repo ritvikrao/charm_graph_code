@@ -69,6 +69,23 @@ both below 2^24, so RIKEN is exact on both.
 Allocation B (a repeat of every point) is submitted only if the user asks, after A is reported. Estimated cost about 700
 node-hours per allocation.
 
+## Real inputs past the synthetic ones (2026-09-25)
+
+| Input | Size | Baselines |
+|---|---|---|
+| `road-planet-z`: OSM planet 2025-12-29 (`scripts/frontier/fetch_planet.sh`, md5-checked), RoutingKit car graph, largest component, Morton by coordinates | 199,497,757 vertices, 495,996,636 edges; max distance 13.0M-18.0M m | GAPBS, Wasp (one node), Gluon; RIKEN excluded (distances past 2^24) |
+| `terrain-ae-z`: Copernicus DEM GLO-90, land south of 50N, 8-neighbour Tobler walking time in deciseconds (cap 36000), component containing the Tian Shan (Africa joins through Sinai), Morton ids (`benchmarks/terrain_graph.cpp`) | 8,196,328,992 vertices, 65,560,096,540 edges, 1.11 TB (wide ids); max distance 64M-113M | Gluon via `gluon64.patch` (oec only); no one-node baseline fits; RIKEN excluded |
+
+`terrain-ae-z` references come from ACIC `--certify` at 16 nodes (job 5546087,
+all six sources certified; 34.6-44.5 s per solve after a 179 s read).
+
+| Stage | Jobs | Notes |
+|---|---|---|
+| Inputs | 5545069 (planet extraction), 5545070 + 5546077 (planet files; the first stopped at the binary32 reference guard), 5545904 (terrain build, debug QOS), 5546090 (terrain Galois version-2 copy) | |
+| Gluon 64-bit check | 5545185 | passed (current-state §14) |
+| Terrain | ACIC 8n 5546130, 16n 5546131; Gluon delta pilot 64n 5546129 (deltas 8192, 1024, 65536 on one tuning source) | Gluon held-out at 32n and 64n after the pilot, with `run.py --external-no-search` |
+| Planet | GAPBS 5546133, Wasp 5546134; ACIC + Gluon-Async 4n 5546135 (Gluon pinned 8 ranks, oec), 16n 5546136, 64n 5546137 | |
+
 ## Results, allocation A (complete 2026-09-25)
 
 The results are in design/current-state.md, § Results by dataset (every

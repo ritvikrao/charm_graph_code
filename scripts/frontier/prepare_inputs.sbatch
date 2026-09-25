@@ -62,7 +62,7 @@ prepare_one() {
   case $name in
     mesh20|rmat20|uniform20|mesh22|rmat22|rmat20-s2|uniform20-s2|road-ny|youtube) sources=10 ;;
   esac
-  case $name in road-usa|road-eu|road-na) range=any-range ;; esac  # distances exceed binary32; ACIC/GAPBS/Gluon only
+  case $name in road-usa|road-eu|road-na|road-planet) range=any-range ;; esac  # distances exceed binary32; ACIC/GAPBS/Gluon only
   if [ ! -s "$base.wsg" ] || [ ! -s "$base.meta" ]; then
     case $name in
       uniform20)    generate "$name" 1 1048576 1 ;;
@@ -135,7 +135,16 @@ for n in ${NAMES//,/ }; do
   for g in "$n" "$n-z"; do [ -s "$DATA/$g.wsg" ] && echo "$g"; done
 done | xargs -P "$PARALLEL" -I{} bash -c 'galois_one {}'
 
-( cd "$DATA" && sha256sum *.wsg *.gr 2>/dev/null ) > "$DATA/sha256.txt"
+# Hash only this run's graphs and merge them into sha256.txt: the directory
+# also holds terrain-ae-z (1.1 TB), which hashing on every run would outlast
+# the job (5546077 timed out doing exactly that, after truncating the file).
+for n in ${NAMES//,/ }; do
+  for g in "$n" "$n-z"; do for e in wsg gr; do [ -s "$DATA/$g.$e" ] && echo "$g.$e"; done; done
+done > "$DATA/sha256.names.$$"
+( cd "$DATA" && xargs -P "$PARALLEL" -n 1 sha256sum < "sha256.names.$$" ) > "$DATA/sha256.new.$$"
+{ [ -s "$DATA/sha256.txt" ] && awk 'NR == FNR { skip[$1]; next } !($2 in skip)' "$DATA/sha256.names.$$" "$DATA/sha256.txt"; cat "$DATA/sha256.new.$$"; } |
+  sort -k2 > "$DATA/sha256.txt.tmp" && mv "$DATA/sha256.txt.tmp" "$DATA/sha256.txt"
+rm -f "$DATA/sha256.names.$$" "$DATA/sha256.new.$$"
 
 # Check the step-7.5 graphs against the Delta/Anvil record.
 "$PY" - "$APP/design/step75-data/graphs.json" "$DATA" <<'PY'
