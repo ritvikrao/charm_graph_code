@@ -1988,6 +1988,9 @@ public:
 #ifdef ACIC_PROCESS_CHUNKS
     ckout << "Process queue storage: private-chunks64 band"
           << ACIC_CHUNK_DISTANCE_WIDTH << " (experimental build)" << endl;
+#ifdef ACIC_CHUNK_PARTIAL
+    ckout << "Process partial chunks: requested, owner-serviced, half-band up to 32" << endl;
+#endif
 #else
     ckout << "Process queue storage: heap" << endl;
 #endif

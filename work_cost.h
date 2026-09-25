@@ -10,14 +10,27 @@ enum Field {
   QUEUE_PROBES, LOCK_MISSES, CPU_NS,
   PUSH_CALLS, PUSH_SAMPLES, PUSH_TICKS,
   POP_CALLS, POP_SAMPLES, POP_TICKS,
+#ifdef ACIC_WORK_COST
+  CHUNK_PUBLICATIONS, CHUNK_PUBLISHED_ITEMS, CHUNK_PARTIAL_PUBLICATIONS,
+  CHUNK_TAKES, CHUNK_TAKEN_ITEMS, CHUNK_PEER_TAKEN_ITEMS,
+  CHUNK_SHARE_REQUESTS, CHUNK_SHARE_CHECKS,
+  CHUNK_PRIVATE_SAMPLES, CHUNK_PRIVATE_ITEMS, CHUNK_PRIVATE_BANDS, CHUNK_FAILED_SEARCHES,
+#endif
   COUNT
 };
 inline const char *names[] = {
   "edge_attempts", "expansions", "changes", "queue_pushes", "queue_pops", "stale_pops",
   "cas_attempts", "cas_failures", "intra_process", "intra_node", "inter_node",
   "queue_probes", "lock_misses", "cpu_ns",
-  "push_calls", "push_samples", "push_ticks", "pop_calls", "pop_samples", "pop_ticks"
+  "push_calls", "push_samples", "push_ticks", "pop_calls", "pop_samples", "pop_ticks",
+#ifdef ACIC_WORK_COST
+  "chunk_publications", "chunk_published_items", "chunk_partial_publications",
+  "chunk_takes", "chunk_taken_items", "chunk_peer_taken_items",
+  "chunk_share_requests", "chunk_share_checks",
+  "chunk_private_samples", "chunk_private_items", "chunk_private_bands", "chunk_failed_searches"
+#endif
 };
+static_assert(sizeof(names) / sizeof(names[0]) == COUNT, "work counter names must match fields");
 inline std::string record(const long *values) {
   std::ostringstream out;
   out << "WORK_COST sample_period=1024";

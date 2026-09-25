@@ -66,4 +66,40 @@ void concurrent_drain(int capacity) {
   for(auto &v:seen)assert(v==1);
   assert(q.empty());
 }
-int main(){admission_and_reset();overflow_priority();for(int n:{1,8,32,64})concurrent_drain(n);}
+#ifdef ACIC_CHUNK_PARTIAL
+void partial_publication() {
+  Queue q(3, true);
+  int items[64];
+  for (int repeat = 0; repeat < 4; ++repeat) {
+    // An idle peer cannot touch private storage; only the owner donates.
+    for (int i = 0; i < 8; ++i) q.push(0, i, LONG_MAX);
+    assert(q.pop_batch(1, [](int){return true;}, items, 8) == 0);
+    assert(!q.empty());
+    assert(q.pop_batch(0, [](int){return true;}, items, 1) == 1);
+    int n = 1;
+    const int stolen = q.pop_batch(1, [](int){return true;}, items, 8);
+    assert(stolen == 4); n += stolen;
+    for (int r=0; r<3; ++r)
+      while (int k=q.pop_batch(r, [](int){return true;}, items, 8)) n+=k;
+    assert(n==8 && q.empty());
+  }
+  // A changed admission range must not publish/consume ineligible values.
+  for (int i=0;i<8;++i) q.push(0, (i%2) ? 100+i : i, LONG_MAX);
+  assert(q.pop_batch(1, [](int v){return v<10;}, items, 8)==0);
+  int n=q.pop_batch(0, [](int v){return v<10;}, items, 1);
+  for (int i=0;i<n;++i) assert(items[i]<10);
+  for (int r=0;r<3;++r)
+    while (int k=q.pop_batch(r, [](int v){return v<10;}, items, 8)) {
+      for(int i=0;i<k;++i)assert(items[i]<10);
+      n+=k;
+    }
+  assert(n==4 && !q.empty());
+  for(int r=0;r<3;++r)while(int k=q.pop_batch(r, [](int){return true;},items,8))n+=k;
+  assert(n==8 && q.empty());
+}
+#endif
+int main(){
+#ifdef ACIC_CHUNK_PARTIAL
+partial_publication();
+#endif
+admission_and_reset();overflow_priority();for(int n:{1,8,32,64})concurrent_drain(n);}
