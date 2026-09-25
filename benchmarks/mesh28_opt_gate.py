@@ -11,6 +11,7 @@ import subprocess
 ap=argparse.ArgumentParser(description=__doc__)
 ap.add_argument('campaign',type=Path)
 ap.add_argument('binaries',nargs='+')
+ap.add_argument('--heap-slice',type=int,default=8)
 a=ap.parse_args();root=a.campaign;app=Path(__file__).resolve().parents[1]
 out=root/'logs'/('chunk-gate-'+os.environ['SLURM_JOB_ID']);out.mkdir()
 for shape,n in [('empty',16),('path',1025),('disconnected',2051),('mesh',4096)]:
@@ -34,7 +35,7 @@ for shape,n in [('empty',16),('path',1025),('disconnected',2051),('mesh',4096)]:
     for binary in a.binaries:
         log=out/(binary+'-'+shape+'.out')
         sources=f'0,{n//2},{n-1},0'
-        cmd=['srun','-N1','-n16','--ntasks-per-node=16','-c8','--cpu-bind=none','--unbuffered','--kill-on-bad-exit=1','--time=5','bash',str(app/'benchmarks/launch_acic.sh'),'16','112',str(root/'bin'/binary),'0',str(graph),'1','0','4','0.999','0.005','--sources',sources,'--verify','--certify','--result-digest','--timeout','60','--process-share','on','--reader-tile','16','--process-queue','nearest','--process-queue-batch','8','--heap-slice','8','--bucket-width','1','--slack-control','off','+old-scheduler']
+        cmd=['srun','-N1','-n16','--ntasks-per-node=16','-c8','--cpu-bind=none','--unbuffered','--kill-on-bad-exit=1','--time=5','bash',str(app/'benchmarks/launch_acic.sh'),'16','112',str(root/'bin'/binary),'0',str(graph),'1','0','4','0.999','0.005','--sources',sources,'--verify','--certify','--result-digest','--timeout','60','--process-share','on','--reader-tile','16','--process-queue','nearest','--process-queue-batch','8','--heap-slice',str(a.heap_slice),'--bucket-width','1','--slack-control','off','+old-scheduler']
         with log.open('w') as stream:subprocess.run(cmd,stdout=stream,stderr=subprocess.STDOUT,check=True)
         t=log.read_text()
         assert len(re.findall(r'^VERIFY PASS',t,re.M))==4,(log,'serial')

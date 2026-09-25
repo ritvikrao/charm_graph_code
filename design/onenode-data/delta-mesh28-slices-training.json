@@ -1,0 +1,755 @@
+{
+  "manifest": {
+    "variants": [
+      {
+        "label": "base",
+        "binary": "acic_chunks_256",
+        "flags": [
+          "--process-share",
+          "auto",
+          "--reader-tile",
+          "auto",
+          "--slack-control",
+          "off",
+          "--process-queue",
+          "nearest",
+          "--process-queue-batch",
+          "8",
+          "--heap-slice",
+          "8",
+          "--hub-hints",
+          "auto",
+          "+old-scheduler"
+        ],
+        "sha256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112
+      },
+      {
+        "label": "slice32",
+        "binary": "acic_chunks_256",
+        "flags": [
+          "--process-share",
+          "auto",
+          "--reader-tile",
+          "auto",
+          "--slack-control",
+          "off",
+          "--process-queue",
+          "nearest",
+          "--process-queue-batch",
+          "8",
+          "--heap-slice",
+          "32",
+          "--hub-hints",
+          "auto",
+          "+old-scheduler"
+        ],
+        "sha256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112
+      },
+      {
+        "label": "slice64",
+        "binary": "acic_chunks_256",
+        "flags": [
+          "--process-share",
+          "auto",
+          "--reader-tile",
+          "auto",
+          "--slack-control",
+          "off",
+          "--process-queue",
+          "nearest",
+          "--process-queue-batch",
+          "8",
+          "--heap-slice",
+          "64",
+          "--hub-hints",
+          "auto",
+          "+old-scheduler"
+        ],
+        "sha256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112
+      },
+      {
+        "label": "control",
+        "binary": "acic_chunks_256",
+        "flags": [
+          "--process-share",
+          "auto",
+          "--reader-tile",
+          "auto",
+          "--slack-control",
+          "off",
+          "--process-queue",
+          "nearest",
+          "--process-queue-batch",
+          "8",
+          "--heap-slice",
+          "8",
+          "--hub-hints",
+          "auto",
+          "+old-scheduler"
+        ],
+        "sha256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112
+      }
+    ],
+    "nodes": 1,
+    "workers": 112,
+    "rpn": 16,
+    "sources": 2,
+    "reps": 3,
+    "source_role": "tune",
+    "batch": false,
+    "hosts": "cn044"
+  },
+  "validated": 32,
+  "summary": {
+    "0": {
+      "base": {
+        "median": 1.560071,
+        "seconds": [
+          1.614025,
+          1.557758,
+          1.560071
+        ],
+        "scans": [
+          1.543779084557747,
+          1.5407978973640144,
+          1.5341879190313272
+        ],
+        "rounds": [
+          1257,
+          1278,
+          1237
+        ],
+        "speedup_over_base": 1.0
+      },
+      "slice32": {
+        "median": 1.387383,
+        "seconds": [
+          1.383532,
+          1.389973,
+          1.387383
+        ],
+        "scans": [
+          1.5403530398167833,
+          1.5360820811942901,
+          1.5336271485209516
+        ],
+        "rounds": [
+          712,
+          732,
+          690
+        ],
+        "speedup_over_base": 1.1244703156950893
+      },
+      "slice64": {
+        "median": 1.343232,
+        "seconds": [
+          1.343232,
+          1.356039,
+          1.336623
+        ],
+        "scans": [
+          1.5224375077192727,
+          1.543796722089852,
+          1.5306030936579649
+        ],
+        "rounds": [
+          565,
+          589,
+          546
+        ],
+        "speedup_over_base": 1.1614307878311416
+      },
+      "control": {
+        "median": 1.615561,
+        "seconds": [
+          1.614878,
+          1.615561,
+          1.640816
+        ],
+        "scans": [
+          1.5494034231665923,
+          1.5491375348321001,
+          1.5613919174118893
+        ],
+        "rounds": [
+          1287,
+          1281,
+          1262
+        ],
+        "speedup_over_base": 0.965652798006389
+      }
+    },
+    "1": {
+      "base": {
+        "median": 1.638582,
+        "seconds": [
+          1.614056,
+          1.646955,
+          1.638582
+        ],
+        "scans": [
+          1.602346822061884,
+          1.610930636478767,
+          1.6079948465807974
+        ],
+        "rounds": [
+          1235,
+          1148,
+          1130
+        ],
+        "speedup_over_base": 1.0
+      },
+      "slice32": {
+        "median": 1.419793,
+        "seconds": [
+          1.391328,
+          1.436491,
+          1.419793
+        ],
+        "scans": [
+          1.5841585541283743,
+          1.60662244503252,
+          1.60634317370712
+        ],
+        "rounds": [
+          700,
+          722,
+          745
+        ],
+        "speedup_over_base": 1.1540992243235457
+      },
+      "slice64": {
+        "median": 1.370039,
+        "seconds": [
+          1.370039,
+          1.379581,
+          1.36079
+        ],
+        "scans": [
+          1.5886311536014848,
+          1.5910954708538743,
+          1.5888949146653781
+        ],
+        "rounds": [
+          530,
+          542,
+          541
+        ],
+        "speedup_over_base": 1.1960112084400516
+      },
+      "control": {
+        "median": 1.640856,
+        "seconds": [
+          1.640801,
+          1.640856,
+          1.642541
+        ],
+        "scans": [
+          1.6067934118332694,
+          1.6082942757510166,
+          1.6066217390469184
+        ],
+        "rounds": [
+          1198,
+          1202,
+          1147
+        ],
+        "speedup_over_base": 0.9986141379865143
+      }
+    }
+  },
+  "runs": [
+    {
+      "variant": "control",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": -1,
+      "seconds": 1.726765,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1657530810,
+      "scan_factor": 1.5437900869428534,
+      "rounds": 1251
+    },
+    {
+      "variant": "base",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": -1,
+      "seconds": 1.624888,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1664456017,
+      "scan_factor": 1.5502400822323088,
+      "rounds": 1286
+    },
+    {
+      "variant": "slice32",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": -1,
+      "seconds": 1.387111,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1643647167,
+      "scan_factor": 1.5308591475571454,
+      "rounds": 732
+    },
+    {
+      "variant": "slice64",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": -1,
+      "seconds": 1.350963,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1643346699,
+      "scan_factor": 1.5305792978451247,
+      "rounds": 548
+    },
+    {
+      "variant": "base",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 0,
+      "seconds": 1.614025,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1657518997,
+      "scan_factor": 1.543779084557747,
+      "rounds": 1257
+    },
+    {
+      "variant": "slice32",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 0,
+      "seconds": 1.383532,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1653840534,
+      "scan_factor": 1.5403530398167833,
+      "rounds": 712
+    },
+    {
+      "variant": "slice64",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 0,
+      "seconds": 1.343232,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1634605052,
+      "scan_factor": 1.5224375077192727,
+      "rounds": 565
+    },
+    {
+      "variant": "control",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 0,
+      "seconds": 1.614878,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1663557716,
+      "scan_factor": 1.5494034231665923,
+      "rounds": 1287
+    },
+    {
+      "variant": "slice32",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 1,
+      "seconds": 1.389973,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1649254907,
+      "scan_factor": 1.5360820811942901,
+      "rounds": 732
+    },
+    {
+      "variant": "slice64",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 1,
+      "seconds": 1.356039,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1657537934,
+      "scan_factor": 1.543796722089852,
+      "rounds": 589
+    },
+    {
+      "variant": "control",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 1,
+      "seconds": 1.615561,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1663272238,
+      "scan_factor": 1.5491375348321001,
+      "rounds": 1281
+    },
+    {
+      "variant": "base",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 1,
+      "seconds": 1.557758,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1654318167,
+      "scan_factor": 1.5407978973640144,
+      "rounds": 1278
+    },
+    {
+      "variant": "slice64",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 2,
+      "seconds": 1.336623,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1643372248,
+      "scan_factor": 1.5306030936579649,
+      "rounds": 546
+    },
+    {
+      "variant": "control",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 2,
+      "seconds": 1.640816,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1676429478,
+      "scan_factor": 1.5613919174118893,
+      "rounds": 1262
+    },
+    {
+      "variant": "base",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 2,
+      "seconds": 1.560071,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1647221190,
+      "scan_factor": 1.5341879190313272,
+      "rounds": 1237
+    },
+    {
+      "variant": "slice32",
+      "graph": "mesh28-z",
+      "source": "64700741",
+      "source_index": 0,
+      "rep": 2,
+      "seconds": 1.387383,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1646619104,
+      "scan_factor": 1.5336271485209516,
+      "rounds": 690
+    },
+    {
+      "variant": "control",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": -1,
+      "seconds": 1.653574,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1733927767,
+      "scan_factor": 1.614944640558179,
+      "rounds": 1201
+    },
+    {
+      "variant": "base",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": -1,
+      "seconds": 1.655631,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1732532890,
+      "scan_factor": 1.61364548082485,
+      "rounds": 1190
+    },
+    {
+      "variant": "slice32",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": -1,
+      "seconds": 1.434934,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1738005214,
+      "scan_factor": 1.6187422907862523,
+      "rounds": 720
+    },
+    {
+      "variant": "slice64",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": -1,
+      "seconds": 1.367571,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1704311485,
+      "scan_factor": 1.5873606449619198,
+      "rounds": 547
+    },
+    {
+      "variant": "base",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 0,
+      "seconds": 1.614056,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1720401788,
+      "scan_factor": 1.602346822061884,
+      "rounds": 1235
+    },
+    {
+      "variant": "slice32",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 0,
+      "seconds": 1.391328,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1700873476,
+      "scan_factor": 1.5841585541283743,
+      "rounds": 700
+    },
+    {
+      "variant": "slice64",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 0,
+      "seconds": 1.370039,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1705675600,
+      "scan_factor": 1.5886311536014848,
+      "rounds": 530
+    },
+    {
+      "variant": "control",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 0,
+      "seconds": 1.640801,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1725175986,
+      "scan_factor": 1.6067934118332694,
+      "rounds": 1198
+    },
+    {
+      "variant": "slice32",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 1,
+      "seconds": 1.436491,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1724992423,
+      "scan_factor": 1.60662244503252,
+      "rounds": 722
+    },
+    {
+      "variant": "slice64",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 1,
+      "seconds": 1.379581,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1708321479,
+      "scan_factor": 1.5910954708538743,
+      "rounds": 542
+    },
+    {
+      "variant": "control",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 1,
+      "seconds": 1.640856,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1726787428,
+      "scan_factor": 1.6082942757510166,
+      "rounds": 1202
+    },
+    {
+      "variant": "base",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 1,
+      "seconds": 1.646955,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1729618026,
+      "scan_factor": 1.610930636478767,
+      "rounds": 1148
+    },
+    {
+      "variant": "slice64",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 2,
+      "seconds": 1.36079,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1705958794,
+      "scan_factor": 1.5888949146653781,
+      "rounds": 541
+    },
+    {
+      "variant": "control",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 2,
+      "seconds": 1.642541,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1724991665,
+      "scan_factor": 1.6066217390469184,
+      "rounds": 1147
+    },
+    {
+      "variant": "base",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 2,
+      "seconds": 1.638582,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1726465938,
+      "scan_factor": 1.6079948465807974,
+      "rounds": 1130
+    },
+    {
+      "variant": "slice32",
+      "graph": "mesh28-z",
+      "source": "29743083",
+      "source_index": 1,
+      "rep": 2,
+      "seconds": 1.419793,
+      "valid": true,
+      "nodes": 1,
+      "rpn": 16,
+      "workers": 112,
+      "edge_attempts": 1724692576,
+      "scan_factor": 1.60634317370712,
+      "rounds": 745
+    }
+  ]
+}

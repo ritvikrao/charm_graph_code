@@ -1,0 +1,27 @@
+{
+  "binary": "acic_chunks_256",
+  "trace_binary": "acic_chunks_256_prj",
+  "flags": [
+    "--process-share",
+    "auto",
+    "--reader-tile",
+    "auto",
+    "--slack-control",
+    "off",
+    "--process-queue",
+    "nearest",
+    "--process-queue-batch",
+    "8",
+    "--heap-slice",
+    "64",
+    "--hub-hints",
+    "auto",
+    "+old-scheduler"
+  ],
+  "chunk_selection_job": "22379228",
+  "slice_selection_job": "22379316",
+  "distance_width": 256,
+  "chunk_size": 64,
+  "slice": 64,
+  "batch": 8
+}

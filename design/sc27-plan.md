@@ -619,3 +619,22 @@ Step 2 now tests heap slices 8/32/64 on the frozen 256-band queue, with queue
 batch 8 held fixed. Step 3 will profile the selected combination, bracketed
 by production controls, and validate original, chunk-only, and combined
 settings on four held-out sources. Preserve 16 × 7 and +old-scheduler.
+
+
+### Heap-slice step selected (job 22379316)
+
+All 32 training solves passed. The frozen 256-band queue with slice 64 gives
+medians **1.343232 / 1.370039 s**, versus slice-8 base medians
+**1.560071 / 1.646955 s** and repeated controls **1.615561 / 1.640856 s**.
+This is **1.16 / 1.20x** over the base, beyond the larger 3.6% duplicate-control
+spread on the first source. Slice 32 gives 1.387383 / 1.419793 s. Choose **64**
+for held-out validation; it is the largest tested value, not an established
+optimum. Queue batch remains 8. No runtime scheduler or global default changes.
+
+`benchmarks/delta-mesh28-selected.json` freezes the selected binary/settings.
+The final one-node allocation compares the original, chunks with slice 8,
+and chunks with slice 64 on four held-out sources, with a duplicate original
+control. It then rechecks the fixed Wasp reference (128 threads, delta 4096),
+full work ledgers, paired solve-window PC samples, and an optimized Projections
+trace. Original and selected PC binaries each run with timers on/off and
+production controls; profile times never replace production times.
