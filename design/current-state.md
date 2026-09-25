@@ -39,6 +39,9 @@ study accepts full chunks/band 65536/slice 64 as a one-node opt-in, giving
 layouts and a queue-specific recheck support retaining 16×7; reduced cores
 lose time. Uniform disables chunks under `auto` and shows no systematic
 change; its existing path beats verified Wasp by 1.10–1.21× (§18).
+RMAT25 also disables chunks: current ACIC reaches 0.754–0.833× over Wasp
+(20–33% longer time), with no systematic change versus original ACIC; all
+112 solves pass in a single-allocation comparison (§20).
 
 **Builds.** The TLS builds are 1.1–1.3× faster than production on meshes and
 roads (cheaper rounds; the hub hints resolve off), 1.0–1.1× on orkut and
@@ -1510,10 +1513,73 @@ Campaign: `/work/hdd/mzu/rao1/acic-road-opt-20260925`. Layout raw logs,
 `figures/time-22401351.{png,pdf}`; compact archive:
 `design/onenode-data/delta-road-time-22401351.json`.
 
+### 20. Delta RMAT25: a smaller one-node gap to Wasp (2026-09-25)
+
+Job **22401925** completed on one exclusive `cpu-interactive` node, cn100,
+in **12:23**. All **112 full solves** passed independent reference digests;
+the raw-log audit also passes scheduler, feature-mode and every-PE affinity
+checks. Input: **33,554,432 vertices and 1,047,199,108 stored directed edges**,
+maximum integer weight 1000. Both engines receive the same 128-core node.
+ACIC uses **16 processes × 7 workers and +old-scheduler** on the refreshed
+September 25 production/tracing/shared-memory runtime. This is one allocation
+on one host, with solve-only timing; input I/O is excluded.
+
+Wasp's 32/64/96/128-thread × delta 1/4/16/64/256 screen uses two training
+sources, followed by a repeat of the two fastest settings on both sources.
+It selects **64 threads, delta 1**, frozen before examining four test sources.
+Delta 1 is the smallest positive integer setting; 64 threads is interior to
+the tested thread grid. The bounded search does not establish a global optimum.
+Training geometric means for the confirmed finalists are 0.640219 s at
+64 threads and 0.684117 s at 128 threads, both with delta 1.
+
+Every test arm/source receives one warmup and three measured launches,
+randomized within each repetition. The original binary is duplicated as an
+independent control arm. The table contains per-source medians; speedup is
+reference time / current ACIC time, so above 1× favors ACIC.
+
+| Test source | Original ACIC (s) | Current ACIC (s) | Original control (s) | Wasp (s) | Speedup over Wasp |
+|---:|---:|---:|---:|---:|---:|
+| 26007212 | 0.790628 | 0.844938 | 0.787960 | 0.636765 | 0.754× |
+| 23077392 | 0.782924 | 0.812432 | 0.811598 | 0.637234 | 0.784× |
+| 20659448 | 0.805491 | 0.805313 | 0.796753 | 0.642911 | 0.798× |
+| 21987187 | 0.835588 | 0.778254 | 0.799068 | 0.648462 | 0.833× |
+
+Current ACIC's speedup over Wasp is **0.754–0.833×**, geometrically **0.792×**:
+ACIC takes **1.20–1.33× as long**, about **26% longer** geometrically. This is
+a much smaller one-node gap than the current Delta road result. Wasp remains
+faster on every test source in this allocation.
+
+Current versus original ACIC gives **0.936–1.074×** speedup, geometrically
+**0.992×**; original/control ratios are **0.965–1.046×**. Current versus the
+duplicate original control is 0.986× geometrically. Per-launch variation is
+material (for example, current source 26007212 spans 0.787–0.873 s). There is
+no systematic gain. The mixed source-level differences also do not establish
+a strict regression-free gate; do not claim every difference is inside the
+control spread or infer a causal effect from this single allocation.
+
+**Execution path and decision.** Under `auto`, RMAT disables process sharing
+and the private chunk queues; heap slice 64 is inactive. Lazy relaxation and
+degree-256 hub hints are enabled and verified in every ACIC log. The latest
+binary is the frozen full-chunk/band-65536 road build (source 551571d), but
+those queue changes do not execute here. This comparison therefore adds no
+chunk-optimization claim and changes no default. The existing nonshared path
+remains the RMAT profile. No new optimization or follow-up job is selected by
+this run. Raw logs record lazy tokens and hint counts; the non-lazy retirement
+ledger is deliberately not used to estimate RMAT edge attempts.
+
+Campaign: `/work/hdd/mzu/rao1/acic-rmat25-wasp-20260925`.
+Master output: `logs/compare-22401925.out`; individual logs, commands,
+manifest, frozen Wasp selection, `runs.jsonl`, `summary.json`, `audit.json`
+and `report.md`: `logs/compare-22401925/`. Compact archive:
+`design/onenode-data/delta-rmat25-wasp-22401925.json`. Reproduce the audit
+with `benchmarks/rmat_wasp_report.py`; protocol:
+`benchmarks/delta-rmat25-wasp-protocol.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta RMAT25 / Wasp, one node | `design/onenode-data/delta-rmat25-wasp-22401925.json`; `benchmarks/delta-rmat25-wasp-protocol.json` |
 | Delta road layout / queue ablation | `design/onenode-data/delta-road-layout-22401042.json` and `delta-road-queue-22401233.json`; completed time-focused confirmation `delta-road-time-22401351.json` |
 | Delta road/uniform chunk transfer | `design/onenode-data/delta-chunks-road-uniform-22392217.json`; `benchmarks/delta-chunks-road-uniform-protocol.json`; sequential Wasp boundary job 22398569 |
 | Delta mesh28 private chunks / slice 64 | `design/onenode-data/delta-mesh28-optimized-22379656.json`; training records `delta-mesh28-chunks-training.json`, `delta-mesh28-slices-training.json`; `benchmarks/delta-mesh28-selected.json` |

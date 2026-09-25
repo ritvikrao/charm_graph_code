@@ -321,3 +321,24 @@ band 256 for mesh and the existing nonshared auto path for uniform.
 Layouts with fewer active cores lose; 8×14's small training trend did not
 meet the predeclared threshold, so retain 16×7. All three study allocations
 ran on cn071 sequentially; cross-host replication remains unmeasured.
+
+
+### Delta RMAT25 comparison — September 25
+
+Job 22401925 uses the frozen road-study `acic_full_65536` binary above,
+symlinked as `acic_current` in `/work/hdd/mzu/rao1/acic-rmat25-wasp-20260925/bin`,
+with the same September 25 runtime. Use 16×7, `+old-scheduler`, process
+sharing, reader tiling, lazy relaxation and hub hints set to `auto`, nearest
+queue, batch 8 and slack off. No road admission
+width override is supplied. RMAT auto resolves process sharing and heap
+slice **inactive**, lazy relaxation **on**, and hub hints **degree 256**;
+compiled private chunks do not execute. Slice 64 is accepted as an inactive
+argument, not a changed RMAT algorithm.
+
+The original binary is also run twice as independently randomized controls.
+Wasp uses **64 threads, delta 1**, selected on two training sources from a
+bounded grid and frozen before the four test sources. All 112 solves pass.
+This is a one-allocation comparison, not a new optimization or distributed
+regression gate. Exact binaries, runtime hashes, commands and protocol:
+`benchmarks/delta-rmat25-wasp-protocol.json`, the campaign's
+`logs/compare-22401925/manifest.json`, and current-state §20.

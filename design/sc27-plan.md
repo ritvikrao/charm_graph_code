@@ -954,9 +954,21 @@ Protocol: `benchmarks/delta-rmat25-wasp-protocol.json`. Campaign:
 `/work/hdd/mzu/rao1/acic-rmat25-wasp-20260925`. All binaries, harness code,
 commands, runtime/graph hashes and individual solves are archived.
 
-RMAT job **22401925** is submitted to `cpu-interactive`, waiting for resources
-at this checkpoint. Master output will be `logs/compare-22401925.out`,
-with per-run logs/manifest/selection/summary under `logs/compare-22401925/`
-in the campaign. `benchmarks/rmat_wasp_report.py` rechecks raw digests,
-feature modes, bindings and the training-only Wasp selection, then writes
-`audit.json` and `report.md`. No performance result is available yet.
+RMAT job **22401925** completed on cn100 in **12:23**. All **112 full solves**
+and the raw-log audit pass. Wasp selects 64 threads/delta 1 using training
+sources only. Four held-out source medians are current ACIC **0.778–0.845 s**
+versus Wasp **0.637–0.648 s**: ACIC speedup **0.754–0.833×**, geometrically
+**0.792×**. Current/original ACIC speedup is **0.936–1.074×**, geometrically
+0.992×, versus original/control ratios of 0.965–1.046×. The mixed differences
+show no systematic gain and do not establish a strict regression-free gate.
+
+**Decision:** retain the existing nonshared lazy/hint path; no solver/default
+change or new optimization follows from this comparison. Chunks and shared
+heap slice are inactive, so no chunk gain may be claimed. One allocation and
+a bounded Wasp search limit the result. No further job is submitted.
+
+Master output: `logs/compare-22401925.out`; raw logs/manifest/selection/summary
+and the independent `audit.json`/`report.md`: `logs/compare-22401925/` in the
+campaign. `benchmarks/rmat_wasp_report.py` rechecks raw digests, modes,
+bindings, times and the training-only selection. See current-state §20 and
+`design/onenode-data/delta-rmat25-wasp-22401925.json` for the complete record.
