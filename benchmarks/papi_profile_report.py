@@ -13,14 +13,16 @@ reports its whole inline chain. Four tables come out: by function as linked,
 by innermost inlined function, by inline chain, and by source line. Shared
 library addresses are resolved to the nearest dynamic symbol.
 
-Samples are taken on cycle overflow without precise IP, so an address can be
-a few instructions past the one that spent the cycles; read single lines as
-approximate, and blocks of lines as reliable.
+Hardware samples use cycle overflow without precise IP; timer samples use
+POSIX thread CPU timers. Read individual source lines as approximate. Timer
+delivery can be coalesced or limited by clock resolution: the requested period
+is not a calibrated conversion from sample count to CPU time.
 """
 import argparse
 import bisect
 import collections
 import glob
+import json
 import os
 import re
 import subprocess
@@ -179,6 +181,7 @@ def main():
     ap.add_argument('binary')
     ap.add_argument('--run-output')
     ap.add_argument('--top', type=int, default=40)
+    ap.add_argument('--json', help='write full symbolized sample counts for auditing')
     args = ap.parse_args()
 
     pes, period, dropped, counters, samples, per_pe = read_profiles(args.root)
@@ -198,7 +201,7 @@ def main():
 
     print('# PAPI profile: %s\n' % args.root)
     if period is not None and period < 0:
-        print('%d PEs, %d samples (one per %d us of thread CPU time), %d dropped.' %
+        print('%d PEs, %d samples (requested CPU-timer period %d us), %d dropped.' %
               (pes, total, -period, dropped))
     else:
         print('%d PEs, %d samples (one per %s cycles), %d dropped.' %
@@ -233,12 +236,16 @@ def main():
     maps = read_maps(args.root)
     exe = os.path.realpath(args.binary)
     in_exe, elsewhere = [], {}
+    ambiguous_samples = unmapped_samples = 0
     for a in samples:
-        m = None
-        for start, end, off, path in maps:
-            if start <= a < end:
-                m = (start, off, path)
-                break
+        matches = [(start, off, path) for start, end, off, path in maps
+                   if start <= a < end]
+        if not matches:
+            unmapped_samples += samples[a]
+        if len({(a-start+off, os.path.realpath(path))
+                for start, off, path in matches}) > 1:
+            ambiguous_samples += samples[a]
+        m = matches[0] if matches else None
         if m is None or os.path.realpath(m[2]) == exe or \
                 os.path.basename(m[2]) == os.path.basename(exe):
             in_exe.append(a)
@@ -276,27 +283,45 @@ def main():
             print('| %.2f%% | %d | `%s` |' % (100.0 * v / total, v, k))
 
     print('\n## Stages\n')
-    # Per update: cycles when counters ran; nanoseconds of PE time when the
-    # samples came from the CPU-time timer (samples x period / updates).
+    # Timer delivery is not calibrated CPU time. In particular, sub-tick
+    # periods can coalesce, so samples * requested period undercounts time.
     timer_mode = period is not None and period < 0
-    unit = 'ns per update' if timer_mode else 'cycles per update'
-    print('| stage | share | %s |' % unit)
-    print('|---|---:|---:|')
+    if timer_mode:
+        print('| stage | sample share |')
+        print('|---|---:|')
+    else:
+        print('| stage | share | cycles per update |')
+        print('|---|---:|---:|')
     for k, v in by_stage.most_common():
-        if timer_mode and updates:
-            cpu = '%.1f' % (v * -period * 1000.0 / updates)
-        elif updates and cyc and total:
-            cpu = '%.1f' % (cyc * v / total / updates)
+        share = 100.0 * v / total
+        if timer_mode:
+            print('| %s | %.1f%% |' % (k, share))
         else:
-            cpu = ''
-        print('| %s | %.1f%% | %s |' % (k, 100.0 * v / total, cpu))
-    if timer_mode and updates:
-        print('| **total** | 100%% | %.1f |' % (total * -period * 1000.0 / updates))
+            cpu = '%.1f' % (cyc * v / total / updates) if updates and cyc and total else ''
+            print('| %s | %.1f%% | %s |' % (k, share, cpu))
+    if timer_mode:
+        print('\nTimer shares are statistical attribution, not elapsed CPU-time '
+              'measurements; delivery can be coalesced. No nanoseconds per '
+              'update are inferred from the requested timer period.')
+    print('\nShared-library names use the nearest available symbol; stripped '
+          'internal functions may be grouped under a nearby name. Use broad '
+          'cost groups rather than treating these labels as call counts.')
 
     table('Samples by function as linked', by_func, args.top)
     table('Samples by innermost inlined function', by_inner, args.top)
     table('Samples by inline chain', by_chain, args.top)
     table('Samples by source line', by_line, args.top * 2)
+    if args.json:
+        with open(args.json, 'w') as stream:
+            json.dump(dict(root=args.root, binary=exe, pes=pes, samples=total,
+                           dropped=dropped, requested_period=period,
+                           ambiguous_mapping_samples=ambiguous_samples,
+                           unmapped_samples=unmapped_samples,
+                           mode='cpu_timer' if timer_mode else 'cycle_overflow',
+                           counters=counters, stages=by_stage, functions=by_func,
+                           innermost=by_inner, chains=by_chain, lines=by_line),
+                      stream, indent=2)
+            stream.write('\n')
 
 
 if __name__ == '__main__':

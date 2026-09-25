@@ -625,7 +625,7 @@ settings on four held-out sources. Preserve 16 × 7 and +old-scheduler.
 
 All 32 training solves passed. The frozen 256-band queue with slice 64 gives
 medians **1.343232 / 1.370039 s**, versus slice-8 base medians
-**1.560071 / 1.646955 s** and repeated controls **1.615561 / 1.640856 s**.
+**1.560071 / 1.638582 s** and repeated controls **1.615561 / 1.640856 s**.
 This is **1.16 / 1.20x** over the base, beyond the larger 3.6% duplicate-control
 spread on the first source. Slice 32 gives 1.387383 / 1.419793 s. Choose **64**
 for held-out validation; it is the largest tested value, not an established
@@ -638,3 +638,38 @@ control. It then rechecks the fixed Wasp reference (128 threads, delta 4096),
 full work ledgers, paired solve-window PC samples, and an optimized Projections
 trace. Original and selected PC binaries each run with timers on/off and
 production controls; profile times never replace production times.
+
+
+### Three-step mesh investigation completed (job 22379656)
+
+The held-out confirmation passes all 99 full-graph solves and the selected
+small-graph gate (32 serial checks plus 32 certificates). Private chunks with
+band 256 and slice 64 give 2.53–2.55× over original ACIC, reducing time by
+60.5–60.7%, and reach 0.608–0.704× over freshly remeasured Wasp. Both queue
+and slice gains survive on all four held-out sources. Keep this as an opt-in
+one-node mesh profile; the original heap remains the default. The code is
+committed in `8a6b02c`, slice selection in `98b80ea`; current-state §17 and
+`onenode-data/delta-mesh28-optimized-22379656.json` contain the full evidence.
+
+PC captures locate the removed cost in mutex/futex operations (26.6–27.0%
+to 0.37–0.38% of samples). Remaining candidates are duplicate local ownership
+lookup, repeated process/runtime access and TLS. Queue-call samples estimate
+53% → 18% PE time; the new trace has 10.1M rather than 72.6M heap callbacks.
+Trace overhead is 1.9%; PC sampling overhead is 7.9–10.9% on the selected
+version, so neither instrumentation time substitutes for production timing.
+
+Stop this bounded queue/slice screen. The next focused intervention, if the
+investigation continues, should pass known destinations through local updates
+and cache stable process ownership with correct lifecycle refresh. Keep a
+TLS runtime A/B separate. Do not infer a guaranteed gain from sample shares.
+Distributed progress/scaling and other sparse graphs must be checked before
+broad promotion; no larger-node jobs were submitted. This permits a stronger
+single-node engineering baseline while keeping the paper centered on ACIC's
+distributed capabilities and crediting established chunking techniques.
+
+During analysis, the user requested an upstream pull. Merge `69adfc1`
+incorporates upstream through `2bacfc4`; it merged without conflicts and
+passed changed-file Python/shell/JSON syntax checks. It changes Frontier
+harness/input-preparation files, not the solver. The running job used frozen
+binaries and a frozen harness, so its provenance remains unchanged. Local
+unrelated files and the pending report changes were preserved.

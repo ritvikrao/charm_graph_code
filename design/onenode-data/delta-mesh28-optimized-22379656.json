@@ -1,0 +1,4450 @@
+{
+  "job": "22379656",
+  "hosts": "cn044",
+  "validated_full_graph_solves": 99,
+  "selected": {
+    "binary": "acic_chunks_256",
+    "trace_binary": "acic_chunks_256_prj",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "--heap-slice",
+      "64",
+      "--hub-hints",
+      "auto",
+      "+old-scheduler"
+    ],
+    "chunk_selection_job": "22379228",
+    "slice_selection_job": "22379316",
+    "distance_width": 256,
+    "chunk_size": 64,
+    "slice": 64,
+    "batch": 8
+  },
+  "sources": [
+    {
+      "source": "9130980",
+      "variants": {
+        "base": {
+          "median": 3.801291,
+          "seconds": [
+            3.810832,
+            3.748802,
+            3.801291
+          ],
+          "scans": [
+            1.601699721992929,
+            1.5767053905543642,
+            1.5914796527573123
+          ],
+          "rounds": [
+            1272,
+            1367,
+            1186
+          ],
+          "speedup_over_base": 1.0
+        },
+        "chunks8": {
+          "median": 1.78563,
+          "seconds": [
+            1.78563,
+            1.813182,
+            1.741703
+          ],
+          "scans": [
+            1.7466764489074755,
+            1.769065819212727,
+            1.7303990073775384
+          ],
+          "rounds": [
+            1597,
+            1595,
+            1576
+          ],
+          "speedup_over_base": 2.12882344046639
+        },
+        "chunks64": {
+          "median": 1.503268,
+          "seconds": [
+            1.503268,
+            1.457626,
+            1.512187
+          ],
+          "scans": [
+            1.7619135172704867,
+            1.738380593723236,
+            1.7617599719218164
+          ],
+          "rounds": [
+            721,
+            646,
+            737
+          ],
+          "speedup_over_base": 2.528684838631568
+        },
+        "control": {
+          "median": 3.767367,
+          "seconds": [
+            3.767367,
+            3.773166,
+            3.745879
+          ],
+          "scans": [
+            1.598446330780847,
+            1.5930743484948788,
+            1.6173403989713517
+          ],
+          "rounds": [
+            1295,
+            1204,
+            1198
+          ],
+          "speedup_over_base": 1.0090046974451918
+        }
+      },
+      "wasp_seconds": [
+        0.93102483,
+        0.913253717,
+        0.913708974
+      ],
+      "wasp_median": 0.913708974,
+      "speedup_over_original": 2.528684838631568,
+      "time_reduction": 0.6045375110718963,
+      "wasp_speedup_over_acic": 1.6452372065681387,
+      "acic_speedup_over_wasp": 0.6078150895249549
+    },
+    {
+      "source": "141442404",
+      "variants": {
+        "base": {
+          "median": 3.607785,
+          "seconds": [
+            3.607785,
+            3.790371,
+            3.598005
+          ],
+          "scans": [
+            1.5060074866811253,
+            1.4905871582403802,
+            1.4973124748751088
+          ],
+          "rounds": [
+            1213,
+            1154,
+            1160
+          ],
+          "speedup_over_base": 1.0
+        },
+        "chunks8": {
+          "median": 1.70237,
+          "seconds": [
+            1.726482,
+            1.70237,
+            1.689233
+          ],
+          "scans": [
+            1.6341235785957862,
+            1.639394532293145,
+            1.642364313814482
+          ],
+          "rounds": [
+            1295,
+            1478,
+            1470
+          ],
+          "speedup_over_base": 2.1192719561552424
+        },
+        "chunks64": {
+          "median": 1.418344,
+          "seconds": [
+            1.404502,
+            1.418344,
+            1.441207
+          ],
+          "scans": [
+            1.6452818123519926,
+            1.654190234850376,
+            1.6309450432791899
+          ],
+          "rounds": [
+            594,
+            654,
+            496
+          ],
+          "speedup_over_base": 2.5436600711816033
+        },
+        "control": {
+          "median": 3.58463,
+          "seconds": [
+            3.58463,
+            3.589518,
+            3.583555
+          ],
+          "scans": [
+            1.511430031693128,
+            1.4966515512727798,
+            1.4968136746259222
+          ],
+          "rounds": [
+            1166,
+            1146,
+            1157
+          ],
+          "speedup_over_base": 1.006459523019112
+        }
+      },
+      "wasp_seconds": [
+        0.935175008,
+        0.945742278,
+        0.939666739
+      ],
+      "wasp_median": 0.939666739,
+      "speedup_over_original": 2.5436600711816033,
+      "time_reduction": 0.6068657084610085,
+      "wasp_speedup_over_acic": 1.5094117319821407,
+      "acic_speedup_over_wasp": 0.6625097571534126
+    },
+    {
+      "source": "160224940",
+      "variants": {
+        "base": {
+          "median": 3.623372,
+          "seconds": [
+            3.593609,
+            3.69706,
+            3.623372
+          ],
+          "scans": [
+            1.508898750123091,
+            1.5177845540722232,
+            1.5022148863922755
+          ],
+          "rounds": [
+            1078,
+            1175,
+            1162
+          ],
+          "speedup_over_base": 1.0
+        },
+        "chunks8": {
+          "median": 1.746859,
+          "seconds": [
+            1.686817,
+            1.746859,
+            1.748747
+          ],
+          "scans": [
+            1.6114969617360126,
+            1.6196174605282891,
+            1.6277843261823064
+          ],
+          "rounds": [
+            1500,
+            1448,
+            1529
+          ],
+          "speedup_over_base": 2.074221216480552
+        },
+        "chunks64": {
+          "median": 1.432905,
+          "seconds": [
+            1.427407,
+            1.450783,
+            1.432905
+          ],
+          "scans": [
+            1.5866363214309898,
+            1.6034719041871957,
+            1.604620219572177
+          ],
+          "rounds": [
+            619,
+            624,
+            632
+          ],
+          "speedup_over_base": 2.5286896200376154
+        },
+        "control": {
+          "median": 3.785192,
+          "seconds": [
+            3.600901,
+            3.785192,
+            3.920814
+          ],
+          "scans": [
+            1.532784355390365,
+            1.5016527169500087,
+            1.5227504959111102
+          ],
+          "rounds": [
+            1129,
+            1440,
+            1137
+          ],
+          "speedup_over_base": 0.9572491963419557
+        }
+      },
+      "wasp_seconds": [
+        0.920195308,
+        0.935881668,
+        0.943087714
+      ],
+      "wasp_median": 0.935881668,
+      "speedup_over_original": 2.5286896200376154,
+      "time_reduction": 0.6045382588373481,
+      "wasp_speedup_over_acic": 1.5310749734655558,
+      "acic_speedup_over_wasp": 0.6531358799082981
+    },
+    {
+      "source": "190849552",
+      "variants": {
+        "base": {
+          "median": 3.53821,
+          "seconds": [
+            3.502893,
+            3.53924,
+            3.53821
+          ],
+          "scans": [
+            1.4531602080048918,
+            1.4726857942866296,
+            1.4621151231012377
+          ],
+          "rounds": [
+            1040,
+            1162,
+            1129
+          ],
+          "speedup_over_base": 1.0
+        },
+        "chunks8": {
+          "median": 1.660845,
+          "seconds": [
+            1.660845,
+            1.64843,
+            1.880526
+          ],
+          "scans": [
+            1.5690354707731051,
+            1.5809301825616922,
+            1.5784738556133597
+          ],
+          "rounds": [
+            1422,
+            1411,
+            1513
+          ],
+          "speedup_over_base": 2.130367373234709
+        },
+        "chunks64": {
+          "median": 1.389594,
+          "seconds": [
+            1.389594,
+            1.412032,
+            1.389181
+          ],
+          "scans": [
+            1.6012325104082024,
+            1.611609429526677,
+            1.5762000781002625
+          ],
+          "rounds": [
+            633,
+            615,
+            651
+          ],
+          "speedup_over_base": 2.5462185357737583
+        },
+        "control": {
+          "median": 3.501164,
+          "seconds": [
+            3.503033,
+            3.436666,
+            3.501164
+          ],
+          "scans": [
+            1.4586437145941702,
+            1.465445925913938,
+            1.4654020141683524
+          ],
+          "rounds": [
+            1096,
+            1144,
+            1144
+          ],
+          "speedup_over_base": 1.0105810524728347
+        }
+      },
+      "wasp_seconds": [
+        0.974100329,
+        0.990342596,
+        0.978927174
+      ],
+      "wasp_median": 0.978927174,
+      "speedup_over_original": 2.5462185357737583,
+      "time_reduction": 0.6072607335347535,
+      "wasp_speedup_over_acic": 1.4195070245337782,
+      "acic_speedup_over_wasp": 0.7044699199910189
+    }
+  ],
+  "work": [
+    {
+      "label": "base",
+      "source": "9130980",
+      "seconds": 3.964465,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 1706382436,
+        "expansions": 426615235,
+        "changes": 581357142,
+        "queue_pushes": 581357142,
+        "queue_pops": 581357142,
+        "stale_pops": 154741907,
+        "cas_attempts": 581439427,
+        "cas_failures": 82285,
+        "intra_process": 1700803112,
+        "intra_node": 5579324,
+        "inter_node": 0,
+        "queue_probes": 675736340,
+        "lock_misses": 37344669,
+        "cpu_ns": 404746577094,
+        "push_calls": 581357142,
+        "push_samples": 567731,
+        "push_ticks": 321568695,
+        "pop_calls": 153653815,
+        "pop_samples": 150047,
+        "pop_ticks": 238167401
+      },
+      "queue": {
+        "push": {
+          "cycles": 566.4103158009691,
+          "ns": 231.62362378506285,
+          "estimated_share": 0.30327799108818376
+        },
+        "pop": {
+          "cycles": 1587.2853239318347,
+          "ns": 649.0926603094009,
+          "estimated_share": 0.22462861352286598
+        }
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 3.964465,
+        "pe_seconds": 444.020042,
+        "work_seconds": 376.170559,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.400045,
+        "window_pe_seconds": 444.002044,
+        "compute_share": 0.847193,
+        "send_share": 0.000901,
+        "other_share": 0.151906,
+        "idle_share": 0.085092
+      },
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "valid": true,
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/work-22379656/base-9130980.out"
+    },
+    {
+      "label": "base",
+      "source": "141442404",
+      "seconds": 3.884975,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 1619247187,
+        "expansions": 404831852,
+        "changes": 551774281,
+        "queue_pushes": 551774281,
+        "queue_pops": 551774281,
+        "stale_pops": 146942429,
+        "cas_attempts": 551850011,
+        "cas_failures": 75730,
+        "intra_process": 1613737289,
+        "intra_node": 5509898,
+        "inter_node": 0,
+        "queue_probes": 623894779,
+        "lock_misses": 34844689,
+        "cpu_ns": 394458475023,
+        "push_calls": 551774281,
+        "push_samples": 538844,
+        "push_ticks": 319604429,
+        "pop_calls": 143411256,
+        "pop_samples": 140050,
+        "pop_ticks": 233586618
+      },
+      "queue": {
+        "push": {
+          "cycles": 593.1297908114408,
+          "ns": 242.5501109707794,
+          "estimated_share": 0.3075818597002747
+        },
+        "pop": {
+          "cycles": 1667.8801713673688,
+          "ns": 682.0505847424628,
+          "estimated_share": 0.22480067567309409
+        }
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 3.884975,
+        "pe_seconds": 435.117222,
+        "work_seconds": 370.935637,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.63362,
+        "window_pe_seconds": 435.113154,
+        "compute_share": 0.852496,
+        "send_share": 0.001456,
+        "other_share": 0.146048,
+        "idle_share": 0.080257
+      },
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "141442404",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "valid": true,
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/work-22379656/base-141442404.out"
+    },
+    {
+      "label": "chunks64",
+      "source": "9130980",
+      "seconds": 1.694759,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 1886765382,
+        "expansions": 471714695,
+        "changes": 646309287,
+        "queue_pushes": 646309287,
+        "queue_pops": 646309287,
+        "stale_pops": 174594592,
+        "cas_attempts": 646362025,
+        "cas_failures": 52738,
+        "intra_process": 1881616135,
+        "intra_node": 5149247,
+        "inter_node": 0,
+        "queue_probes": 276565399,
+        "lock_misses": 409097,
+        "cpu_ns": 187512416394,
+        "push_calls": 646309287,
+        "push_samples": 631163,
+        "push_ticks": 48926725,
+        "pop_calls": 119689074,
+        "pop_samples": 116882,
+        "pop_ticks": 32281106
+      },
+      "queue": {
+        "push": {
+          "cycles": 77.51836688779285,
+          "ns": 31.699783072943628,
+          "estimated_share": 0.10783242265137613
+        },
+        "pop": {
+          "cycles": 276.1854348830444,
+          "ns": 112.94121284020234,
+          "estimated_share": 0.07114749764373293
+        }
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 1.694759,
+        "pe_seconds": 189.813049,
+        "work_seconds": 166.964418,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.238831,
+        "window_pe_seconds": 189.997254,
+        "compute_share": 0.879626,
+        "send_share": 0.001258,
+        "other_share": 0.119116,
+        "idle_share": 0.091759
+      },
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "valid": true,
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/work-22379656/chunks64-9130980.out"
+    },
+    {
+      "label": "chunks64",
+      "source": "141442404",
+      "seconds": 1.631472,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 1750986672,
+        "expansions": 437768607,
+        "changes": 600495561,
+        "queue_pushes": 600495561,
+        "queue_pops": 600495561,
+        "stale_pops": 162726954,
+        "cas_attempts": 600538389,
+        "cas_failures": 42828,
+        "intra_process": 1746044269,
+        "intra_node": 4942403,
+        "inter_node": 0,
+        "queue_probes": 293845687,
+        "lock_misses": 379742,
+        "cpu_ns": 180223162699,
+        "push_calls": 600495561,
+        "push_samples": 586425,
+        "push_ticks": 45706899,
+        "pop_calls": 116447120,
+        "pop_samples": 113713,
+        "pop_ticks": 30743480
+      },
+      "queue": {
+        "push": {
+          "cycles": 77.94159355416294,
+          "ns": 31.872854302508298,
+          "estimated_share": 0.10463813768591211
+        },
+        "pop": {
+          "cycles": 270.3602930183884,
+          "ns": 110.55912299984396,
+          "estimated_share": 0.07038539946528967
+        }
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 1.631472,
+        "pe_seconds": 182.724876,
+        "work_seconds": 158.885309,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.226847,
+        "window_pe_seconds": 182.911393,
+        "compute_share": 0.869533,
+        "send_share": 0.001241,
+        "other_share": 0.129226,
+        "idle_share": 0.101743
+      },
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "141442404",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "valid": true,
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/work-22379656/chunks64-141442404.out"
+    }
+  ],
+  "pc_runs": [
+    {
+      "label": "base-0-warmup",
+      "variant": "base",
+      "kind": "warmup",
+      "source": "9130980",
+      "seconds": 3.803148,
+      "edge_attempts": 1721456461,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/base-0-warmup.out",
+      "valid": true
+    },
+    {
+      "label": "base-1-plain",
+      "variant": "base",
+      "kind": "plain",
+      "source": "9130980",
+      "seconds": 3.785376,
+      "edge_attempts": 1726664359,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/base-1-plain.out",
+      "valid": true
+    },
+    {
+      "label": "base-2-sampled",
+      "variant": "base",
+      "kind": "sampled",
+      "source": "9130980",
+      "seconds": 3.823267,
+      "edge_attempts": 1687933411,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base_papi",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/base-2-sampled.out",
+      "valid": true,
+      "samples": 376495,
+      "dropped": 0
+    },
+    {
+      "label": "base-3-off",
+      "variant": "base",
+      "kind": "off",
+      "source": "9130980",
+      "seconds": 3.677686,
+      "edge_attempts": 1711743709,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base_papi",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/base-3-off.out",
+      "valid": true,
+      "samples": 0,
+      "dropped": 0
+    },
+    {
+      "label": "base-4-sampled",
+      "variant": "base",
+      "kind": "sampled",
+      "source": "9130980",
+      "seconds": 3.946194,
+      "edge_attempts": 1726369260,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base_papi",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/base-4-sampled.out",
+      "valid": true,
+      "samples": 385966,
+      "dropped": 0
+    },
+    {
+      "label": "base-5-plain",
+      "variant": "base",
+      "kind": "plain",
+      "source": "9130980",
+      "seconds": 3.725242,
+      "edge_attempts": 1702958234,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/base-5-plain.out",
+      "valid": true
+    },
+    {
+      "label": "chunks64-0-warmup",
+      "variant": "chunks64",
+      "kind": "warmup",
+      "source": "9130980",
+      "seconds": 1.488589,
+      "edge_attempts": 1872937136,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/chunks64-0-warmup.out",
+      "valid": true
+    },
+    {
+      "label": "chunks64-1-plain",
+      "variant": "chunks64",
+      "kind": "plain",
+      "source": "9130980",
+      "seconds": 1.490638,
+      "edge_attempts": 1868101460,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/chunks64-1-plain.out",
+      "valid": true
+    },
+    {
+      "label": "chunks64-2-sampled",
+      "variant": "chunks64",
+      "kind": "sampled",
+      "source": "9130980",
+      "seconds": 1.600366,
+      "edge_attempts": 1854438989,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_papi",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/chunks64-2-sampled.out",
+      "valid": true,
+      "samples": 178307,
+      "dropped": 0
+    },
+    {
+      "label": "chunks64-3-off",
+      "variant": "chunks64",
+      "kind": "off",
+      "source": "9130980",
+      "seconds": 1.489752,
+      "edge_attempts": 1861635554,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_papi",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/chunks64-3-off.out",
+      "valid": true,
+      "samples": 0,
+      "dropped": 0
+    },
+    {
+      "label": "chunks64-4-sampled",
+      "variant": "chunks64",
+      "kind": "sampled",
+      "source": "9130980",
+      "seconds": 1.645633,
+      "edge_attempts": 1863018206,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_papi",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/chunks64-4-sampled.out",
+      "valid": true,
+      "samples": 182394,
+      "dropped": 0
+    },
+    {
+      "label": "chunks64-5-plain",
+      "variant": "chunks64",
+      "kind": "plain",
+      "source": "9130980",
+      "seconds": 1.475833,
+      "edge_attempts": 1839157878,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/chunks64-5-plain.out",
+      "valid": true
+    }
+  ],
+  "pc_overhead": {
+    "base": {
+      "plain_mean": 3.755309,
+      "sampled": [
+        1.01809651349596,
+        1.0508307039447353
+      ],
+      "profile_off": [
+        0.9793297968289694
+      ],
+      "samples": [
+        376495,
+        385966
+      ]
+    },
+    "chunks64": {
+      "plain_mean": 1.4832355,
+      "sampled": [
+        1.0789695904662475,
+        1.10948868200633
+      ],
+      "profile_off": [
+        1.0043934358367232
+      ],
+      "samples": [
+        178307,
+        182394
+      ]
+    }
+  },
+  "trace_runs": [
+    {
+      "label": "before",
+      "seconds": 1.484985,
+      "edge_attempts": 1852907684,
+      "rounds": 693,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "valid": true,
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/traces/optimized-22379656/before.out"
+    },
+    {
+      "label": "trace",
+      "seconds": 1.521118,
+      "edge_attempts": 1867466347,
+      "rounds": 681,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_prj",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "+traceoff",
+        "+logsize",
+        "8000000",
+        "+traceroot",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/traces/optimized-22379656"
+      ],
+      "valid": true,
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/traces/optimized-22379656/trace.out"
+    },
+    {
+      "label": "after",
+      "seconds": 1.50018,
+      "edge_attempts": 1881938602,
+      "rounds": 759,
+      "command": [
+        "srun",
+        "-N1",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/harness-final/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "64",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "valid": true,
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/traces/optimized-22379656/after.out"
+    }
+  ],
+  "projections": {
+    "pes": 112,
+    "processes": 16,
+    "nodes": 1,
+    "window_s_mean": 1.5209673214285713,
+    "time": [
+      {
+        "activity": "SsspChares::process_heap",
+        "pe_seconds": 145.679078,
+        "share": 0.8551834317845421,
+        "calls": 10069423
+      },
+      {
+        "activity": "idle",
+        "pe_seconds": 17.657604,
+        "share": 0.10365586186516405,
+        "calls": 64164
+      },
+      {
+        "activity": "untraced",
+        "pe_seconds": 5.094757,
+        "share": 0.029907875826673744,
+        "calls": 0
+      },
+      {
+        "activity": "SsspChares::current_thresholds",
+        "pe_seconds": 0.588434,
+        "share": 0.003454298409952219,
+        "calls": 76160
+      },
+      {
+        "activity": "HTram::receivePerPE",
+        "pe_seconds": 0.580779,
+        "share": 0.0034093610774252334,
+        "calls": 988386
+      },
+      {
+        "activity": "HTramRecv::receive",
+        "pe_seconds": 0.421042,
+        "share": 0.0024716530844973304,
+        "calls": 141198
+      },
+      {
+        "activity": "SsspChares::clear_pq_hold",
+        "pe_seconds": 0.176065,
+        "share": 0.0010335586481206684,
+        "calls": 76160
+      },
+      {
+        "activity": "CkReductionMgr::RecvMsg",
+        "pe_seconds": 0.058956,
+        "share": 0.00034609083951155615,
+        "calls": 75591
+      },
+      {
+        "activity": "CkArray::recvNoKeepBroadcast",
+        "pe_seconds": 0.026091,
+        "share": 0.00015316263134703865,
+        "calls": 152320
+      },
+      {
+        "activity": "SsspChares::contribute_histogram",
+        "pe_seconds": 0.020978,
+        "share": 0.00012314766319413502,
+        "calls": 112
+      },
+      {
+        "activity": "unpack",
+        "pe_seconds": 0.017785,
+        "share": 0.00010440371769986136,
+        "calls": 227682
+      },
+      {
+        "activity": "pack",
+        "pe_seconds": 0.0134,
+        "share": 7.866234563835492e-05,
+        "calls": 217470
+      },
+      {
+        "activity": "Main::redn_wrapper_reduce_histogram",
+        "pe_seconds": 0.008144,
+        "share": 4.780792111035541e-05,
+        "calls": 1362
+      },
+      {
+        "activity": "dummy_thread_chare::dummy_thread_ep",
+        "pe_seconds": 0.005166,
+        "share": 3.032609534087623e-05,
+        "calls": 681
+      },
+      {
+        "activity": "CkArray::recvNoKeepExpeditedBroadcast",
+        "pe_seconds": 6.1e-05,
+        "share": 3.5808978238355595e-07,
+        "calls": 206
+      }
+    ],
+    "spread": {
+      "busy (entries+pack)": [
+        1.252703,
+        1.2828781999999999,
+        1.3165065,
+        1.3516975,
+        1.359281
+      ],
+      "idle": [
+        0.116982,
+        0.1223862,
+        0.15791650000000002,
+        0.1931874,
+        0.224281
+      ],
+      "untraced": [
+        0.041346999999999856,
+        0.04359519999999997,
+        0.0453210000000001,
+        0.04802730000000002,
+        0.05206899999999995
+      ],
+      "window": [
+        1.520752,
+        1.520777,
+        1.521025,
+        1.5210675,
+        1.521098
+      ]
+    },
+    "busy_by_process": [
+      9.111134999999999,
+      9.119273,
+      8.963468,
+      8.803699,
+      9.483675999999999,
+      9.336366,
+      9.22389,
+      9.144628,
+      9.452168,
+      9.209693,
+      9.376226,
+      9.466813,
+      9.140938,
+      9.271421,
+      9.209198,
+      9.283387000000001
+    ],
+    "timeline": [
+      [
+        0.0,
+        0.7253332142857143,
+        0.03228071428571433,
+        0.19758464285714286,
+        0.027480178571428572,
+        0.0012241071428571429,
+        0.0015833928571428572
+      ],
+      [
+        0.05,
+        0.36003178571428573,
+        0.025648214285714288,
+        0.5999733928571429,
+        0.004747321428571429,
+        0.0029989285714285712,
+        0.003132142857142857
+      ],
+      [
+        0.1,
+        0.15323035714285715,
+        0.029719107142857193,
+        0.8044003571428572,
+        0.0037826785714285714,
+        0.0034176785714285715,
+        0.0032473214285714284
+      ],
+      [
+        0.15,
+        0.14362785714285714,
+        0.028783214285714287,
+        0.8169405357142857,
+        0.003092142857142857,
+        0.0033023214285714288,
+        0.0026094642857142857
+      ],
+      [
+        0.2,
+        0.055529464285714286,
+        0.03009160714285719,
+        0.9040978571428572,
+        0.002790357142857143,
+        0.0036401785714285716,
+        0.002593392857142857
+      ],
+      [
+        0.25,
+        0.041800535714285714,
+        0.030327142857142886,
+        0.9182696428571429,
+        0.0024939285714285714,
+        0.0034255357142857143,
+        0.00242125
+      ],
+      [
+        0.3,
+        0.09360946428571429,
+        0.02856267857142858,
+        0.8693796428571429,
+        0.0021625,
+        0.003055,
+        0.0021951785714285714
+      ],
+      [
+        0.35,
+        0.052084285714285715,
+        0.030202857142857198,
+        0.9076446428571429,
+        0.0028214285714285715,
+        0.003643035714285714,
+        0.0025223214285714285
+      ],
+      [
+        0.4,
+        0.05149732142857143,
+        0.03170392857142856,
+        0.9047319642857143,
+        0.00350125,
+        0.0039273214285714285,
+        0.003084642857142857
+      ],
+      [
+        0.45,
+        0.05618482142857143,
+        0.033875892857142875,
+        0.8945619642857143,
+        0.004359821428571428,
+        0.0047825,
+        0.004042142857142857
+      ],
+      [
+        0.5,
+        0.02106857142857143,
+        0.031978214285714235,
+        0.9349844642857142,
+        0.0032271428571428572,
+        0.0041057142857142855,
+        0.003187142857142857
+      ],
+      [
+        0.55,
+        0.04603732142857143,
+        0.031145178571428622,
+        0.9113871428571428,
+        0.00322,
+        0.003905714285714286,
+        0.0029439285714285713
+      ],
+      [
+        0.6,
+        0.014219821428571429,
+        0.03157410714285713,
+        0.9433364285714285,
+        0.002919642857142857,
+        0.0038926785714285712,
+        0.00290125
+      ],
+      [
+        0.65,
+        0.0025103571428571427,
+        0.03183625000000001,
+        0.9555485714285714,
+        0.0025839285714285712,
+        0.0038842857142857143,
+        0.002599285714285714
+      ],
+      [
+        0.7,
+        0.0013842857142857142,
+        0.031405535714285726,
+        0.9583307142857143,
+        0.0022033928571428573,
+        0.003538392857142857,
+        0.002249642857142857
+      ],
+      [
+        0.75,
+        0.008380178571428571,
+        0.030888571428571376,
+        0.9517228571428571,
+        0.002130535714285714,
+        0.00372,
+        0.0022764285714285716
+      ],
+      [
+        0.8,
+        0.0036876785714285714,
+        0.030318035714285707,
+        0.95736,
+        0.0022035714285714284,
+        0.003549642857142857,
+        0.00214125
+      ],
+      [
+        0.85,
+        0.0006633928571428572,
+        0.029891250000000036,
+        0.9615894642857142,
+        0.0018975,
+        0.003354107142857143,
+        0.001900892857142857
+      ],
+      [
+        0.9,
+        0.00047267857142857143,
+        0.03012410714285718,
+        0.9625033928571428,
+        0.0012592857142857143,
+        0.003282857142857143,
+        0.0017205357142857144
+      ],
+      [
+        0.95,
+        0.003872142857142857,
+        0.029970357142857118,
+        0.95885625,
+        0.0013857142857142857,
+        0.00337625,
+        0.0018775
+      ],
+      [
+        1.0,
+        0.0047264285714285715,
+        0.02991857142857146,
+        0.9572283928571429,
+        0.0018432142857142857,
+        0.0035976785714285715,
+        0.0019798214285714284
+      ],
+      [
+        1.05,
+        0.008501785714285713,
+        0.030108214285714308,
+        0.9526308928571429,
+        0.002078392857142857,
+        0.003738035714285714,
+        0.0021380357142857143
+      ],
+      [
+        1.1,
+        0.025065357142857143,
+        0.029645535714285742,
+        0.9372410714285714,
+        0.0019346428571428572,
+        0.0034194642857142857,
+        0.0019610714285714288
+      ],
+      [
+        1.15,
+        0.017205535714285715,
+        0.030078928571428576,
+        0.9445466071428571,
+        0.0020544642857142858,
+        0.0033614285714285716,
+        0.001959285714285714
+      ],
+      [
+        1.2,
+        0.02007642857142857,
+        0.031078750000000044,
+        0.9401485714285714,
+        0.002252142857142857,
+        0.003401607142857143,
+        0.0021519642857142857
+      ],
+      [
+        1.25,
+        0.06893232142857143,
+        0.030451964285714284,
+        0.8920246428571429,
+        0.0019441071428571428,
+        0.00325375,
+        0.0022325
+      ],
+      [
+        1.3,
+        0.14105946428571428,
+        0.02911482142857147,
+        0.8200473214285714,
+        0.0023335714285714288,
+        0.00332,
+        0.0025008928571428573
+      ],
+      [
+        1.35,
+        0.1835725,
+        0.028932857142857094,
+        0.7751760714285715,
+        0.0036580357142857144,
+        0.003412142857142857,
+        0.003024285714285714
+      ],
+      [
+        1.4,
+        0.12749428571428573,
+        0.032410892857142826,
+        0.82566,
+        0.004408035714285714,
+        0.003634642857142857,
+        0.00367
+      ],
+      [
+        1.45,
+        0.38308821428571427,
+        0.023484642857142912,
+        0.5831110714285714,
+        0.003275714285714286,
+        0.002340714285714286,
+        0.0021378571428571427
+      ],
+      [
+        1.5,
+        0.8065927421071906,
+        0.010077331221203023,
+        0.17432484222897876,
+        0.003038742260490389,
+        0.0004884301251096519,
+        0.000479913470792134
+      ]
+    ],
+    "sent": [
+      {
+        "ep": "SsspChares::process_heap",
+        "messages": 10069422,
+        "bytes": 805553760
+      },
+      {
+        "ep": "HTram::receivePerPE",
+        "messages": 988386,
+        "bytes": 714222320
+      },
+      {
+        "ep": "HTramRecv::receive",
+        "messages": 141198,
+        "bytes": 54976752
+      },
+      {
+        "ep": "SsspChares::clear_pq_hold",
+        "messages": 76160,
+        "bytes": 6092800
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "messages": 75591,
+        "bytes": 177790032
+      },
+      {
+        "ep": "CkArray::recvNoKeepBroadcast",
+        "messages": 11560,
+        "bytes": 1664640
+      },
+      {
+        "ep": "Main::redn_wrapper_reduce_histogram",
+        "messages": 681,
+        "bytes": 1601712
+      },
+      {
+        "ep": "SsspChares::current_thresholds",
+        "messages": 680,
+        "bytes": 97920
+      },
+      {
+        "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+        "messages": 14,
+        "bytes": 1568
+      },
+      {
+        "ep": "SsspChares::print_distances",
+        "messages": 1,
+        "bytes": 80
+      },
+      {
+        "ep": "SsspChares::contribute_histogram",
+        "messages": 1,
+        "bytes": 112
+      }
+    ],
+    "latency": [
+      {
+        "ep": "SsspChares::process_heap",
+        "locality": "same process",
+        "messages": 10069423,
+        "p50_p90_p99_max_ms": [
+          0.392,
+          1.591,
+          2.683,
+          3.68
+        ]
+      },
+      {
+        "ep": "HTram::receivePerPE",
+        "locality": "same process",
+        "messages": 988386,
+        "p50_p90_p99_max_ms": [
+          0.011,
+          0.576,
+          2.023,
+          3.69
+        ]
+      },
+      {
+        "ep": "CkArray::recvNoKeepBroadcast",
+        "locality": "same process",
+        "messages": 152320,
+        "p50_p90_p99_max_ms": [
+          0.008,
+          0.043,
+          1.213,
+          3.407
+        ]
+      },
+      {
+        "ep": "HTramRecv::receive",
+        "locality": "same node",
+        "messages": 141198,
+        "p50_p90_p99_max_ms": [
+          0.0035,
+          0.0085,
+          0.022,
+          0.408125
+        ]
+      },
+      {
+        "ep": "SsspChares::clear_pq_hold",
+        "locality": "same process",
+        "messages": 76160,
+        "p50_p90_p99_max_ms": [
+          0.117,
+          1.0,
+          2.356,
+          3.684
+        ]
+      },
+      {
+        "ep": "SsspChares::current_thresholds",
+        "locality": "same process",
+        "messages": 76160,
+        "p50_p90_p99_max_ms": [
+          0.005,
+          0.031,
+          1.206,
+          3.399
+        ]
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "locality": "same process",
+        "messages": 65376,
+        "p50_p90_p99_max_ms": [
+          0.006,
+          0.016,
+          0.033,
+          1.533
+        ]
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "locality": "same node",
+        "messages": 10215,
+        "p50_p90_p99_max_ms": [
+          0.0065,
+          0.016625,
+          0.031537500000000364,
+          1.75375
+        ]
+      },
+      {
+        "ep": "Main::redn_wrapper_reduce_histogram",
+        "locality": "same process",
+        "messages": 1362,
+        "p50_p90_p99_max_ms": [
+          0.1145,
+          1.4101000000000008,
+          1.8939000000000008,
+          2.137
+        ]
+      },
+      {
+        "ep": "dummy_thread_chare::dummy_thread_ep",
+        "locality": "same process",
+        "messages": 676,
+        "p50_p90_p99_max_ms": [
+          0.0,
+          0.001,
+          0.001,
+          0.003
+        ]
+      },
+      {
+        "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+        "locality": "same process",
+        "messages": 206,
+        "p50_p90_p99_max_ms": [
+          0.11549999999999999,
+          0.554,
+          0.9369999999999988,
+          0.964
+        ]
+      },
+      {
+        "ep": "SsspChares::contribute_histogram",
+        "locality": "same process",
+        "messages": 112,
+        "p50_p90_p99_max_ms": [
+          0.004,
+          0.4434000000000002,
+          0.7639300000000002,
+          0.942
+        ]
+      },
+      {
+        "ep": "SsspChares::print_distances",
+        "locality": "same process",
+        "messages": 98,
+        "p50_p90_p99_max_ms": [
+          63.01349999999999,
+          96.12,
+          100.477,
+          100.477
+        ]
+      }
+    ]
+  },
+  "heap_backlog": {
+    "pes": 112,
+    "max_pending": 221,
+    "duplicate_pes": 112
+  },
+  "campaign": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925",
+  "analysis_scripts": {
+    "mesh28_opt_summary.py": "e58aed4df6e6ca4a28a32482a8b2c177c886f937ae9342ef34def375e9560efb",
+    "papi_profile_report.py": "96e26c4d53d07a20c3cd05270fc14adf992a8fa013fbd5a62240f147447bbae6",
+    "projections_report.py": "f07d320d60014b33af9fe94e48c2b0f79ddaae8d33fa292a7cc2adde470e6f84",
+    "heap_backlog_report.py": "6297eac90e5d5b0b3ced8f4ee0b89191500911e69472b8fbb83deac50d8417a1",
+    "mesh28_pc_probe.py": "6d98635b72b658aa7dcaf9c0638fbb1cedcab9a449cfdad17567b151af80dc35",
+    "mesh28_opt_plot.py": "fb1e89bf61b7fc1b1eb8495f1a001aede187e57e321daed5008307410462a463"
+  },
+  "heldout_audit": {
+    "manifest": {
+      "variants": [
+        {
+          "label": "base",
+          "binary": "acic_base",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "sha256": "e862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a",
+          "nodes": 1,
+          "rpn": 16,
+          "workers": 112
+        },
+        {
+          "label": "chunks8",
+          "binary": "acic_chunks_256",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "sha256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+          "nodes": 1,
+          "rpn": 16,
+          "workers": 112
+        },
+        {
+          "label": "chunks64",
+          "binary": "acic_chunks_256",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "sha256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+          "nodes": 1,
+          "rpn": 16,
+          "workers": 112
+        },
+        {
+          "label": "control",
+          "binary": "acic_base",
+          "flags": [
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "sha256": "e862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a",
+          "nodes": 1,
+          "rpn": 16,
+          "workers": 112
+        }
+      ],
+      "nodes": 1,
+      "workers": 112,
+      "rpn": 16,
+      "sources": 4,
+      "reps": 3,
+      "source_role": "test",
+      "batch": false,
+      "hosts": "cn044"
+    },
+    "validated": 64,
+    "summary": {
+      "0": {
+        "base": {
+          "median": 3.801291,
+          "seconds": [
+            3.810832,
+            3.748802,
+            3.801291
+          ],
+          "scans": [
+            1.601699721992929,
+            1.5767053905543642,
+            1.5914796527573123
+          ],
+          "rounds": [
+            1272,
+            1367,
+            1186
+          ],
+          "speedup_over_base": 1.0
+        },
+        "chunks8": {
+          "median": 1.78563,
+          "seconds": [
+            1.78563,
+            1.813182,
+            1.741703
+          ],
+          "scans": [
+            1.7466764489074755,
+            1.769065819212727,
+            1.7303990073775384
+          ],
+          "rounds": [
+            1597,
+            1595,
+            1576
+          ],
+          "speedup_over_base": 2.12882344046639
+        },
+        "chunks64": {
+          "median": 1.503268,
+          "seconds": [
+            1.503268,
+            1.457626,
+            1.512187
+          ],
+          "scans": [
+            1.7619135172704867,
+            1.738380593723236,
+            1.7617599719218164
+          ],
+          "rounds": [
+            721,
+            646,
+            737
+          ],
+          "speedup_over_base": 2.528684838631568
+        },
+        "control": {
+          "median": 3.767367,
+          "seconds": [
+            3.767367,
+            3.773166,
+            3.745879
+          ],
+          "scans": [
+            1.598446330780847,
+            1.5930743484948788,
+            1.6173403989713517
+          ],
+          "rounds": [
+            1295,
+            1204,
+            1198
+          ],
+          "speedup_over_base": 1.0090046974451918
+        }
+      },
+      "1": {
+        "base": {
+          "median": 3.607785,
+          "seconds": [
+            3.607785,
+            3.790371,
+            3.598005
+          ],
+          "scans": [
+            1.5060074866811253,
+            1.4905871582403802,
+            1.4973124748751088
+          ],
+          "rounds": [
+            1213,
+            1154,
+            1160
+          ],
+          "speedup_over_base": 1.0
+        },
+        "chunks8": {
+          "median": 1.70237,
+          "seconds": [
+            1.726482,
+            1.70237,
+            1.689233
+          ],
+          "scans": [
+            1.6341235785957862,
+            1.639394532293145,
+            1.642364313814482
+          ],
+          "rounds": [
+            1295,
+            1478,
+            1470
+          ],
+          "speedup_over_base": 2.1192719561552424
+        },
+        "chunks64": {
+          "median": 1.418344,
+          "seconds": [
+            1.404502,
+            1.418344,
+            1.441207
+          ],
+          "scans": [
+            1.6452818123519926,
+            1.654190234850376,
+            1.6309450432791899
+          ],
+          "rounds": [
+            594,
+            654,
+            496
+          ],
+          "speedup_over_base": 2.5436600711816033
+        },
+        "control": {
+          "median": 3.58463,
+          "seconds": [
+            3.58463,
+            3.589518,
+            3.583555
+          ],
+          "scans": [
+            1.511430031693128,
+            1.4966515512727798,
+            1.4968136746259222
+          ],
+          "rounds": [
+            1166,
+            1146,
+            1157
+          ],
+          "speedup_over_base": 1.006459523019112
+        }
+      },
+      "2": {
+        "base": {
+          "median": 3.623372,
+          "seconds": [
+            3.593609,
+            3.69706,
+            3.623372
+          ],
+          "scans": [
+            1.508898750123091,
+            1.5177845540722232,
+            1.5022148863922755
+          ],
+          "rounds": [
+            1078,
+            1175,
+            1162
+          ],
+          "speedup_over_base": 1.0
+        },
+        "chunks8": {
+          "median": 1.746859,
+          "seconds": [
+            1.686817,
+            1.746859,
+            1.748747
+          ],
+          "scans": [
+            1.6114969617360126,
+            1.6196174605282891,
+            1.6277843261823064
+          ],
+          "rounds": [
+            1500,
+            1448,
+            1529
+          ],
+          "speedup_over_base": 2.074221216480552
+        },
+        "chunks64": {
+          "median": 1.432905,
+          "seconds": [
+            1.427407,
+            1.450783,
+            1.432905
+          ],
+          "scans": [
+            1.5866363214309898,
+            1.6034719041871957,
+            1.604620219572177
+          ],
+          "rounds": [
+            619,
+            624,
+            632
+          ],
+          "speedup_over_base": 2.5286896200376154
+        },
+        "control": {
+          "median": 3.785192,
+          "seconds": [
+            3.600901,
+            3.785192,
+            3.920814
+          ],
+          "scans": [
+            1.532784355390365,
+            1.5016527169500087,
+            1.5227504959111102
+          ],
+          "rounds": [
+            1129,
+            1440,
+            1137
+          ],
+          "speedup_over_base": 0.9572491963419557
+        }
+      },
+      "3": {
+        "base": {
+          "median": 3.53821,
+          "seconds": [
+            3.502893,
+            3.53924,
+            3.53821
+          ],
+          "scans": [
+            1.4531602080048918,
+            1.4726857942866296,
+            1.4621151231012377
+          ],
+          "rounds": [
+            1040,
+            1162,
+            1129
+          ],
+          "speedup_over_base": 1.0
+        },
+        "chunks8": {
+          "median": 1.660845,
+          "seconds": [
+            1.660845,
+            1.64843,
+            1.880526
+          ],
+          "scans": [
+            1.5690354707731051,
+            1.5809301825616922,
+            1.5784738556133597
+          ],
+          "rounds": [
+            1422,
+            1411,
+            1513
+          ],
+          "speedup_over_base": 2.130367373234709
+        },
+        "chunks64": {
+          "median": 1.389594,
+          "seconds": [
+            1.389594,
+            1.412032,
+            1.389181
+          ],
+          "scans": [
+            1.6012325104082024,
+            1.611609429526677,
+            1.5762000781002625
+          ],
+          "rounds": [
+            633,
+            615,
+            651
+          ],
+          "speedup_over_base": 2.5462185357737583
+        },
+        "control": {
+          "median": 3.501164,
+          "seconds": [
+            3.503033,
+            3.436666,
+            3.501164
+          ],
+          "scans": [
+            1.4586437145941702,
+            1.465445925913938,
+            1.4654020141683524
+          ],
+          "rounds": [
+            1096,
+            1144,
+            1144
+          ],
+          "speedup_over_base": 1.0105810524728347
+        }
+      }
+    },
+    "runs": [
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": -1,
+        "seconds": 4.074453,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1730080745,
+        "scan_factor": 1.611361603433306,
+        "rounds": 1163
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": -1,
+        "seconds": 3.74097,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1705382941,
+        "scan_factor": 1.5883585770313668,
+        "rounds": 1370
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": -1,
+        "seconds": 1.71125,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1848232278,
+        "scan_factor": 1.7214055098886565,
+        "rounds": 1545
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": -1,
+        "seconds": 1.485098,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1872740139,
+        "scan_factor": 1.744231627289137,
+        "rounds": 739
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 0,
+        "seconds": 3.810832,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1719707012,
+        "scan_factor": 1.601699721992929,
+        "rounds": 1272
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 0,
+        "seconds": 1.78563,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1875365086,
+        "scan_factor": 1.7466764489074755,
+        "rounds": 1597
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 0,
+        "seconds": 1.503268,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1891724765,
+        "scan_factor": 1.7619135172704867,
+        "rounds": 721
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 0,
+        "seconds": 3.767367,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1716213923,
+        "scan_factor": 1.598446330780847,
+        "rounds": 1295
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 1,
+        "seconds": 1.813182,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1899404022,
+        "scan_factor": 1.769065819212727,
+        "rounds": 1595
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 1,
+        "seconds": 1.457626,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1866458023,
+        "scan_factor": 1.738380593723236,
+        "rounds": 646
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 1,
+        "seconds": 3.773166,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1710446153,
+        "scan_factor": 1.5930743484948788,
+        "rounds": 1204
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 1,
+        "seconds": 3.748802,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1692871191,
+        "scan_factor": 1.5767053905543642,
+        "rounds": 1367
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 2,
+        "seconds": 1.512187,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1891559907,
+        "scan_factor": 1.7617599719218164,
+        "rounds": 737
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 2,
+        "seconds": 3.745879,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1736500036,
+        "scan_factor": 1.6173403989713517,
+        "rounds": 1198
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 2,
+        "seconds": 3.801291,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1708733966,
+        "scan_factor": 1.5914796527573123,
+        "rounds": 1186
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "9130980",
+        "source_index": 0,
+        "rep": 2,
+        "seconds": 1.741703,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1857888383,
+        "scan_factor": 1.7303990073775384,
+        "rounds": 1576
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": -1,
+        "seconds": 3.601358,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1612314829,
+        "scan_factor": 1.5016768527163376,
+        "rounds": 1110
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": -1,
+        "seconds": 3.586523,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1601705906,
+        "scan_factor": 1.491795920149817,
+        "rounds": 1147
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": -1,
+        "seconds": 1.705493,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1784343834,
+        "scan_factor": 1.6619011278751459,
+        "rounds": 1414
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": -1,
+        "seconds": 1.411164,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1760366624,
+        "scan_factor": 1.639569247896066,
+        "rounds": 567
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 0,
+        "seconds": 3.607785,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1616964528,
+        "scan_factor": 1.5060074866811253,
+        "rounds": 1213
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 0,
+        "seconds": 1.726482,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1754519738,
+        "scan_factor": 1.6341235785957862,
+        "rounds": 1295
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 0,
+        "seconds": 1.404502,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1766500069,
+        "scan_factor": 1.6452818123519926,
+        "rounds": 594
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 0,
+        "seconds": 3.58463,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1622786586,
+        "scan_factor": 1.511430031693128,
+        "rounds": 1166
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 1,
+        "seconds": 1.70237,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1760179036,
+        "scan_factor": 1.639394532293145,
+        "rounds": 1478
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 1,
+        "seconds": 1.418344,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1776064831,
+        "scan_factor": 1.654190234850376,
+        "rounds": 654
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 1,
+        "seconds": 3.589518,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1606919282,
+        "scan_factor": 1.4966515512727798,
+        "rounds": 1146
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 1,
+        "seconds": 3.790371,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1600408087,
+        "scan_factor": 1.4905871582403802,
+        "rounds": 1154
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 2,
+        "seconds": 1.441207,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1751107020,
+        "scan_factor": 1.6309450432791899,
+        "rounds": 496
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 2,
+        "seconds": 3.583555,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1607093350,
+        "scan_factor": 1.4968136746259222,
+        "rounds": 1157
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 2,
+        "seconds": 3.598005,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1607628900,
+        "scan_factor": 1.4973124748751088,
+        "rounds": 1160
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "141442404",
+        "source_index": 1,
+        "rep": 2,
+        "seconds": 1.689233,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1763367620,
+        "scan_factor": 1.642364313814482,
+        "rounds": 1470
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": -1,
+        "seconds": 3.707064,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1618200450,
+        "scan_factor": 1.5071585989985092,
+        "rounds": 1124
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": -1,
+        "seconds": 3.615341,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1612169582,
+        "scan_factor": 1.5015415726495023,
+        "rounds": 1173
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": -1,
+        "seconds": 1.700139,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1732969009,
+        "scan_factor": 1.6140516730867769,
+        "rounds": 1536
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": -1,
+        "seconds": 1.4282,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1730112057,
+        "scan_factor": 1.611390766785752,
+        "rounds": 650
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 0,
+        "seconds": 3.593609,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1620068809,
+        "scan_factor": 1.508898750123091,
+        "rounds": 1078
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 0,
+        "seconds": 1.686817,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1730226076,
+        "scan_factor": 1.6114969617360126,
+        "rounds": 1500
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 0,
+        "seconds": 1.427407,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1703533796,
+        "scan_factor": 1.5866363214309898,
+        "rounds": 619
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 0,
+        "seconds": 3.600901,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1645714217,
+        "scan_factor": 1.532784355390365,
+        "rounds": 1129
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 1,
+        "seconds": 1.746859,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1738944863,
+        "scan_factor": 1.6196174605282891,
+        "rounds": 1448
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 1,
+        "seconds": 1.450783,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1721609762,
+        "scan_factor": 1.6034719041871957,
+        "rounds": 624
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 1,
+        "seconds": 3.785192,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1612288915,
+        "scan_factor": 1.5016527169500087,
+        "rounds": 1440
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 1,
+        "seconds": 3.69706,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1629609286,
+        "scan_factor": 1.5177845540722232,
+        "rounds": 1175
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 2,
+        "seconds": 1.432905,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1722842681,
+        "scan_factor": 1.604620219572177,
+        "rounds": 632
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 2,
+        "seconds": 3.920814,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1634941100,
+        "scan_factor": 1.5227504959111102,
+        "rounds": 1137
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 2,
+        "seconds": 3.623372,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1612892503,
+        "scan_factor": 1.5022148863922755,
+        "rounds": 1162
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "160224940",
+        "source_index": 2,
+        "rep": 2,
+        "seconds": 1.748747,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1747713433,
+        "scan_factor": 1.6277843261823064,
+        "rounds": 1529
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": -1,
+        "seconds": 3.499371,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1576734802,
+        "scan_factor": 1.4685383477519809,
+        "rounds": 1179
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": -1,
+        "seconds": 3.531072,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1576932012,
+        "scan_factor": 1.4687220250876958,
+        "rounds": 1143
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": -1,
+        "seconds": 1.66426,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1689551642,
+        "scan_factor": 1.57361363092709,
+        "rounds": 1409
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": -1,
+        "seconds": 1.397702,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1714165920,
+        "scan_factor": 1.5965388629314685,
+        "rounds": 620
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 0,
+        "seconds": 3.502893,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1560223658,
+        "scan_factor": 1.4531602080048918,
+        "rounds": 1040
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 0,
+        "seconds": 1.660845,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1684636180,
+        "scan_factor": 1.5690354707731051,
+        "rounds": 1422
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 0,
+        "seconds": 1.389594,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1719205378,
+        "scan_factor": 1.6012325104082024,
+        "rounds": 633
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 0,
+        "seconds": 3.503033,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1566111169,
+        "scan_factor": 1.4586437145941702,
+        "rounds": 1096
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 1,
+        "seconds": 1.64843,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1697407250,
+        "scan_factor": 1.5809301825616922,
+        "rounds": 1411
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 1,
+        "seconds": 1.412032,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1730346830,
+        "scan_factor": 1.611609429526677,
+        "rounds": 615
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 1,
+        "seconds": 3.436666,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1573414542,
+        "scan_factor": 1.465445925913938,
+        "rounds": 1144
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 1,
+        "seconds": 3.53924,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1581187817,
+        "scan_factor": 1.4726857942866296,
+        "rounds": 1162
+      },
+      {
+        "variant": "chunks64",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 2,
+        "seconds": 1.389181,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1692328649,
+        "scan_factor": 1.5762000781002625,
+        "rounds": 651
+      },
+      {
+        "variant": "control",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 2,
+        "seconds": 3.501164,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1573367395,
+        "scan_factor": 1.4654020141683524,
+        "rounds": 1144
+      },
+      {
+        "variant": "base",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 2,
+        "seconds": 3.53821,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1569838338,
+        "scan_factor": 1.4621151231012377,
+        "rounds": 1129
+      },
+      {
+        "variant": "chunks8",
+        "graph": "mesh28-z",
+        "source": "190849552",
+        "source_index": 3,
+        "rep": 2,
+        "seconds": 1.880526,
+        "valid": true,
+        "nodes": 1,
+        "rpn": 16,
+        "workers": 112,
+        "edge_attempts": 1694769950,
+        "scan_factor": 1.5784738556133597,
+        "rounds": 1513
+      }
+    ]
+  },
+  "wasp_runs": [
+    {
+      "source": "9130980",
+      "rep": -1,
+      "seconds": 0.924413373,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "9130980",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/9130980-r-1.out"
+    },
+    {
+      "source": "141442404",
+      "rep": -1,
+      "seconds": 0.935725464,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "141442404",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/141442404-r-1.out"
+    },
+    {
+      "source": "160224940",
+      "rep": -1,
+      "seconds": 0.937562931,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "160224940",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/160224940-r-1.out"
+    },
+    {
+      "source": "190849552",
+      "rep": -1,
+      "seconds": 0.990233931,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "190849552",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/190849552-r-1.out"
+    },
+    {
+      "source": "9130980",
+      "rep": 0,
+      "seconds": 0.93102483,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "9130980",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/9130980-r0.out"
+    },
+    {
+      "source": "141442404",
+      "rep": 0,
+      "seconds": 0.935175008,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "141442404",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/141442404-r0.out"
+    },
+    {
+      "source": "160224940",
+      "rep": 0,
+      "seconds": 0.920195308,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "160224940",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/160224940-r0.out"
+    },
+    {
+      "source": "190849552",
+      "rep": 0,
+      "seconds": 0.974100329,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "190849552",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/190849552-r0.out"
+    },
+    {
+      "source": "9130980",
+      "rep": 1,
+      "seconds": 0.913253717,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "9130980",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/9130980-r1.out"
+    },
+    {
+      "source": "141442404",
+      "rep": 1,
+      "seconds": 0.945742278,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "141442404",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/141442404-r1.out"
+    },
+    {
+      "source": "160224940",
+      "rep": 1,
+      "seconds": 0.935881668,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "160224940",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/160224940-r1.out"
+    },
+    {
+      "source": "190849552",
+      "rep": 1,
+      "seconds": 0.990342596,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "190849552",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/190849552-r1.out"
+    },
+    {
+      "source": "9130980",
+      "rep": 2,
+      "seconds": 0.913708974,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "9130980",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/9130980-r2.out"
+    },
+    {
+      "source": "141442404",
+      "rep": 2,
+      "seconds": 0.939666739,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "141442404",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/141442404-r2.out"
+    },
+    {
+      "source": "160224940",
+      "rep": 2,
+      "seconds": 0.943087714,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "160224940",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/160224940-r2.out"
+    },
+    {
+      "source": "190849552",
+      "rep": 2,
+      "seconds": 0.978927174,
+      "valid": true,
+      "command": [
+        "srun",
+        "-N1",
+        "-n1",
+        "-c128",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=6",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/wasp_sssp",
+        "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/graphs/mesh28-z.wsg",
+        "190849552",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/logs/wasp-fixed-22379656/190849552-r2.out"
+    }
+  ],
+  "runtime": {
+    "revisions": {
+      "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+      "reconverse": "b30ad319503220bd1a2c0b5db38bd73dbe449c34",
+      "lci": "dfb924cf3ee25aece37b85473b41d406ad810252"
+    },
+    "charm_branch": "reconverse-specific-build",
+    "runtime": "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64",
+    "build_command": [
+      "./build",
+      "charm++",
+      "reconverse-linux-x86_64",
+      "--with-production",
+      "--enable-tracing",
+      "--enable-shmem",
+      "--with-fetch-reconverse-dir=/u/rao1/charm_reconverse/reconverse",
+      "--with-cmake-args=-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF",
+      "-j8"
+    ],
+    "environment": {
+      "CC": "gcc",
+      "CXX": "g++"
+    },
+    "scheduler_for_tests": "+old-scheduler",
+    "reconverse_local_patch": {
+      "path": "/u/rao1/.tmp/runtime-refresh-20260925/reconverse-local-built.patch",
+      "sha256": "49ee2bfcc5586fd3cd69e2f2ec57e36267158562a92669da5f368bd6e725110d"
+    },
+    "cache": {
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_C_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/gcc",
+      "CMAKE_CXX_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+      "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+      "TRACING": "1",
+      "CMK_USE_SHMEM": "1",
+      "SPANTREE": "ON",
+      "RECONVERSE_ENABLE_CPU_AFFINITY": "ON",
+      "RECONVERSE_AUTOFETCH_LCI2_TAG": "dfb924cf3ee25aece37b85473b41d406ad810252",
+      "RECONVERSE_TRY_ENABLE_COMM_LCW": "OFF",
+      "FETCHCONTENT_SOURCE_DIR_RECONVERSE": "/u/rao1/charm_reconverse/reconverse"
+    },
+    "libraries": {
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libreconverse.so": "b8564e2731b3683d9a07364a163170fd8a16ff8454c3f215d86c9159058158d9",
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblci.so": "7918b1ad26a1f3be1575bb6c18a79fe26cd5b11dfaf11cd4d0eabfa94558c4c5",
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblct.so": "fdf5f2034b7711fcb337f6710705096c1c85f4295a60ee3cf07547a5438ae844",
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libck.a": "eec2d79e9b700fc7983ff747949833bcb19ed83dea6e4f574c155ce95b4e1db3",
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libtrace-projections.a": "8ae93a441daa2cc0ccde4b7ed7605440ffc0783a90944b5170799fee94572ff1"
+    },
+    "notes": [
+      "Charm++ current tracking branch was already up to date; no branch switch was assumed.",
+      "Reconverse local LCI pin was preserved.",
+      "Reconverse main now defaults backend_poll_freq to 64; the prior runtime default was 4.",
+      "Previous campaign runtime and application binaries remain intact."
+    ],
+    "validation": {
+      "local_runtime_rounds": 1000,
+      "runtime_pes": 2,
+      "trace_files": 4,
+      "serial_sssp_checks": 4,
+      "certified_sssp_checks": 4,
+      "sources": [
+        0,
+        512,
+        1024,
+        0
+      ],
+      "old_scheduler": true,
+      "scope": "Local-only runtime checks; distributed shared-memory communication has not been rerun on compute nodes in this refresh."
+    },
+    "active_compiler": "/u/rao1/charm_reconverse/bin/charmc",
+    "sssp_config": "/u/rao1/charm_graph_code/config.mk"
+  },
+  "build_manifests": {
+    "acic_base": "revision=87f04af kind=production build=/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87f04affa6a6a261a030b5d66107b73195b4af73\n7db9c0af69777b43e17dec110e6298fc09c91c54\ne862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic\nd090910ebdc879776dd815522ae0c2c7a3070ec8b6e469ab041aa582380b1d6b  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/src/weighted_node_struct.h\n",
+    "acic_base_cost": "revision=87f04af kind=work-cost build=/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87f04affa6a6a261a030b5d66107b73195b4af73\n7db9c0af69777b43e17dec110e6298fc09c91c54\n98972d0e407607d466aedac8d540c58edecfb36c1a8da62ba4421ebdaed92d69  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic_cost\nd090910ebdc879776dd815522ae0c2c7a3070ec8b6e469ab041aa582380b1d6b  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/src/weighted_node_struct.h\n",
+    "acic_base_papi": "revision=f8e6019 kind=papi build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_base_papi.Hyg7db\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 5 +++++\n 3 files changed, 11 insertions(+), 1 deletion(-)\na15f3f40e926e6f9da7fb253fced1663c79fce8a105255ac8a251b8b573ff53c  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_base_papi\n4003d1df66fce9661cf53db0c8e1731eefd9ca7fca0de85c6b0d717005c2688d  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_base_papi.Hyg7db/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_base_papi.Hyg7db/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_base_papi.Hyg7db/src/weighted_node_struct.h\n",
+    "acic_chunks_256": "revision=working kind=production build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256\ndadefccc661720faa494afafef88bba40c98d7d426bcc1b6866407259225c62d  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/src/weighted_node_struct.h\n",
+    "acic_chunks_256_cost": "revision=working kind=work-cost build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n50250f4e5ab227a3616ef81aac90c8b7133ea4135fa00a9bd85fa7b2a70cef64  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_cost\nd644f298f311f42630c98b60e1bf3ed518ea1fcfb023a7cfb5956828ca8ccf55  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/src/weighted_node_struct.h\n",
+    "acic_chunks_256_papi": "revision=working kind=papi build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_papi.1gUbsh\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n0a5b959c78075381de7a1bd05f32f1ef94483c39b7573f1d3c36b77024c91e02  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_papi\nf066ea181f978d63ceab6b672de2dea5690b74dbabf97b6bfc53fe93c7ac5a8f  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_papi.1gUbsh/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_papi.1gUbsh/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_papi.1gUbsh/src/weighted_node_struct.h\n",
+    "acic_chunks_256_prj": "revision=8a6b02c kind=projections build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_prj.i5GUgw\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n8a6b02c5c8e83f4f10d1de5992fa23ab288c6f4c\n7db9c0af69777b43e17dec110e6298fc09c91c54\nefee31a0af485f2f3a06fc2f8c5a7873520e95f89776d647aed864fd695cc2e3  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_prj\na38842e4352018bb0bccddd0506d0707e748a0b964d843be9dec1669b2ca491f  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_prj.i5GUgw/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_prj.i5GUgw/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_prj.i5GUgw/src/weighted_node_struct.h\n"
+  },
+  "graph": {
+    "name": "mesh28-z",
+    "vertices": 268435456,
+    "stored_directed_edges": 1073676288,
+    "seed": 1,
+    "ordering": "Morton",
+    "sha256": "31f961b22ad6944a7285225112802304f45ff8d235736cc830c474b2575686e2"
+  },
+  "methods": {
+    "timing": "One warmup and three measured solves per source and arm; ACIC arm order randomized within repetitions; medians reported.",
+    "layout": "One exclusive 128-core Delta cpu-interactive node. ACIC 16 processes x 7 workers, +old-scheduler; Wasp 128 threads, delta 4096.",
+    "pc": "Two solve-window samples per variant, requested thread-CPU timer period 250 microseconds, bracketed by production and timer-off controls. No PMU hardware counters.",
+    "correctness": "Every solve checked against independent GAPBS-reader serial Dijkstra digest, reachable count and distance sum. Separate work builds check queue/retirement conservation.",
+    "scope": "One-node mesh result only; no multi-node, road, RMAT or cross-machine validation of the experimental queue."
+  },
+  "pc_findings": [
+    {
+      "label": "base-2-sampled",
+      "report": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/base-2-sampled.json",
+      "samples": 376495,
+      "dropped": 0,
+      "groups_percent": {
+        "mutex_futex": 26.595572318357483,
+        "tls": 3.1192977330376235,
+        "ownership_runtime": 4.759425755986135,
+        "ownership_application": 3.2058858683382248,
+        "shared_update": 8.843145327295183,
+        "edge_scan": 5.314811617684166
+      },
+      "top_innermost": [
+        [
+          "__lll_lock_wake",
+          42759
+        ],
+        [
+          "SsspChares::process_shared_update",
+          33294
+        ],
+        [
+          "__lll_lock_wait",
+          32237
+        ],
+        [
+          "SsspChares::send_relaxations",
+          20010
+        ],
+        [
+          "void __adjust_heap",
+          17146
+        ],
+        [
+          "SsspChares::process_shared_heap",
+          14394
+        ],
+        [
+          "__tls_get_addr@@GLIBC_2.3",
+          11744
+        ],
+        [
+          "ComparePairs::key const",
+          11595
+        ],
+        [
+          "CmiPopIpcBlock",
+          11238
+        ],
+        [
+          "__pthread_mutex_unlock_usercnt",
+          10960
+        ],
+        [
+          "pthread_mutex_lock@@GLIBC_2.2.5",
+          10853
+        ],
+        [
+          "??",
+          10428
+        ],
+        [
+          "__normal_iterator::operator+ const",
+          9440
+        ],
+        [
+          "SsspChares::process_partition",
+          8624
+        ],
+        [
+          "comm_backend::lci2_impl::CommBackendLCI2::progress",
+          7717
+        ],
+        [
+          "CmiNodeOf",
+          6576
+        ],
+        [
+          "fi_getinfo@FABRIC_1.7",
+          5688
+        ],
+        [
+          "void __push_heap",
+          5509
+        ],
+        [
+          "int ProcessWork::pop_batch",
+          5501
+        ],
+        [
+          "SsspChares::get_histo_bucket",
+          5349
+        ]
+      ]
+    },
+    {
+      "label": "base-4-sampled",
+      "report": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/base-4-sampled.json",
+      "samples": 385966,
+      "dropped": 0,
+      "groups_percent": {
+        "mutex_futex": 26.965846732613752,
+        "tls": 3.1621956338123045,
+        "ownership_runtime": 4.765963841374629,
+        "ownership_application": 3.1735956016851223,
+        "shared_update": 8.859588668431934,
+        "edge_scan": 5.779524621339704
+      },
+      "top_innermost": [
+        [
+          "__lll_lock_wake",
+          45993
+        ],
+        [
+          "SsspChares::process_shared_update",
+          34195
+        ],
+        [
+          "__lll_lock_wait",
+          33001
+        ],
+        [
+          "SsspChares::send_relaxations",
+          22307
+        ],
+        [
+          "void __adjust_heap",
+          17829
+        ],
+        [
+          "SsspChares::process_shared_heap",
+          14777
+        ],
+        [
+          "__tls_get_addr@@GLIBC_2.3",
+          12205
+        ],
+        [
+          "ComparePairs::key const",
+          11927
+        ],
+        [
+          "pthread_mutex_lock@@GLIBC_2.2.5",
+          10824
+        ],
+        [
+          "CmiPopIpcBlock",
+          10821
+        ],
+        [
+          "__pthread_mutex_unlock_usercnt",
+          10805
+        ],
+        [
+          "??",
+          10175
+        ],
+        [
+          "__normal_iterator::operator+ const",
+          9926
+        ],
+        [
+          "SsspChares::process_partition",
+          8732
+        ],
+        [
+          "comm_backend::lci2_impl::CommBackendLCI2::progress",
+          7604
+        ],
+        [
+          "CmiNodeOf",
+          6805
+        ],
+        [
+          "SsspChares::get_histo_bucket",
+          5653
+        ],
+        [
+          "int ProcessWork::pop_batch",
+          5643
+        ],
+        [
+          "void __push_heap",
+          5542
+        ],
+        [
+          "fi_getinfo@FABRIC_1.7",
+          5284
+        ]
+      ]
+    },
+    {
+      "label": "chunks64-2-sampled",
+      "report": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/chunks64-2-sampled.json",
+      "samples": 178307,
+      "dropped": 0,
+      "groups_percent": {
+        "mutex_futex": 0.37351309819580836,
+        "tls": 7.147784439197563,
+        "ownership_runtime": 12.341074663361505,
+        "ownership_application": 7.16909599735288,
+        "shared_update": 15.738024867223384,
+        "edge_scan": 12.436415844582658
+      },
+      "top_innermost": [
+        [
+          "SsspChares::process_shared_update",
+          28062
+        ],
+        [
+          "SsspChares::send_relaxations",
+          22175
+        ],
+        [
+          "__tls_get_addr@@GLIBC_2.3",
+          12745
+        ],
+        [
+          "SsspChares::process_partition",
+          9840
+        ],
+        [
+          "SsspChares::process_shared_heap",
+          8921
+        ],
+        [
+          "CmiNodeOf",
+          8414
+        ],
+        [
+          "??",
+          5724
+        ],
+        [
+          "CmiMyNode",
+          5431
+        ],
+        [
+          "CmiGetState",
+          5343
+        ],
+        [
+          "_init",
+          4878
+        ],
+        [
+          "CmiPopIpcBlock",
+          4411
+        ],
+        [
+          "int ProcessWork::pop_batch",
+          3645
+        ],
+        [
+          "vector::operator[]",
+          3052
+        ],
+        [
+          "SsspChares::get_dest_proc_fast",
+          2943
+        ],
+        [
+          "SsspChares::get_histo_bucket",
+          2833
+        ],
+        [
+          "CmiNodeFirst",
+          2817
+        ],
+        [
+          "comm_backend::lci2_impl::CommBackendLCI2::progress",
+          2785
+        ],
+        [
+          "bool operator",
+          2722
+        ],
+        [
+          "HTram::flushIdle",
+          2407
+        ],
+        [
+          "CcdRaiseCondition",
+          2219
+        ]
+      ]
+    },
+    {
+      "label": "chunks64-4-sampled",
+      "report": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/profiles/pc-22379656/chunks64-4-sampled.json",
+      "samples": 182394,
+      "dropped": 0,
+      "groups_percent": {
+        "mutex_futex": 0.37885018147526783,
+        "tls": 7.20144302992423,
+        "ownership_runtime": 12.020680504841168,
+        "ownership_application": 7.089597245523428,
+        "shared_update": 15.491737666809215,
+        "edge_scan": 11.94666491222299
+      },
+      "top_innermost": [
+        [
+          "SsspChares::process_shared_update",
+          28256
+        ],
+        [
+          "SsspChares::send_relaxations",
+          21790
+        ],
+        [
+          "__tls_get_addr@@GLIBC_2.3",
+          13135
+        ],
+        [
+          "SsspChares::process_partition",
+          9868
+        ],
+        [
+          "SsspChares::process_shared_heap",
+          9112
+        ],
+        [
+          "CmiNodeOf",
+          8482
+        ],
+        [
+          "??",
+          6196
+        ],
+        [
+          "CmiGetState",
+          5333
+        ],
+        [
+          "CmiMyNode",
+          5276
+        ],
+        [
+          "_init",
+          4958
+        ],
+        [
+          "CmiPopIpcBlock",
+          4838
+        ],
+        [
+          "int ProcessWork::pop_batch",
+          3681
+        ],
+        [
+          "SsspChares::get_dest_proc_fast",
+          3063
+        ],
+        [
+          "comm_backend::lci2_impl::CommBackendLCI2::progress",
+          3057
+        ],
+        [
+          "vector::operator[]",
+          3036
+        ],
+        [
+          "HTram::flushIdle",
+          2991
+        ],
+        [
+          "CmiNodeFirst",
+          2834
+        ],
+        [
+          "SsspChares::get_histo_bucket",
+          2741
+        ],
+        [
+          "bool operator",
+          2687
+        ],
+        [
+          "CcdRaiseCondition",
+          2340
+        ]
+      ]
+    }
+  ],
+  "pc_interpretation": "Fractions are statistical sample attribution, not calibrated CPU nanoseconds. Requested 250us CPU timer delivery can coalesce. Shared-library names use nearest available symbols; stripped internal routines need broad interpretation. No sampled address had ambiguous or missing executable mappings in the four captures. These are leaf/inline samples, not call-stack profiles of runtime helpers.",
+  "trace_slowdown": 1.0191182061963073
+}

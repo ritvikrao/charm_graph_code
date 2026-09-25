@@ -29,6 +29,11 @@ OSM roads (1.4–2.5×) and roughly ties Wasp (0.59–1.43×). On the smaller DI
 `road-usa-z` it at best ties GAPBS (0.97–1.18× at 64 nodes, TLS) and stays
 well behind Wasp (0.27–0.70×). Road time barely falls beyond 16 nodes.
 
+**Delta one-node follow-up.** An opt-in private-chunk queue with heap slice 64
+reduces `mesh28-z` time by 61% on four held-out sources: 2.53–2.55× over the
+original ACIC, reaching 0.608–0.704× speedup over Wasp (§17). This result is
+separate from the Frontier tables and has no multi-node confirmation yet.
+
 **Builds.** The TLS builds are 1.1–1.3× faster than production on meshes and
 roads (cheaper rounds; the hub hints resolve off), 1.0–1.1× on orkut and
 `uniform25`, and 1.2–1.5× on RMAT, where the hints act.
@@ -1053,10 +1058,144 @@ selection, counter records, trace/backlog reports, and an audited summary.
 The protocol is `benchmarks/delta-mesh28-wasp-protocol.json`; the compact
 archive is `design/onenode-data/delta-mesh28-wasp-22378381.json`.
 
+### 17. Delta mesh28-z: cheaper application queues close most of the gap (2026-09-25)
+
+**Keep the private-chunk/slice-64 combination as an opt-in one-node mesh
+profile.** It cuts solve time by **60.5–60.7%**, a **2.53–2.55× speedup** over
+the original ACIC in held-out job **22379656**. Wasp remains faster, but ACIC's
+speedup over Wasp rises to **0.608–0.704×**. This is a substantial improvement
+without replacing ACIC's distributed algorithm. No multi-node performance
+claim is made for the new queue, and the distributed paper profile stays fixed.
+
+The steps were run in order: private chunks, then a separate heap-slice
+screen, then PC attribution and held-out confirmation. Chunks contain 64
+updates and preserve the original admission bucket and histogram charges.
+Private partial chunks are owner-only; publishing/stealing full chunks uses
+per-producer mutexes, with atomic availability/priority hints. These are
+application queues, not replacements for Reconverse's scheduler queues.
+Width **256** bounds distance disorder inside every admission bucket,
+including overflow. Queue batch stays **8**; heap slice becomes **64**.
+
+The unbounded-FIFO prototype (22379048) was cancelled for excessive work,
+without a completed full-graph answer. Width 4096 (22379156) passed correctness
+but missed its performance prediction. The 1024/256 screen (22379228) selected
+256, giving 2.12× on both training sources. The separate 8/32/64 slice screen
+(22379316) selected 64, adding 1.16–1.20× on training sources. It is the largest
+slice tested, not a proven optimum. The failed experiments remain archived.
+
+Final medians on four held-out sources, one warmup and three repetitions per
+arm, on one exclusive 128-core `cpu-interactive` node (`cn044`):
+
+| Source | Original ACIC (s) | Chunks, slice 8 (s) | Chunks, slice 64 (s) | Speedup over original | Wasp (s) | ACIC speedup over Wasp |
+|---:|---:|---:|---:|---:|---:|---:|
+| 9130980 | 3.801291 | 1.785630 | 1.503268 | 2.529× | 0.913709 | 0.608× |
+| 141442404 | 3.607785 | 1.702370 | 1.418344 | 2.544× | 0.939667 | 0.663× |
+| 160224940 | 3.623372 | 1.746859 | 1.432905 | 2.529× | 0.935882 | 0.653× |
+| 190849552 | 3.538210 | 1.660845 | 1.389594 | 2.546× | 0.978927 | 0.704× |
+
+ACIC uses **16 × 7**, `+old-scheduler` and the September 25 production runtime
+with ordinary TLS throughout. ACIC arms were randomized within repetitions;
+Wasp was remeasured later in the same allocation, with the previously
+training-selected **128 threads / delta 4096**. Both engines receive a full
+node; ACIC has 112 workers. Duplicate original controls differ from base
+medians by 0.6–4.5%, far below the gain. All raw repetitions, including a
+slower chunk-only repetition, are retained. Graph reading is outside the
+reported solve times; the timer-scope differences in §16 remain applicable.
+
+**Correctness and work.** All **99 full-graph solves** in this final job pass
+the independent reference: 64 paired ACIC, 16 Wasp, four work-counter,
+12 PC/control, and three trace/control solves. The selected production and
+counter builds also pass 32 small-graph serial checks and 32 certificates.
+Both old and new queues conserve work exactly in the diagnostic captures.
+Original/new edge attempts are **1.706B → 1.887B** and **1.619B → 1.751B**;
+stale removals stay close to 27%. Production medians similarly show 6–11%
+more scans with the selected combination. The gain comes from cheaper work,
+not fewer edge relaxations.
+
+Sampled inclusive push time falls from **232–243 ns to 31.7–31.9 ns**;
+batched pop calls fall from **649–682 ns to 111–113 ns**. These are calibrated
+queue-call estimates from separate counter builds, not production solve
+timings. Combined queue-call estimates fall from **52.8–53.2% to 17.5–17.9%**
+of PE time; they overlap entry-method execution and must not be added to
+Projections shares. More than 99.7% of new attempts stay within a process.
+
+**PC samples.** Two captures per implementation use solve-window thread-CPU
+timers with requested period 250 us. Original captures have 376,495/385,966
+samples; selected captures have 178,307/182,394. All 112 PE profiles and all
+16 process maps are present; zero samples were dropped, unmapped or mapped
+ambiguously. Original sampling adds 1.8–5.1% over plain controls; selected
+sampling adds 7.9–10.9%. Timer-off binaries differ by −2.1% / +0.4% from plain
+controls. Use production timings for performance and these samples for
+attribution, not a precise additive cost model.
+
+The leaf/inline mutex and futex-symbol group falls from **26.6–27.0% to
+0.37–0.38%** of samples. The selected profile has **15.5–15.7%** in local
+update application, **11.9–12.4%** in edge generation, **7.1–7.2%** in
+`process_partition`/destination lookup, **12.0–12.3%** in the
+`CmiNodeOf`/`CmiMyNode`/`CmiNodeFirst`/`CmiGetState` group, and **7.1–7.2%**
+in `__tls_get_addr`. Relative shares rise as queue cost disappears; that does
+not imply these routines became slower. Runtime helpers can run inside
+`process_heap`; do not identify all their cost with the scheduler alone.
+Shared-library labels use nearest available symbols. In particular, stripped
+internal routines must not be interpreted as precise call counts.
+
+The report now avoids converting sample counts to CPU nanoseconds using the
+requested timer period: sub-tick delivery/coalescing makes that conversion
+uncalibrated. All four reports were regenerated; hardware-overflow mode still
+uses measured hardware counters when available. Full symbol counts are saved
+as JSON beside the reports. The generic stage classifier predates this shared
+queue path; the diagnosis above uses the detailed function/inline tables.
+
+**Projections.** All 112 trace files are present; trace time **1.521118 s** is
+only **1.91%** above the mean of plain controls **1.484985 / 1.500180 s**. Trace
+work lies between those controls. Compared with the original trace in §16:
+
+| Metric | Original | Selected |
+|---|---:|---:|
+| Heap callbacks | 72,553,961 | 10,069,423 |
+| Heap entry PE-seconds | 358.67 | 145.68 |
+| Mean heap callback | 4.9 us | 14.5 us |
+| Untraced PE-seconds | 31.79 | 5.09 |
+| Idle PE-seconds | 42.95 | 17.66 |
+| Maximum pending heap callbacks per PE | 506 | 221 |
+
+The new trace is 85.5% heap entries, 10.4% idle, 3.0% untraced, and 0.35%
+threshold entries. Its larger heap percentage accompanies much less absolute
+heap time. All 112 PEs still show duplicate pending heap callbacks; the
+backlog is reduced, not eliminated. Controller entry time remains small;
+this result does not justify reviving the rejected coalescing prototype.
+The matched production experiment, rather than the cross-job trace ratio,
+establishes the speedup.
+
+**Next decision.** Accept this one-node mesh result and retain the default
+heap/distributed profile. The best next narrow hypothesis is to pass the
+already-computed destination into the local update path and cache stable
+process ownership information, with lifecycle refresh if ownership can move.
+That targets repeated lookups and runtime/TLS calls without removing the
+distributed path. A separately controlled initial-exec TLS runtime comparison
+is also justified. Before promoting chunks across machines or node counts,
+check sparse-graph regressions and distributed progress/scaling; no such jobs
+were submitted under the current one-node limit. Credit private chunking as
+an established technique; the paper's claim remains distributed execution
+and scaling, not novelty of a shared-memory queue.
+
+Raw campaign: `/work/hdd/mzu/rao1/acic-mesh28-opt-20260925`.
+Open `traces/optimized-22379656/acic_chunks_256_prj.sts` in Projections with
+its 112 `.log.gz` files beside it. That directory also has trace/backlog
+reports and matched controls. `profiles/pc-22379656/` contains four PC reports,
+full symbol counts, raw PE samples and process maps. `logs/summary-22379656.json`
+and `.md` contain the audited aggregate; `figures/heldout-22379656.pdf` and
+`.png` show the timing comparison. The compact archive is
+`design/onenode-data/delta-mesh28-optimized-22379656.json`; exact settings are
+in `benchmarks/delta-mesh28-selected.json`. Application source and runtime
+hashes are retained in the archive and per-build manifests. The frozen
+executable is `bin/acic_chunks_256`; workspace `sssp_smp` was not replaced.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta mesh28 private chunks / slice 64 | `design/onenode-data/delta-mesh28-optimized-22379656.json`; training records `delta-mesh28-chunks-training.json`, `delta-mesh28-slices-training.json`; `benchmarks/delta-mesh28-selected.json` |
 | Anvil mesh C6 | `design/onenode-data/c6-mesh-8n-anvil-20866513.json` and matching 20866514 record; `benchmarks/c6-mesh-8n-variants.json` |
 | Frontier mesh C6 | Frontier summaries under `design/onenode-data/` with job IDs 5534022/5534023; `benchmarks/frontier-c6-mesh-variants.json` |
 | Anvil road ordering/rounds | `design/onenode-data/road-order-8n-anvil-20868022.json`, road-round records 20876828–30; `benchmarks/road-order-8n-variants.json`, `benchmarks/road-rounds-8n-variants.json` |

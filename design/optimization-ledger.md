@@ -1,6 +1,6 @@
 # ACIC optimization ledger
 
-*Status at 2026-09-23. “Candidate” means the mechanism may appear in a current
+*Status at 2026-09-25. “Candidate” means the mechanism may appear in a current
 performance configuration; it does not mean every graph enables it.*
 
 ## Current ledger
@@ -38,6 +38,8 @@ performance configuration; it does not mean every graph enables it.*
 | Delta road round attribution (2026-09-24–25) | One-node 22354907 and partial four-node 22355241 locate the loaded delay. Completed eight-node 22354948 passes 29 digests, 12 empty-cycle gates and 1,792 phase records. Production 0.206/0.259 s, 531/797 rounds, 388/324 us per round; empty 267-long launch-mean median 199 us at 16 × 7 versus 133 us at 8 × 15. Quiet speedups 1.103/1.087× versus controls 1.137/1.068× do not establish a logging win. | **Reject logging optimization; keep 16 × 7 fixed.** User reports prior full-solver layout tests favored it. Investigate contribution placement after bounded work; the unloaded layout difference is not a solver result. Eight-node phase capture is validated; no need to repeat missing four-node diagnostics for this decision. |
 | Coalesced shared-heap wakeups (`ACIC_COALESCE_HEAP`) | Correctness and backlog suppression pass. One-node road 22355092 gives 0.988/1.011× speedup; mesh 22355144 regresses to 0.864/0.842×. Eight-node 22355150 passes 82 digests and 32 work ledgers: road speedup 1.043/0.962× with 69/81% more attempts, mesh 0.993/1.114× with 16–18% fewer attempts. Matched road backlog maximum 32 → 1 on 896 PEs, but controller p90 wait 37 → 36 us misses the 25% reduction prediction. | **Reject current prototype; default off.** Both the road speedup/work predictions and the one-node mesh gate fail. Close further acceptance trials for this version. |
 | Delta mesh28-z one-node Wasp attribution | Job 22378381: all 62 digests pass; ACIC speedup over Wasp 0.246–0.276× on four held-out sources. ACIC scans fewer edges in separate counter runs; inclusive queue push/pop sampling estimates 52.5–52.8% of PE time, Projections assigns 82% to process_heap, explicit send time is about 0.12%. 72.6M local heap callbacks; trace overhead 2.57%. | **Evidence, not an accepted optimization.** Prioritize per-bucket private chunks / cheaper queue operations; keep 16 × 7. See current-state §16. |
+| Delta private chunks and slice 64 on mesh28-z | Bounded 64-item private chunks, distance band 256: 2.12× on two training sources (22379228). Separate slice-64 screen adds 1.16–1.20× (22379316). Four held-out sources in 22379656 give combined 2.53–2.55× over the original and 0.608–0.704× over Wasp; all 99 final-job digests and all work ledgers pass. Queue costs fall from about 53% to 18% of PE time despite more scans. | **Keep as opt-in one-node mesh profile.** `ACIC_PROCESS_CHUNKS`, width 256, batch 8, slice 64, 16 × 7, +old-scheduler. Do not promote the distributed default before progress/scaling and graph regression checks. Unbounded FIFO was aborted; width 4096 missed the gain prediction. See current-state §17. |
+| Delta mesh28 selected-profile PC attribution | Two captures per variant: mutex/futex leaf samples fall from 26.6–27.0% to 0.37–0.38%. Local ownership lookup/runtime helpers and TLS are exposed after queue cost falls. Sampled selected solves are 7.9–10.9% slower; Projections adds 1.9% and shows 72.6M → 10.1M heap callbacks. | **Evidence.** Next narrow hypothesis: avoid duplicate local ownership lookup and cache stable process information; then a separate initial-exec TLS comparison. No new solver/runtime change or job for these hypotheses. |
 | Range extension and coarse weight-derived widths | Overshoot on road and do not provide a useful window. | **Reject in current form.** |
 
 ## What belongs in the current candidate
@@ -46,7 +48,9 @@ The stable base includes compact wire, filtering/buffering, shared-memory
 transport, lazy heavy relaxation and the Step 8 hold/flush changes. Sparse
 high-diameter graphs may additionally activate reader tiling and process-shared
 state. The accepted mesh profile adds nearest priority, batch 8 and heap slice
-8. Runtime scheduling is fixed with `+old-scheduler`.
+8. Runtime scheduling is fixed with `+old-scheduler`. The Delta one-node
+mesh study additionally supports an opt-in private-chunk/slice-64 profile; it
+does not replace the distributed mesh configuration.
 
 No measured live controller is currently part of the winning configuration.
 The paper must distinguish static metadata gates, fixed graph-class tuning and
