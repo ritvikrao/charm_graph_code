@@ -880,3 +880,17 @@ All110 full solves require digest and affinity validation. This adds a
 sequential one-node allocation, with no new binary or global default change.
 Prediction:≥1.10× held-out speedup beyond control noise, explicitly trading
 extra work for faster per-operation execution; no distributed claim.
+
+
+Queue job **22401233** completed164/164 full solves and112 serial/112
+certificate gates, with all12 work ledgers conserved. Full band256
+publishes only4480–5376 updates per solve; full band65536 publishes9.83–10.15M,
+of which6.90–7.17M are taken by peers. Partial publication reduces idle
+further but increases queue costs and loses to full-only at the wider band.
+The conservative work-growth gate retains the original heap; its held-out
+arms are identical controls, not a wide-band performance result.
+Full details and the factual work/time tradeoff are in current-state §19.
+
+Follow-up **22401351** is submitted afterok22401233, with all110 planned
+solves on one node. At this checkpoint it waits for Slurm priority.
+No more experiments are planned beyond this bounded confirmation.

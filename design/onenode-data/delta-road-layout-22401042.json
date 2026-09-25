@@ -1445,7 +1445,15 @@
       "changed_threshold": 300
     }
   ],
-  "audit_script_sha256": "b31c3eabe7d72e834d4912037059464d3263ce5eb152dd2ce0849507b71778ad",
+  "audit_script_sha256": "203ef609d45b1163892be80fe6bf30c65aac331ab2a4d5d919e1b32c6c58c4fb",
+  "audit_dependencies": {
+    "road_experiment.py": "cc3af3118bc76d00e4bf395743827a3b19c620002de469ffd2d4c3be157da74b",
+    "road_layout_launch.py": "e0a4a18fb671723e2706d4be720475a63c0b97f2df6c654da0f8f2bca6dd281c",
+    "chunk_graph_report.py": "8e67e96975c8d6b2059cf126136f93870c27c9d95a6f01e9727dde59ff134663",
+    "check_onenode_digest.py": "4efdbead943aa7e6a45dce6645750ba726566c7ddfe2dba9c389af4cd48baa41",
+    "work_cost_report.py": "5ceee7f8e63fed3b5f585be8eed367b192176db5e6c7c6df9ff61f2ab2e528ba",
+    "onenode_report.py": "01abbb0327fc9e32c211e3e8562585b3f12d97f5e188f16ca05ea4dd3e6be50d"
+  },
   "raw_directory": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042",
   "training": {
     "16x7-span128": [

@@ -44,6 +44,9 @@ def audit(directory):
                        **round_progress(Path(r['log']).read_text())) for r in rows
                       if r['phase']=='timing' and r['binary']!='wasp_sssp']
     data['audit_script_sha256']=sha256(__file__)
+    data['audit_dependencies']={name:sha256(Path(__file__).with_name(name)) for name in
+        ['road_experiment.py','road_layout_launch.py','chunk_graph_report.py',
+         'check_onenode_digest.py','work_cost_report.py','onenode_report.py']}
     data['raw_directory']=str(out)
     training_sources=sorted({r['source'] for r in rows if r['phase']=='train'})
     labels=list(data['selection']['scores'] if queue else data['selection']['screen_scores'])

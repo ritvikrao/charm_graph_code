@@ -41,6 +41,10 @@ def validate(reference, row):
     assert f'Starting Reconverse with {ranks} {process_word}, {ranks*ppn} PEs' in t
     assert 'Using the original scheduler (+old-scheduler)' in t
     assert 'Process sharing: on' in t
+    expected_slice=row['flags'][row['flags'].index('--heap-slice')+1]
+    assert re.search(r'^Heap slice: '+re.escape(expected_slice)+r'$',t,re.M)
+    assert re.search(r'^Process queue: nearest$',t,re.M)
+    assert re.search(r'^Process queue batch: 8$',t,re.M)
     if row.get('partial'):
         assert 'Process partial chunks: requested, owner-serviced' in t
     elif row.get('band'):
