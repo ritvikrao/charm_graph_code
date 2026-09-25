@@ -1,0 +1,3730 @@
+{
+  "manifest": {
+    "job": "22392217",
+    "hosts": "cn115",
+    "protocol": {
+      "campaign": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925",
+      "graphs": [
+        {
+          "name": "road-usa-z",
+          "vertices": 23947347,
+          "stored_directed_edges": 57708624,
+          "expected_process_sharing": "on",
+          "variants": [
+            {
+              "label": "base",
+              "binary": "acic_base",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ]
+            },
+            {
+              "label": "chunks8",
+              "binary": "acic_chunks_256",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ]
+            },
+            {
+              "label": "chunks64",
+              "binary": "acic_chunks_256",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "64",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ]
+            },
+            {
+              "label": "control",
+              "binary": "acic_base",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ]
+            }
+          ],
+          "work_variants": [
+            {
+              "label": "base_cost",
+              "binary": "acic_base_cost",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ],
+              "work_cost": true
+            },
+            {
+              "label": "chunks64_cost",
+              "binary": "acic_chunks_256_cost",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "64",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ],
+              "work_cost": true
+            }
+          ],
+          "wasp_deltas": [
+            8192,
+            32768,
+            131072
+          ]
+        },
+        {
+          "name": "uniform25",
+          "vertices": 33554432,
+          "stored_directed_edges": 1073654932,
+          "expected_process_sharing": "off",
+          "variants": [
+            {
+              "label": "base",
+              "binary": "acic_base",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ]
+            },
+            {
+              "label": "chunks8",
+              "binary": "acic_chunks_256",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ]
+            },
+            {
+              "label": "chunks64",
+              "binary": "acic_chunks_256",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "64",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ]
+            },
+            {
+              "label": "control",
+              "binary": "acic_base",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ]
+            }
+          ],
+          "work_variants": [
+            {
+              "label": "base_cost",
+              "binary": "acic_base_cost",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": true
+            },
+            {
+              "label": "chunks64_cost",
+              "binary": "acic_chunks_256_cost",
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "64",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": true
+            }
+          ],
+          "wasp_deltas": [
+            16,
+            64,
+            256,
+            1024
+          ]
+        }
+      ],
+      "wasp_threads": [
+        64,
+        96,
+        128
+      ],
+      "order_seed": 20260926,
+      "layout": "One exclusive cpu-interactive node, ACIC 16 processes x 7 workers, +old-scheduler; Wasp uses entire node with selected thread count.",
+      "frozen_application": "Baseline from mesh28 attribution; private chunks match 8a6b02c, slice profile 98b80ea. Exact binary manifests retained; no rebuild or solver change.",
+      "chunk_width": 256,
+      "chunk_size": 64,
+      "queue_batch": 8,
+      "timing": "Each arm: one held-out warmup and three measured launches per source; four held-out sources. Randomized arm/source order within repetition; duplicate original control.",
+      "wasp_selection": "Joint grid on two training sources; one engine warmup; repeat top two settings once on both sources; freeze by geometric mean before held-out runs. No claim of global optimum.",
+      "prediction": {
+        "road-usa-z": "Chunks may reduce queue cost but road may remain round-bound; no guaranteed speedup. Preserve road bucket width 131072. Reject transfer if slower beyond duplicate-control spread.",
+        "uniform25": "Auto process sharing is off at average degree 32, so chunks and heap slice are inactive. Expected no systematic speed change beyond control variation; do not claim an inactive mechanism as an improvement."
+      },
+      "correctness": "Every solve must match independent reference hashes, reachable count and distance sum. Diagnostic base/selected runs on two held-out sources also require conserved edge and queue ledgers.",
+      "acceptance": "Graph transfer check in one allocation. Preserve original defaults; no one-node graph-specific adoption claim from a small gain within control variation. Multi-node behavior remains unmeasured.",
+      "prior_campaign": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925"
+    },
+    "binaries": {
+      "acic_chunks_256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+      "acic_base": "e862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a",
+      "acic_base_cost": "98972d0e407607d466aedac8d540c58edecfb36c1a8da62ba4421ebdaed92d69",
+      "acic_chunks_256_cost": "50250f4e5ab227a3616ef81aac90c8b7133ea4135fa00a9bd85fa7b2a70cef64",
+      "wasp_sssp": "2803195e25c967d286d2d45118905b2bd5252c799f5d900af03dd69998dc2529"
+    },
+    "graphs": {
+      "road-usa-z": {
+        ".wsg": "20f9102b40689c8ea496aaa122a4329413022d0ef59cc77ef142d313a43781b9",
+        ".meta": "fc1a5f0a1f7ac46c32ca27ab52f8a92b1dc421843238fa6ff81be66c2eccc7b5",
+        ".reference.txt": "415bc7468e7cc65bb345daf6c01070b0464ccda828a6ca7b6bdb06a61bd3550a"
+      },
+      "uniform25": {
+        ".wsg": "8621993b6db4dc4b39c3e71224b4cb396fdfc010c270f3fdfde528bcd932ff0d",
+        ".meta": "ac997fa08109e681e1cb353ece3dab592f9f016531cb56445e5418f0ad98910a",
+        ".reference.txt": "9db33de6e3f623ddd34f965a7fc961f65cdbed31cbb3661fdb67dd9885b6b20b"
+      }
+    },
+    "runtime": {
+      "revisions": {
+        "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+        "reconverse": "b30ad319503220bd1a2c0b5db38bd73dbe449c34",
+        "lci": "dfb924cf3ee25aece37b85473b41d406ad810252"
+      },
+      "charm_branch": "reconverse-specific-build",
+      "runtime": "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64",
+      "build_command": [
+        "./build",
+        "charm++",
+        "reconverse-linux-x86_64",
+        "--with-production",
+        "--enable-tracing",
+        "--enable-shmem",
+        "--with-fetch-reconverse-dir=/u/rao1/charm_reconverse/reconverse",
+        "--with-cmake-args=-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF",
+        "-j8"
+      ],
+      "environment": {
+        "CC": "gcc",
+        "CXX": "g++"
+      },
+      "scheduler_for_tests": "+old-scheduler",
+      "reconverse_local_patch": {
+        "path": "/u/rao1/.tmp/runtime-refresh-20260925/reconverse-local-built.patch",
+        "sha256": "49ee2bfcc5586fd3cd69e2f2ec57e36267158562a92669da5f368bd6e725110d"
+      },
+      "cache": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+        "TRACING": "1",
+        "CMK_USE_SHMEM": "1",
+        "SPANTREE": "ON",
+        "RECONVERSE_ENABLE_CPU_AFFINITY": "ON",
+        "RECONVERSE_AUTOFETCH_LCI2_TAG": "dfb924cf3ee25aece37b85473b41d406ad810252",
+        "RECONVERSE_TRY_ENABLE_COMM_LCW": "OFF",
+        "FETCHCONTENT_SOURCE_DIR_RECONVERSE": "/u/rao1/charm_reconverse/reconverse"
+      },
+      "libraries": {
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libreconverse.so": "b8564e2731b3683d9a07364a163170fd8a16ff8454c3f215d86c9159058158d9",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblci.so": "7918b1ad26a1f3be1575bb6c18a79fe26cd5b11dfaf11cd4d0eabfa94558c4c5",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblct.so": "fdf5f2034b7711fcb337f6710705096c1c85f4295a60ee3cf07547a5438ae844",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libck.a": "eec2d79e9b700fc7983ff747949833bcb19ed83dea6e4f574c155ce95b4e1db3",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libtrace-projections.a": "8ae93a441daa2cc0ccde4b7ed7605440ffc0783a90944b5170799fee94572ff1"
+      },
+      "notes": [
+        "Charm++ current tracking branch was already up to date; no branch switch was assumed.",
+        "Reconverse local LCI pin was preserved.",
+        "Reconverse main now defaults backend_poll_freq to 64; the prior runtime default was 4.",
+        "Previous campaign runtime and application binaries remain intact."
+      ],
+      "validation": {
+        "local_runtime_rounds": 1000,
+        "runtime_pes": 2,
+        "trace_files": 4,
+        "serial_sssp_checks": 4,
+        "certified_sssp_checks": 4,
+        "sources": [
+          0,
+          512,
+          1024,
+          0
+        ],
+        "old_scheduler": true,
+        "scope": "Local-only runtime checks; distributed shared-memory communication has not been rerun on compute nodes in this refresh."
+      },
+      "active_compiler": "/u/rao1/charm_reconverse/bin/charmc",
+      "sssp_config": "/u/rao1/charm_graph_code/config.mk"
+    }
+  },
+  "graphs": {
+    "road-usa-z": {
+      "validated_solves": 111,
+      "wasp_selection": {
+        "winner": {
+          "threads": 64,
+          "delta": 32768
+        },
+        "scores": [
+          {
+            "threads": 64,
+            "delta": 8192,
+            "geomean_seconds": 0.15470091461039906
+          },
+          {
+            "threads": 64,
+            "delta": 32768,
+            "geomean_seconds": 0.09390587954119217
+          },
+          {
+            "threads": 64,
+            "delta": 131072,
+            "geomean_seconds": 0.13111077505411434
+          },
+          {
+            "threads": 96,
+            "delta": 8192,
+            "geomean_seconds": 0.2067376772165587
+          },
+          {
+            "threads": 96,
+            "delta": 32768,
+            "geomean_seconds": 0.12113402311772162
+          },
+          {
+            "threads": 96,
+            "delta": 131072,
+            "geomean_seconds": 0.11629488191023027
+          },
+          {
+            "threads": 128,
+            "delta": 8192,
+            "geomean_seconds": 0.25226503894644253
+          },
+          {
+            "threads": 128,
+            "delta": 32768,
+            "geomean_seconds": 0.1442505618542489
+          },
+          {
+            "threads": 128,
+            "delta": 131072,
+            "geomean_seconds": 0.11755314753647922
+          }
+        ]
+      },
+      "expected_process_sharing": "on",
+      "sources": [
+        {
+          "source": "8718204",
+          "variants": {
+            "base": {
+              "median": 0.484983,
+              "seconds": [
+                0.484983,
+                0.449986,
+                0.541191
+              ],
+              "scans": [
+                1.6038532299782438,
+                1.6304311639799278,
+                1.613083704785614
+              ],
+              "rounds": [
+                808,
+                802,
+                802
+              ],
+              "speedup_over_original": 1.0,
+              "speedup_over_wasp": 0.21385849400906837
+            },
+            "chunks8": {
+              "median": 0.758256,
+              "seconds": [
+                0.787202,
+                0.665078,
+                0.758256
+              ],
+              "scans": [
+                1.8566142904395018,
+                1.844102018443552,
+                1.8201092439840534
+              ],
+              "rounds": [
+                3227,
+                3027,
+                2342
+              ],
+              "speedup_over_original": 0.6396032474520478,
+              "speedup_over_wasp": 0.13678458726340445
+            },
+            "chunks64": {
+              "median": 0.636723,
+              "seconds": [
+                0.636723,
+                0.553512,
+                0.667733
+              ],
+              "scans": [
+                1.7875635191024482,
+                1.7582487497882466,
+                1.7675542740371006
+              ],
+              "rounds": [
+                1965,
+                2070,
+                2070
+              ],
+              "speedup_over_original": 0.7616860078872602,
+              "speedup_over_wasp": 0.16289302255454885
+            },
+            "control": {
+              "median": 0.505787,
+              "seconds": [
+                0.513774,
+                0.446333,
+                0.505787
+              ],
+              "scans": [
+                1.6267939779676603,
+                1.6490958959617543,
+                1.6603109614951137
+              ],
+              "rounds": [
+                790,
+                800,
+                810
+              ],
+              "speedup_over_original": 0.9588680610612768,
+              "speedup_over_wasp": 0.20506207949196006
+            },
+            "wasp": {
+              "median": 0.103717734,
+              "seconds": [
+                0.102515413,
+                0.103717734,
+                0.109826134
+              ],
+              "scans": [
+                null,
+                null,
+                null
+              ],
+              "rounds": [
+                null,
+                null,
+                null
+              ],
+              "speedup_over_original": 4.6759891611207,
+              "speedup_over_wasp": 1.0
+            }
+          }
+        },
+        {
+          "source": "22613654",
+          "variants": {
+            "base": {
+              "median": 0.439548,
+              "seconds": [
+                0.429828,
+                0.471617,
+                0.439548
+              ],
+              "scans": [
+                1.5900973483616592,
+                1.6112755694885394,
+                1.591214737679415
+              ],
+              "rounds": [
+                604,
+                625,
+                596
+              ],
+              "speedup_over_original": 1.0,
+              "speedup_over_wasp": 0.20670152747822765
+            },
+            "chunks8": {
+              "median": 0.718059,
+              "seconds": [
+                0.71493,
+                0.761985,
+                0.718059
+              ],
+              "scans": [
+                1.5768612850654695,
+                1.6233522740032755,
+                1.5897023120842388
+              ],
+              "rounds": [
+                3530,
+                4278,
+                3534
+              ],
+              "speedup_over_original": 0.6121335433439313,
+              "speedup_over_wasp": 0.12652893842985047
+            },
+            "chunks64": {
+              "median": 0.611089,
+              "seconds": [
+                0.551168,
+                0.655195,
+                0.611089
+              ],
+              "scans": [
+                1.617161448867677,
+                1.5873982717037232,
+                1.6216390292029836
+              ],
+              "rounds": [
+                2109,
+                2297,
+                2125
+              ],
+              "speedup_over_original": 0.7192863887257012,
+              "speedup_over_wasp": 0.14867759524390065
+            },
+            "control": {
+              "median": 0.437629,
+              "seconds": [
+                0.430959,
+                0.461037,
+                0.437629
+              ],
+              "scans": [
+                1.583801062385407,
+                1.5825058833494279,
+                1.586593747236115
+              ],
+              "rounds": [
+                604,
+                651,
+                622
+              ],
+              "speedup_over_original": 1.0043849927678468,
+              "speedup_over_wasp": 0.20760791218132255
+            },
+            "wasp": {
+              "median": 0.090855243,
+              "seconds": [
+                0.092933805,
+                0.090561289,
+                0.090855243
+              ],
+              "scans": [
+                null,
+                null,
+                null
+              ],
+              "rounds": [
+                null,
+                null,
+                null
+              ],
+              "speedup_over_original": 4.837893615011299,
+              "speedup_over_wasp": 1.0
+            }
+          }
+        },
+        {
+          "source": "10159848",
+          "variants": {
+            "base": {
+              "median": 0.435835,
+              "seconds": [
+                0.426691,
+                0.435835,
+                0.488682
+              ],
+              "scans": [
+                1.5448301973029195,
+                1.5274614587934032,
+                1.5027399371019485
+              ],
+              "rounds": [
+                676,
+                658,
+                638
+              ],
+              "speedup_over_original": 1.0,
+              "speedup_over_wasp": 0.20940175295696767
+            },
+            "chunks8": {
+              "median": 0.6491,
+              "seconds": [
+                0.629646,
+                0.6491,
+                0.664552
+              ],
+              "scans": [
+                1.5440679888676605,
+                1.533293550717827,
+                1.5530015929681498
+              ],
+              "rounds": [
+                3772,
+                2924,
+                4060
+              ],
+              "speedup_over_original": 0.6714450778000307,
+              "speedup_over_wasp": 0.14060177630565396
+            },
+            "chunks64": {
+              "median": 0.521354,
+              "seconds": [
+                0.501612,
+                0.521354,
+                0.542335
+              ],
+              "scans": [
+                1.5444071236215926,
+                1.5581416392808118,
+                1.5216485147869754
+              ],
+              "rounds": [
+                2324,
+                2044,
+                2578
+              ],
+              "speedup_over_original": 0.8359675000095904,
+              "speedup_over_wasp": 0.1750530599170621
+            },
+            "control": {
+              "median": 0.436631,
+              "seconds": [
+                0.428182,
+                0.436631,
+                0.439787
+              ],
+              "scans": [
+                1.5291927944773038,
+                1.541484787438356,
+                1.546369707238211
+              ],
+              "rounds": [
+                654,
+                623,
+                686
+              ],
+              "speedup_over_original": 0.9981769503310576,
+              "speedup_over_wasp": 0.2090200031605635
+            },
+            "wasp": {
+              "median": 0.091264613,
+              "seconds": [
+                0.088749904,
+                0.091264613,
+                0.098309935
+              ],
+              "scans": [
+                null,
+                null,
+                null
+              ],
+              "rounds": [
+                null,
+                null,
+                null
+              ],
+              "speedup_over_original": 4.775509210782497,
+              "speedup_over_wasp": 1.0
+            }
+          }
+        },
+        {
+          "source": "3073839",
+          "variants": {
+            "base": {
+              "median": 0.446933,
+              "seconds": [
+                0.390362,
+                0.446933,
+                0.460255
+              ],
+              "scans": [
+                1.60057274975054,
+                1.5839213736927777,
+                1.566188616800151
+              ],
+              "rounds": [
+                678,
+                650,
+                685
+              ],
+              "speedup_over_original": 1.0,
+              "speedup_over_wasp": 0.19510695786616786
+            },
+            "chunks8": {
+              "median": 0.718035,
+              "seconds": [
+                0.718035,
+                0.659926,
+                0.818813
+              ],
+              "scans": [
+                1.6478300193052602,
+                1.6545738986949334,
+                1.6143191873713711
+              ],
+              "rounds": [
+                4073,
+                3672,
+                4067
+              ],
+              "speedup_over_original": 0.6224390175966353,
+              "speedup_over_wasp": 0.12144218318048564
+            },
+            "chunks64": {
+              "median": 0.607701,
+              "seconds": [
+                0.594545,
+                0.607701,
+                0.639299
+              ],
+              "scans": [
+                1.6705442153671868,
+                1.6498990341547566,
+                1.6613494371309216
+              ],
+              "rounds": [
+                2373,
+                1750,
+                2624
+              ],
+              "speedup_over_original": 0.7354488473772464,
+              "speedup_over_wasp": 0.14349118727795412
+            },
+            "control": {
+              "median": 0.42952,
+              "seconds": [
+                0.42952,
+                0.41496,
+                0.461852
+              ],
+              "scans": [
+                1.5687909488190188,
+                1.5935839676232793,
+                1.621726260532568
+              ],
+              "rounds": [
+                675,
+                642,
+                648
+              ],
+              "speedup_over_original": 1.0405406034643323,
+              "speedup_over_wasp": 0.20301671167815236
+            },
+            "wasp": {
+              "median": 0.087199738,
+              "seconds": [
+                0.087199738,
+                0.083444192,
+                0.088453757
+              ],
+              "scans": [
+                null,
+                null,
+                null
+              ],
+              "rounds": [
+                null,
+                null,
+                null
+              ],
+              "speedup_over_original": 5.125393840059474,
+              "speedup_over_wasp": 1.0
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "index": 107,
+          "graph": "road-usa-z",
+          "label": "base_cost",
+          "binary": "acic_base_cost",
+          "phase": "work",
+          "rep": 0,
+          "source": "8718204",
+          "role": "test",
+          "setting": null,
+          "command": [
+            "srun",
+            "-N1",
+            "--cpu-bind=none",
+            "--unbuffered",
+            "--kill-on-bad-exit=1",
+            "--time=5",
+            "-n16",
+            "--ntasks-per-node=16",
+            "-c8",
+            "bash",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/harness/benchmarks/launch_acic.sh",
+            "16",
+            "112",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/bin/acic_base_cost",
+            "0",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/graphs/road-usa-z.wsg",
+            "1",
+            "8718204",
+            "4",
+            "0.999",
+            "0.005",
+            "--result-digest",
+            "--timeout",
+            "60",
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ],
+          "log": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/107-road-usa-z-work-base_cost-s8718204-r0.out",
+          "valid": true,
+          "returncode": 0,
+          "seconds": 0.533003,
+          "edge_attempts": 93903087,
+          "scan_factor": 1.6271933116963593,
+          "rounds": 804,
+          "process_sharing": "on",
+          "heap_slice_line": "Heap slice: 8",
+          "counters": {
+            "sample_period": 1024,
+            "edge_attempts": 93903087,
+            "expansions": 38416519,
+            "changes": 42317555,
+            "queue_pushes": 42317555,
+            "queue_pops": 42317555,
+            "stale_pops": 3901036,
+            "cas_attempts": 42327729,
+            "cas_failures": 10174,
+            "intra_process": 93077765,
+            "intra_node": 825322,
+            "inter_node": 0,
+            "queue_probes": 113644820,
+            "lock_misses": 13528028,
+            "cpu_ns": 55961643674,
+            "push_calls": 42317555,
+            "push_samples": 41328,
+            "push_ticks": 37098735,
+            "pop_calls": 21486458,
+            "pop_samples": 20982,
+            "pop_ticks": 38225965
+          },
+          "comm": {
+            "pes": 112.0,
+            "solve_seconds": 0.533003,
+            "pe_seconds": 59.696346,
+            "work_seconds": 43.285111,
+            "work_send_seconds": 0.0,
+            "send_seconds": 0.355224,
+            "window_pe_seconds": 59.669279,
+            "compute_share": 0.725088,
+            "send_share": 0.005951,
+            "other_share": 0.268961,
+            "idle_share": 0.177009
+          },
+          "queue": {
+            "push": {
+              "ns": 367.08435816305354,
+              "estimated_share": 0.26033685636128967
+            },
+            "pop": {
+              "ns": 745.0110974673729,
+              "estimated_share": 0.2682728855374072
+            }
+          }
+        },
+        {
+          "index": 108,
+          "graph": "road-usa-z",
+          "label": "base_cost",
+          "binary": "acic_base_cost",
+          "phase": "work",
+          "rep": 0,
+          "source": "22613654",
+          "role": "test",
+          "setting": null,
+          "command": [
+            "srun",
+            "-N1",
+            "--cpu-bind=none",
+            "--unbuffered",
+            "--kill-on-bad-exit=1",
+            "--time=5",
+            "-n16",
+            "--ntasks-per-node=16",
+            "-c8",
+            "bash",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/harness/benchmarks/launch_acic.sh",
+            "16",
+            "112",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/bin/acic_base_cost",
+            "0",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/graphs/road-usa-z.wsg",
+            "1",
+            "22613654",
+            "4",
+            "0.999",
+            "0.005",
+            "--result-digest",
+            "--timeout",
+            "60",
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ],
+          "log": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/108-road-usa-z-work-base_cost-s22613654-r0.out",
+          "valid": true,
+          "returncode": 0,
+          "seconds": 0.463522,
+          "edge_attempts": 89964322,
+          "scan_factor": 1.5589406879637262,
+          "rounds": 617,
+          "process_sharing": "on",
+          "heap_slice_line": "Heap slice: 8",
+          "counters": {
+            "sample_period": 1024,
+            "edge_attempts": 89964322,
+            "expansions": 36766057,
+            "changes": 40472783,
+            "queue_pushes": 40472783,
+            "queue_pops": 40472783,
+            "stale_pops": 3706726,
+            "cas_attempts": 40481302,
+            "cas_failures": 8519,
+            "intra_process": 89192851,
+            "intra_node": 771471,
+            "inter_node": 0,
+            "queue_probes": 73556956,
+            "lock_misses": 8009609,
+            "cpu_ns": 47861393507,
+            "push_calls": 40472783,
+            "push_samples": 39525,
+            "push_ticks": 35846303,
+            "pop_calls": 15150760,
+            "pop_samples": 14799,
+            "pop_ticks": 30111534
+          },
+          "comm": {
+            "pes": 112.0,
+            "solve_seconds": 0.463522,
+            "pe_seconds": 51.914433,
+            "work_seconds": 39.387006,
+            "work_send_seconds": 0.0,
+            "send_seconds": 0.405197,
+            "window_pe_seconds": 51.864719,
+            "compute_share": 0.758691,
+            "send_share": 0.007805,
+            "other_share": 0.233504,
+            "idle_share": 0.128691
+          },
+          "queue": {
+            "push": {
+              "ns": 370.87162290608836,
+              "estimated_share": 0.2894107401745673
+            },
+            "pop": {
+              "ns": 832.0542101459304,
+              "estimated_share": 0.24306029007716315
+            }
+          }
+        },
+        {
+          "index": 109,
+          "graph": "road-usa-z",
+          "label": "chunks64_cost",
+          "binary": "acic_chunks_256_cost",
+          "phase": "work",
+          "rep": 0,
+          "source": "8718204",
+          "role": "test",
+          "setting": null,
+          "command": [
+            "srun",
+            "-N1",
+            "--cpu-bind=none",
+            "--unbuffered",
+            "--kill-on-bad-exit=1",
+            "--time=5",
+            "-n16",
+            "--ntasks-per-node=16",
+            "-c8",
+            "bash",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/harness/benchmarks/launch_acic.sh",
+            "16",
+            "112",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/bin/acic_chunks_256_cost",
+            "0",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/graphs/road-usa-z.wsg",
+            "1",
+            "8718204",
+            "4",
+            "0.999",
+            "0.005",
+            "--result-digest",
+            "--timeout",
+            "60",
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ],
+          "log": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/109-road-usa-z-work-chunks64_cost-s8718204-r0.out",
+          "valid": true,
+          "returncode": 0,
+          "seconds": 0.735777,
+          "edge_attempts": 104360745,
+          "scan_factor": 1.808408133245388,
+          "rounds": 2387,
+          "process_sharing": "on",
+          "heap_slice_line": "Heap slice: 64",
+          "counters": {
+            "sample_period": 1024,
+            "edge_attempts": 104360745,
+            "expansions": 43283428,
+            "changes": 46674957,
+            "queue_pushes": 46674957,
+            "queue_pops": 46674957,
+            "stale_pops": 3391529,
+            "cas_attempts": 46674968,
+            "cas_failures": 11,
+            "intra_process": 103525171,
+            "intra_node": 835574,
+            "inter_node": 0,
+            "queue_probes": 636630293,
+            "lock_misses": 3259,
+            "cpu_ns": 81237557122,
+            "push_calls": 46674957,
+            "push_samples": 45579,
+            "push_ticks": 11760186,
+            "pop_calls": 96835991,
+            "pop_samples": 94564,
+            "pop_ticks": 16381287
+          },
+          "comm": {
+            "pes": 112.0,
+            "solve_seconds": 0.735777,
+            "pe_seconds": 82.406986,
+            "work_seconds": 22.856361,
+            "work_send_seconds": 0.0,
+            "send_seconds": 0.199185,
+            "window_pe_seconds": 82.619929,
+            "compute_share": 0.27736,
+            "send_share": 0.002417,
+            "other_share": 0.720223,
+            "idle_share": 0.685458
+          },
+          "queue": {
+            "push": {
+              "ns": 105.51172577996566,
+              "estimated_share": 0.05960735289152437
+            },
+            "pop": {
+              "ns": 70.83917804373831,
+              "estimated_share": 0.08302817601659815
+            }
+          }
+        },
+        {
+          "index": 110,
+          "graph": "road-usa-z",
+          "label": "chunks64_cost",
+          "binary": "acic_chunks_256_cost",
+          "phase": "work",
+          "rep": 0,
+          "source": "22613654",
+          "role": "test",
+          "setting": null,
+          "command": [
+            "srun",
+            "-N1",
+            "--cpu-bind=none",
+            "--unbuffered",
+            "--kill-on-bad-exit=1",
+            "--time=5",
+            "-n16",
+            "--ntasks-per-node=16",
+            "-c8",
+            "bash",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/harness/benchmarks/launch_acic.sh",
+            "16",
+            "112",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/bin/acic_chunks_256_cost",
+            "0",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/graphs/road-usa-z.wsg",
+            "1",
+            "22613654",
+            "4",
+            "0.999",
+            "0.005",
+            "--result-digest",
+            "--timeout",
+            "60",
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler",
+            "--bucket-width",
+            "131072"
+          ],
+          "log": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/110-road-usa-z-work-chunks64_cost-s22613654-r0.out",
+          "valid": true,
+          "returncode": 0,
+          "seconds": 0.682147,
+          "edge_attempts": 93879587,
+          "scan_factor": 1.6267860935308387,
+          "rounds": 2504,
+          "process_sharing": "on",
+          "heap_slice_line": "Heap slice: 64",
+          "counters": {
+            "sample_period": 1024,
+            "edge_attempts": 93879587,
+            "expansions": 38686078,
+            "changes": 41814381,
+            "queue_pushes": 41814381,
+            "queue_pops": 41814381,
+            "stale_pops": 3128303,
+            "cas_attempts": 41814395,
+            "cas_failures": 14,
+            "intra_process": 93141334,
+            "intra_node": 738253,
+            "inter_node": 0,
+            "queue_probes": 544884582,
+            "lock_misses": 8814,
+            "cpu_ns": 75382345504,
+            "push_calls": 41814381,
+            "push_samples": 40836,
+            "push_ticks": 11086066,
+            "pop_calls": 83119545,
+            "pop_samples": 81177,
+            "pop_ticks": 15108234
+          },
+          "comm": {
+            "pes": 112.0,
+            "solve_seconds": 0.682147,
+            "pe_seconds": 76.400494,
+            "work_seconds": 21.350433,
+            "work_send_seconds": 0.0,
+            "send_seconds": 0.181421,
+            "window_pe_seconds": 76.623635,
+            "compute_share": 0.279454,
+            "send_share": 0.002375,
+            "other_share": 0.718171,
+            "idle_share": 0.678047
+          },
+          "queue": {
+            "push": {
+              "ns": 111.0160050911775,
+              "estimated_share": 0.06058268488541997
+            },
+            "pop": {
+              "ns": 76.10830253163407,
+              "estimated_share": 0.08256052427102645
+            }
+          }
+        }
+      ],
+      "ranges": {
+        "original_seconds": [
+          0.435835,
+          0.484983
+        ],
+        "selected_seconds": [
+          0.521354,
+          0.636723
+        ],
+        "wasp_seconds": [
+          0.087199738,
+          0.103717734
+        ],
+        "selected_speedup": [
+          0.7192863887257012,
+          0.8359675000095904
+        ],
+        "chunk_only_speedup": [
+          0.6121335433439313,
+          0.6714450778000307
+        ],
+        "incremental_slice_speedup": [
+          1.1750481517422176,
+          1.245027371037721
+        ],
+        "control_speedup": [
+          0.9588680610612768,
+          1.0405406034643323
+        ],
+        "wasp_speedup": [
+          0.14349118727795412,
+          0.1750530599170621
+        ],
+        "original_scans": [
+          1.5274614587934032,
+          1.613083704785614
+        ],
+        "selected_scans": [
+          1.5444071236215926,
+          1.7675542740371006
+        ],
+        "original_rounds": [
+          604,
+          802
+        ],
+        "selected_rounds": [
+          2070,
+          2373
+        ]
+      },
+      "geomean_speedup": 0.7618244754023216
+    },
+    "uniform25": {
+      "validated_solves": 117,
+      "wasp_selection": {
+        "winner": {
+          "threads": 128,
+          "delta": 16
+        },
+        "scores": [
+          {
+            "threads": 64,
+            "delta": 16,
+            "geomean_seconds": 1.5142125183378559
+          },
+          {
+            "threads": 64,
+            "delta": 64,
+            "geomean_seconds": 1.6763786504228086
+          },
+          {
+            "threads": 64,
+            "delta": 256,
+            "geomean_seconds": 2.4019009471341732
+          },
+          {
+            "threads": 64,
+            "delta": 1024,
+            "geomean_seconds": 14.02079328692033
+          },
+          {
+            "threads": 96,
+            "delta": 16,
+            "geomean_seconds": 1.8080057458746297
+          },
+          {
+            "threads": 96,
+            "delta": 64,
+            "geomean_seconds": 2.1201320000677977
+          },
+          {
+            "threads": 96,
+            "delta": 256,
+            "geomean_seconds": 3.5762610797669097
+          },
+          {
+            "threads": 96,
+            "delta": 1024,
+            "geomean_seconds": 23.113909260623938
+          },
+          {
+            "threads": 128,
+            "delta": 16,
+            "geomean_seconds": 1.3613944046629236
+          },
+          {
+            "threads": 128,
+            "delta": 64,
+            "geomean_seconds": 1.6275364319481018
+          },
+          {
+            "threads": 128,
+            "delta": 256,
+            "geomean_seconds": 2.773409401245176
+          },
+          {
+            "threads": 128,
+            "delta": 1024,
+            "geomean_seconds": 18.17168735819811
+          }
+        ]
+      },
+      "expected_process_sharing": "off",
+      "sources": [
+        {
+          "source": "9130980",
+          "variants": {
+            "base": {
+              "median": 1.281927,
+              "seconds": [
+                1.286941,
+                1.279763,
+                1.281927
+              ],
+              "scans": [
+                1.0065897801883334,
+                1.0071738952343396,
+                1.0095283779686488
+              ],
+              "rounds": [
+                299,
+                365,
+                381
+              ],
+              "speedup_over_original": 1.0,
+              "speedup_over_wasp": 1.1989031380101987
+            },
+            "chunks8": {
+              "median": 1.294069,
+              "seconds": [
+                1.409097,
+                1.294069,
+                1.252603
+              ],
+              "scans": [
+                1.008869979279339,
+                1.0074351495644227,
+                1.0061195611403386
+              ],
+              "rounds": [
+                611,
+                291,
+                396
+              ],
+              "speedup_over_original": 0.990617192746291,
+              "speedup_over_wasp": 1.1876540609503823
+            },
+            "chunks64": {
+              "median": 1.280453,
+              "seconds": [
+                1.280453,
+                1.33009,
+                1.271868
+              ],
+              "scans": [
+                1.0118959878256304,
+                1.0075677927403215,
+                1.0116110079956304
+              ],
+              "rounds": [
+                308,
+                328,
+                256
+              ],
+              "speedup_over_original": 1.0011511550990158,
+              "speedup_over_wasp": 1.200283261470745
+            },
+            "control": {
+              "median": 1.279793,
+              "seconds": [
+                1.306051,
+                1.278087,
+                1.279793
+              ],
+              "scans": [
+                1.0079893574223342,
+                1.0074432788057086,
+                1.0073150308967238
+              ],
+              "rounds": [
+                292,
+                258,
+                261
+              ],
+              "speedup_over_original": 1.0016674571590876,
+              "speedup_over_wasp": 1.2009022576307262
+            },
+            "wasp": {
+              "median": 1.536906303,
+              "seconds": [
+                1.350506553,
+                1.674500735,
+                1.536906303
+              ],
+              "scans": [
+                null,
+                null,
+                null
+              ],
+              "rounds": [
+                null,
+                null,
+                null
+              ],
+              "speedup_over_original": 0.8340957399274846,
+              "speedup_over_wasp": 1.0
+            }
+          }
+        },
+        {
+          "source": "7224676",
+          "variants": {
+            "base": {
+              "median": 1.30686,
+              "seconds": [
+                1.400343,
+                1.30686,
+                1.274723
+              ],
+              "scans": [
+                1.0103703915179332,
+                1.0128338226643567,
+                1.0072461642638828
+              ],
+              "rounds": [
+                1171,
+                341,
+                218
+              ],
+              "speedup_over_original": 1.0,
+              "speedup_over_wasp": 1.254649436052829
+            },
+            "chunks8": {
+              "median": 1.294961,
+              "seconds": [
+                1.294961,
+                1.296107,
+                1.284576
+              ],
+              "scans": [
+                1.006731673077249,
+                1.0084973185779582,
+                1.0070137627794178
+              ],
+              "rounds": [
+                270,
+                305,
+                354
+              ],
+              "speedup_over_original": 1.0091886937135557,
+              "speedup_over_wasp": 1.266178025438604
+            },
+            "chunks64": {
+              "median": 1.291229,
+              "seconds": [
+                1.291229,
+                1.264294,
+                1.292409
+              ],
+              "scans": [
+                1.007530467898973,
+                1.0082351142219688,
+                1.0072436476266287
+              ],
+              "rounds": [
+                393,
+                185,
+                344
+              ],
+              "speedup_over_original": 1.0121055211740133,
+              "speedup_over_wasp": 1.2698376213669302
+            },
+            "control": {
+              "median": 1.304076,
+              "seconds": [
+                1.304076,
+                1.284463,
+                1.3846
+              ],
+              "scans": [
+                1.0165562309362166,
+                1.0082574938518514,
+                1.0186957302590773
+              ],
+              "rounds": [
+                276,
+                259,
+                501
+              ],
+              "speedup_over_original": 1.0021348449016774,
+              "speedup_over_wasp": 1.257327918004779
+            },
+            "wasp": {
+              "median": 1.639651162,
+              "seconds": [
+                1.639651162,
+                2.030092145,
+                1.499639876
+              ],
+              "scans": [
+                null,
+                null,
+                null
+              ],
+              "rounds": [
+                null,
+                null,
+                null
+              ],
+              "speedup_over_original": 0.7970353879455244,
+              "speedup_over_wasp": 1.0
+            }
+          }
+        },
+        {
+          "source": "26007212",
+          "variants": {
+            "base": {
+              "median": 1.306629,
+              "seconds": [
+                1.306629,
+                1.302191,
+                1.358096
+              ],
+              "scans": [
+                1.0127268767578297,
+                1.0152176304630434,
+                1.0148636042403985
+              ],
+              "rounds": [
+                314,
+                567,
+                408
+              ],
+              "speedup_over_original": 1.0,
+              "speedup_over_wasp": 1.172423669610884
+            },
+            "chunks8": {
+              "median": 1.29073,
+              "seconds": [
+                1.292383,
+                1.29073,
+                1.27531
+              ],
+              "scans": [
+                1.009031415691387,
+                1.0078030647932608,
+                1.0070738118678897
+              ],
+              "rounds": [
+                350,
+                579,
+                457
+              ],
+              "speedup_over_original": 1.0123178356433957,
+              "speedup_over_wasp": 1.1868653916775778
+            },
+            "chunks64": {
+              "median": 1.270078,
+              "seconds": [
+                1.355773,
+                1.262276,
+                1.270078
+              ],
+              "scans": [
+                1.0105024646782883,
+                1.00769706891264,
+                1.007620681241373
+              ],
+              "rounds": [
+                715,
+                498,
+                292
+              ],
+              "speedup_over_original": 1.0287785474592899,
+              "speedup_over_wasp": 1.2061643198291758
+            },
+            "control": {
+              "median": 1.283806,
+              "seconds": [
+                1.269202,
+                1.283806,
+                1.348184
+              ],
+              "scans": [
+                1.007225420168796,
+                1.007813652925128,
+                1.0096285554062914
+              ],
+              "rounds": [
+                356,
+                374,
+                900
+              ],
+              "speedup_over_original": 1.0177776081432865,
+              "speedup_over_wasp": 1.1932665581871404
+            },
+            "wasp": {
+              "median": 1.531922767,
+              "seconds": [
+                1.556750596,
+                1.531922767,
+                1.462561623
+              ],
+              "scans": [
+                null,
+                null,
+                null
+              ],
+              "rounds": [
+                null,
+                null,
+                null
+              ],
+              "speedup_over_original": 0.8529339912865203,
+              "speedup_over_wasp": 1.0
+            }
+          }
+        },
+        {
+          "source": "23077392",
+          "variants": {
+            "base": {
+              "median": 1.290943,
+              "seconds": [
+                1.282674,
+                1.299188,
+                1.290943
+              ],
+              "scans": [
+                1.0073629643606947,
+                1.0073422966402394,
+                1.007303743284998
+              ],
+              "rounds": [
+                402,
+                250,
+                460
+              ],
+              "speedup_over_original": 1.0,
+              "speedup_over_wasp": 1.103374098624029
+            },
+            "chunks8": {
+              "median": 1.26807,
+              "seconds": [
+                1.26807,
+                1.300921,
+                1.252788
+              ],
+              "scans": [
+                1.0092512796280808,
+                1.008750345869971,
+                1.006926797221661
+              ],
+              "rounds": [
+                208,
+                203,
+                228
+              ],
+              "speedup_over_original": 1.0180376477639246,
+              "speedup_over_wasp": 1.1232763719668473
+            },
+            "chunks64": {
+              "median": 1.304228,
+              "seconds": [
+                1.295116,
+                1.355689,
+                1.304228
+              ],
+              "scans": [
+                1.0070111287860224,
+                1.0115000282045927,
+                1.0069767397110043
+              ],
+              "rounds": [
+                607,
+                509,
+                457
+              ],
+              "speedup_over_original": 0.9898138975700568,
+              "speedup_over_wasp": 1.0921350170368984
+            },
+            "control": {
+              "median": 1.297066,
+              "seconds": [
+                1.297066,
+                1.303079,
+                1.247448
+              ],
+              "scans": [
+                1.0079003781822147,
+                1.0078476610583855,
+                1.0062182203993266
+              ],
+              "rounds": [
+                422,
+                246,
+                362
+              ],
+              "speedup_over_original": 0.9952793458467032,
+              "speedup_over_wasp": 1.0981654511027195
+            },
+            "wasp": {
+              "median": 1.424393069,
+              "seconds": [
+                1.376737098,
+                1.475475648,
+                1.424393069
+              ],
+              "scans": [
+                null,
+                null,
+                null
+              ],
+              "rounds": [
+                null,
+                null,
+                null
+              ],
+              "speedup_over_original": 0.9063109250498607,
+              "speedup_over_wasp": 1.0
+            }
+          }
+        }
+      ],
+      "work": [
+        {
+          "index": 224,
+          "graph": "uniform25",
+          "label": "base_cost",
+          "binary": "acic_base_cost",
+          "phase": "work",
+          "rep": 0,
+          "source": "9130980",
+          "role": "test",
+          "setting": null,
+          "command": [
+            "srun",
+            "-N1",
+            "--cpu-bind=none",
+            "--unbuffered",
+            "--kill-on-bad-exit=1",
+            "--time=5",
+            "-n16",
+            "--ntasks-per-node=16",
+            "-c8",
+            "bash",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/harness/benchmarks/launch_acic.sh",
+            "16",
+            "112",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/bin/acic_base_cost",
+            "0",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/graphs/uniform25.wsg",
+            "1",
+            "9130980",
+            "4",
+            "0.999",
+            "0.005",
+            "--result-digest",
+            "--timeout",
+            "60",
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "log": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/224-uniform25-work-base_cost-s9130980-r0.out",
+          "valid": true,
+          "returncode": 0,
+          "seconds": 1.399664,
+          "edge_attempts": 1089333095,
+          "scan_factor": 1.0146026088389448,
+          "rounds": 244,
+          "process_sharing": "off",
+          "heap_slice_line": "Heap slice: 8 (inactive)",
+          "counters": {
+            "sample_period": 1024,
+            "edge_attempts": 1089333095,
+            "expansions": 33999919,
+            "changes": 107621948,
+            "queue_pushes": 107621948,
+            "queue_pops": 107621948,
+            "stale_pops": 73622029,
+            "cas_attempts": 0,
+            "cas_failures": 0,
+            "intra_process": 68086871,
+            "intra_node": 1021246224,
+            "inter_node": 0,
+            "queue_probes": 0,
+            "lock_misses": 0,
+            "cpu_ns": 154630039389,
+            "push_calls": 0,
+            "push_samples": 0,
+            "push_ticks": 0,
+            "pop_calls": 0,
+            "pop_samples": 0,
+            "pop_ticks": 0
+          },
+          "comm": {
+            "pes": 112.0,
+            "solve_seconds": 1.399664,
+            "pe_seconds": 156.762413,
+            "work_seconds": 122.167028,
+            "work_send_seconds": 3.167514,
+            "send_seconds": 3.393432,
+            "window_pe_seconds": 156.749781,
+            "compute_share": 0.759107,
+            "send_share": 0.021647,
+            "other_share": 0.219246,
+            "idle_share": 0.090686
+          },
+          "queue": {}
+        },
+        {
+          "index": 225,
+          "graph": "uniform25",
+          "label": "base_cost",
+          "binary": "acic_base_cost",
+          "phase": "work",
+          "rep": 0,
+          "source": "7224676",
+          "role": "test",
+          "setting": null,
+          "command": [
+            "srun",
+            "-N1",
+            "--cpu-bind=none",
+            "--unbuffered",
+            "--kill-on-bad-exit=1",
+            "--time=5",
+            "-n16",
+            "--ntasks-per-node=16",
+            "-c8",
+            "bash",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/harness/benchmarks/launch_acic.sh",
+            "16",
+            "112",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/bin/acic_base_cost",
+            "0",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/graphs/uniform25.wsg",
+            "1",
+            "7224676",
+            "4",
+            "0.999",
+            "0.005",
+            "--result-digest",
+            "--timeout",
+            "60",
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "8",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "log": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/225-uniform25-work-base_cost-s7224676-r0.out",
+          "valid": true,
+          "returncode": 0,
+          "seconds": 1.329157,
+          "edge_attempts": 1086926177,
+          "scan_factor": 1.0123608103539172,
+          "rounds": 535,
+          "process_sharing": "off",
+          "heap_slice_line": "Heap slice: 8 (inactive)",
+          "counters": {
+            "sample_period": 1024,
+            "edge_attempts": 1086926177,
+            "expansions": 33935039,
+            "changes": 107773295,
+            "queue_pushes": 107773295,
+            "queue_pops": 107773295,
+            "stale_pops": 73838256,
+            "cas_attempts": 0,
+            "cas_failures": 0,
+            "intra_process": 67936953,
+            "intra_node": 1018989224,
+            "inter_node": 0,
+            "queue_probes": 0,
+            "lock_misses": 0,
+            "cpu_ns": 147065950667,
+            "push_calls": 0,
+            "push_samples": 0,
+            "push_ticks": 0,
+            "pop_calls": 0,
+            "pop_samples": 0,
+            "pop_ticks": 0
+          },
+          "comm": {
+            "pes": 112.0,
+            "solve_seconds": 1.329157,
+            "pe_seconds": 148.865543,
+            "work_seconds": 114.710889,
+            "work_send_seconds": 3.012365,
+            "send_seconds": 3.329556,
+            "window_pe_seconds": 148.802859,
+            "compute_share": 0.750332,
+            "send_share": 0.022366,
+            "other_share": 0.227302,
+            "idle_share": 0.098779
+          },
+          "queue": {}
+        },
+        {
+          "index": 226,
+          "graph": "uniform25",
+          "label": "chunks64_cost",
+          "binary": "acic_chunks_256_cost",
+          "phase": "work",
+          "rep": 0,
+          "source": "9130980",
+          "role": "test",
+          "setting": null,
+          "command": [
+            "srun",
+            "-N1",
+            "--cpu-bind=none",
+            "--unbuffered",
+            "--kill-on-bad-exit=1",
+            "--time=5",
+            "-n16",
+            "--ntasks-per-node=16",
+            "-c8",
+            "bash",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/harness/benchmarks/launch_acic.sh",
+            "16",
+            "112",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/bin/acic_chunks_256_cost",
+            "0",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/graphs/uniform25.wsg",
+            "1",
+            "9130980",
+            "4",
+            "0.999",
+            "0.005",
+            "--result-digest",
+            "--timeout",
+            "60",
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "log": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/226-uniform25-work-chunks64_cost-s9130980-r0.out",
+          "valid": true,
+          "returncode": 0,
+          "seconds": 1.442647,
+          "edge_attempts": 1086021219,
+          "scan_factor": 1.0115179343301335,
+          "rounds": 238,
+          "process_sharing": "off",
+          "heap_slice_line": "Heap slice: 64 (inactive)",
+          "counters": {
+            "sample_period": 1024,
+            "edge_attempts": 1086021219,
+            "expansions": 33911330,
+            "changes": 108027553,
+            "queue_pushes": 108027553,
+            "queue_pops": 108027553,
+            "stale_pops": 74116223,
+            "cas_attempts": 0,
+            "cas_failures": 0,
+            "intra_process": 67883007,
+            "intra_node": 1018138212,
+            "inter_node": 0,
+            "queue_probes": 0,
+            "lock_misses": 0,
+            "cpu_ns": 159683572759,
+            "push_calls": 0,
+            "push_samples": 0,
+            "push_ticks": 0,
+            "pop_calls": 0,
+            "pop_samples": 0,
+            "pop_ticks": 0
+          },
+          "comm": {
+            "pes": 112.0,
+            "solve_seconds": 1.442647,
+            "pe_seconds": 161.576408,
+            "work_seconds": 125.387854,
+            "work_send_seconds": 2.425069,
+            "send_seconds": 2.708056,
+            "window_pe_seconds": 161.788917,
+            "compute_share": 0.761019,
+            "send_share": 0.01676,
+            "other_share": 0.22222,
+            "idle_share": 0.093401
+          },
+          "queue": {}
+        },
+        {
+          "index": 227,
+          "graph": "uniform25",
+          "label": "chunks64_cost",
+          "binary": "acic_chunks_256_cost",
+          "phase": "work",
+          "rep": 0,
+          "source": "7224676",
+          "role": "test",
+          "setting": null,
+          "command": [
+            "srun",
+            "-N1",
+            "--cpu-bind=none",
+            "--unbuffered",
+            "--kill-on-bad-exit=1",
+            "--time=5",
+            "-n16",
+            "--ntasks-per-node=16",
+            "-c8",
+            "bash",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/harness/benchmarks/launch_acic.sh",
+            "16",
+            "112",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/bin/acic_chunks_256_cost",
+            "0",
+            "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/graphs/uniform25.wsg",
+            "1",
+            "7224676",
+            "4",
+            "0.999",
+            "0.005",
+            "--result-digest",
+            "--timeout",
+            "60",
+            "--process-share",
+            "auto",
+            "--reader-tile",
+            "auto",
+            "--slack-control",
+            "off",
+            "--process-queue",
+            "nearest",
+            "--process-queue-batch",
+            "8",
+            "--heap-slice",
+            "64",
+            "--hub-hints",
+            "auto",
+            "+old-scheduler"
+          ],
+          "log": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/227-uniform25-work-chunks64_cost-s7224676-r0.out",
+          "valid": true,
+          "returncode": 0,
+          "seconds": 1.428185,
+          "edge_attempts": 1091289989,
+          "scan_factor": 1.0164252558940416,
+          "rounds": 540,
+          "process_sharing": "off",
+          "heap_slice_line": "Heap slice: 64 (inactive)",
+          "counters": {
+            "sample_period": 1024,
+            "edge_attempts": 1091289989,
+            "expansions": 34063626,
+            "changes": 110310314,
+            "queue_pushes": 110310314,
+            "queue_pops": 110310314,
+            "stale_pops": 76246688,
+            "cas_attempts": 0,
+            "cas_failures": 0,
+            "intra_process": 68209216,
+            "intra_node": 1023080773,
+            "inter_node": 0,
+            "queue_probes": 0,
+            "lock_misses": 0,
+            "cpu_ns": 157936955831,
+            "push_calls": 0,
+            "push_samples": 0,
+            "push_ticks": 0,
+            "pop_calls": 0,
+            "pop_samples": 0,
+            "pop_ticks": 0
+          },
+          "comm": {
+            "pes": 112.0,
+            "solve_seconds": 1.428185,
+            "pe_seconds": 159.956772,
+            "work_seconds": 116.079615,
+            "work_send_seconds": 3.513159,
+            "send_seconds": 3.835436,
+            "window_pe_seconds": 160.017058,
+            "compute_share": 0.70373,
+            "send_share": 0.023978,
+            "other_share": 0.272292,
+            "idle_share": 0.161844
+          },
+          "queue": {}
+        }
+      ],
+      "ranges": {
+        "original_seconds": [
+          1.281927,
+          1.30686
+        ],
+        "selected_seconds": [
+          1.270078,
+          1.304228
+        ],
+        "wasp_seconds": [
+          1.424393069,
+          1.639651162
+        ],
+        "selected_speedup": [
+          0.9898138975700568,
+          1.0287785474592899
+        ],
+        "chunk_only_speedup": [
+          0.990617192746291,
+          1.0180376477639246
+        ],
+        "incremental_slice_speedup": [
+          0.9722763197845776,
+          1.0162604186514528
+        ],
+        "control_speedup": [
+          0.9952793458467032,
+          1.0177776081432865
+        ],
+        "wasp_speedup": [
+          1.0921350170368984,
+          1.2698376213669302
+        ],
+        "original_scans": [
+          1.0071738952343396,
+          1.0148636042403985
+        ],
+        "selected_scans": [
+          1.0070111287860224,
+          1.0116110079956304
+        ],
+        "original_rounds": [
+          341,
+          408
+        ],
+        "selected_rounds": [
+          308,
+          509
+        ]
+      },
+      "geomean_speedup": 1.0078600328660583
+    }
+  },
+  "round_progress": [
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "22613654",
+      "rep": 0,
+      "seconds": 0.71493,
+      "observations": 3530,
+      "comparisons": 3528,
+      "unchanged_threshold": 3147,
+      "unchanged_threshold_with_update_activity": 3141,
+      "no_update_activity": 6,
+      "changed_threshold": 381
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "22613654",
+      "rep": 0,
+      "seconds": 0.551168,
+      "observations": 2109,
+      "comparisons": 2107,
+      "unchanged_threshold": 1778,
+      "unchanged_threshold_with_update_activity": 1775,
+      "no_update_activity": 3,
+      "changed_threshold": 329
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "22613654",
+      "rep": 0,
+      "seconds": 0.429828,
+      "observations": 604,
+      "comparisons": 602,
+      "unchanged_threshold": 325,
+      "unchanged_threshold_with_update_activity": 324,
+      "no_update_activity": 1,
+      "changed_threshold": 277
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "22613654",
+      "rep": 0,
+      "seconds": 0.430959,
+      "observations": 604,
+      "comparisons": 602,
+      "unchanged_threshold": 323,
+      "unchanged_threshold_with_update_activity": 317,
+      "no_update_activity": 6,
+      "changed_threshold": 279
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "8718204",
+      "rep": 0,
+      "seconds": 0.636723,
+      "observations": 1965,
+      "comparisons": 1963,
+      "unchanged_threshold": 1548,
+      "unchanged_threshold_with_update_activity": 1548,
+      "no_update_activity": 0,
+      "changed_threshold": 415
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "8718204",
+      "rep": 0,
+      "seconds": 0.484983,
+      "observations": 808,
+      "comparisons": 806,
+      "unchanged_threshold": 414,
+      "unchanged_threshold_with_update_activity": 414,
+      "no_update_activity": 0,
+      "changed_threshold": 392
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "8718204",
+      "rep": 0,
+      "seconds": 0.787202,
+      "observations": 3227,
+      "comparisons": 3225,
+      "unchanged_threshold": 2836,
+      "unchanged_threshold_with_update_activity": 2831,
+      "no_update_activity": 5,
+      "changed_threshold": 389
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "8718204",
+      "rep": 0,
+      "seconds": 0.513774,
+      "observations": 790,
+      "comparisons": 788,
+      "unchanged_threshold": 395,
+      "unchanged_threshold_with_update_activity": 394,
+      "no_update_activity": 1,
+      "changed_threshold": 393
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "10159848",
+      "rep": 0,
+      "seconds": 0.501612,
+      "observations": 2324,
+      "comparisons": 2322,
+      "unchanged_threshold": 1942,
+      "unchanged_threshold_with_update_activity": 1937,
+      "no_update_activity": 5,
+      "changed_threshold": 380
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "10159848",
+      "rep": 0,
+      "seconds": 0.428182,
+      "observations": 654,
+      "comparisons": 652,
+      "unchanged_threshold": 368,
+      "unchanged_threshold_with_update_activity": 368,
+      "no_update_activity": 0,
+      "changed_threshold": 284
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "10159848",
+      "rep": 0,
+      "seconds": 0.426691,
+      "observations": 676,
+      "comparisons": 674,
+      "unchanged_threshold": 384,
+      "unchanged_threshold_with_update_activity": 380,
+      "no_update_activity": 4,
+      "changed_threshold": 290
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "10159848",
+      "rep": 0,
+      "seconds": 0.629646,
+      "observations": 3772,
+      "comparisons": 3770,
+      "unchanged_threshold": 3305,
+      "unchanged_threshold_with_update_activity": 3302,
+      "no_update_activity": 3,
+      "changed_threshold": 465
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "3073839",
+      "rep": 0,
+      "seconds": 0.594545,
+      "observations": 2373,
+      "comparisons": 2371,
+      "unchanged_threshold": 2047,
+      "unchanged_threshold_with_update_activity": 2045,
+      "no_update_activity": 2,
+      "changed_threshold": 324
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "3073839",
+      "rep": 0,
+      "seconds": 0.42952,
+      "observations": 675,
+      "comparisons": 673,
+      "unchanged_threshold": 371,
+      "unchanged_threshold_with_update_activity": 369,
+      "no_update_activity": 2,
+      "changed_threshold": 302
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "3073839",
+      "rep": 0,
+      "seconds": 0.718035,
+      "observations": 4073,
+      "comparisons": 4071,
+      "unchanged_threshold": 3714,
+      "unchanged_threshold_with_update_activity": 3710,
+      "no_update_activity": 4,
+      "changed_threshold": 357
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "3073839",
+      "rep": 0,
+      "seconds": 0.390362,
+      "observations": 678,
+      "comparisons": 676,
+      "unchanged_threshold": 372,
+      "unchanged_threshold_with_update_activity": 371,
+      "no_update_activity": 1,
+      "changed_threshold": 304
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "8718204",
+      "rep": 1,
+      "seconds": 0.553512,
+      "observations": 2070,
+      "comparisons": 2068,
+      "unchanged_threshold": 1666,
+      "unchanged_threshold_with_update_activity": 1664,
+      "no_update_activity": 2,
+      "changed_threshold": 402
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "8718204",
+      "rep": 1,
+      "seconds": 0.665078,
+      "observations": 3027,
+      "comparisons": 3025,
+      "unchanged_threshold": 2606,
+      "unchanged_threshold_with_update_activity": 2605,
+      "no_update_activity": 1,
+      "changed_threshold": 419
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "8718204",
+      "rep": 1,
+      "seconds": 0.446333,
+      "observations": 800,
+      "comparisons": 798,
+      "unchanged_threshold": 406,
+      "unchanged_threshold_with_update_activity": 406,
+      "no_update_activity": 0,
+      "changed_threshold": 392
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "8718204",
+      "rep": 1,
+      "seconds": 0.449986,
+      "observations": 802,
+      "comparisons": 800,
+      "unchanged_threshold": 403,
+      "unchanged_threshold_with_update_activity": 402,
+      "no_update_activity": 1,
+      "changed_threshold": 397
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "3073839",
+      "rep": 1,
+      "seconds": 0.659926,
+      "observations": 3672,
+      "comparisons": 3670,
+      "unchanged_threshold": 3326,
+      "unchanged_threshold_with_update_activity": 3325,
+      "no_update_activity": 1,
+      "changed_threshold": 344
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "3073839",
+      "rep": 1,
+      "seconds": 0.41496,
+      "observations": 642,
+      "comparisons": 640,
+      "unchanged_threshold": 348,
+      "unchanged_threshold_with_update_activity": 347,
+      "no_update_activity": 1,
+      "changed_threshold": 292
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "3073839",
+      "rep": 1,
+      "seconds": 0.607701,
+      "observations": 1750,
+      "comparisons": 1748,
+      "unchanged_threshold": 1428,
+      "unchanged_threshold_with_update_activity": 1418,
+      "no_update_activity": 10,
+      "changed_threshold": 320
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "3073839",
+      "rep": 1,
+      "seconds": 0.446933,
+      "observations": 650,
+      "comparisons": 648,
+      "unchanged_threshold": 351,
+      "unchanged_threshold_with_update_activity": 350,
+      "no_update_activity": 1,
+      "changed_threshold": 297
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "22613654",
+      "rep": 1,
+      "seconds": 0.655195,
+      "observations": 2297,
+      "comparisons": 2295,
+      "unchanged_threshold": 1960,
+      "unchanged_threshold_with_update_activity": 1953,
+      "no_update_activity": 7,
+      "changed_threshold": 335
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "22613654",
+      "rep": 1,
+      "seconds": 0.461037,
+      "observations": 651,
+      "comparisons": 649,
+      "unchanged_threshold": 368,
+      "unchanged_threshold_with_update_activity": 366,
+      "no_update_activity": 2,
+      "changed_threshold": 281
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "22613654",
+      "rep": 1,
+      "seconds": 0.471617,
+      "observations": 625,
+      "comparisons": 623,
+      "unchanged_threshold": 340,
+      "unchanged_threshold_with_update_activity": 337,
+      "no_update_activity": 3,
+      "changed_threshold": 283
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "22613654",
+      "rep": 1,
+      "seconds": 0.761985,
+      "observations": 4278,
+      "comparisons": 4276,
+      "unchanged_threshold": 3826,
+      "unchanged_threshold_with_update_activity": 3818,
+      "no_update_activity": 8,
+      "changed_threshold": 450
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "10159848",
+      "rep": 1,
+      "seconds": 0.6491,
+      "observations": 2924,
+      "comparisons": 2922,
+      "unchanged_threshold": 2482,
+      "unchanged_threshold_with_update_activity": 2475,
+      "no_update_activity": 7,
+      "changed_threshold": 440
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "10159848",
+      "rep": 1,
+      "seconds": 0.521354,
+      "observations": 2044,
+      "comparisons": 2042,
+      "unchanged_threshold": 1703,
+      "unchanged_threshold_with_update_activity": 1701,
+      "no_update_activity": 2,
+      "changed_threshold": 339
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "10159848",
+      "rep": 1,
+      "seconds": 0.435835,
+      "observations": 658,
+      "comparisons": 656,
+      "unchanged_threshold": 366,
+      "unchanged_threshold_with_update_activity": 363,
+      "no_update_activity": 3,
+      "changed_threshold": 290
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "10159848",
+      "rep": 1,
+      "seconds": 0.436631,
+      "observations": 623,
+      "comparisons": 621,
+      "unchanged_threshold": 341,
+      "unchanged_threshold_with_update_activity": 341,
+      "no_update_activity": 0,
+      "changed_threshold": 280
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "3073839",
+      "rep": 2,
+      "seconds": 0.460255,
+      "observations": 685,
+      "comparisons": 683,
+      "unchanged_threshold": 385,
+      "unchanged_threshold_with_update_activity": 385,
+      "no_update_activity": 0,
+      "changed_threshold": 298
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "3073839",
+      "rep": 2,
+      "seconds": 0.639299,
+      "observations": 2624,
+      "comparisons": 2622,
+      "unchanged_threshold": 2303,
+      "unchanged_threshold_with_update_activity": 2299,
+      "no_update_activity": 4,
+      "changed_threshold": 319
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "3073839",
+      "rep": 2,
+      "seconds": 0.818813,
+      "observations": 4067,
+      "comparisons": 4065,
+      "unchanged_threshold": 3728,
+      "unchanged_threshold_with_update_activity": 3726,
+      "no_update_activity": 2,
+      "changed_threshold": 337
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "3073839",
+      "rep": 2,
+      "seconds": 0.461852,
+      "observations": 648,
+      "comparisons": 646,
+      "unchanged_threshold": 352,
+      "unchanged_threshold_with_update_activity": 351,
+      "no_update_activity": 1,
+      "changed_threshold": 294
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "22613654",
+      "rep": 2,
+      "seconds": 0.718059,
+      "observations": 3534,
+      "comparisons": 3532,
+      "unchanged_threshold": 3203,
+      "unchanged_threshold_with_update_activity": 3197,
+      "no_update_activity": 6,
+      "changed_threshold": 329
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "22613654",
+      "rep": 2,
+      "seconds": 0.439548,
+      "observations": 596,
+      "comparisons": 594,
+      "unchanged_threshold": 318,
+      "unchanged_threshold_with_update_activity": 317,
+      "no_update_activity": 1,
+      "changed_threshold": 276
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "22613654",
+      "rep": 2,
+      "seconds": 0.437629,
+      "observations": 622,
+      "comparisons": 620,
+      "unchanged_threshold": 338,
+      "unchanged_threshold_with_update_activity": 334,
+      "no_update_activity": 4,
+      "changed_threshold": 282
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "22613654",
+      "rep": 2,
+      "seconds": 0.611089,
+      "observations": 2125,
+      "comparisons": 2123,
+      "unchanged_threshold": 1775,
+      "unchanged_threshold_with_update_activity": 1768,
+      "no_update_activity": 7,
+      "changed_threshold": 348
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "8718204",
+      "rep": 2,
+      "seconds": 0.758256,
+      "observations": 2342,
+      "comparisons": 2340,
+      "unchanged_threshold": 1929,
+      "unchanged_threshold_with_update_activity": 1929,
+      "no_update_activity": 0,
+      "changed_threshold": 411
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "8718204",
+      "rep": 2,
+      "seconds": 0.541191,
+      "observations": 802,
+      "comparisons": 800,
+      "unchanged_threshold": 404,
+      "unchanged_threshold_with_update_activity": 404,
+      "no_update_activity": 0,
+      "changed_threshold": 396
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "8718204",
+      "rep": 2,
+      "seconds": 0.667733,
+      "observations": 2070,
+      "comparisons": 2068,
+      "unchanged_threshold": 1593,
+      "unchanged_threshold_with_update_activity": 1590,
+      "no_update_activity": 3,
+      "changed_threshold": 475
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "8718204",
+      "rep": 2,
+      "seconds": 0.505787,
+      "observations": 810,
+      "comparisons": 808,
+      "unchanged_threshold": 412,
+      "unchanged_threshold_with_update_activity": 412,
+      "no_update_activity": 0,
+      "changed_threshold": 396
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks64",
+      "source": "10159848",
+      "rep": 2,
+      "seconds": 0.542335,
+      "observations": 2578,
+      "comparisons": 2576,
+      "unchanged_threshold": 2186,
+      "unchanged_threshold_with_update_activity": 2182,
+      "no_update_activity": 4,
+      "changed_threshold": 390
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "base",
+      "source": "10159848",
+      "rep": 2,
+      "seconds": 0.488682,
+      "observations": 638,
+      "comparisons": 636,
+      "unchanged_threshold": 353,
+      "unchanged_threshold_with_update_activity": 351,
+      "no_update_activity": 2,
+      "changed_threshold": 283
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "control",
+      "source": "10159848",
+      "rep": 2,
+      "seconds": 0.439787,
+      "observations": 686,
+      "comparisons": 684,
+      "unchanged_threshold": 392,
+      "unchanged_threshold_with_update_activity": 387,
+      "no_update_activity": 5,
+      "changed_threshold": 292
+    },
+    {
+      "graph": "road-usa-z",
+      "label": "chunks8",
+      "source": "10159848",
+      "rep": 2,
+      "seconds": 0.664552,
+      "observations": 4060,
+      "comparisons": 4058,
+      "unchanged_threshold": 3578,
+      "unchanged_threshold_with_update_activity": 3576,
+      "no_update_activity": 2,
+      "changed_threshold": 480
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "9130980",
+      "rep": 0,
+      "seconds": 1.286941,
+      "observations": 299,
+      "comparisons": 297,
+      "unchanged_threshold": 272,
+      "unchanged_threshold_with_update_activity": 271,
+      "no_update_activity": 1,
+      "changed_threshold": 25
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "9130980",
+      "rep": 0,
+      "seconds": 1.306051,
+      "observations": 292,
+      "comparisons": 290,
+      "unchanged_threshold": 259,
+      "unchanged_threshold_with_update_activity": 259,
+      "no_update_activity": 0,
+      "changed_threshold": 31
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "9130980",
+      "rep": 0,
+      "seconds": 1.409097,
+      "observations": 611,
+      "comparisons": 609,
+      "unchanged_threshold": 583,
+      "unchanged_threshold_with_update_activity": 581,
+      "no_update_activity": 2,
+      "changed_threshold": 26
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "9130980",
+      "rep": 0,
+      "seconds": 1.280453,
+      "observations": 308,
+      "comparisons": 306,
+      "unchanged_threshold": 280,
+      "unchanged_threshold_with_update_activity": 275,
+      "no_update_activity": 5,
+      "changed_threshold": 26
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "23077392",
+      "rep": 0,
+      "seconds": 1.297066,
+      "observations": 422,
+      "comparisons": 420,
+      "unchanged_threshold": 397,
+      "unchanged_threshold_with_update_activity": 396,
+      "no_update_activity": 1,
+      "changed_threshold": 23
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "23077392",
+      "rep": 0,
+      "seconds": 1.26807,
+      "observations": 208,
+      "comparisons": 206,
+      "unchanged_threshold": 184,
+      "unchanged_threshold_with_update_activity": 182,
+      "no_update_activity": 2,
+      "changed_threshold": 22
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "23077392",
+      "rep": 0,
+      "seconds": 1.282674,
+      "observations": 402,
+      "comparisons": 400,
+      "unchanged_threshold": 377,
+      "unchanged_threshold_with_update_activity": 376,
+      "no_update_activity": 1,
+      "changed_threshold": 23
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "23077392",
+      "rep": 0,
+      "seconds": 1.295116,
+      "observations": 607,
+      "comparisons": 605,
+      "unchanged_threshold": 584,
+      "unchanged_threshold_with_update_activity": 583,
+      "no_update_activity": 1,
+      "changed_threshold": 21
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "7224676",
+      "rep": 0,
+      "seconds": 1.304076,
+      "observations": 276,
+      "comparisons": 274,
+      "unchanged_threshold": 240,
+      "unchanged_threshold_with_update_activity": 231,
+      "no_update_activity": 9,
+      "changed_threshold": 34
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "7224676",
+      "rep": 0,
+      "seconds": 1.400343,
+      "observations": 1171,
+      "comparisons": 1169,
+      "unchanged_threshold": 1137,
+      "unchanged_threshold_with_update_activity": 1133,
+      "no_update_activity": 4,
+      "changed_threshold": 32
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "7224676",
+      "rep": 0,
+      "seconds": 1.294961,
+      "observations": 270,
+      "comparisons": 268,
+      "unchanged_threshold": 245,
+      "unchanged_threshold_with_update_activity": 242,
+      "no_update_activity": 3,
+      "changed_threshold": 23
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "7224676",
+      "rep": 0,
+      "seconds": 1.291229,
+      "observations": 393,
+      "comparisons": 391,
+      "unchanged_threshold": 366,
+      "unchanged_threshold_with_update_activity": 366,
+      "no_update_activity": 0,
+      "changed_threshold": 25
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "26007212",
+      "rep": 0,
+      "seconds": 1.292383,
+      "observations": 350,
+      "comparisons": 348,
+      "unchanged_threshold": 324,
+      "unchanged_threshold_with_update_activity": 323,
+      "no_update_activity": 1,
+      "changed_threshold": 24
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "26007212",
+      "rep": 0,
+      "seconds": 1.355773,
+      "observations": 715,
+      "comparisons": 713,
+      "unchanged_threshold": 689,
+      "unchanged_threshold_with_update_activity": 689,
+      "no_update_activity": 0,
+      "changed_threshold": 24
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "26007212",
+      "rep": 0,
+      "seconds": 1.306629,
+      "observations": 314,
+      "comparisons": 312,
+      "unchanged_threshold": 272,
+      "unchanged_threshold_with_update_activity": 265,
+      "no_update_activity": 7,
+      "changed_threshold": 40
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "26007212",
+      "rep": 0,
+      "seconds": 1.269202,
+      "observations": 356,
+      "comparisons": 354,
+      "unchanged_threshold": 327,
+      "unchanged_threshold_with_update_activity": 326,
+      "no_update_activity": 1,
+      "changed_threshold": 27
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "7224676",
+      "rep": 1,
+      "seconds": 1.30686,
+      "observations": 341,
+      "comparisons": 339,
+      "unchanged_threshold": 310,
+      "unchanged_threshold_with_update_activity": 306,
+      "no_update_activity": 4,
+      "changed_threshold": 29
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "7224676",
+      "rep": 1,
+      "seconds": 1.264294,
+      "observations": 185,
+      "comparisons": 183,
+      "unchanged_threshold": 163,
+      "unchanged_threshold_with_update_activity": 161,
+      "no_update_activity": 2,
+      "changed_threshold": 20
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "7224676",
+      "rep": 1,
+      "seconds": 1.284463,
+      "observations": 259,
+      "comparisons": 257,
+      "unchanged_threshold": 231,
+      "unchanged_threshold_with_update_activity": 229,
+      "no_update_activity": 2,
+      "changed_threshold": 26
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "7224676",
+      "rep": 1,
+      "seconds": 1.296107,
+      "observations": 305,
+      "comparisons": 303,
+      "unchanged_threshold": 281,
+      "unchanged_threshold_with_update_activity": 280,
+      "no_update_activity": 1,
+      "changed_threshold": 22
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "9130980",
+      "rep": 1,
+      "seconds": 1.294069,
+      "observations": 291,
+      "comparisons": 289,
+      "unchanged_threshold": 262,
+      "unchanged_threshold_with_update_activity": 260,
+      "no_update_activity": 2,
+      "changed_threshold": 27
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "9130980",
+      "rep": 1,
+      "seconds": 1.33009,
+      "observations": 328,
+      "comparisons": 326,
+      "unchanged_threshold": 297,
+      "unchanged_threshold_with_update_activity": 295,
+      "no_update_activity": 2,
+      "changed_threshold": 29
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "9130980",
+      "rep": 1,
+      "seconds": 1.279763,
+      "observations": 365,
+      "comparisons": 363,
+      "unchanged_threshold": 337,
+      "unchanged_threshold_with_update_activity": 335,
+      "no_update_activity": 2,
+      "changed_threshold": 26
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "9130980",
+      "rep": 1,
+      "seconds": 1.278087,
+      "observations": 258,
+      "comparisons": 256,
+      "unchanged_threshold": 232,
+      "unchanged_threshold_with_update_activity": 230,
+      "no_update_activity": 2,
+      "changed_threshold": 24
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "26007212",
+      "rep": 1,
+      "seconds": 1.283806,
+      "observations": 374,
+      "comparisons": 372,
+      "unchanged_threshold": 349,
+      "unchanged_threshold_with_update_activity": 347,
+      "no_update_activity": 2,
+      "changed_threshold": 23
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "26007212",
+      "rep": 1,
+      "seconds": 1.262276,
+      "observations": 498,
+      "comparisons": 496,
+      "unchanged_threshold": 473,
+      "unchanged_threshold_with_update_activity": 472,
+      "no_update_activity": 1,
+      "changed_threshold": 23
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "26007212",
+      "rep": 1,
+      "seconds": 1.29073,
+      "observations": 579,
+      "comparisons": 577,
+      "unchanged_threshold": 554,
+      "unchanged_threshold_with_update_activity": 554,
+      "no_update_activity": 0,
+      "changed_threshold": 23
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "26007212",
+      "rep": 1,
+      "seconds": 1.302191,
+      "observations": 567,
+      "comparisons": 565,
+      "unchanged_threshold": 531,
+      "unchanged_threshold_with_update_activity": 523,
+      "no_update_activity": 8,
+      "changed_threshold": 34
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "23077392",
+      "rep": 1,
+      "seconds": 1.303079,
+      "observations": 246,
+      "comparisons": 244,
+      "unchanged_threshold": 223,
+      "unchanged_threshold_with_update_activity": 221,
+      "no_update_activity": 2,
+      "changed_threshold": 21
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "23077392",
+      "rep": 1,
+      "seconds": 1.300921,
+      "observations": 203,
+      "comparisons": 201,
+      "unchanged_threshold": 179,
+      "unchanged_threshold_with_update_activity": 178,
+      "no_update_activity": 1,
+      "changed_threshold": 22
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "23077392",
+      "rep": 1,
+      "seconds": 1.355689,
+      "observations": 509,
+      "comparisons": 507,
+      "unchanged_threshold": 469,
+      "unchanged_threshold_with_update_activity": 462,
+      "no_update_activity": 7,
+      "changed_threshold": 38
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "23077392",
+      "rep": 1,
+      "seconds": 1.299188,
+      "observations": 250,
+      "comparisons": 248,
+      "unchanged_threshold": 227,
+      "unchanged_threshold_with_update_activity": 223,
+      "no_update_activity": 4,
+      "changed_threshold": 21
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "23077392",
+      "rep": 2,
+      "seconds": 1.304228,
+      "observations": 457,
+      "comparisons": 455,
+      "unchanged_threshold": 436,
+      "unchanged_threshold_with_update_activity": 432,
+      "no_update_activity": 4,
+      "changed_threshold": 19
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "23077392",
+      "rep": 2,
+      "seconds": 1.290943,
+      "observations": 460,
+      "comparisons": 458,
+      "unchanged_threshold": 435,
+      "unchanged_threshold_with_update_activity": 433,
+      "no_update_activity": 2,
+      "changed_threshold": 23
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "23077392",
+      "rep": 2,
+      "seconds": 1.252788,
+      "observations": 228,
+      "comparisons": 226,
+      "unchanged_threshold": 206,
+      "unchanged_threshold_with_update_activity": 203,
+      "no_update_activity": 3,
+      "changed_threshold": 20
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "23077392",
+      "rep": 2,
+      "seconds": 1.247448,
+      "observations": 362,
+      "comparisons": 360,
+      "unchanged_threshold": 341,
+      "unchanged_threshold_with_update_activity": 339,
+      "no_update_activity": 2,
+      "changed_threshold": 19
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "9130980",
+      "rep": 2,
+      "seconds": 1.252603,
+      "observations": 396,
+      "comparisons": 394,
+      "unchanged_threshold": 364,
+      "unchanged_threshold_with_update_activity": 363,
+      "no_update_activity": 1,
+      "changed_threshold": 30
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "9130980",
+      "rep": 2,
+      "seconds": 1.271868,
+      "observations": 256,
+      "comparisons": 254,
+      "unchanged_threshold": 216,
+      "unchanged_threshold_with_update_activity": 211,
+      "no_update_activity": 5,
+      "changed_threshold": 38
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "9130980",
+      "rep": 2,
+      "seconds": 1.281927,
+      "observations": 381,
+      "comparisons": 379,
+      "unchanged_threshold": 348,
+      "unchanged_threshold_with_update_activity": 344,
+      "no_update_activity": 4,
+      "changed_threshold": 31
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "9130980",
+      "rep": 2,
+      "seconds": 1.279793,
+      "observations": 261,
+      "comparisons": 259,
+      "unchanged_threshold": 231,
+      "unchanged_threshold_with_update_activity": 229,
+      "no_update_activity": 2,
+      "changed_threshold": 28
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "7224676",
+      "rep": 2,
+      "seconds": 1.3846,
+      "observations": 501,
+      "comparisons": 499,
+      "unchanged_threshold": 477,
+      "unchanged_threshold_with_update_activity": 476,
+      "no_update_activity": 1,
+      "changed_threshold": 22
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "7224676",
+      "rep": 2,
+      "seconds": 1.284576,
+      "observations": 354,
+      "comparisons": 352,
+      "unchanged_threshold": 328,
+      "unchanged_threshold_with_update_activity": 327,
+      "no_update_activity": 1,
+      "changed_threshold": 24
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "7224676",
+      "rep": 2,
+      "seconds": 1.292409,
+      "observations": 344,
+      "comparisons": 342,
+      "unchanged_threshold": 317,
+      "unchanged_threshold_with_update_activity": 316,
+      "no_update_activity": 1,
+      "changed_threshold": 25
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "7224676",
+      "rep": 2,
+      "seconds": 1.274723,
+      "observations": 218,
+      "comparisons": 216,
+      "unchanged_threshold": 194,
+      "unchanged_threshold_with_update_activity": 193,
+      "no_update_activity": 1,
+      "changed_threshold": 22
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks64",
+      "source": "26007212",
+      "rep": 2,
+      "seconds": 1.270078,
+      "observations": 292,
+      "comparisons": 290,
+      "unchanged_threshold": 261,
+      "unchanged_threshold_with_update_activity": 260,
+      "no_update_activity": 1,
+      "changed_threshold": 29
+    },
+    {
+      "graph": "uniform25",
+      "label": "chunks8",
+      "source": "26007212",
+      "rep": 2,
+      "seconds": 1.27531,
+      "observations": 457,
+      "comparisons": 455,
+      "unchanged_threshold": 430,
+      "unchanged_threshold_with_update_activity": 429,
+      "no_update_activity": 1,
+      "changed_threshold": 25
+    },
+    {
+      "graph": "uniform25",
+      "label": "base",
+      "source": "26007212",
+      "rep": 2,
+      "seconds": 1.358096,
+      "observations": 408,
+      "comparisons": 406,
+      "unchanged_threshold": 373,
+      "unchanged_threshold_with_update_activity": 366,
+      "no_update_activity": 7,
+      "changed_threshold": 33
+    },
+    {
+      "graph": "uniform25",
+      "label": "control",
+      "source": "26007212",
+      "rep": 2,
+      "seconds": 1.348184,
+      "observations": 900,
+      "comparisons": 898,
+      "unchanged_threshold": 876,
+      "unchanged_threshold_with_update_activity": 873,
+      "no_update_activity": 3,
+      "changed_threshold": 22
+    }
+  ],
+  "round_progress_note": "Initial observation and final termination observation excluded. Unchanged threshold does not imply an empty round; update activity is created or processed count change.",
+  "analysis_sha256": "8e67e96975c8d6b2059cf126136f93870c27c9d95a6f01e9727dde59ff134663",
+  "validated_solves": 228,
+  "uniform_wasp_boundary": {
+    "manifest": {
+      "job": "22398569",
+      "hosts": "cn115",
+      "prior_job": "22392217",
+      "prior_selection": {
+        "threads": 128,
+        "delta": 16
+      },
+      "threads": 128,
+      "method": "Pin training-selected Wasp threads; compare delta 16 vs 4 twice on each training source. If 4 wins, compare 4 vs 1 twice; stop there. If selection changes, retime original ACIC, selected chunks/s64 and Wasp on four held-out sources with warmup plus three repetitions. All arms interleaved. No solver changes or delta selection on held-out sources."
+    },
+    "training_scores": {
+      "16": 1.639610180800708,
+      "4": 1.5630849665327995,
+      "1": 1.6457405879883245
+    },
+    "winner": {
+      "threads": 128,
+      "delta": 4
+    },
+    "sources": [
+      {
+        "source": "9130980",
+        "seconds": {
+          "base": [
+            1.304683,
+            1.280484,
+            1.323063
+          ],
+          "chunks64": [
+            1.315266,
+            1.241574,
+            1.292384
+          ],
+          "wasp": [
+            1.629181103,
+            1.325588663,
+            1.447243382
+          ]
+        },
+        "medians": {
+          "base": 1.304683,
+          "chunks64": 1.292384,
+          "wasp": 1.447243382
+        },
+        "selected_speedup": 1.0095165214054027,
+        "acic_speedup_over_wasp": 1.1198245892861565,
+        "original_speedup_over_wasp": 1.109268214577794
+      },
+      {
+        "source": "7224676",
+        "seconds": {
+          "base": [
+            1.321725,
+            1.310213,
+            1.309761
+          ],
+          "chunks64": [
+            1.29613,
+            1.304029,
+            1.268685
+          ],
+          "wasp": [
+            1.488907743,
+            1.866806406,
+            1.471928973
+          ]
+        },
+        "medians": {
+          "base": 1.310213,
+          "chunks64": 1.29613,
+          "wasp": 1.488907743
+        },
+        "selected_speedup": 1.0108654224499087,
+        "acic_speedup_over_wasp": 1.1487333392483778,
+        "original_speedup_over_wasp": 1.1363860250203592
+      },
+      {
+        "source": "26007212",
+        "seconds": {
+          "base": [
+            1.347627,
+            1.326895,
+            1.301918
+          ],
+          "chunks64": [
+            1.244093,
+            1.356487,
+            1.363504
+          ],
+          "wasp": [
+            1.463328084,
+            1.589826168,
+            1.330919232
+          ]
+        },
+        "medians": {
+          "base": 1.326895,
+          "chunks64": 1.356487,
+          "wasp": 1.463328084
+        },
+        "selected_speedup": 0.9781848259511517,
+        "acic_speedup_over_wasp": 1.078763072554326,
+        "original_speedup_over_wasp": 1.1028213114074588
+      },
+      {
+        "source": "23077392",
+        "seconds": {
+          "base": [
+            1.272699,
+            1.321113,
+            1.283213
+          ],
+          "chunks64": [
+            1.411881,
+            1.28424,
+            1.288501
+          ],
+          "wasp": [
+            1.37943539,
+            1.591501822,
+            1.553853508
+          ]
+        },
+        "medians": {
+          "base": 1.283213,
+          "chunks64": 1.288501,
+          "wasp": 1.553853508
+        },
+        "selected_speedup": 0.995896006289479,
+        "acic_speedup_over_wasp": 1.2059389228258264,
+        "original_speedup_over_wasp": 1.2109084836266466
+      }
+    ],
+    "validated_solves": 65,
+    "raw_directory": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/wasp-boundary-22398569"
+  },
+  "total_validated_solves": 293,
+  "build_manifests": {
+    "acic_base.manifest": "revision=87f04af kind=production build=/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87f04affa6a6a261a030b5d66107b73195b4af73\n7db9c0af69777b43e17dec110e6298fc09c91c54\ne862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic\nd090910ebdc879776dd815522ae0c2c7a3070ec8b6e469ab041aa582380b1d6b  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/src/weighted_node_struct.h\n",
+    "acic_base_cost.manifest": "revision=87f04af kind=work-cost build=/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87f04affa6a6a261a030b5d66107b73195b4af73\n7db9c0af69777b43e17dec110e6298fc09c91c54\n98972d0e407607d466aedac8d540c58edecfb36c1a8da62ba4421ebdaed92d69  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic_cost\nd090910ebdc879776dd815522ae0c2c7a3070ec8b6e469ab041aa582380b1d6b  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/src/weighted_node_struct.h\n",
+    "acic_chunks_256.manifest": "revision=working kind=production build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256\ndadefccc661720faa494afafef88bba40c98d7d426bcc1b6866407259225c62d  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/src/weighted_node_struct.h\n",
+    "acic_chunks_256_cost.manifest": "revision=working kind=work-cost build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n50250f4e5ab227a3616ef81aac90c8b7133ea4135fa00a9bd85fa7b2a70cef64  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_cost\nd644f298f311f42630c98b60e1bf3ed518ea1fcfb023a7cfb5956828ca8ccf55  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/src/weighted_node_struct.h\n"
+  },
+  "raw_runs": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217/runs.jsonl",
+  "raw_directory": "/work/hdd/mzu/rao1/acic-chunks-road-uniform-20260925/logs/compare-22392217"
+}

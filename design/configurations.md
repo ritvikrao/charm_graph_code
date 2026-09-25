@@ -1,6 +1,6 @@
 # ACIC configuration registry
 
-*Current on 2026-09-23. This file records the configurations that may be used
+*Current on 2026-09-25. This file records the configurations that may be used
 for new results. Older build names and settings remain in the experiment
 records only.*
 
@@ -252,3 +252,46 @@ runs. Exact revisions, build command, CMake settings, preserved patch and
 library hashes are in `runtime-refresh-20260925/runtime-manifest.json` under
 `/u/rao1/.tmp/`; logs and validation commands are in its `checks/` directory.
 The old compiler links and SSSP configuration are backed up there as well.
+
+
+### Delta mesh28 private-chunk profile — September 25
+
+The one-node experiment uses the refreshed September 25 runtime above:
+Charm++ `f6c74074f`, Reconverse `b30ad319`, preserved LCI `dfb924cf`, htram
+`7db9c0af`, GCC 14.2.1, ordinary TLS, production/tracing/shared memory.
+The implementation is committed in `8a6b02c`; slice selection is `98b80ea`.
+The measured production binary was built from a working snapshot whose queue,
+application and Makefile match those commits byte for byte. Its full source
+manifest is retained beside the isolated build.
+
+- Compile with `-DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256`.
+  For an isolated build, pass these in `ACIC_BUILD_FLAGS` to
+  `scripts/delta/build_onenode.sh CAMPAIGN NEW_LABEL 8a6b02c production`.
+- Use 16 processes × 7 workers on one exclusive 128-core Delta node,
+  `+old-scheduler`, process sharing and reader tiling `auto`, slack control
+  `off`, process queue `nearest`, queue batch `8`, heap slice `64`, and
+  hub hints `auto`. Mesh hub hints resolve off. No layout search was used.
+- The chunks contain 64 updates. Width 256 subdivides each original admission
+  bucket by distance; it was selected on the two mesh training sources.
+  Original histogram charges and generation admission checks remain active.
+- `benchmarks/delta-mesh28-selected.json` is the exact selected profile.
+  The frozen executable is
+  `/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256`, SHA-256
+  `3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39`.
+  The workspace `sssp_smp` was not replaced.
+
+The macro is opt-in; the ordinary build retains the original heap. This
+profile is specific to the measured mesh weight scale on one Delta node.
+It does not replace the distributed mesh/road profiles or establish a road,
+RMAT, cross-machine or multi-node improvement. Wasp's fixed comparison is
+128 threads with delta 4096, selected previously on training sources; both
+engines receive the entire 128-core node. See current-state §17 for results.
+
+
+The road/uniform transfer check (22392217) **rejects using this profile on
+road-usa-z**: chunks/slice 64 has speedup 0.719–0.836× over the original,
+while retaining road width 131072. Use the original heap/slice-8 road profile.
+On uniform25, process sharing and heap slice resolve inactive under `auto`;
+0.990–1.029× is a regression check, not evidence that chunks accelerate dense
+graphs. The mesh result therefore remains graph-specific. See current-state
+§18 and `benchmarks/delta-chunks-road-uniform-protocol.json`.
