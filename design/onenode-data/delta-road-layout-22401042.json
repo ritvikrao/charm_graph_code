@@ -1,0 +1,1710 @@
+{
+  "manifest": {
+    "job": "22401042",
+    "hosts": "cn071",
+    "protocol": {
+      "recorded": "2026-09-25",
+      "order_seed": 20260927,
+      "graph": "road-usa-z",
+      "layouts": [
+        {
+          "label": "16x7-span128",
+          "ranks": 16,
+          "ppn": 7,
+          "span": 128,
+          "workers": 112
+        },
+        {
+          "label": "8x14-span128",
+          "ranks": 8,
+          "ppn": 14,
+          "span": 128,
+          "workers": 112
+        },
+        {
+          "label": "4x28-span128",
+          "ranks": 4,
+          "ppn": 28,
+          "span": 128,
+          "workers": 112
+        },
+        {
+          "label": "8x15-span128",
+          "ranks": 8,
+          "ppn": 15,
+          "span": 128,
+          "workers": 120
+        },
+        {
+          "label": "8x7-span128",
+          "ranks": 8,
+          "ppn": 7,
+          "span": 128,
+          "workers": 56
+        },
+        {
+          "label": "4x14-span128",
+          "ranks": 4,
+          "ppn": 14,
+          "span": 128,
+          "workers": 56
+        },
+        {
+          "label": "2x28-span128",
+          "ranks": 2,
+          "ppn": 28,
+          "span": 128,
+          "workers": 56
+        },
+        {
+          "label": "16x3-span128",
+          "ranks": 16,
+          "ppn": 3,
+          "span": 128,
+          "workers": 48
+        },
+        {
+          "label": "4x7-span128",
+          "ranks": 4,
+          "ppn": 7,
+          "span": 128,
+          "workers": 28
+        },
+        {
+          "label": "2x14-span128",
+          "ranks": 2,
+          "ppn": 14,
+          "span": 128,
+          "workers": 28
+        },
+        {
+          "label": "1x28-span128",
+          "ranks": 1,
+          "ppn": 28,
+          "span": 128,
+          "workers": 28
+        },
+        {
+          "label": "2x7-span128",
+          "ranks": 2,
+          "ppn": 7,
+          "span": 128,
+          "workers": 14
+        },
+        {
+          "label": "8x7-span64",
+          "ranks": 8,
+          "ppn": 7,
+          "span": 64,
+          "workers": 56
+        },
+        {
+          "label": "4x7-span32",
+          "ranks": 4,
+          "ppn": 7,
+          "span": 32,
+          "workers": 28
+        }
+      ],
+      "common_flags": [
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072"
+      ],
+      "wasp": {
+        "threads": 64,
+        "delta": 32768
+      },
+      "baseline": "Original heap, 16x7, slice8; exact frozen binaries from mesh/road transfer study.",
+      "training": "Two existing tune sources; per-layout/source warmup, two randomized timed repeats. Top two plus baseline get three new repeats; select by geometric mean of source medians of confirmation only.",
+      "heldout": "Four test sources never used for selection; each arm/source warmup plus three repeats. Selected layout vs 16x7 baseline, duplicate 16x7 control, and fixed training-selected Wasp, interleaved.",
+      "affinity": "Worker CPU lists are rank*(span/ranks)+[0,ppn). Startup remains unbound as in baseline. Every runtime PE binding is verified. span128 spreads rank starts; span64/32 packs into one socket/two NUMA domains. A single rank uses contiguous cores. Each process region leaves >=1 core unused.",
+      "allocation": "One exclusive 128-core Delta cpu-interactive node; fewer active workers do not release cores for another job.",
+      "prediction": "Fewer active workers may reduce loaded rounds and contention on thin road frontiers; fixed-worker-count comparisons distinguish changing process count. Compact versus spread separates locality/resource reach. No guaranteed gain.",
+      "acceptance": "All full independent digests, old scheduler, effective layout and affinity; diagnostic ledgers conserve work. Timing gain >=5% beyond duplicate-control variation is promising, then require separate-allocation confirmation before changing recommendation.",
+      "followup": "Independently test chunk partial publication and distance-band width at fixed 16x7, then combine a promising queue with the training-selected layout. Preserve solver defaults."
+    },
+    "runtime": {
+      "revisions": {
+        "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+        "reconverse": "b30ad319503220bd1a2c0b5db38bd73dbe449c34",
+        "lci": "dfb924cf3ee25aece37b85473b41d406ad810252"
+      },
+      "charm_branch": "reconverse-specific-build",
+      "runtime": "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64",
+      "build_command": [
+        "./build",
+        "charm++",
+        "reconverse-linux-x86_64",
+        "--with-production",
+        "--enable-tracing",
+        "--enable-shmem",
+        "--with-fetch-reconverse-dir=/u/rao1/charm_reconverse/reconverse",
+        "--with-cmake-args=-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF",
+        "-j8"
+      ],
+      "environment": {
+        "CC": "gcc",
+        "CXX": "g++"
+      },
+      "scheduler_for_tests": "+old-scheduler",
+      "reconverse_local_patch": {
+        "path": "/u/rao1/.tmp/runtime-refresh-20260925/reconverse-local-built.patch",
+        "sha256": "49ee2bfcc5586fd3cd69e2f2ec57e36267158562a92669da5f368bd6e725110d"
+      },
+      "cache": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+        "TRACING": "1",
+        "CMK_USE_SHMEM": "1",
+        "SPANTREE": "ON",
+        "RECONVERSE_ENABLE_CPU_AFFINITY": "ON",
+        "RECONVERSE_AUTOFETCH_LCI2_TAG": "dfb924cf3ee25aece37b85473b41d406ad810252",
+        "RECONVERSE_TRY_ENABLE_COMM_LCW": "OFF",
+        "FETCHCONTENT_SOURCE_DIR_RECONVERSE": "/u/rao1/charm_reconverse/reconverse"
+      },
+      "libraries": {
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libreconverse.so": "b8564e2731b3683d9a07364a163170fd8a16ff8454c3f215d86c9159058158d9",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblci.so": "7918b1ad26a1f3be1575bb6c18a79fe26cd5b11dfaf11cd4d0eabfa94558c4c5",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblct.so": "fdf5f2034b7711fcb337f6710705096c1c85f4295a60ee3cf07547a5438ae844",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libck.a": "eec2d79e9b700fc7983ff747949833bcb19ed83dea6e4f574c155ce95b4e1db3",
+        "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libtrace-projections.a": "8ae93a441daa2cc0ccde4b7ed7605440ffc0783a90944b5170799fee94572ff1"
+      },
+      "notes": [
+        "Charm++ current tracking branch was already up to date; no branch switch was assumed.",
+        "Reconverse local LCI pin was preserved.",
+        "Reconverse main now defaults backend_poll_freq to 64; the prior runtime default was 4.",
+        "Previous campaign runtime and application binaries remain intact."
+      ],
+      "validation": {
+        "local_runtime_rounds": 1000,
+        "runtime_pes": 2,
+        "trace_files": 4,
+        "serial_sssp_checks": 4,
+        "certified_sssp_checks": 4,
+        "sources": [
+          0,
+          512,
+          1024,
+          0
+        ],
+        "old_scheduler": true,
+        "scope": "Local-only runtime checks; distributed shared-memory communication has not been rerun on compute nodes in this refresh."
+      },
+      "active_compiler": "/u/rao1/charm_reconverse/bin/charmc",
+      "sssp_config": "/u/rao1/charm_graph_code/config.mk"
+    },
+    "binaries": {
+      "acic_base_cost": "98972d0e407607d466aedac8d540c58edecfb36c1a8da62ba4421ebdaed92d69",
+      "acic_chunks_256_cost": "50250f4e5ab227a3616ef81aac90c8b7133ea4135fa00a9bd85fa7b2a70cef64",
+      "acic_base": "e862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a",
+      "acic_chunks_256": "3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39",
+      "wasp_sssp": "2803195e25c967d286d2d45118905b2bd5252c799f5d900af03dd69998dc2529"
+    },
+    "graphs": {
+      ".wsg": "20f9102b40689c8ea496aaa122a4329413022d0ef59cc77ef142d313a43781b9",
+      ".meta": "fc1a5f0a1f7ac46c32ca27ab52f8a92b1dc421843238fa6ff81be66c2eccc7b5",
+      ".reference.txt": "415bc7468e7cc65bb345daf6c01070b0464ccda828a6ca7b6bdb06a61bd3550a"
+    },
+    "harness": {
+      "road_layout_launch.py": "e0a4a18fb671723e2706d4be720475a63c0b97f2df6c654da0f8f2bca6dd281c",
+      "road_layout_study.py": "6dada2386f148cba03b38dc7ec1928f52f9e347c1949582e9be586d398a625eb",
+      "road_round_probe.py": "2e97c45abdc4972d1736ecbc7c1f18b237f46b23c1c9138390760dc6e77b3ce5",
+      "road_experiment.py": "a7830a4864385670e52a0f54341659ed203908dbba02ab4fd242c64c5c0066cf"
+    },
+    "build_manifests": {
+      "acic_chunks_256_cost.manifest": "revision=working kind=work-cost build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n50250f4e5ab227a3616ef81aac90c8b7133ea4135fa00a9bd85fa7b2a70cef64  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256_cost\nd644f298f311f42630c98b60e1bf3ed518ea1fcfb023a7cfb5956828ca8ccf55  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256_cost.1VKsda/src/weighted_node_struct.h\n",
+      "acic_base.manifest": "revision=87f04af kind=production build=/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87f04affa6a6a261a030b5d66107b73195b4af73\n7db9c0af69777b43e17dec110e6298fc09c91c54\ne862130637037bc96458d5ac77b916e07dfaf98435b294e1821d90a46cc5527a  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic\nd090910ebdc879776dd815522ae0c2c7a3070ec8b6e469ab041aa582380b1d6b  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic.tlMUdc/src/weighted_node_struct.h\n",
+      "acic_chunks_256.manifest": "revision=working kind=production build=/work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags= -DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256 wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\nf8e6019df706a73fc7d0a0294831ea34e5778555\n7db9c0af69777b43e17dec110e6298fc09c91c54\n Makefile       | 2 +-\n process_work.h | 5 +++++\n sssp_smp.cpp   | 6 ++++++\n 3 files changed, 12 insertions(+), 1 deletion(-)\n3db8a62f538c1552b73cd5efe7f2893f3ff296d2b1775fa9fd8e2878796a2e39  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/bin/acic_chunks_256\ndadefccc661720faa494afafef88bba40c98d7d426bcc1b6866407259225c62d  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/source-files.sha256\nbd37a62bd371bcf7765841a0deba4100dace774ca881b52c9669597a5258d451  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-opt-20260925/build/acic_chunks_256.OoKL28/src/weighted_node_struct.h\n",
+      "acic_base_cost.manifest": "revision=87f04af kind=work-cost build=/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA\ncompiler=/u/rao1/charm_reconverse/bin/charmc flags=-DACIC_WORK_COST -DACIC_COMM_SHARE wire=default\ng++ (GCC) 14.2.1 20250110 (Red Hat 14.2.1-9)\n87f04affa6a6a261a030b5d66107b73195b4af73\n7db9c0af69777b43e17dec110e6298fc09c91c54\n98972d0e407607d466aedac8d540c58edecfb36c1a8da62ba4421ebdaed92d69  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic_cost\nd090910ebdc879776dd815522ae0c2c7a3070ec8b6e469ab041aa582380b1d6b  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/source-files.sha256\ned9f7e93af3e73974436407287da126f6029a0f115ca068bfe4139466d5e2b94  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/src/sssp_smp.cpp\n6daa1f31f25085751cd6e79e229864454caf10dc36b6f42c6cf20fe55b79736e  /work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/build/acic_cost.rWYMHA/src/weighted_node_struct.h\n"
+    }
+  },
+  "validated_solves": 164,
+  "selection": {
+    "winner": {
+      "label": "16x7-span128",
+      "binary": "acic_base",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ]
+    },
+    "screen_scores": {
+      "16x7-span128": 0.441205732096717,
+      "8x14-span128": 0.5479695961666121,
+      "4x28-span128": 0.7076937241275354,
+      "8x15-span128": 0.5513830391284266,
+      "8x7-span128": 0.7484873798177896,
+      "4x14-span128": 0.8956868717675558,
+      "2x28-span128": 1.0718699932792688,
+      "16x3-span128": 0.9827646942999632,
+      "4x7-span128": 1.3667071808420594,
+      "2x14-span128": 1.5487010513833843,
+      "1x28-span128": 1.6340744635285902,
+      "2x7-span128": 1.9382081600936856,
+      "8x7-span64": 0.7510652814170017,
+      "4x7-span32": 1.34168030871553
+    },
+    "confirmation_scores": {
+      "16x7-span128": 0.473508761308595,
+      "8x14-span128": 0.577971265991658
+    }
+  },
+  "sources": [
+    {
+      "source": "8718204",
+      "variants": {
+        "base": {
+          "median": 0.542588,
+          "seconds": [
+            0.525559,
+            0.58999,
+            0.542588
+          ],
+          "scans": [
+            1.652493013869123,
+            1.6393997022004891,
+            1.614484327333814
+          ],
+          "rounds": [
+            812,
+            802,
+            807
+          ]
+        },
+        "selected": {
+          "median": 0.537996,
+          "seconds": [
+            0.51992,
+            0.537996,
+            0.552165
+          ],
+          "scans": [
+            1.6155490555449736,
+            1.624107447094909,
+            1.620762054558778
+          ],
+          "rounds": [
+            809,
+            804,
+            815
+          ]
+        },
+        "control": {
+          "median": 0.52499,
+          "seconds": [
+            0.52546,
+            0.52499,
+            0.523507
+          ],
+          "scans": [
+            1.6400317741071075,
+            1.6251342606955939,
+            1.6501252221851626
+          ],
+          "rounds": [
+            807,
+            819,
+            810
+          ]
+        },
+        "wasp": {
+          "median": 0.107337818,
+          "seconds": [
+            0.10080342,
+            0.109472042,
+            0.107337818
+          ],
+          "scans": [
+            null,
+            null,
+            null
+          ],
+          "rounds": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "source": "22613654",
+      "variants": {
+        "base": {
+          "median": 0.447824,
+          "seconds": [
+            0.442742,
+            0.447824,
+            0.454012
+          ],
+          "scans": [
+            1.5427354150741837,
+            1.579045204751373,
+            1.5853366907518016
+          ],
+          "rounds": [
+            564,
+            600,
+            618
+          ]
+        },
+        "selected": {
+          "median": 0.44181,
+          "seconds": [
+            0.44181,
+            0.453744,
+            0.434895
+          ],
+          "scans": [
+            1.5536597095089288,
+            1.5831723348662758,
+            1.5275311710776538
+          ],
+          "rounds": [
+            603,
+            619,
+            586
+          ]
+        },
+        "control": {
+          "median": 0.447799,
+          "seconds": [
+            0.447799,
+            0.449171,
+            0.444425
+          ],
+          "scans": [
+            1.604444008230035,
+            1.6013534996086547,
+            1.5858895543931182
+          ],
+          "rounds": [
+            575,
+            624,
+            597
+          ]
+        },
+        "wasp": {
+          "median": 0.089819412,
+          "seconds": [
+            0.089371292,
+            0.089819412,
+            0.091084896
+          ],
+          "scans": [
+            null,
+            null,
+            null
+          ],
+          "rounds": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "source": "10159848",
+      "variants": {
+        "base": {
+          "median": 0.437918,
+          "seconds": [
+            0.437918,
+            0.424089,
+            0.485434
+          ],
+          "scans": [
+            1.544490178798926,
+            1.5287262264302126,
+            1.5232013502869173
+          ],
+          "rounds": [
+            635,
+            676,
+            709
+          ]
+        },
+        "selected": {
+          "median": 0.435296,
+          "seconds": [
+            0.440172,
+            0.431654,
+            0.435296
+          ],
+          "scans": [
+            1.5203262860677462,
+            1.5220262572886853,
+            1.5575467541905001
+          ],
+          "rounds": [
+            748,
+            683,
+            652
+          ]
+        },
+        "control": {
+          "median": 0.434823,
+          "seconds": [
+            0.434823,
+            0.445491,
+            0.417844
+          ],
+          "scans": [
+            1.5332416174053984,
+            1.556463034017238,
+            1.5314743945376343
+          ],
+          "rounds": [
+            661,
+            649,
+            668
+          ]
+        },
+        "wasp": {
+          "median": 0.090695162,
+          "seconds": [
+            0.092624932,
+            0.089651085,
+            0.090695162
+          ],
+          "scans": [
+            null,
+            null,
+            null
+          ],
+          "rounds": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    },
+    {
+      "source": "3073839",
+      "variants": {
+        "base": {
+          "median": 0.447515,
+          "seconds": [
+            0.44918,
+            0.442595,
+            0.447515
+          ],
+          "scans": [
+            1.5676552780048958,
+            1.5600174767639583,
+            1.605169549701965
+          ],
+          "rounds": [
+            669,
+            666,
+            653
+          ]
+        },
+        "selected": {
+          "median": 0.444789,
+          "seconds": [
+            0.442514,
+            0.444789,
+            0.454902
+          ],
+          "scans": [
+            1.5775714735461375,
+            1.5731473340968933,
+            1.5796366761404674
+          ],
+          "rounds": [
+            675,
+            680,
+            683
+          ]
+        },
+        "control": {
+          "median": 0.448208,
+          "seconds": [
+            0.448208,
+            0.444389,
+            0.460406
+          ],
+          "scans": [
+            1.58370688235436,
+            1.5734784457865432,
+            1.5939170027689449
+          ],
+          "rounds": [
+            648,
+            648,
+            673
+          ]
+        },
+        "wasp": {
+          "median": 0.088263736,
+          "seconds": [
+            0.089575977,
+            0.085478893,
+            0.088263736
+          ],
+          "scans": [
+            null,
+            null,
+            null
+          ],
+          "rounds": [
+            null,
+            null,
+            null
+          ]
+        }
+      }
+    }
+  ],
+  "work": [
+    {
+      "index": 160,
+      "label": "selected_cost",
+      "binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ],
+      "work_cost": true,
+      "source": "22613654",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-layout-v2/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_base_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "22613654",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "8"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042/160-work-selected_cost-s22613654-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.478699,
+      "edge_attempts": 89824551,
+      "rounds": 649,
+      "affinity_verified": true,
+      "scan_factor": 1.5565186756142375,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 89824551,
+        "expansions": 36711953,
+        "changes": 40399524,
+        "queue_pushes": 40399524,
+        "queue_pops": 40399524,
+        "stale_pops": 3687571,
+        "cas_attempts": 40407774,
+        "cas_failures": 8250,
+        "intra_process": 89060943,
+        "intra_node": 763608,
+        "inter_node": 0,
+        "queue_probes": 76643318,
+        "lock_misses": 8927388,
+        "cpu_ns": 49499476335,
+        "push_calls": 40399524,
+        "push_samples": 39456,
+        "push_ticks": 36689018,
+        "pop_calls": 15583785,
+        "pop_samples": 15214,
+        "pop_ticks": 31221643
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.478699,
+        "pe_seconds": 53.614258,
+        "work_seconds": 40.667493,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.439964,
+        "window_pe_seconds": 53.587832,
+        "compute_share": 0.75852,
+        "send_share": 0.008206,
+        "other_share": 0.233274,
+        "idle_share": 0.13447
+      },
+      "queue": {
+        "push": {
+          "ns": 380.2550098283171,
+          "estimated_share": 0.2866718212388091
+        },
+        "pop": {
+          "ns": 839.1976388883685,
+          "estimated_share": 0.2440456179855153
+        }
+      }
+    },
+    {
+      "index": 161,
+      "label": "selected_cost",
+      "binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ],
+      "work_cost": true,
+      "source": "8718204",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-layout-v2/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_base_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "8718204",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "8"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042/161-work-selected_cost-s8718204-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.540074,
+      "edge_attempts": 93933676,
+      "rounds": 811,
+      "affinity_verified": true,
+      "scan_factor": 1.6277233711204064,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 93933676,
+        "expansions": 38461345,
+        "changes": 42349172,
+        "queue_pushes": 42349172,
+        "queue_pops": 42349172,
+        "stale_pops": 3887827,
+        "cas_attempts": 42359147,
+        "cas_failures": 9975,
+        "intra_process": 93107672,
+        "intra_node": 826004,
+        "inter_node": 0,
+        "queue_probes": 112488544,
+        "lock_misses": 13835541,
+        "cpu_ns": 56676827927,
+        "push_calls": 42349172,
+        "push_samples": 41352,
+        "push_ticks": 35975603,
+        "pop_calls": 21336584,
+        "pop_samples": 20835,
+        "pop_ticks": 39847236
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.540074,
+        "pe_seconds": 60.488247,
+        "work_seconds": 43.955885,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.363333,
+        "window_pe_seconds": 60.469099,
+        "compute_share": 0.726685,
+        "send_share": 0.006007,
+        "other_share": 0.267309,
+        "idle_share": 0.177068
+      },
+      "queue": {
+        "push": {
+          "ns": 355.7651214182439,
+          "estimated_share": 0.24915797601915807
+        },
+        "pop": {
+          "ns": 782.089585374842,
+          "estimated_share": 0.2759611174936721
+        }
+      }
+    },
+    {
+      "index": 162,
+      "label": "base_cost",
+      "binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ],
+      "work_cost": true,
+      "source": "8718204",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-layout-v2/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_base_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "8718204",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "8"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042/162-work-base_cost-s8718204-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.583942,
+      "edge_attempts": 90908205,
+      "rounds": 801,
+      "affinity_verified": true,
+      "scan_factor": 1.5752967008882417,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 90908205,
+        "expansions": 37201655,
+        "changes": 40963450,
+        "queue_pushes": 40963450,
+        "queue_pops": 40963450,
+        "stale_pops": 3761795,
+        "cas_attempts": 40973458,
+        "cas_failures": 10008,
+        "intra_process": 90110284,
+        "intra_node": 797921,
+        "inter_node": 0,
+        "queue_probes": 124373394,
+        "lock_misses": 16428195,
+        "cpu_ns": 61116593432,
+        "push_calls": 40963450,
+        "push_samples": 40009,
+        "push_ticks": 37109224,
+        "pop_calls": 22914388,
+        "pop_samples": 22377,
+        "pop_ticks": 45435129
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.583942,
+        "pe_seconds": 65.401524,
+        "work_seconds": 46.58569,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.442304,
+        "window_pe_seconds": 65.370325,
+        "compute_share": 0.712303,
+        "send_share": 0.006763,
+        "other_share": 0.280934,
+        "idle_share": 0.192097
+      },
+      "queue": {
+        "push": {
+          "ns": 379.2940692207183,
+          "estimated_share": 0.23767961440943472
+        },
+        "pop": {
+          "ns": 830.3128885708006,
+          "estimated_share": 0.29105120236303084
+        }
+      }
+    },
+    {
+      "index": 163,
+      "label": "base_cost",
+      "binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ],
+      "work_cost": true,
+      "source": "22613654",
+      "phase": "work",
+      "rep": 0,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=5",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "python3",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/harness-layout-v2/benchmarks/road_layout_launch.py",
+        "{\"label\": \"16x7-span128\", \"ranks\": 16, \"ppn\": 7, \"span\": 128, \"workers\": 112}",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_base_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-road-opt-20260925/graphs/road-usa-z.wsg",
+        "1",
+        "22613654",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "60",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler",
+        "--bucket-width",
+        "131072",
+        "--heap-slice",
+        "8"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042/163-work-base_cost-s22613654-r0.out",
+      "valid": true,
+      "returncode": 0,
+      "seconds": 0.46338,
+      "edge_attempts": 90901523,
+      "rounds": 606,
+      "affinity_verified": true,
+      "scan_factor": 1.575180912301773,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 90901523,
+        "expansions": 37138869,
+        "changes": 40881882,
+        "queue_pushes": 40881882,
+        "queue_pops": 40881882,
+        "stale_pops": 3743013,
+        "cas_attempts": 40890700,
+        "cas_failures": 8818,
+        "intra_process": 90127070,
+        "intra_node": 774453,
+        "inter_node": 0,
+        "queue_probes": 72770367,
+        "lock_misses": 7835116,
+        "cpu_ns": 48046065355,
+        "push_calls": 40881882,
+        "push_samples": 39926,
+        "push_ticks": 35493984,
+        "pop_calls": 15080102,
+        "pop_samples": 14724,
+        "pop_ticks": 30117894
+      },
+      "comm": {
+        "pes": 112.0,
+        "solve_seconds": 0.46338,
+        "pe_seconds": 51.898598,
+        "work_seconds": 39.755576,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.339973,
+        "window_pe_seconds": 51.876644,
+        "compute_share": 0.766024,
+        "send_share": 0.006551,
+        "other_share": 0.227425,
+        "idle_share": 0.12967
+      },
+      "queue": {
+        "push": {
+          "ns": 363.5387854114414,
+          "estimated_share": 0.2864901925346957
+        },
+        "pop": {
+          "ns": 836.4704376243542,
+          "estimated_share": 0.2431548871850673
+        }
+      }
+    }
+  ],
+  "progress": [
+    {
+      "label": "base",
+      "source": "22613654",
+      "rep": 0,
+      "observations": 564,
+      "comparisons": 562,
+      "unchanged_threshold": 287,
+      "unchanged_threshold_with_update_activity": 285,
+      "no_update_activity": 2,
+      "changed_threshold": 275
+    },
+    {
+      "label": "selected",
+      "source": "22613654",
+      "rep": 0,
+      "observations": 603,
+      "comparisons": 601,
+      "unchanged_threshold": 321,
+      "unchanged_threshold_with_update_activity": 317,
+      "no_update_activity": 4,
+      "changed_threshold": 280
+    },
+    {
+      "label": "selected",
+      "source": "8718204",
+      "rep": 0,
+      "observations": 809,
+      "comparisons": 807,
+      "unchanged_threshold": 409,
+      "unchanged_threshold_with_update_activity": 409,
+      "no_update_activity": 0,
+      "changed_threshold": 398
+    },
+    {
+      "label": "control",
+      "source": "10159848",
+      "rep": 0,
+      "observations": 661,
+      "comparisons": 659,
+      "unchanged_threshold": 375,
+      "unchanged_threshold_with_update_activity": 374,
+      "no_update_activity": 1,
+      "changed_threshold": 284
+    },
+    {
+      "label": "base",
+      "source": "8718204",
+      "rep": 0,
+      "observations": 812,
+      "comparisons": 810,
+      "unchanged_threshold": 414,
+      "unchanged_threshold_with_update_activity": 413,
+      "no_update_activity": 1,
+      "changed_threshold": 396
+    },
+    {
+      "label": "control",
+      "source": "8718204",
+      "rep": 0,
+      "observations": 807,
+      "comparisons": 805,
+      "unchanged_threshold": 409,
+      "unchanged_threshold_with_update_activity": 409,
+      "no_update_activity": 0,
+      "changed_threshold": 396
+    },
+    {
+      "label": "control",
+      "source": "3073839",
+      "rep": 0,
+      "observations": 648,
+      "comparisons": 646,
+      "unchanged_threshold": 352,
+      "unchanged_threshold_with_update_activity": 352,
+      "no_update_activity": 0,
+      "changed_threshold": 294
+    },
+    {
+      "label": "selected",
+      "source": "10159848",
+      "rep": 0,
+      "observations": 748,
+      "comparisons": 746,
+      "unchanged_threshold": 455,
+      "unchanged_threshold_with_update_activity": 455,
+      "no_update_activity": 0,
+      "changed_threshold": 291
+    },
+    {
+      "label": "base",
+      "source": "10159848",
+      "rep": 0,
+      "observations": 635,
+      "comparisons": 633,
+      "unchanged_threshold": 349,
+      "unchanged_threshold_with_update_activity": 348,
+      "no_update_activity": 1,
+      "changed_threshold": 284
+    },
+    {
+      "label": "selected",
+      "source": "3073839",
+      "rep": 0,
+      "observations": 675,
+      "comparisons": 673,
+      "unchanged_threshold": 370,
+      "unchanged_threshold_with_update_activity": 367,
+      "no_update_activity": 3,
+      "changed_threshold": 303
+    },
+    {
+      "label": "control",
+      "source": "22613654",
+      "rep": 0,
+      "observations": 575,
+      "comparisons": 573,
+      "unchanged_threshold": 301,
+      "unchanged_threshold_with_update_activity": 299,
+      "no_update_activity": 2,
+      "changed_threshold": 272
+    },
+    {
+      "label": "base",
+      "source": "3073839",
+      "rep": 0,
+      "observations": 669,
+      "comparisons": 667,
+      "unchanged_threshold": 367,
+      "unchanged_threshold_with_update_activity": 365,
+      "no_update_activity": 2,
+      "changed_threshold": 300
+    },
+    {
+      "label": "selected",
+      "source": "8718204",
+      "rep": 1,
+      "observations": 804,
+      "comparisons": 802,
+      "unchanged_threshold": 405,
+      "unchanged_threshold_with_update_activity": 405,
+      "no_update_activity": 0,
+      "changed_threshold": 397
+    },
+    {
+      "label": "base",
+      "source": "10159848",
+      "rep": 1,
+      "observations": 676,
+      "comparisons": 674,
+      "unchanged_threshold": 378,
+      "unchanged_threshold_with_update_activity": 376,
+      "no_update_activity": 2,
+      "changed_threshold": 296
+    },
+    {
+      "label": "control",
+      "source": "3073839",
+      "rep": 1,
+      "observations": 648,
+      "comparisons": 646,
+      "unchanged_threshold": 347,
+      "unchanged_threshold_with_update_activity": 346,
+      "no_update_activity": 1,
+      "changed_threshold": 299
+    },
+    {
+      "label": "base",
+      "source": "3073839",
+      "rep": 1,
+      "observations": 666,
+      "comparisons": 664,
+      "unchanged_threshold": 366,
+      "unchanged_threshold_with_update_activity": 363,
+      "no_update_activity": 3,
+      "changed_threshold": 298
+    },
+    {
+      "label": "control",
+      "source": "22613654",
+      "rep": 1,
+      "observations": 624,
+      "comparisons": 622,
+      "unchanged_threshold": 347,
+      "unchanged_threshold_with_update_activity": 345,
+      "no_update_activity": 2,
+      "changed_threshold": 275
+    },
+    {
+      "label": "base",
+      "source": "22613654",
+      "rep": 1,
+      "observations": 600,
+      "comparisons": 598,
+      "unchanged_threshold": 322,
+      "unchanged_threshold_with_update_activity": 318,
+      "no_update_activity": 4,
+      "changed_threshold": 276
+    },
+    {
+      "label": "base",
+      "source": "8718204",
+      "rep": 1,
+      "observations": 802,
+      "comparisons": 800,
+      "unchanged_threshold": 405,
+      "unchanged_threshold_with_update_activity": 404,
+      "no_update_activity": 1,
+      "changed_threshold": 395
+    },
+    {
+      "label": "selected",
+      "source": "3073839",
+      "rep": 1,
+      "observations": 680,
+      "comparisons": 678,
+      "unchanged_threshold": 378,
+      "unchanged_threshold_with_update_activity": 377,
+      "no_update_activity": 1,
+      "changed_threshold": 300
+    },
+    {
+      "label": "control",
+      "source": "10159848",
+      "rep": 1,
+      "observations": 649,
+      "comparisons": 647,
+      "unchanged_threshold": 361,
+      "unchanged_threshold_with_update_activity": 358,
+      "no_update_activity": 3,
+      "changed_threshold": 286
+    },
+    {
+      "label": "selected",
+      "source": "10159848",
+      "rep": 1,
+      "observations": 683,
+      "comparisons": 681,
+      "unchanged_threshold": 392,
+      "unchanged_threshold_with_update_activity": 389,
+      "no_update_activity": 3,
+      "changed_threshold": 289
+    },
+    {
+      "label": "selected",
+      "source": "22613654",
+      "rep": 1,
+      "observations": 619,
+      "comparisons": 617,
+      "unchanged_threshold": 338,
+      "unchanged_threshold_with_update_activity": 335,
+      "no_update_activity": 3,
+      "changed_threshold": 279
+    },
+    {
+      "label": "control",
+      "source": "8718204",
+      "rep": 1,
+      "observations": 819,
+      "comparisons": 817,
+      "unchanged_threshold": 420,
+      "unchanged_threshold_with_update_activity": 420,
+      "no_update_activity": 0,
+      "changed_threshold": 397
+    },
+    {
+      "label": "selected",
+      "source": "3073839",
+      "rep": 2,
+      "observations": 683,
+      "comparisons": 681,
+      "unchanged_threshold": 376,
+      "unchanged_threshold_with_update_activity": 376,
+      "no_update_activity": 0,
+      "changed_threshold": 305
+    },
+    {
+      "label": "base",
+      "source": "3073839",
+      "rep": 2,
+      "observations": 653,
+      "comparisons": 651,
+      "unchanged_threshold": 353,
+      "unchanged_threshold_with_update_activity": 351,
+      "no_update_activity": 2,
+      "changed_threshold": 298
+    },
+    {
+      "label": "selected",
+      "source": "8718204",
+      "rep": 2,
+      "observations": 815,
+      "comparisons": 813,
+      "unchanged_threshold": 416,
+      "unchanged_threshold_with_update_activity": 416,
+      "no_update_activity": 0,
+      "changed_threshold": 397
+    },
+    {
+      "label": "control",
+      "source": "8718204",
+      "rep": 2,
+      "observations": 810,
+      "comparisons": 808,
+      "unchanged_threshold": 413,
+      "unchanged_threshold_with_update_activity": 413,
+      "no_update_activity": 0,
+      "changed_threshold": 395
+    },
+    {
+      "label": "base",
+      "source": "8718204",
+      "rep": 2,
+      "observations": 807,
+      "comparisons": 805,
+      "unchanged_threshold": 407,
+      "unchanged_threshold_with_update_activity": 406,
+      "no_update_activity": 1,
+      "changed_threshold": 398
+    },
+    {
+      "label": "selected",
+      "source": "10159848",
+      "rep": 2,
+      "observations": 652,
+      "comparisons": 650,
+      "unchanged_threshold": 369,
+      "unchanged_threshold_with_update_activity": 368,
+      "no_update_activity": 1,
+      "changed_threshold": 281
+    },
+    {
+      "label": "control",
+      "source": "10159848",
+      "rep": 2,
+      "observations": 668,
+      "comparisons": 666,
+      "unchanged_threshold": 382,
+      "unchanged_threshold_with_update_activity": 380,
+      "no_update_activity": 2,
+      "changed_threshold": 284
+    },
+    {
+      "label": "control",
+      "source": "22613654",
+      "rep": 2,
+      "observations": 597,
+      "comparisons": 595,
+      "unchanged_threshold": 321,
+      "unchanged_threshold_with_update_activity": 318,
+      "no_update_activity": 3,
+      "changed_threshold": 274
+    },
+    {
+      "label": "base",
+      "source": "22613654",
+      "rep": 2,
+      "observations": 618,
+      "comparisons": 616,
+      "unchanged_threshold": 335,
+      "unchanged_threshold_with_update_activity": 332,
+      "no_update_activity": 3,
+      "changed_threshold": 281
+    },
+    {
+      "label": "selected",
+      "source": "22613654",
+      "rep": 2,
+      "observations": 586,
+      "comparisons": 584,
+      "unchanged_threshold": 308,
+      "unchanged_threshold_with_update_activity": 306,
+      "no_update_activity": 2,
+      "changed_threshold": 276
+    },
+    {
+      "label": "base",
+      "source": "10159848",
+      "rep": 2,
+      "observations": 709,
+      "comparisons": 707,
+      "unchanged_threshold": 416,
+      "unchanged_threshold_with_update_activity": 416,
+      "no_update_activity": 0,
+      "changed_threshold": 291
+    },
+    {
+      "label": "control",
+      "source": "3073839",
+      "rep": 2,
+      "observations": 673,
+      "comparisons": 671,
+      "unchanged_threshold": 371,
+      "unchanged_threshold_with_update_activity": 370,
+      "no_update_activity": 1,
+      "changed_threshold": 300
+    }
+  ],
+  "audit_script_sha256": "b31c3eabe7d72e834d4912037059464d3263ce5eb152dd2ce0849507b71778ad",
+  "raw_directory": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042",
+  "training": {
+    "16x7-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.48313,
+        "scans": 1.5895641784839647,
+        "rounds": 844.5
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.4029195,
+        "scans": 1.523895778558158,
+        "rounds": 640.5
+      }
+    ],
+    "8x14-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.577367,
+        "scans": 1.5601622384896925,
+        "rounds": 839.5
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.520069,
+        "scans": 1.5039976780593487,
+        "rounds": 588.0
+      }
+    ],
+    "4x28-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.758453,
+        "scans": 1.6577845453393587,
+        "rounds": 867.0
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.6603315000000001,
+        "scans": 1.4904937865092747,
+        "rounds": 613.0
+      }
+    ],
+    "8x15-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.6171644999999999,
+        "scans": 1.606841093629264,
+        "rounds": 829.0
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.49261299999999997,
+        "scans": 1.5289388376336959,
+        "rounds": 586.0
+      }
+    ],
+    "8x7-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.786833,
+        "scans": 1.3753661497803171,
+        "rounds": 1085.0
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.7120105,
+        "scans": 1.2927263349755143,
+        "rounds": 1442.0
+      }
+    ],
+    "4x14-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.9114395,
+        "scans": 1.3282292521824814,
+        "rounds": 1033.5
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.8802065,
+        "scans": 1.245880840964082,
+        "rounds": 1004.5
+      }
+    ],
+    "2x28-span128": [
+      {
+        "source": "1294456",
+        "seconds": 1.0852724999999999,
+        "scans": 1.3218910833846949,
+        "rounds": 1133.5
+      },
+      {
+        "source": "5620086",
+        "seconds": 1.058633,
+        "scans": 1.2117741795403059,
+        "rounds": 945.5
+      }
+    ],
+    "16x3-span128": [
+      {
+        "source": "1294456",
+        "seconds": 0.957925,
+        "scans": 1.4216592393538963,
+        "rounds": 2057.0
+      },
+      {
+        "source": "5620086",
+        "seconds": 1.0082485,
+        "scans": 1.2573048700658673,
+        "rounds": 2841.5
+      }
+    ],
+    "4x7-span128": [
+      {
+        "source": "1294456",
+        "seconds": 1.3731935,
+        "scans": 1.14061939858417,
+        "rounds": 3001.0
+      },
+      {
+        "source": "5620086",
+        "seconds": 1.3602515,
+        "scans": 1.0778620540319936,
+        "rounds": 3589.5
+      }
+    ],
+    "2x14-span128": [
+      {
+        "source": "1294456",
+        "seconds": 1.5991719999999998,
+        "scans": 1.1212374860991314,
+        "rounds": 2323.0
+      },
+      {
+        "source": "5620086",
+        "seconds": 1.4998230000000001,
+        "scans": 1.0691122352873983,
+        "rounds": 3131.5
+      }
+    ],
+    "1x28-span128": [
+      {
+        "source": "1294456",
+        "seconds": 1.6501225,
+        "scans": 1.1040347713021195,
+        "rounds": 2174.5
+      },
+      {
+        "source": "5620086",
+        "seconds": 1.6181825,
+        "scans": 1.056277715095061,
+        "rounds": 2916.0
+      }
+    ],
+    "2x7-span128": [
+      {
+        "source": "1294456",
+        "seconds": 1.9659575,
+        "scans": 1.030148119629399,
+        "rounds": 6658.0
+      },
+      {
+        "source": "5620086",
+        "seconds": 1.9108505,
+        "scans": 1.0156689232444704,
+        "rounds": 5893.0
+      }
+    ],
+    "8x7-span64": [
+      {
+        "source": "1294456",
+        "seconds": 0.78565,
+        "scans": 1.3715552202388328,
+        "rounds": 1124.5
+      },
+      {
+        "source": "5620086",
+        "seconds": 0.718003,
+        "scans": 1.2949710341386758,
+        "rounds": 1436.0
+      }
+    ],
+    "4x7-span32": [
+      {
+        "source": "1294456",
+        "seconds": 1.280171,
+        "scans": 1.1414633539001033,
+        "rounds": 2792.0
+      },
+      {
+        "source": "5620086",
+        "seconds": 1.406145,
+        "scans": 1.0764218793364404,
+        "rounds": 3677.0
+      }
+    ]
+  },
+  "ranges": {
+    "base": {
+      "seconds": [
+        0.437918,
+        0.542588
+      ],
+      "speedup_over_base": [
+        1.0,
+        1.0
+      ],
+      "geomean_speedup": 1.0,
+      "speedup_over_wasp": [
+        0.1972307877948225,
+        0.207105353056965
+      ]
+    },
+    "selected": {
+      "seconds": [
+        0.435296,
+        0.537996
+      ],
+      "speedup_over_base": [
+        1.0060234874660001,
+        1.0136121862339016
+      ],
+      "geomean_speedup": 1.0085702649347115,
+      "speedup_over_wasp": [
+        0.1984395657266704,
+        0.20835284955524516
+      ]
+    },
+    "control": {
+      "seconds": [
+        0.434823,
+        0.52499
+      ],
+      "speedup_over_base": [
+        0.9984538428586728,
+        1.0335206384883522
+      ],
+      "geomean_speedup": 1.00968968627729,
+      "speedup_over_wasp": [
+        0.19692583800378394,
+        0.208579495564862
+      ]
+    },
+    "wasp": {
+      "seconds": [
+        0.088263736,
+        0.107337818
+      ],
+      "speedup_over_base": [
+        4.828460419972567,
+        5.070202330887059
+      ],
+      "geomean_speedup": 4.983932322801435,
+      "speedup_over_wasp": [
+        1.0,
+        1.0
+      ]
+    }
+  }
+}

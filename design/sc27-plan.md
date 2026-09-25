@@ -839,3 +839,18 @@ training sources. This both checks transfer and repeats the layout result
 on another node allocation. Diagnose all six queue arms on the two training
 sources and the combined profile if its layout differs. Runs remain
 sequential on one exclusive `cpu-interactive` node with `+old-scheduler`.
+
+
+Layout job **22401042** completed 164/164 valid solves on cn071 in 11:00.
+16×7 wins the 14-layout training screen and three-repeat confirmation
+against 8×14 (0.473509 versus 0.577971 s). Reduced-core choices are slower:
+best 56 workers 1.70× baseline time; best 28 workers 3.04×. Keep 16×7.
+Current-state §19 and `onenode-data/delta-road-layout-22401042.json` contain
+the complete table, held-out controls, diagnostics and affinity checks.
+The three original/selected/control arms are identical after selection,
+so their small timing differences are measurement variation, not a gain.
+
+Queue job **22401233** is submitted with `afterok:22401042`. All seven
+new frozen binaries built successfully; exact source/binary/runtime hashes
+and final sanitizer logs are archived. The original global defaults and
+previous mesh binaries remain unchanged.

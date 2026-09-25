@@ -1316,6 +1316,76 @@ The same archive includes the boundary result and its raw-log paths.
 uniform from the second, with each panel labeled by job. Protocols and
 launch helpers are committed in `f038d88` / `4601f92`.
 
+### 19. Delta road layout screen: 16 × 7 remains fastest
+
+The user explicitly reopened layout selection, including unused cores.
+Job **22401042** completed on **cn071**, `cpu-interactive`, in **11:00**,
+with **164/164** full solves matching the independent reference. Every
+ACIC run verifies the runtime process/PE count, `+old-scheduler` and each
+PE's actual CPU binding. All four work ledgers conserve. The frozen
+original heap, slice 8, road admission width 131072 and runtime are unchanged.
+
+Fourteen layouts cover 14–120 workers, equal-worker process-count changes,
+and compact versus spread reduced-core placement. The entire 128-core node
+remains exclusively allocated even for a smaller active worker count. Rank
+starts are spaced across 128 cores unless marked compact; a single rank uses
+contiguous cores. Each process region leaves at least one spare core.
+
+| Layout | Active workers | Training geomean seconds | Time relative to 16×7 |
+|---|---:|---:|---:|
+| 16×7 | 112 | 0.441206 | 1.00× |
+| 8×14 | 112 | 0.547970 | 1.24× |
+| 8×15 | 120 | 0.551383 | 1.25× |
+| 4×28 | 112 | 0.707694 | 1.60× |
+| 8×7, spread | 56 | 0.748487 | 1.70× |
+| 8×7, compact within 64 cores | 56 | 0.751065 | 1.70× |
+| 4×14 | 56 | 0.895687 | 2.03× |
+| 16×3 | 48 | 0.982765 | 2.23× |
+| 2×28 | 56 | 1.071870 | 2.43× |
+| 4×7, compact within 32 cores | 28 | 1.341680 | 3.04× |
+| 4×7, spread | 28 | 1.366707 | 3.10× |
+| 2×14 | 28 | 1.548701 | 3.51× |
+| 1×28 | 28 | 1.634074 | 3.70× |
+| 2×7 | 14 | 1.938208 | 4.39× |
+
+These are medians of two timed launches on each of the two training sources,
+combined geometrically; each layout/source also has a warmup. Three further
+repeats on both training sources confirm **16×7: 0.473509 s**, versus
+**8×14: 0.577971 s**, a **1.22×** time ratio. Freeze 16×7. The four test
+sources were never used to choose the layout.
+
+The subsequent matched comparison uses independently randomized original,
+selected and duplicate-original arms; all three are now the same configuration.
+Their small differences measure variation, not an optimization. Original
+medians are **0.437918–0.542588 s**, selected-arm medians
+**0.435296–0.537996 s**, control ratios **0.998–1.034×**. Fresh Wasp
+(64 threads, delta 32768) takes **0.088264–0.107338 s**: original ACIC
+still takes **4.83–5.07×** as long.
+
+Reduced cores often decrease redundant work, yet increase execution time
+and rounds: 2×7 scans about **1.016–1.030×** the stored edges versus
+**1.524–1.590×** at 16×7, but takes 4.39× as long, with roughly
+5893–6658 rather than 640–844 observations in training. This rules out
+redundant-edge count alone as the explanation of the road gap. Compact
+placement does not recover the lost throughput. These results apply to
+the original heap and frozen settings; they do not prove every future
+queue policy has the same best layout.
+
+The initial pilot **22400947** stopped after 19 valid solves due solely to
+a parser expecting plural `processes` for one process. All raw outputs were
+revalidated after the fix; none contribute to the selection/timing above.
+
+Queue follow-up **22401233** depends on the completed layout job, so node
+allocations cannot overlap. It tests heap slice 8/64 and a 2×2 of chunk band
+256/65536 and full-only/owner-serviced partial publication, with the original
+16×7 baseline and independent correctness gates. Results pending.
+
+Campaign: `/work/hdd/mzu/rao1/acic-road-opt-20260925`. Layout raw logs,
+`audit.json` and `report.md`: `logs/layout-22401042/`; plots:
+`figures/layout-22401042.{png,pdf}`. Compact archive:
+`design/onenode-data/delta-road-layout-22401042.json`. Protocol:
+`benchmarks/delta-road-layout-protocol.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
