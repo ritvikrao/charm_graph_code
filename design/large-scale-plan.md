@@ -55,8 +55,8 @@ mesh26-z at 16 nodes in both allocations); RIKEN uses 8 ranks per node, delta
 
 | Stage | Jobs | Notes |
 |---|---|---|
-| 1 | 5541369 (4n, done), 5541370 (16n, done), 5541371 (64n) | mesh24/26-z, road-usa-z |
-| 2 | 5541426 (4n, cancelled), 5541428 (16n), 5541429 (64n, done) | road-na-z, road-eu-z |
+| 1 | 5541369 (4n), 5541370 (16n), 5541371 (64n), all done | mesh24/26-z, road-usa-z |
+| 2 | 5541426 (4n, cancelled after ACIC), 5541428 (16n), 5541429 (64n), done | road-na-z, road-eu-z |
 | 64-node ACIC rerun | 5541660 | 5541371 and 5541429 lost their ACIC arms: every 512-process launch aborted in Cray PMI (`_pmi2_add_kvs`, LCI's bootstrap needs ranks^2 KVS entries; the harness pinned 100000). Fixed in cf42624; their Gluon and RIKEN runs are valid |
 | 2, 4-node rerun | 5541712 (ACIC + Gluon-Async) | 5541426 was cancelled at 40 min: 60-85 s Gluon solves and RIKEN timeouts left no room for the search. ACIC in 5541426 finished (64 valid rows). The rerun pins Gluon to 8 ranks per node, oec (every 16- and 64-node search chose it) and searches deltas 0, 131072 and 2097152, which the 16- and 64-node runs split between |
 | RIKEN on OSM roads | 4n: 5541713 (NA), 5541714 (EU, 2 sources x 1 rep); 16n: 5541715 (NA), 5541716 (EU, 2 reps); 64n: 5541717 (both, 2 reps) | Every RIKEN run in stage 2 was inexact or timed out: all vertices reached, the distance sum high by 2.6e-5 (NA) and 5.9e-5 (EU), at every layout and node count. RIKEN aims at Graph500 accuracy (validate.hpp, relative 1e-5 per edge). The "hangs" were launch timeouts at 330 s on slow layouts (the 8-rank layout took 358 s at 4 nodes). These jobs run with `run.py --riken-tolerance 1e-3` (every vertex reached, distance sum high by at most 0.1%; recorded `exact=false` with its error), 8 and 56 ranks per node (56 only at 4 nodes), delta 131072 |
@@ -68,3 +68,42 @@ both below 2^24, so RIKEN is exact on both.
 
 Allocation B (a repeat of every point) is submitted only if the user asks, after A is reported. Estimated cost about 700
 node-hours per allocation.
+
+## Results, allocation A (complete 2026-09-25)
+
+Speedup = baseline time / ACIC time, per held-out source (median over
+repetitions), range over sources; `tls` is the TLS build, production in
+parentheses. GAPBS and Wasp are one node, 56 threads, delta tuned per graph.
+Full per-cell output: design/onenode-data/frontier-large-A-summary.txt
+(benchmarks/large_summary.py). No ACIC run was invalid, stalled or rescued.
+
+| Graph @ nodes | ACIC tls (s) | over Gluon | over RIKEN | over GAPBS | over Wasp |
+|---|---:|---:|---:|---:|---:|
+| mesh24-z @4 | 0.12-0.13 | 28-73x (23-58) | 68-87x (54-71) | 0.61-0.64x (0.49-0.52) | 0.53-0.64x (0.44-0.51) |
+| mesh26-z @16 | 0.18-0.22 | 61-72x (49-57) | 94-206x (76-169) | 1.55-1.74x (1.24-1.41) | 1.20-1.50x (0.95-1.22) |
+| mesh26-z @64 | 0.14-0.18 | 55-63x (44-51) | 65-113x (54-90) | 1.94-2.29x (1.55-1.91) | 1.52-1.98x (1.23-1.65) |
+| mesh28-z @16 | 0.60-0.69 | 76-97x (61-78), 2 sources | 580-772x (467-625), 2 sources | 2.19-2.64x (1.74-2.11) | 1.32-1.61x (1.04-1.29) |
+| mesh28-z @64 | 0.33-0.41 | 72-105x (59-86) | 292-389x (241-322) | 3.70-4.79x (3.07-3.95) | 2.23-2.92x (1.85-2.41) |
+| mesh30-z @32 | 1.32-1.58 | 95-134x (77-107) | none: > 1590 s timeout | 4.40-4.73x (3.50-3.80) | 2.07-2.56x (1.65-2.05) |
+| mesh30-z @64 | 0.89-1.12 | 85-192x (68-157) | none: 1024-1469 s on training sources | 6.16-7.04x (4.95-5.73) | 2.90-3.80x (2.32-3.10) |
+| road-usa-z @4 | 0.18-0.23 | 34-123x (28-103) | n/a (> 2^24) | 0.61-0.67x (0.50-0.55) | 0.33-0.40x (0.27-0.33) |
+| road-usa-z @16 | 0.12-0.17 | 32-72x (26-60) | n/a | 0.86-1.00x (0.73-0.84) | 0.47-0.60x (0.40-0.50) |
+| road-usa-z @64 | 0.10-0.15 | 24-52x (22-47) | n/a | 0.97-1.18x (0.88-1.05) | 0.53-0.70x (0.48-0.62) |
+| road-na-z @4 | 0.49-0.59 | none (5541712 failed) | 294-1076x (238-889), inexact | 1.15-1.41x (0.95-1.14) | 0.49-0.65x (0.41-0.53) |
+| road-na-z @16 | 0.32-0.41 | 27-98x (23-79) | 163-496x (131-414), inexact | 1.66-2.17x (1.38-1.76) | 0.71-1.01x (0.59-0.82) |
+| road-na-z @64 | 0.28-0.38 | 15-46x (13-38) | 82-239x (68-197), inexact | 1.77-2.45x (1.49-2.05) | 0.75-1.14x (0.63-0.95) |
+| road-eu-z @4 | 0.59-0.71 | none (5541712 failed) | 432-2179x (358-1808), inexact, 2 sources | 0.98-1.07x (0.81-0.89) | 0.50-0.64x (0.42-0.53) |
+| road-eu-z @16 | 0.31-0.41 | 18-135x (15-110) | 286-1187x (234-965), inexact | 1.68-2.07x (1.36-1.69) | 0.86-1.24x (0.70-1.01) |
+| road-eu-z @64 | 0.27-0.36 | 10-61x (8-51) | 126-537x (105-443), inexact | 1.90-2.39x (1.57-1.99) | 0.98-1.43x (0.81-1.19) |
+
+RIKEN on the OSM roads: every vertex reached, distance sum high by
+3.0e-5-3.7e-5 (NA) and 4.9e-5-6.4e-5 (EU). The TLS build is 1.19-1.26x over
+production everywhere except road-usa-z @64 (1.10-1.13x).
+
+Gaps: road-na/eu-z @4 have no Gluon (5541712 was submitted without
+VARIANTS_PREFIX=frontier-large and failed in 6 s); mesh28-z @16 Gluon and
+RIKEN cover 2 of 4 sources (5541663 died on a Lustre EIO writing its log;
+5541713 died the same way after 6 of 8 held-out runs); mesh30-z RIKEN has no
+held-out time (32 nodes: two launches past 1590 s; 64 nodes: 1024-1469 s per
+solve, then a timeout). The RIKEN layout stage on mesh30-z ran the mid delta
+(64), not the pinned 1024: `--delta-divisors` sets only the parameter grid.
