@@ -752,3 +752,40 @@ Full analysis: current-state §18. Archive:
 all per-source medians, training selections, work counters, controller
 progress classifications, and raw paths. The final report reaudit checks all
 293 digests, recorded times, work ledgers and effective old scheduler.
+
+
+### Road layout and reduced-core study (2026-09-25)
+
+The user now explicitly requests road optimization with different process
+layouts, including leaving cores idle; this supersedes the earlier fixed
+16 × 7 preference for this study. The original heap remains the baseline.
+The first screen uses the frozen validated binaries and unchanged runtime,
+road width 131072, slice 8, queue batch 8 and `+old-scheduler`. No solver
+default changes. One exclusive Delta `cpu-interactive` node at a time.
+
+`benchmarks/delta-road-layout-protocol.json` specifies 14 layouts: 112-worker
+16×7/8×14/4×28, 120-worker 8×15, 56-worker 8×7/4×14/2×28, 48-worker 16×3,
+28-worker 4×7/2×14/1×28, 14-worker 2×7, and compact 8×7 within 64 cores /
+4×7 within 32 cores. Other rank starts are spaced across 128 cores; a single
+rank uses contiguous cores. The allocation still reserves the entire node.
+Explicit CPU maps preserve a spare core in each process region; runtime
+startup stays unbound as before. Every PE binding and effective process/PE
+count is checked from runtime output. Compact/spread tests change worker
+placement, without imposing a new memory-placement policy.
+
+Use only the two training sources to choose: warmup plus two randomized
+repeats per layout/source; repeat the best two and 16×7 three more times.
+Choose by geometric mean of source medians in this confirmation phase.
+Then freeze and compare selected layout, original 16×7, duplicate original
+control and Wasp (64 threads, delta 32768, selected in the prior training)
+on all four test sources: warmup plus three randomized repeats. Work builds
+probe original/selected on the first two test sources. Each full solve must
+match the independent digest; diagnostic queue/edge ledgers must conserve.
+A gain of at least 5% beyond control variation warrants a second allocation;
+this first screen alone will not promote a default. Prediction: reduced
+parallelism may lower loaded round costs or contention on thin frontiers.
+
+Separately investigate partial chunk publication and road-specific distance
+bands at fixed 16×7, then combine only promising choices with the selected
+layout. This distinguishes a placement gain from a queue algorithm gain.
+Campaign: `/work/hdd/mzu/rao1/acic-road-opt-20260925`.

@@ -1,0 +1,134 @@
+{
+  "recorded": "2026-09-25",
+  "order_seed": 20260927,
+  "graph": "road-usa-z",
+  "layouts": [
+    {
+      "label": "16x7-span128",
+      "ranks": 16,
+      "ppn": 7,
+      "span": 128,
+      "workers": 112
+    },
+    {
+      "label": "8x14-span128",
+      "ranks": 8,
+      "ppn": 14,
+      "span": 128,
+      "workers": 112
+    },
+    {
+      "label": "4x28-span128",
+      "ranks": 4,
+      "ppn": 28,
+      "span": 128,
+      "workers": 112
+    },
+    {
+      "label": "8x15-span128",
+      "ranks": 8,
+      "ppn": 15,
+      "span": 128,
+      "workers": 120
+    },
+    {
+      "label": "8x7-span128",
+      "ranks": 8,
+      "ppn": 7,
+      "span": 128,
+      "workers": 56
+    },
+    {
+      "label": "4x14-span128",
+      "ranks": 4,
+      "ppn": 14,
+      "span": 128,
+      "workers": 56
+    },
+    {
+      "label": "2x28-span128",
+      "ranks": 2,
+      "ppn": 28,
+      "span": 128,
+      "workers": 56
+    },
+    {
+      "label": "16x3-span128",
+      "ranks": 16,
+      "ppn": 3,
+      "span": 128,
+      "workers": 48
+    },
+    {
+      "label": "4x7-span128",
+      "ranks": 4,
+      "ppn": 7,
+      "span": 128,
+      "workers": 28
+    },
+    {
+      "label": "2x14-span128",
+      "ranks": 2,
+      "ppn": 14,
+      "span": 128,
+      "workers": 28
+    },
+    {
+      "label": "1x28-span128",
+      "ranks": 1,
+      "ppn": 28,
+      "span": 128,
+      "workers": 28
+    },
+    {
+      "label": "2x7-span128",
+      "ranks": 2,
+      "ppn": 7,
+      "span": 128,
+      "workers": 14
+    },
+    {
+      "label": "8x7-span64",
+      "ranks": 8,
+      "ppn": 7,
+      "span": 64,
+      "workers": 56
+    },
+    {
+      "label": "4x7-span32",
+      "ranks": 4,
+      "ppn": 7,
+      "span": 32,
+      "workers": 28
+    }
+  ],
+  "common_flags": [
+    "--process-share",
+    "auto",
+    "--reader-tile",
+    "auto",
+    "--slack-control",
+    "off",
+    "--process-queue",
+    "nearest",
+    "--process-queue-batch",
+    "8",
+    "--hub-hints",
+    "auto",
+    "+old-scheduler",
+    "--bucket-width",
+    "131072"
+  ],
+  "wasp": {
+    "threads": 64,
+    "delta": 32768
+  },
+  "baseline": "Original heap, 16x7, slice8; exact frozen binaries from mesh/road transfer study.",
+  "training": "Two existing tune sources; per-layout/source warmup, two randomized timed repeats. Top two plus baseline get three new repeats; select by geometric mean of source medians of confirmation only.",
+  "heldout": "Four test sources never used for selection; each arm/source warmup plus three repeats. Selected layout vs 16x7 baseline, duplicate 16x7 control, and fixed training-selected Wasp, interleaved.",
+  "affinity": "Worker CPU lists are rank*(span/ranks)+[0,ppn). Startup remains unbound as in baseline. Every runtime PE binding is verified. span128 spreads rank starts; span64/32 packs into one socket/two NUMA domains. A single rank uses contiguous cores. Each process region leaves >=1 core unused.",
+  "allocation": "One exclusive 128-core Delta cpu-interactive node; fewer active workers do not release cores for another job.",
+  "prediction": "Fewer active workers may reduce loaded rounds and contention on thin road frontiers; fixed-worker-count comparisons distinguish changing process count. Compact versus spread separates locality/resource reach. No guaranteed gain.",
+  "acceptance": "All full independent digests, old scheduler, effective layout and affinity; diagnostic ledgers conserve work. Timing gain >=5% beyond duplicate-control variation is promising, then require separate-allocation confirmation before changing recommendation.",
+  "followup": "Independently test chunk partial publication and distance-band width at fixed 16x7, then combine a promising queue with the training-selected layout. Preserve solver defaults."
+}
