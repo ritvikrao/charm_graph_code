@@ -552,3 +552,36 @@ are PE-time attribution, not additive critical-path fractions.
 Campaign: `/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925`. Hypothesis: heap
 work and runtime scheduling, rather than controller entry time alone, dominate
 this larger mesh; ACIC remains behind Wasp. These are predictions, not results.
+
+
+### Mesh28 attribution result and next gate
+
+Comparison **22378381** completed: 62/62 full digests, conserved work, four
+held-out sources with three timing repetitions. ACIC takes 3.53–3.84 s by
+source median versus Wasp 0.930–0.974 s (speedup 0.246–0.276×). The full
+112-PE Projections trace adds 2.57% time and shows 82% of PE time in
+`process_heap`, 72.6M callbacks, and only 0.26% in threshold entries. Queue
+sampling estimates 52.5–52.8% of total PE time in push/pop calls. Wasp does
+more outgoing inspections in the counter runs despite finishing faster.
+The attribution hypothesis is supported; controller entry execution and
+inter-process sending are not the main measured costs on this input.
+
+Move an **application-queue cost prototype** ahead of road contribution
+placement for this one-node investigation. Keep 16 × 7 and +old-scheduler.
+Use producer-private chunks within original distance buckets, publishing
+bounded chunks for stealing; all privately buffered work remains charged,
+visible to termination, and subject to admission-generation checks. Do not
+change runtime scheduler queues or merge the rejected coalescing prototype.
+A focused PC sample can first distinguish map/heap operations, locking, TLS
+and vertex lookup inside the now-established hotspot.
+
+Before implementation measurements, freeze an exact variant and prediction.
+Suggested first gate: at least 1.20× speedup on both training sources beyond
+matched-control variation; treat scans as an explanatory metric rather than
+requiring them to fall. Require independent digest and queue conservation,
+then four held-out sources and another one-node allocation before acceptance.
+If callback overhead remains material, separately test a larger bounded heap
+slice with batch 8 held fixed; do not combine interventions in the first A/B.
+Recheck multi-node progress and the distributed mesh endpoint before changing
+the paper's mesh profile. No solver intervention was implemented in this
+attribution task. Full results and trace paths are in current-state §16.

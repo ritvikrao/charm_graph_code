@@ -932,6 +932,127 @@ quiescence or combine this with coalescing. The proposed screen is not
 implemented or queued. No jobs remain in the queue, and none were submitted
 during this review.
 
+### 16. Delta mesh28-z: the one-node gap to Wasp (2026-09-25)
+
+Jobs **22378324** (input/reference preparation) and **22378381** (comparison),
+both `cpu-interactive`, ran sequentially on one node, cn025. The graph has
+268,435,456 vertices and 1,073,676,288 stored directed edges, deterministic
+seed 1 and Morton ordering; SHA-256
+`31f961b22ad6944a7285225112802304f45ff8d235736cc830c474b2575686e2`.
+Six independent GAPBS-reader Dijkstra references were generated on Delta.
+This is a local comparison, not a timing comparison against Frontier hardware.
+
+ACIC uses app **87f04af**, Charm++ **f6c74074f**, Reconverse **b30ad319**,
+LCI **dfb924cf**, htram **7db9c0af**, production/tracing/shmem, ordinary TLS,
+**16 × 7**, and `+old-scheduler`. Process sharing and reader tiling resolve on;
+nearest queue, batch 8, slice 8, slack off, drain cap off. Hub hints resolve
+off, lazy-heavy is inactive, and the sender filter drops zero mesh updates.
+The rejected heap-coalescing prototype is off. Wasp is the unchanged SC25
+artifact kernel with the existing digest adapter, GCC 14.2.1, `-O3 -DNDEBUG
+-march=znver3`. A bounded 64/96/128-thread × delta 1024/4096/16384 search on
+two training sources, then confirmation of its top two settings, selected
+**128 threads, delta 4096**. It is a boundary winner, not a global optimum.
+Both programs receive one exclusive 128-core node; ACIC uses 112 workers.
+
+Four held-out sources, one warmup each and three randomized paired timing
+repetitions, solve-only medians (graph reading excluded):
+
+| Source | ACIC (s) | Wasp (s) | ACIC speedup over Wasp | ACIC edge scans / stored edge |
+|---:|---:|---:|---:|---:|
+| 9130980 | 3.773889 | 0.929554 | 0.246× | 1.595 |
+| 141442404 | 3.607178 | 0.947869 | 0.263× | 1.511 |
+| 160224940 | 3.843291 | 0.955351 | 0.249× | 1.506 |
+| 190849552 | 3.534423 | 0.974048 | 0.276× | 1.473 |
+
+Thus ACIC takes **3.63–4.06× Wasp's time**. All **62 solves** (training,
+confirmation, warmup, timing, work and trace controls) pass both independent
+hashes, reachable count and distance sum. Both ACIC work ledgers conserve
+queue work and agree exactly with the production retirement ledger. One
+allocation does not establish between-allocation variation. Wasp's timer
+includes its distance initialization, leaf detection and scheduler setup;
+ACIC's solve timer excludes its graph/state preparation. Wasp had a slow
+training confirmation and a slow warmup; neither is discarded from the raw
+record. All 12 held-out Wasp timing runs are 0.913–0.988 s.
+
+**Work attribution.** On the first two held-out sources, separate ACIC
+counter builds scan **1.694B / 1.630B** edges. Wasp's existing COUNT_RELAX
+build counts **5.000B / 5.763B** pull+push inspections. Every mesh vertex has
+degree 2–4, so Wasp's low-degree pull pass runs once per outgoing push pass:
+its outgoing inspections are **2.500B / 2.881B**, still more than ACIC's.
+These are separate diagnostic executions, not counters attached to the
+headline timing samples. ACIC's own diagnostic scan factors remain close
+to its production samples. This gap is not explained by ACIC doing more
+edge scanning than Wasp.
+
+ACIC performs **577M / 556M queue pushes and pops**, with **26.6% stale
+pops**. Its calibrated one-in-1024 sampling estimates **30.2–30.5% of PE
+time in queue pushes** and **22.3% in pop calls**, about **52.5–52.8% total**.
+A push costs about 238–239 ns; a pop call about 646–658 ns, including empty
+calls. These inclusive samples cover the mutex, ordered containers, nearest
+hint scans and bookkeeping; they do not isolate lock waiting. Failed pop
+try-locks are 5.2–5.4% of all probes, and distance-CAS failures only about
+0.014%. **99.66–99.67%** of attempted edges remain within a process. The
+separate COMM_SHARE timer places 84.6–84.8% of PE time in solver work,
+0.12–0.13% in explicit sending, and 8.4–8.7% in idle after subtracting work
+performed by idle callbacks.
+
+**Projections.** A full solve of source 9130980 has all **112 PE logs**, no
+mid-solve buffer flush, and a matching reference answer. It takes **3.902865
+s**, bracketed by plain controls of 3.777989 and 3.832467 s: **2.57% tracing
+slowdown** relative to their mean. It makes 1.583 scans per stored edge,
+versus 1.596/1.624 in the controls. The trace has 1199 controller rounds,
+versus 1250/1228 in its controls.
+
+- `process_heap`: **82.0%** of PE time, **72,553,961 calls**, mean **4.9 µs**.
+- Idle: **9.8%**; outside traced entry methods: **7.3%**.
+- `current_thresholds`: **0.26%**; reduction and broadcast entry work is
+  small. A small entry-time share does not prove ordering restrictions or
+  controller waits are irrelevant to the critical path.
+- Process busy-time max/median is **1.03**. The sustained middle spends
+  about 85–92% of PE time in heap work; idle is concentrated near the start
+  and tail. This is not predominantly a load imbalance between processes.
+- Heap self-callback send-to-execute p50/p90 is **0.48/1.61 ms**; threshold
+  callbacks p90 about **0.15 ms**. Every PE develops multiple drain callbacks,
+  with a maximum **506 pending**; all pending self callbacks drain by trace
+  end. The self messages are local scheduler traffic, not network packets.
+
+Queue sampling overlaps `process_heap` time and must not be added to it.
+Runtime helpers called inside a heap entry are charged to that entry;
+Projections alone cannot separate container operations, TLS, cache misses
+and lock wait. Idle callbacks can also do solver work, which COMM_SHARE
+accounts for separately. Cross-process message latency uses estimated clock
+offsets; heap self-message latency needs no such correction. The analyzer's
+last partial timeline bin initially counted time after traceEnd as untraced;
+its denominator is fixed and report-only job **22378746** regenerates that
+report. This changes no solve times, total shares or message counts.
+
+**Next intervention.** Prioritize cheaper application queue operations,
+not another layout search or road-style round-count intervention. Wasp uses
+owner-private chunks of 64 vertices, FIFO work within a distance bucket,
+and chunk stealing through a Chase–Lev deque. ACIC currently acquires a
+producer mutex and updates a map/priority heap on each successful relaxation.
+A bounded prototype should keep per-bucket producer-private chunks, publish
+chunks for stealing, and retain ACIC's admission/charge/termination rules.
+Allow more edge scans if total solve time improves. This is an implementation
+cost issue within label-correcting SSSP, not evidence of an inherent
+Bellman–Ford performance floor.
+
+A second diagnostic is slice 8 versus a larger bounded drain quantum on
+one node, keeping queue batch and 16 × 7 fixed. The 72.6M callbacks justify
+measuring this, but previous slice and coalescing experiments warn that
+changing interleaving can increase work. Do not revive the rejected
+coalescing patch simply because its backlog count would look better. Use
+solve-window PC sampling to distinguish queue containers, locks and local
+vertex/destination lookup inside `process_heap` before broader redesign.
+
+Raw campaign: `/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925`.
+Open `traces/mesh28-z-22378381/acic_prj.sts` in Projections, keeping its
+112 `acic_prj.<PE>.log.gz` files beside it (about 1.5 GiB total). The
+`logs/compare-22378381` directory contains all commands and raw outputs,
+selection, counter records, trace/backlog reports, and an audited summary.
+The protocol is `benchmarks/delta-mesh28-wasp-protocol.json`; the compact
+archive is `design/onenode-data/delta-mesh28-wasp-22378381.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |

@@ -141,6 +141,7 @@ manifest. Use these records rather than filesystem timestamps.
 | Machine / graph | Wasp setting (`bin/wasp_sssp`) | Selection |
 |---|---|---|
 | Frontier `mesh26-z` | 56 threads, delta 4096 | Joint thread × delta search on training sources, job 5536541 (`onenode_gap_tune.py --engine wasp`). |
+| Delta `mesh28-z` | 128 threads, delta 4096 | Bounded 64/96/128 × 1024/4096/16384 training search, job 22378381; top-two confirmation, four held-out sources, three repeats. Thread-boundary winner. |
 | Frontier `road-usa-z` | 56 threads, delta 32768 | Same job and search. |
 | Frontier `mesh24-z` | 56 threads, delta 4096 | Same search, job 5538411. |
 

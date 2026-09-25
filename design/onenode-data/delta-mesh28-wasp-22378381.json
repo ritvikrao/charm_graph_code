@@ -1,0 +1,1387 @@
+{
+  "job": "22378381",
+  "hosts": "cn025",
+  "validated_solves": 62,
+  "wasp_selection": {
+    "winner": {
+      "threads": 128,
+      "delta": 4096
+    },
+    "scores": [
+      {
+        "threads": 64,
+        "delta": 1024,
+        "geomean_seconds": 1.8041727300342567
+      },
+      {
+        "threads": 64,
+        "delta": 4096,
+        "geomean_seconds": 1.3761051937067323
+      },
+      {
+        "threads": 64,
+        "delta": 16384,
+        "geomean_seconds": 2.201007555906504
+      },
+      {
+        "threads": 96,
+        "delta": 1024,
+        "geomean_seconds": 1.4469451464430096
+      },
+      {
+        "threads": 96,
+        "delta": 4096,
+        "geomean_seconds": 1.2294035796758136
+      },
+      {
+        "threads": 96,
+        "delta": 16384,
+        "geomean_seconds": 1.5495265134917555
+      },
+      {
+        "threads": 128,
+        "delta": 1024,
+        "geomean_seconds": 1.5001424953687648
+      },
+      {
+        "threads": 128,
+        "delta": 4096,
+        "geomean_seconds": 0.8713537482653855
+      },
+      {
+        "threads": 128,
+        "delta": 16384,
+        "geomean_seconds": 1.277240934473589
+      }
+    ]
+  },
+  "manifest": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/manifest.json",
+  "sources": [
+    {
+      "source": 9130980,
+      "acic_seconds": [
+        3.773889,
+        3.766788,
+        3.786628
+      ],
+      "wasp_seconds": [
+        0.913261405,
+        0.929553962,
+        0.934558576
+      ],
+      "acic_median": 3.773889,
+      "wasp_median": 0.929553962,
+      "acic_scan_factors": [
+        1.5961840138915315,
+        1.5798992126014055,
+        1.5950464959881838
+      ],
+      "acic_rounds": [
+        1219,
+        1224,
+        1310
+      ],
+      "acic_speedup_over_wasp": 0.2463119508814382
+    },
+    {
+      "source": 141442404,
+      "acic_seconds": [
+        3.615402,
+        3.607178,
+        3.556859
+      ],
+      "wasp_seconds": [
+        0.952461926,
+        0.947869147,
+        0.947337468
+      ],
+      "acic_median": 3.607178,
+      "wasp_median": 0.947869147,
+      "acic_scan_factors": [
+        1.5120412196343485,
+        1.51146560945565,
+        1.507944131853641
+      ],
+      "acic_rounds": [
+        1080,
+        1155,
+        1081
+      ],
+      "acic_speedup_over_wasp": 0.2627730450230069
+    },
+    {
+      "source": 160224940,
+      "acic_seconds": [
+        3.576759,
+        3.931064,
+        3.843291
+      ],
+      "wasp_seconds": [
+        0.938481846,
+        0.956088149,
+        0.955351101
+      ],
+      "acic_median": 3.843291,
+      "wasp_median": 0.955351101,
+      "acic_scan_factors": [
+        1.505518152972379,
+        1.515215791000127,
+        1.5004302693513523
+      ],
+      "acic_rounds": [
+        1167,
+        1190,
+        1108
+      ],
+      "acic_speedup_over_wasp": 0.24857631155174043
+    },
+    {
+      "source": 190849552,
+      "acic_seconds": [
+        3.534423,
+        3.542787,
+        3.526685
+      ],
+      "wasp_seconds": [
+        0.972009432,
+        0.987661991,
+        0.974047818
+      ],
+      "acic_median": 3.534423,
+      "wasp_median": 0.974047818,
+      "acic_scan_factors": [
+        1.4732900788435779,
+        1.4753691980575807,
+        1.4562418314299217
+      ],
+      "acic_rounds": [
+        1166,
+        1173,
+        1080
+      ],
+      "acic_speedup_over_wasp": 0.27558892017169423
+    }
+  ],
+  "work": [
+    {
+      "index": 55,
+      "engine": "acic_cost",
+      "phase": "work",
+      "source": 9130980,
+      "role": "test",
+      "rep": 0,
+      "setting": null,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=00:10:00",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/harness/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "9130980",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/055-work-acic_cost-s9130980-r0.out",
+      "returncode": 0,
+      "launch_seconds": 10.237324734218419,
+      "valid": true,
+      "seconds": 4.043827,
+      "edge_attempts": 1694159957,
+      "edge_scan_factor": 1.5779057206858982,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 1694159957,
+        "expansions": 423559910,
+        "changes": 577384510,
+        "queue_pushes": 577384510,
+        "queue_pops": 577384510,
+        "stale_pops": 153824600,
+        "cas_attempts": 577466268,
+        "cas_failures": 81758,
+        "intra_process": 1688614089,
+        "intra_node": 5545868,
+        "inter_node": 0,
+        "queue_probes": 697728117,
+        "lock_misses": 36549639,
+        "cpu_ns": 410864346211,
+        "push_calls": 577384510,
+        "push_samples": 563856,
+        "push_ticks": 329543653,
+        "pop_calls": 156457015,
+        "pop_samples": 152795,
+        "pop_ticks": 241532876
+      },
+      "rounds": 1148,
+      "comm_share": {
+        "pes": 112.0,
+        "solve_seconds": 4.043827,
+        "pe_seconds": 452.908577,
+        "work_seconds": 383.349194,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.547334,
+        "window_pe_seconds": 452.888265,
+        "compute_share": 0.846416,
+        "send_share": 0.001208,
+        "other_share": 0.152375,
+        "idle_share": 0.087026
+      },
+      "sampled_queue_cost": {
+        "push": {
+          "cycles_per_call": 584.4464774694248,
+          "ns_per_call": 239.00002223522515,
+          "estimated_pe_seconds": 137.9949107282746,
+          "estimated_window_share": 0.30469968288596433
+        },
+        "pop": {
+          "cycles_per_call": 1580.7642658463956,
+          "ns_per_call": 646.4282175534245,
+          "estimated_pe_seconds": 101.1382293301794,
+          "estimated_window_share": 0.223318282115743
+        },
+        "combined_estimated_window_share": 0.5280179650017074
+      }
+    },
+    {
+      "index": 56,
+      "engine": "wasp_cost",
+      "phase": "work",
+      "source": 9130980,
+      "role": "test",
+      "rep": 0,
+      "setting": {
+        "threads": 128,
+        "delta": 4096
+      },
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=00:10:00",
+        "-n1",
+        "-c128",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/wasp_cost",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/graphs/mesh28-z.wsg",
+        "9130980",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/056-work-wasp_cost-s9130980-r0.out",
+      "returncode": 0,
+      "launch_seconds": 4.7108594654127955,
+      "valid": true,
+      "seconds": 0.958838779,
+      "edge_inspections": 5000041206
+    },
+    {
+      "index": 57,
+      "engine": "acic_cost",
+      "phase": "work",
+      "source": 141442404,
+      "role": "test",
+      "rep": 0,
+      "setting": null,
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=00:10:00",
+        "-n16",
+        "--ntasks-per-node=16",
+        "-c8",
+        "bash",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/harness/benchmarks/launch_acic.sh",
+        "16",
+        "112",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic_cost",
+        "0",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/graphs/mesh28-z.wsg",
+        "1",
+        "141442404",
+        "4",
+        "0.999",
+        "0.005",
+        "--result-digest",
+        "--timeout",
+        "300",
+        "--process-share",
+        "auto",
+        "--reader-tile",
+        "auto",
+        "--slack-control",
+        "off",
+        "--process-queue",
+        "nearest",
+        "--process-queue-batch",
+        "8",
+        "--heap-slice",
+        "8",
+        "--hub-hints",
+        "auto",
+        "+old-scheduler"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/057-work-acic_cost-s141442404-r0.out",
+      "returncode": 0,
+      "launch_seconds": 9.88879186892882,
+      "valid": true,
+      "seconds": 3.903287,
+      "edge_attempts": 1630187512,
+      "edge_scan_factor": 1.518323101869602,
+      "counters": {
+        "sample_period": 1024,
+        "edge_attempts": 1630187512,
+        "expansions": 407567072,
+        "changes": 555522765,
+        "queue_pushes": 555522765,
+        "queue_pops": 555522765,
+        "stale_pops": 147955693,
+        "cas_attempts": 555599763,
+        "cas_failures": 76998,
+        "intra_process": 1624615436,
+        "intra_node": 5572076,
+        "inter_node": 0,
+        "queue_probes": 652752706,
+        "lock_misses": 35213438,
+        "cpu_ns": 396933209306,
+        "push_calls": 555522765,
+        "push_samples": 542498,
+        "push_ticks": 315632989,
+        "pop_calls": 147899650,
+        "pop_samples": 144436,
+        "pop_ticks": 232557918
+      },
+      "rounds": 1176,
+      "comm_share": {
+        "pes": 112.0,
+        "solve_seconds": 3.903287,
+        "pe_seconds": 437.16819,
+        "work_seconds": 370.913513,
+        "work_send_seconds": 0.0,
+        "send_seconds": 0.562821,
+        "window_pe_seconds": 437.140531,
+        "compute_share": 0.848446,
+        "send_share": 0.001287,
+        "other_share": 0.150267,
+        "idle_share": 0.084195
+      },
+      "sampled_queue_cost": {
+        "push": {
+          "cycles_per_call": 581.8141062271197,
+          "ns_per_call": 237.9235562718175,
+          "estimated_pe_seconds": 132.17195183875316,
+          "estimated_window_share": 0.3023557471012752
+        },
+        "pop": {
+          "cycles_per_call": 1610.110484920657,
+          "ns_per_call": 658.4288838354859,
+          "estimated_pe_seconds": 97.38140146915903,
+          "estimated_window_share": 0.22276909726579217
+        },
+        "combined_estimated_window_share": 0.5251248443670674
+      }
+    },
+    {
+      "index": 58,
+      "engine": "wasp_cost",
+      "phase": "work",
+      "source": 141442404,
+      "role": "test",
+      "rep": 0,
+      "setting": {
+        "threads": 128,
+        "delta": 4096
+      },
+      "command": [
+        "srun",
+        "-N1",
+        "--cpu-bind=none",
+        "--unbuffered",
+        "--kill-on-bad-exit=1",
+        "--time=00:10:00",
+        "-n1",
+        "-c128",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/wasp_cost",
+        "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/graphs/mesh28-z.wsg",
+        "141442404",
+        "4096"
+      ],
+      "log": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/058-work-wasp_cost-s141442404-r0.out",
+      "returncode": 0,
+      "launch_seconds": 4.760782460216433,
+      "valid": true,
+      "seconds": 0.989647156,
+      "edge_inspections": 5762872618
+    }
+  ],
+  "trace": {
+    "seconds": 3.902865,
+    "edge_attempts": 1699514722,
+    "rounds": 1199,
+    "controls": [
+      {
+        "index": 59,
+        "engine": "acic",
+        "phase": "trace-control-before",
+        "source": 9130980,
+        "role": "test",
+        "rep": 0,
+        "setting": null,
+        "command": [
+          "srun",
+          "-N1",
+          "--cpu-bind=none",
+          "--unbuffered",
+          "--kill-on-bad-exit=1",
+          "--time=00:10:00",
+          "-n16",
+          "--ntasks-per-node=16",
+          "-c8",
+          "bash",
+          "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/harness/benchmarks/launch_acic.sh",
+          "16",
+          "112",
+          "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic",
+          "0",
+          "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/graphs/mesh28-z.wsg",
+          "1",
+          "9130980",
+          "4",
+          "0.999",
+          "0.005",
+          "--result-digest",
+          "--timeout",
+          "300",
+          "--process-share",
+          "auto",
+          "--reader-tile",
+          "auto",
+          "--slack-control",
+          "off",
+          "--process-queue",
+          "nearest",
+          "--process-queue-batch",
+          "8",
+          "--heap-slice",
+          "8",
+          "--hub-hints",
+          "auto",
+          "+old-scheduler"
+        ],
+        "log": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/059-trace-control-before-acic-s9130980-r0.out",
+        "returncode": 0,
+        "launch_seconds": 9.87921678693965,
+        "valid": true,
+        "seconds": 3.777989,
+        "edge_attempts": 1713980744,
+        "edge_scan_factor": 1.5963663938157122,
+        "rounds": 1250
+      },
+      {
+        "index": 61,
+        "engine": "acic",
+        "phase": "trace-control-after",
+        "source": 9130980,
+        "role": "test",
+        "rep": 0,
+        "setting": null,
+        "command": [
+          "srun",
+          "-N1",
+          "--cpu-bind=none",
+          "--unbuffered",
+          "--kill-on-bad-exit=1",
+          "--time=00:10:00",
+          "-n16",
+          "--ntasks-per-node=16",
+          "-c8",
+          "bash",
+          "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/harness/benchmarks/launch_acic.sh",
+          "16",
+          "112",
+          "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/bin/acic",
+          "0",
+          "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/graphs/mesh28-z.wsg",
+          "1",
+          "9130980",
+          "4",
+          "0.999",
+          "0.005",
+          "--result-digest",
+          "--timeout",
+          "300",
+          "--process-share",
+          "auto",
+          "--reader-tile",
+          "auto",
+          "--slack-control",
+          "off",
+          "--process-queue",
+          "nearest",
+          "--process-queue-batch",
+          "8",
+          "--heap-slice",
+          "8",
+          "--hub-hints",
+          "auto",
+          "+old-scheduler"
+        ],
+        "log": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/061-trace-control-after-acic-s9130980-r0.out",
+        "returncode": 0,
+        "launch_seconds": 11.38071863586083,
+        "valid": true,
+        "seconds": 3.832467,
+        "edge_attempts": 1744064347,
+        "edge_scan_factor": 1.6243856425746082,
+        "rounds": 1228
+      }
+    ],
+    "slowdown": 1.025658646472695,
+    "projections_root": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/traces/mesh28-z-22378381/acic_prj"
+  },
+  "projections": {
+    "pes": 112,
+    "processes": 16,
+    "nodes": 1,
+    "window_s_mean": 3.9038193214285712,
+    "time": [
+      {
+        "activity": "SsspChares::process_heap",
+        "pe_seconds": 358.670434,
+        "share": 0.8203285873675671,
+        "calls": 72553961
+      },
+      {
+        "activity": "idle",
+        "pe_seconds": 42.947543,
+        "share": 0.09822693464635517,
+        "calls": 73544
+      },
+      {
+        "activity": "untraced",
+        "pe_seconds": 31.785411,
+        "share": 0.07269760435432915,
+        "calls": 0
+      },
+      {
+        "activity": "HTram::receivePerPE",
+        "pe_seconds": 1.341507,
+        "share": 0.003068210919926851,
+        "calls": 2143547
+      },
+      {
+        "activity": "SsspChares::current_thresholds",
+        "pe_seconds": 1.121943,
+        "share": 0.0025660378694524074,
+        "calls": 134176
+      },
+      {
+        "activity": "HTramRecv::receive",
+        "pe_seconds": 0.823832,
+        "share": 0.0018842170324755497,
+        "calls": 306221
+      },
+      {
+        "activity": "SsspChares::clear_pq_hold",
+        "pe_seconds": 0.286798,
+        "share": 0.000655946450829687,
+        "calls": 134176
+      },
+      {
+        "activity": "CkReductionMgr::RecvMsg",
+        "pe_seconds": 0.105621,
+        "share": 0.0002415697462432875,
+        "calls": 133089
+      },
+      {
+        "activity": "CkArray::recvNoKeepBroadcast",
+        "pe_seconds": 0.046913,
+        "share": 0.00010729647991887359,
+        "calls": 268352
+      },
+      {
+        "activity": "unpack",
+        "pe_seconds": 0.03724,
+        "share": 8.517299921511846e-05,
+        "calls": 458485
+      },
+      {
+        "activity": "pack",
+        "pe_seconds": 0.028154,
+        "share": 6.439206820361023e-05,
+        "calls": 440509
+      },
+      {
+        "activity": "dummy_thread_chare::dummy_thread_ep",
+        "pe_seconds": 0.012205,
+        "share": 2.7914512766394223e-05,
+        "calls": 1199
+      },
+      {
+        "activity": "SsspChares::contribute_histogram",
+        "pe_seconds": 0.010874,
+        "share": 2.487033279981735e-05,
+        "calls": 112
+      },
+      {
+        "activity": "Main::redn_wrapper_reduce_histogram",
+        "pe_seconds": 0.00925,
+        "share": 2.115602155584978e-05,
+        "calls": 2398
+      },
+      {
+        "activity": "CkArray::recvNoKeepExpeditedBroadcast",
+        "pe_seconds": 3.9e-05,
+        "share": 8.919836115439366e-08,
+        "calls": 122
+      }
+    ],
+    "spread": {
+      "busy (entries+pack)": [
+        3.022106,
+        3.0358046,
+        3.2506880000000002,
+        3.3476342999999997,
+        3.363354
+      ],
+      "idle": [
+        0.250188,
+        0.2592999,
+        0.3658865,
+        0.6029243999999999,
+        0.606997
+      ],
+      "untraced": [
+        0.26086200000000004,
+        0.27298240000000007,
+        0.28363950000000004,
+        0.2960444,
+        0.3073300000000003
+      ],
+      "window": [
+        3.902755,
+        3.9035756,
+        3.903894,
+        3.9040623,
+        3.904232
+      ]
+    },
+    "busy_by_process": [
+      22.140988,
+      22.347217,
+      21.214052000000002,
+      21.220569,
+      22.787531,
+      22.883243999999998,
+      22.60993,
+      22.728315999999996,
+      22.719092,
+      22.466442000000004,
+      23.369187,
+      23.233535999999997,
+      22.984038,
+      23.518166,
+      22.813005999999998,
+      23.459496
+    ],
+    "timeline": [
+      [
+        0.0,
+        0.6256355357142858,
+        0.04687348214285714,
+        0.29761830357142854,
+        0.002009375,
+        0.017358839285714286,
+        0.002471517857142857
+      ],
+      [
+        0.1,
+        0.34197133928571427,
+        0.05640205357142858,
+        0.5889295535714286,
+        0.0027453571428571427,
+        0.004551071428571429,
+        0.0024507142857142857
+      ],
+      [
+        0.2,
+        0.09431714285714286,
+        0.0749778571428571,
+        0.8187027678571429,
+        0.0035958035714285714,
+        0.0035717857142857144,
+        0.0028901785714285713
+      ],
+      [
+        0.3,
+        0.13453642857142858,
+        0.07127651785714284,
+        0.7834047321428571,
+        0.0034455357142857143,
+        0.0030520535714285714,
+        0.002640535714285714
+      ],
+      [
+        0.4,
+        0.05488660714285714,
+        0.07676499999999997,
+        0.85863625,
+        0.003442857142857143,
+        0.0027508035714285716,
+        0.0022449107142857145
+      ],
+      [
+        0.5,
+        0.067155625,
+        0.07549491071428571,
+        0.8483827678571428,
+        0.0033449107142857143,
+        0.0023252678571428573,
+        0.002193482142857143
+      ],
+      [
+        0.6,
+        0.03564482142857143,
+        0.07714357142857142,
+        0.8785560714285714,
+        0.003365625,
+        0.0022264285714285715,
+        0.0020548214285714284
+      ],
+      [
+        0.7,
+        0.06668660714285714,
+        0.07427267857142861,
+        0.8517609821428571,
+        0.0028600892857142857,
+        0.001869017857142857,
+        0.001675625
+      ],
+      [
+        0.8,
+        0.018552410714285716,
+        0.07786964285714282,
+        0.8957516071428572,
+        0.0031826785714285715,
+        0.0019441071428571428,
+        0.0018766071428571428
+      ],
+      [
+        0.9,
+        0.011478482142857143,
+        0.07826491071428576,
+        0.9025809821428571,
+        0.003135982142857143,
+        0.00187,
+        0.00183375
+      ],
+      [
+        1.0,
+        0.027869553571428573,
+        0.07771839285714288,
+        0.8849120535714285,
+        0.003755,
+        0.0023635714285714284,
+        0.0023189285714285716
+      ],
+      [
+        1.1,
+        0.04481678571428571,
+        0.07554196428571425,
+        0.8701647321428572,
+        0.003522142857142857,
+        0.002730625,
+        0.0022166964285714286
+      ],
+      [
+        1.2,
+        0.041747232142857145,
+        0.07617776785714281,
+        0.8726735714285714,
+        0.003510982142857143,
+        0.002760267857142857,
+        0.002207857142857143
+      ],
+      [
+        1.3,
+        0.06289017857142858,
+        0.07445741071428569,
+        0.8537679464285715,
+        0.003249285714285714,
+        0.0025914285714285713,
+        0.0021001785714285714
+      ],
+      [
+        1.4,
+        0.04109705357142857,
+        0.07597571428571426,
+        0.8743342857142857,
+        0.003193482142857143,
+        0.002542142857142857,
+        0.0020279464285714284
+      ],
+      [
+        1.5,
+        0.026388839285714286,
+        0.07690482142857147,
+        0.8888499107142858,
+        0.0030841071428571428,
+        0.0021219642857142856,
+        0.001874375
+      ],
+      [
+        1.6,
+        0.013345,
+        0.07758241071428573,
+        0.901618125,
+        0.0030963392857142856,
+        0.0019679464285714287,
+        0.0016808035714285714
+      ],
+      [
+        1.7,
+        0.0,
+        0.07805964285714284,
+        0.9139295535714286,
+        0.0032554464285714287,
+        0.002247589285714286,
+        0.0018230357142857143
+      ],
+      [
+        1.8,
+        0.0,
+        0.07827169642857146,
+        0.9145394642857143,
+        0.0031721428571428573,
+        0.001726875,
+        0.0016113392857142856
+      ],
+      [
+        1.9,
+        0.016023214285714286,
+        0.07770964285714288,
+        0.8993878571428572,
+        0.003176875,
+        0.0015155357142857143,
+        0.0015524107142857143
+      ],
+      [
+        2.0,
+        0.04931276785714286,
+        0.07541169642857137,
+        0.8675032142857143,
+        0.0031270535714285714,
+        0.00217125,
+        0.001721875
+      ],
+      [
+        2.1,
+        0.025284732142857144,
+        0.07733919642857146,
+        0.8877566071428571,
+        0.0037653571428571428,
+        0.0026921428571428574,
+        0.0021888392857142857
+      ],
+      [
+        2.2,
+        0.0,
+        0.07899642857142852,
+        0.9121129464285714,
+        0.003328214285714286,
+        0.00264625,
+        0.0020576785714285714
+      ],
+      [
+        2.3,
+        0.002589642857142857,
+        0.07856267857142862,
+        0.9110471428571428,
+        0.0033479464285714284,
+        0.0018310714285714287,
+        0.0018285714285714285
+      ],
+      [
+        2.4,
+        0.0,
+        0.07792866071428572,
+        0.9163373214285714,
+        0.002507410714285714,
+        0.0013838392857142858,
+        0.0012771428571428571
+      ],
+      [
+        2.5,
+        0.018069196428571428,
+        0.07725169642857144,
+        0.8969617857142858,
+        0.0033758035714285713,
+        0.001787857142857143,
+        0.0017849107142857144
+      ],
+      [
+        2.6,
+        0.0007226785714285714,
+        0.07888303571428568,
+        0.9125666964285715,
+        0.003448125,
+        0.0017798214285714286,
+        0.001804375
+      ],
+      [
+        2.7,
+        0.0035449107142857144,
+        0.079113125,
+        0.9083984821428571,
+        0.003681160714285714,
+        0.002148214285714286,
+        0.0021659821428571427
+      ],
+      [
+        2.8,
+        0.02460982142857143,
+        0.07740517857142859,
+        0.8898210714285715,
+        0.003405267857142857,
+        0.0019458035714285714,
+        0.0019438392857142857
+      ],
+      [
+        2.9,
+        0.019674732142857143,
+        0.07765750000000005,
+        0.8946521428571429,
+        0.003446160714285714,
+        0.001940982142857143,
+        0.001808482142857143
+      ],
+      [
+        3.0,
+        0.022939017857142856,
+        0.07753455357142858,
+        0.8919692857142857,
+        0.00330375,
+        0.0017696428571428572,
+        0.0016732142857142857
+      ],
+      [
+        3.1,
+        0.06231875,
+        0.07469428571428571,
+        0.8555485714285714,
+        0.0032541964285714288,
+        0.0017629464285714286,
+        0.001633482142857143
+      ],
+      [
+        3.2,
+        0.11376125,
+        0.07089035714285719,
+        0.8081596428571428,
+        0.002700982142857143,
+        0.0020791964285714285,
+        0.0015636607142857143
+      ],
+      [
+        3.3,
+        0.14008589285714285,
+        0.0689591964285714,
+        0.7837344642857142,
+        0.002757857142857143,
+        0.0020533035714285714,
+        0.001597767857142857
+      ],
+      [
+        3.4,
+        0.2460855357142857,
+        0.06018723214285715,
+        0.6878741071428571,
+        0.0022386607142857143,
+        0.0016104464285714285,
+        0.0012575
+      ],
+      [
+        3.5,
+        0.26334651785714286,
+        0.059340892857142835,
+        0.6716767857142857,
+        0.002118125,
+        0.0015800892857142858,
+        0.0012136607142857142
+      ],
+      [
+        3.6,
+        0.16243526785714285,
+        0.06871723214285719,
+        0.7607592857142857,
+        0.0025269642857142856,
+        0.002716785714285714,
+        0.0017950892857142857
+      ],
+      [
+        3.7,
+        0.30454660714285714,
+        0.05776946428571428,
+        0.6293589285714286,
+        0.002304107142857143,
+        0.00283125,
+        0.0017450892857142858
+      ],
+      [
+        3.8,
+        0.6249328571428572,
+        0.03230553571428574,
+        0.338028125,
+        0.00099625,
+        0.0016436607142857143,
+        0.0007495535714285715
+      ],
+      [
+        3.9,
+        0.6640296986188646,
+        0.29573549901347473,
+        0.036073629384426924,
+        0.0,
+        0.0016177144406728944,
+        0.0
+      ]
+    ],
+    "sent": [
+      {
+        "ep": "SsspChares::process_heap",
+        "messages": 72553960,
+        "bytes": 5804316800
+      },
+      {
+        "ep": "HTram::receivePerPE",
+        "messages": 2143547,
+        "bytes": 937489392
+      },
+      {
+        "ep": "HTramRecv::receive",
+        "messages": 306221,
+        "bytes": 75593120
+      },
+      {
+        "ep": "SsspChares::clear_pq_hold",
+        "messages": 134176,
+        "bytes": 10734080
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "messages": 133089,
+        "bytes": 313025328
+      },
+      {
+        "ep": "CkArray::recvNoKeepBroadcast",
+        "messages": 20366,
+        "bytes": 2932704
+      },
+      {
+        "ep": "Main::redn_wrapper_reduce_histogram",
+        "messages": 1199,
+        "bytes": 2820048
+      },
+      {
+        "ep": "SsspChares::current_thresholds",
+        "messages": 1198,
+        "bytes": 172512
+      },
+      {
+        "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+        "messages": 8,
+        "bytes": 896
+      },
+      {
+        "ep": "SsspChares::print_distances",
+        "messages": 1,
+        "bytes": 80
+      },
+      {
+        "ep": "SsspChares::contribute_histogram",
+        "messages": 1,
+        "bytes": 112
+      }
+    ],
+    "latency": [
+      {
+        "ep": "SsspChares::process_heap",
+        "locality": "same process",
+        "messages": 72553961,
+        "p50_p90_p99_max_ms": [
+          0.482,
+          1.615,
+          2.478,
+          33.642
+        ]
+      },
+      {
+        "ep": "HTram::receivePerPE",
+        "locality": "same process",
+        "messages": 2143547,
+        "p50_p90_p99_max_ms": [
+          0.005,
+          0.836,
+          2.107,
+          3.744
+        ]
+      },
+      {
+        "ep": "HTramRecv::receive",
+        "locality": "same node",
+        "messages": 306221,
+        "p50_p90_p99_max_ms": [
+          0.0025,
+          0.0065,
+          0.0175,
+          0.565375
+        ]
+      },
+      {
+        "ep": "CkArray::recvNoKeepBroadcast",
+        "locality": "same process",
+        "messages": 268352,
+        "p50_p90_p99_max_ms": [
+          0.007,
+          0.161,
+          1.652,
+          3.988
+        ]
+      },
+      {
+        "ep": "SsspChares::clear_pq_hold",
+        "locality": "same process",
+        "messages": 134176,
+        "p50_p90_p99_max_ms": [
+          0.222,
+          1.374,
+          2.3762499999999998,
+          3.649
+        ]
+      },
+      {
+        "ep": "SsspChares::current_thresholds",
+        "locality": "same process",
+        "messages": 134176,
+        "p50_p90_p99_max_ms": [
+          0.004,
+          0.155,
+          1.649,
+          3.983
+        ]
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "locality": "same process",
+        "messages": 115104,
+        "p50_p90_p99_max_ms": [
+          0.004,
+          0.011,
+          0.026,
+          2.122
+        ]
+      },
+      {
+        "ep": "CkReductionMgr::RecvMsg",
+        "locality": "same node",
+        "messages": 17985,
+        "p50_p90_p99_max_ms": [
+          0.0045,
+          0.0115,
+          0.0275,
+          2.3235
+        ]
+      },
+      {
+        "ep": "Main::redn_wrapper_reduce_histogram",
+        "locality": "same process",
+        "messages": 2398,
+        "p50_p90_p99_max_ms": [
+          0.2835,
+          1.4423000000000001,
+          1.7500600000000004,
+          33.487
+        ]
+      },
+      {
+        "ep": "dummy_thread_chare::dummy_thread_ep",
+        "locality": "same process",
+        "messages": 1189,
+        "p50_p90_p99_max_ms": [
+          0.0,
+          0.001,
+          0.001,
+          0.002
+        ]
+      },
+      {
+        "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+        "locality": "same process",
+        "messages": 122,
+        "p50_p90_p99_max_ms": [
+          0.0225,
+          0.8308,
+          1.0459199999999997,
+          1.061
+        ]
+      },
+      {
+        "ep": "SsspChares::contribute_histogram",
+        "locality": "same process",
+        "messages": 112,
+        "p50_p90_p99_max_ms": [
+          0.0,
+          0.4638000000000002,
+          0.9849700000000001,
+          1.057
+        ]
+      },
+      {
+        "ep": "SsspChares::print_distances",
+        "locality": "same process",
+        "messages": 105,
+        "p50_p90_p99_max_ms": [
+          304.404,
+          381.365,
+          514.108,
+          514.108
+        ]
+      }
+    ]
+  },
+  "heap_backlog": {
+    "pes": 112,
+    "max_pending": 506,
+    "duplicate_pes": 112
+  },
+  "runtime": {
+    "revisions": {
+      "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+      "reconverse": "b30ad319503220bd1a2c0b5db38bd73dbe449c34",
+      "lci": "dfb924cf3ee25aece37b85473b41d406ad810252"
+    },
+    "charm_branch": "reconverse-specific-build",
+    "runtime": "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64",
+    "build_command": [
+      "./build",
+      "charm++",
+      "reconverse-linux-x86_64",
+      "--with-production",
+      "--enable-tracing",
+      "--enable-shmem",
+      "--with-fetch-reconverse-dir=/u/rao1/charm_reconverse/reconverse",
+      "--with-cmake-args=-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF",
+      "-j8"
+    ],
+    "environment": {
+      "CC": "gcc",
+      "CXX": "g++"
+    },
+    "scheduler_for_tests": "+old-scheduler",
+    "reconverse_local_patch": {
+      "path": "/u/rao1/.tmp/runtime-refresh-20260925/reconverse-local-built.patch",
+      "sha256": "49ee2bfcc5586fd3cd69e2f2ec57e36267158562a92669da5f368bd6e725110d"
+    },
+    "cache": {
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_C_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/gcc",
+      "CMAKE_CXX_COMPILER": "/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+      "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+      "TRACING": "1",
+      "CMK_USE_SHMEM": "1",
+      "SPANTREE": "ON",
+      "RECONVERSE_ENABLE_CPU_AFFINITY": "ON",
+      "RECONVERSE_AUTOFETCH_LCI2_TAG": "dfb924cf3ee25aece37b85473b41d406ad810252",
+      "RECONVERSE_TRY_ENABLE_COMM_LCW": "OFF",
+      "FETCHCONTENT_SOURCE_DIR_RECONVERSE": "/u/rao1/charm_reconverse/reconverse"
+    },
+    "libraries": {
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libreconverse.so": "b8564e2731b3683d9a07364a163170fd8a16ff8454c3f215d86c9159058158d9",
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblci.so": "7918b1ad26a1f3be1575bb6c18a79fe26cd5b11dfaf11cd4d0eabfa94558c4c5",
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/liblct.so": "fdf5f2034b7711fcb337f6710705096c1c85f4295a60ee3cf07547a5438ae844",
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libck.a": "eec2d79e9b700fc7983ff747949833bcb19ed83dea6e4f574c155ce95b4e1db3",
+      "/u/rao1/.tmp/runtime-refresh-20260925/charm/reconverse-linux-x86_64/lib/libtrace-projections.a": "8ae93a441daa2cc0ccde4b7ed7605440ffc0783a90944b5170799fee94572ff1"
+    },
+    "notes": [
+      "Charm++ current tracking branch was already up to date; no branch switch was assumed.",
+      "Reconverse local LCI pin was preserved.",
+      "Reconverse main now defaults backend_poll_freq to 64; the prior runtime default was 4.",
+      "Previous campaign runtime and application binaries remain intact."
+    ],
+    "validation": {
+      "local_runtime_rounds": 1000,
+      "runtime_pes": 2,
+      "trace_files": 4,
+      "serial_sssp_checks": 4,
+      "certified_sssp_checks": 4,
+      "sources": [
+        0,
+        512,
+        1024,
+        0
+      ],
+      "old_scheduler": true,
+      "scope": "Local-only runtime checks; distributed shared-memory communication has not been rerun on compute nodes in this refresh."
+    },
+    "active_compiler": "/u/rao1/charm_reconverse/bin/charmc",
+    "sssp_config": "/u/rao1/charm_graph_code/config.mk"
+  },
+  "graph_sha256": "31f961b22ad6944a7285225112802304f45ff8d235736cc830c474b2575686e2",
+  "raw_root": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925",
+  "preparation_job": "22378324",
+  "corrected_trace_report_job": "22378746",
+  "artifacts": {
+    "runs.jsonl": {
+      "path": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/runs.jsonl",
+      "sha256": "4c500f90a6146e486bd967dcab940db6cac62b41855af124382ad8bfbc1cdeea"
+    },
+    "manifest.json": {
+      "path": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/manifest.json",
+      "sha256": "cd627992fc80fa33f47e5127da243f852f9aa2a3d3030a0348bae03e02765261"
+    },
+    "projections_corrected.json": {
+      "path": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/projections_corrected.json",
+      "sha256": "111f9995a816d3eb29b27b3203553ee7916469f48daec44dcf8abdebc2fe8747"
+    },
+    "heap_backlog_report.json": {
+      "path": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/logs/compare-22378381/heap_backlog_report.json",
+      "sha256": "b2470ef93adfb1e2fa2000e6fd9fa4d718f0511e5e3b9878a2334b5ff7b882d3"
+    },
+    "acic_prj.sts": {
+      "path": "/work/hdd/mzu/rao1/acic-mesh28-wasp-20260925/traces/mesh28-z-22378381/acic_prj.sts",
+      "sha256": "f686020b049b770e6b8e76e7262d7e7312b2d657c9390fb5c0055cd6f49682e9"
+    }
+  }
+}

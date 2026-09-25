@@ -277,7 +277,6 @@ def main():
             for b, v in d.items():
                 if b < nb:
                     series[k][b] += v
-    cap = len(pes) * bin_us
     top = sorted((k for k in keys if k != IDLE),
                  key=lambda k: -series[k].sum())[:4]
     print('\n## Timeline (share of all PE time per %.0f ms bin; top-level)\n' %
@@ -288,7 +287,12 @@ def main():
     out['timeline'] = []
     for b in range(0, nb, stride):
         sl = slice(b, min(nb, b + stride))
-        denom = cap * (sl.stop - sl.start)
+        # A final partial bin contains only each PE's remaining traced time.
+        # Using a full bin invents an untraced tail after traceEnd().
+        lo_us, hi_us = b * bin_us, sl.stop * bin_us
+        denom = float(np.clip(win * 1e6 - lo_us, 0, hi_us - lo_us).sum())
+        if denom <= 0:
+            continue
         tot = sum(series[k][sl].sum() for k in keys)
         vals = [series[k][sl].sum() / denom for k in top]
         idle_b = series[IDLE][sl].sum() / denom if IDLE in series else 0.0
