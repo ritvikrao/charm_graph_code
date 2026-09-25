@@ -1,0 +1,2441 @@
+{
+  "job": 22355150,
+  "recorded": "2026-09-25",
+  "state": "COMPLETED",
+  "elapsed_seconds": 297,
+  "partition": "cpu",
+  "runtime": {
+    "revisions": {
+      "charm": "f6c74074f0c505d21d1c898836c1509d951dd44a",
+      "reconverse": "0c97c4d1f58dc5599b15a687cf328a7e05d60f90",
+      "lci": "ca88ce2c4b429ce72dfc3233fa21f8833299440c",
+      "htram": "7db9c0af69777b43e17dec110e6298fc09c91c54",
+      "sssp": "7a4da59ebbf6094e716e327af34b3c6bbc98f33d"
+    },
+    "runtime": "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64",
+    "scheduler": "+old-scheduler",
+    "build_command": "CC=gcc CXX=g++ ./build charm++ reconverse-linux-x86_64 --with-production --enable-tracing --enable-shmem --with-fetch-reconverse-dir=/u/rao1/.tmp/road-rounds-20260924/reconverse --with-cmake-args=\"-DCMAKE_BUILD_TYPE=Release -DSPANTREE=ON -DRECONVERSE_ENABLE_CPU_AFFINITY=ON -DRECONVERSE_TRY_ENABLE_COMM_LCW=OFF\" -j8",
+    "cache": [
+      "CMAKE_BUILD_TYPE:STRING=Release",
+      "CMAKE_CXX_COMPILER:FILEPATH=/opt/rh/gcc-toolset-14/root/usr/bin/g++",
+      "CMK_USE_SHMEM:BOOL=1",
+      "RECONVERSE_AUTOFETCH_LCI2_TAG:STRING=ca88ce2c4b429ce72dfc3233fa21f8833299440c",
+      "RECONVERSE_ENABLE_CPU_AFFINITY:BOOL=ON",
+      "SPANTREE:BOOL=ON"
+    ],
+    "libraries": {
+      "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/libreconverse.so": "43ee00d5e99d258914821e80c80e7b19604fb6ae107475c2f4a051edad926a82",
+      "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/liblci.so": "083e911056b3d798d38eef827603323e8ccffb503d415928345e440bf96dc99f",
+      "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/liblct.so": "c731e80abc9deeb16ed62dbe8a4a7cce3f337845a70edd32055f63696c1f01ea",
+      "/u/rao1/.tmp/road-rounds-20260924/charm/reconverse-linux-x86_64/lib/libck.a": "aafc40688291f80ae7d217d3f74fdf63c9ee50f8d83006eacd6ab9e237a957d9"
+    }
+  },
+  "checked_solves": 82,
+  "diagnostic_work_solves": 32,
+  "matched_road_trace_solves": 2,
+  "comparisons": {
+    "road-usa-z": {
+      "1294456": {
+        "arms": {
+          "base": {
+            "seconds": 0.236654,
+            "edge_attempts": 152998613,
+            "attempts_per_edge": 2.651226149491972,
+            "rounds": 798,
+            "threshold_changes": 401,
+            "us_per_round": 303.2640099626401,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.223776,
+                "rounds": 798,
+                "threshold_changes": 401,
+                "us_per_round": 280.42105263157896
+              },
+              {
+                "rep": 1,
+                "seconds": 0.236654,
+                "rounds": 770,
+                "threshold_changes": 389,
+                "us_per_round": 307.34285714285716
+              },
+              {
+                "rep": 2,
+                "seconds": 0.243521,
+                "rounds": 803,
+                "threshold_changes": 404,
+                "us_per_round": 303.2640099626401
+              }
+            ]
+          },
+          "coalesce": {
+            "seconds": 0.245923,
+            "edge_attempts": 276238301,
+            "attempts_per_edge": 4.786776773606662,
+            "rounds": 967,
+            "threshold_changes": 412,
+            "us_per_round": 254.31540847983453,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.245923,
+                "rounds": 967,
+                "threshold_changes": 419,
+                "us_per_round": 254.31540847983453
+              },
+              {
+                "rep": 1,
+                "seconds": 0.252516,
+                "rounds": 857,
+                "threshold_changes": 384,
+                "us_per_round": 294.6511085180864
+              },
+              {
+                "rep": 2,
+                "seconds": 0.239823,
+                "rounds": 968,
+                "threshold_changes": 412,
+                "us_per_round": 247.75103305785123
+              }
+            ]
+          },
+          "control": {
+            "seconds": 0.266203,
+            "edge_attempts": 149202869,
+            "attempts_per_edge": 2.5854518555146973,
+            "rounds": 796,
+            "threshold_changes": 401,
+            "us_per_round": 334.4258793969849,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.266203,
+                "rounds": 796,
+                "threshold_changes": 401,
+                "us_per_round": 334.4258793969849
+              },
+              {
+                "rep": 1,
+                "seconds": 0.274515,
+                "rounds": 802,
+                "threshold_changes": 403,
+                "us_per_round": 342.288029925187
+              },
+              {
+                "rep": 2,
+                "seconds": 0.261156,
+                "rounds": 794,
+                "threshold_changes": 400,
+                "us_per_round": 328.911838790932
+              }
+            ]
+          }
+        },
+        "speedup": 0.9623093407286021,
+        "control_speedup": 0.8889982456997103,
+        "edge_work_ratio": 1.8054954589686376
+      },
+      "5620086": {
+        "arms": {
+          "base": {
+            "seconds": 0.1934,
+            "edge_attempts": 149967977,
+            "attempts_per_edge": 2.598709977905555,
+            "rounds": 538,
+            "threshold_changes": 271,
+            "us_per_round": 359.47955390334573,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.174716,
+                "rounds": 529,
+                "threshold_changes": 271,
+                "us_per_round": 330.2759924385633
+              },
+              {
+                "rep": 1,
+                "seconds": 0.218674,
+                "rounds": 538,
+                "threshold_changes": 271,
+                "us_per_round": 406.457249070632
+              },
+              {
+                "rep": 2,
+                "seconds": 0.1934,
+                "rounds": 538,
+                "threshold_changes": 274,
+                "us_per_round": 359.47955390334573
+              }
+            ]
+          },
+          "coalesce": {
+            "seconds": 0.185415,
+            "edge_attempts": 253023319,
+            "attempts_per_edge": 4.384497523281789,
+            "rounds": 688,
+            "threshold_changes": 283,
+            "us_per_round": 262.8139534883721,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.185415,
+                "rounds": 728,
+                "threshold_changes": 309,
+                "us_per_round": 254.69093406593407
+              },
+              {
+                "rep": 1,
+                "seconds": 0.180816,
+                "rounds": 688,
+                "threshold_changes": 277,
+                "us_per_round": 262.8139534883721
+              },
+              {
+                "rep": 2,
+                "seconds": 0.200593,
+                "rounds": 653,
+                "threshold_changes": 283,
+                "us_per_round": 307.18683001531394
+              }
+            ]
+          },
+          "control": {
+            "seconds": 0.193024,
+            "edge_attempts": 158247818,
+            "attempts_per_edge": 2.742186644408642,
+            "rounds": 535,
+            "threshold_changes": 271,
+            "us_per_round": 361.46816479400746,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.208009,
+                "rounds": 539,
+                "threshold_changes": 271,
+                "us_per_round": 385.9165120593692
+              },
+              {
+                "rep": 1,
+                "seconds": 0.193024,
+                "rounds": 534,
+                "threshold_changes": 269,
+                "us_per_round": 361.46816479400746
+              },
+              {
+                "rep": 2,
+                "seconds": 0.186813,
+                "rounds": 535,
+                "threshold_changes": 272,
+                "us_per_round": 349.18317757009345
+              }
+            ]
+          }
+        },
+        "speedup": 1.043065555645444,
+        "control_speedup": 1.0019479442970822,
+        "edge_work_ratio": 1.6871823175957092
+      }
+    },
+    "mesh26-z": {
+      "22442342": {
+        "arms": {
+          "base": {
+            "seconds": 0.29374,
+            "edge_attempts": 822360852,
+            "attempts_per_edge": 3.0639069158651644,
+            "rounds": 547,
+            "threshold_changes": 43,
+            "us_per_round": 520.1042047531993,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.29374,
+                "rounds": 573,
+                "threshold_changes": 43,
+                "us_per_round": 512.6352530541012
+              },
+              {
+                "rep": 1,
+                "seconds": 0.284497,
+                "rounds": 547,
+                "threshold_changes": 43,
+                "us_per_round": 520.1042047531993
+              },
+              {
+                "rep": 2,
+                "seconds": 0.298272,
+                "rounds": 541,
+                "threshold_changes": 43,
+                "us_per_round": 551.3345656192237
+              }
+            ]
+          },
+          "coalesce": {
+            "seconds": 0.295876,
+            "edge_attempts": 693962579,
+            "attempts_per_edge": 2.585527679216089,
+            "rounds": 1433,
+            "threshold_changes": 51,
+            "us_per_round": 206.47313328681088,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.295136,
+                "rounds": 1438,
+                "threshold_changes": 63,
+                "us_per_round": 205.24061196105703
+              },
+              {
+                "rep": 1,
+                "seconds": 0.308404,
+                "rounds": 921,
+                "threshold_changes": 44,
+                "us_per_round": 334.85776330076004
+              },
+              {
+                "rep": 2,
+                "seconds": 0.295876,
+                "rounds": 1433,
+                "threshold_changes": 51,
+                "us_per_round": 206.47313328681088
+              }
+            ]
+          },
+          "control": {
+            "seconds": 0.300245,
+            "edge_attempts": 821315018,
+            "attempts_per_edge": 3.0600104049628594,
+            "rounds": 516,
+            "threshold_changes": 44,
+            "us_per_round": 584.3352713178294,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.282894,
+                "rounds": 517,
+                "threshold_changes": 44,
+                "us_per_round": 547.183752417795
+              },
+              {
+                "rep": 1,
+                "seconds": 0.301517,
+                "rounds": 516,
+                "threshold_changes": 42,
+                "us_per_round": 584.3352713178294
+              },
+              {
+                "rep": 2,
+                "seconds": 0.300245,
+                "rounds": 508,
+                "threshold_changes": 74,
+                "us_per_round": 591.0334645669292
+              }
+            ]
+          }
+        },
+        "speedup": 0.9927807595073613,
+        "control_speedup": 0.9783343602724442,
+        "edge_work_ratio": 0.8438662629820809
+      },
+      "41856222": {
+        "arms": {
+          "base": {
+            "seconds": 0.249472,
+            "edge_attempts": 719237489,
+            "attempts_per_edge": 2.679695551335164,
+            "rounds": 439,
+            "threshold_changes": 47,
+            "us_per_round": 568.2733485193622,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.240727,
+                "rounds": 399,
+                "threshold_changes": 43,
+                "us_per_round": 603.3258145363409
+              },
+              {
+                "rep": 1,
+                "seconds": 0.258582,
+                "rounds": 462,
+                "threshold_changes": 74,
+                "us_per_round": 559.7012987012986
+              },
+              {
+                "rep": 2,
+                "seconds": 0.249472,
+                "rounds": 439,
+                "threshold_changes": 47,
+                "us_per_round": 568.2733485193622
+              }
+            ]
+          },
+          "coalesce": {
+            "seconds": 0.223987,
+            "edge_attempts": 591318531,
+            "attempts_per_edge": 2.2031021201993326,
+            "rounds": 1129,
+            "threshold_changes": 52,
+            "us_per_round": 198.3941541186891,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.223987,
+                "rounds": 1129,
+                "threshold_changes": 55,
+                "us_per_round": 198.3941541186891
+              },
+              {
+                "rep": 1,
+                "seconds": 0.226505,
+                "rounds": 859,
+                "threshold_changes": 42,
+                "us_per_round": 263.68451688009316
+              },
+              {
+                "rep": 2,
+                "seconds": 0.215575,
+                "rounds": 1185,
+                "threshold_changes": 52,
+                "us_per_round": 181.9198312236287
+              }
+            ]
+          },
+          "control": {
+            "seconds": 0.238893,
+            "edge_attempts": 658837018,
+            "attempts_per_edge": 2.4546587923888454,
+            "rounds": 424,
+            "threshold_changes": 42,
+            "us_per_round": 567.9398663697104,
+            "runs": [
+              {
+                "rep": 0,
+                "seconds": 0.237697,
+                "rounds": 424,
+                "threshold_changes": 42,
+                "us_per_round": 560.6061320754717
+              },
+              {
+                "rep": 1,
+                "seconds": 0.255005,
+                "rounds": 449,
+                "threshold_changes": 58,
+                "us_per_round": 567.9398663697104
+              },
+              {
+                "rep": 2,
+                "seconds": 0.238893,
+                "rounds": 415,
+                "threshold_changes": 42,
+                "us_per_round": 575.6457831325301
+              }
+            ]
+          }
+        },
+        "speedup": 1.1137789246697354,
+        "control_speedup": 1.0442834239596808,
+        "edge_work_ratio": 0.822146425963066
+      }
+    }
+  },
+  "audits": {
+    "road-usa-z": {
+      "checked_solves": 40,
+      "diagnostic_solves": 16,
+      "checked_launches": 20,
+      "allocation": {
+        "job": 22355150,
+        "graph": "road-usa-z",
+        "manifest": {
+          "variants": [
+            {
+              "label": "base",
+              "binary": "acic_latest",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+              "nodes": 8
+            },
+            {
+              "label": "coalesce",
+              "binary": "acic_coalesce",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "ef5c6cd40dce05cbb74dfd6d01069ced85477ac981708af2ded251cb1e91891a",
+              "nodes": 8
+            },
+            {
+              "label": "control",
+              "binary": "acic_latest",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+              "nodes": 8
+            },
+            {
+              "label": "base_cost",
+              "binary": "acic_cost",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ],
+              "work_cost": true,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "b4ba9e8eeeb24f64e7afb84692daad8c869f3b4e97bddae564c5fdc5cd90689f",
+              "nodes": 8
+            },
+            {
+              "label": "coalesce_cost",
+              "binary": "acic_coalesce_diag",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler",
+                "--bucket-width",
+                "131072"
+              ],
+              "work_cost": true,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "111791d8f28037029bb4eb8121d3e5eb595dc6a11d71d9e677178cbd813c31c0",
+              "nodes": 8
+            }
+          ],
+          "nodes": 8,
+          "workers": 112,
+          "rpn": 16,
+          "sources": 2,
+          "reps": 3,
+          "source_role": "tune",
+          "batch": true,
+          "hosts": "cn[026,029,036,050,069,106,130,133]"
+        },
+        "runtime_warnings": {
+          "warn:reg_cache": 7680
+        },
+        "summary": {
+          "base": {
+            "sources": {
+              "1294456": {
+                "seconds": 0.236654,
+                "edge_attempts": 152998613,
+                "attempts_per_edge": 2.651226149491972
+              },
+              "5620086": {
+                "seconds": 0.1934,
+                "edge_attempts": 149967977,
+                "attempts_per_edge": 2.598709977905555
+              }
+            },
+            "medians": {
+              "seconds": 0.215027,
+              "edge_attempts": 151483295.0,
+              "attempts_per_edge": 2.6249680636987636
+            }
+          },
+          "base_cost": {
+            "sources": {
+              "1294456": {
+                "seconds": 0.232948,
+                "edge_attempts": 160029452,
+                "attempts_per_edge": 2.773059569051586,
+                "expansions_per_vertex": 2.6917571704289416,
+                "stale_pop_fraction": 0.09854209694868386,
+                "cpu_ns_per_attempt": 1272.3897292980794,
+                "work_ns_per_attempt": 481.7018807263053,
+                "queue_ns_per_attempt": 385.6496621643313,
+                "queue_work_fraction": 0.8005982073037633,
+                "lock_miss_fraction": 0.05536314316216028,
+                "work_share": 0.369328,
+                "idle_share": 0.536678,
+                "send_share": 0.009744,
+                "inter_node_fraction": 0.004837770460118208,
+                "pops_per_removal_call": 0.5564759950134899,
+                "pop_queue_time_fraction": 0.6525622026782305
+              },
+              "5620086": {
+                "seconds": 0.196812,
+                "edge_attempts": 155013826,
+                "attempts_per_edge": 2.686146632087433,
+                "expansions_per_vertex": 2.6003871744122637,
+                "stale_pop_fraction": 0.0998642915946307,
+                "cpu_ns_per_attempt": 1134.2462409246514,
+                "work_ns_per_attempt": 490.25550873282094,
+                "queue_ns_per_attempt": 381.0019862519376,
+                "queue_work_fraction": 0.7771498320064277,
+                "lock_miss_fraction": 0.07040273719951175,
+                "work_share": 0.419182,
+                "idle_share": 0.475532,
+                "send_share": 0.010361,
+                "inter_node_fraction": 0.004886839615427535,
+                "pops_per_removal_call": 0.799734840561247,
+                "pop_queue_time_fraction": 0.6079262635732077
+              }
+            },
+            "medians": {
+              "seconds": 0.21488,
+              "edge_attempts": 157521639.0,
+              "attempts_per_edge": 2.729603100569509,
+              "expansions_per_vertex": 2.6460721724206024,
+              "stale_pop_fraction": 0.09920319427165727,
+              "cpu_ns_per_attempt": 1203.3179851113655,
+              "work_ns_per_attempt": 485.97869472956313,
+              "queue_ns_per_attempt": 383.32582420813446,
+              "queue_work_fraction": 0.7888740196550955,
+              "lock_miss_fraction": 0.06288294018083601,
+              "work_share": 0.394255,
+              "idle_share": 0.506105,
+              "send_share": 0.010052499999999999,
+              "inter_node_fraction": 0.0048623050377728716,
+              "pops_per_removal_call": 0.6781054177873684,
+              "pop_queue_time_fraction": 0.6302442331257191
+            }
+          },
+          "coalesce": {
+            "sources": {
+              "1294456": {
+                "seconds": 0.245923,
+                "edge_attempts": 276238301,
+                "attempts_per_edge": 4.786776773606662
+              },
+              "5620086": {
+                "seconds": 0.185415,
+                "edge_attempts": 253023319,
+                "attempts_per_edge": 4.384497523281789
+              }
+            },
+            "medians": {
+              "seconds": 0.215669,
+              "edge_attempts": 264630810.0,
+              "attempts_per_edge": 4.585637148444226
+            }
+          },
+          "coalesce_cost": {
+            "sources": {
+              "1294456": {
+                "seconds": 0.226594,
+                "edge_attempts": 267880376,
+                "attempts_per_edge": 4.641947033774363,
+                "expansions_per_vertex": 4.570077679168386,
+                "stale_pop_fraction": 0.09632373583010469,
+                "cpu_ns_per_attempt": 695.2688201333334,
+                "work_ns_per_attempt": 364.92057189221947,
+                "queue_ns_per_attempt": 266.2036323213223,
+                "queue_work_fraction": 0.7321738410262207,
+                "lock_miss_fraction": 0.05150874807543821,
+                "work_share": 0.501943,
+                "idle_share": 0.346201,
+                "send_share": 0.019156,
+                "inter_node_fraction": 0.004708743577394411,
+                "pops_per_removal_call": 1.2995041618584835,
+                "pop_queue_time_fraction": 0.48263826443578967
+              },
+              "5620086": {
+                "seconds": 0.187731,
+                "edge_attempts": 245893998,
+                "attempts_per_edge": 4.26095756502529,
+                "expansions_per_vertex": 4.169481237316184,
+                "stale_pop_fraction": 0.09833745939260233,
+                "cpu_ns_per_attempt": 651.2250740906657,
+                "work_ns_per_attempt": 376.76080834963,
+                "queue_ns_per_attempt": 267.6189976563105,
+                "queue_work_fraction": 0.7141580226894664,
+                "lock_miss_fraction": 0.06239476725897129,
+                "work_share": 0.553407,
+                "idle_share": 0.265376,
+                "send_share": 0.02166,
+                "inter_node_fraction": 0.004773642645783581,
+                "pops_per_removal_call": 1.977682608015983,
+                "pop_queue_time_fraction": 0.434601105467889
+              }
+            },
+            "medians": {
+              "seconds": 0.2071625,
+              "edge_attempts": 256887187.0,
+              "attempts_per_edge": 4.4514522993998265,
+              "expansions_per_vertex": 4.369779458242284,
+              "stale_pop_fraction": 0.09733059761135351,
+              "cpu_ns_per_attempt": 673.2469471119996,
+              "work_ns_per_attempt": 370.8406901209247,
+              "queue_ns_per_attempt": 266.9113149888164,
+              "queue_work_fraction": 0.7231659318578436,
+              "lock_miss_fraction": 0.056951757667204755,
+              "work_share": 0.527675,
+              "idle_share": 0.3057885,
+              "send_share": 0.020408,
+              "inter_node_fraction": 0.004741193111588996,
+              "pops_per_removal_call": 1.6385933849372334,
+              "pop_queue_time_fraction": 0.45861968495183936
+            }
+          },
+          "control": {
+            "sources": {
+              "1294456": {
+                "seconds": 0.266203,
+                "edge_attempts": 149202869,
+                "attempts_per_edge": 2.5854518555146973
+              },
+              "5620086": {
+                "seconds": 0.193024,
+                "edge_attempts": 158247818,
+                "attempts_per_edge": 2.742186644408642
+              }
+            },
+            "medians": {
+              "seconds": 0.22961350000000003,
+              "edge_attempts": 153725343.5,
+              "attempts_per_edge": 2.6638192499616693
+            }
+          }
+        },
+        "comparisons": {}
+      }
+    },
+    "mesh26-z": {
+      "checked_solves": 40,
+      "diagnostic_solves": 16,
+      "checked_launches": 20,
+      "allocation": {
+        "job": 22355150,
+        "graph": "mesh26-z",
+        "manifest": {
+          "variants": [
+            {
+              "label": "base",
+              "binary": "acic_latest",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+              "nodes": 8
+            },
+            {
+              "label": "coalesce",
+              "binary": "acic_coalesce",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "ef5c6cd40dce05cbb74dfd6d01069ced85477ac981708af2ded251cb1e91891a",
+              "nodes": 8
+            },
+            {
+              "label": "control",
+              "binary": "acic_latest",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": false,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "1c7ff217236b26e85da718266a1b83c8d1eab161d6fe9f703f1dc3fc346e9b51",
+              "nodes": 8
+            },
+            {
+              "label": "base_cost",
+              "binary": "acic_cost",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": true,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "b4ba9e8eeeb24f64e7afb84692daad8c869f3b4e97bddae564c5fdc5cd90689f",
+              "nodes": 8
+            },
+            {
+              "label": "coalesce_cost",
+              "binary": "acic_coalesce_diag",
+              "rpn": 16,
+              "workers": 112,
+              "flags": [
+                "--process-share",
+                "auto",
+                "--reader-tile",
+                "auto",
+                "--slack-control",
+                "off",
+                "--process-queue",
+                "nearest",
+                "--process-queue-batch",
+                "8",
+                "--heap-slice",
+                "8",
+                "--hub-hints",
+                "auto",
+                "+old-scheduler"
+              ],
+              "work_cost": true,
+              "prediction": "Recorded 2026-09-24 after Delta attribution job 22354907, before coalescing tests. The trace shows 62-75 pending heap-drain callbacks on four sampled PEs (median 14-17 at execution), because each controller round injects an additional self-rescheduling drain chain. ACIC_COALESCE_HEAP reuses the existing callback on the shared-heap path; thresholds, slice size, batching and relaxation rules stay fixed. Predictions: pending heap callbacks fall to at most one; same-process controller callback p90 delay falls by at least 25%; road production speedup over frozen 1.05-1.20, work within 20%; mesh speedup at least 0.95 and within repeated-control noise if below 1. All source digests and work ledgers must pass. Two training sources, one warmup and three timed launches, old scheduler on every arm. This first allocation selects; no acceptance without a second allocation and held-out confirmation. Repeat at 8 nodes only after the one-node and distributed correctness gates.",
+              "sha256": "111791d8f28037029bb4eb8121d3e5eb595dc6a11d71d9e677178cbd813c31c0",
+              "nodes": 8
+            }
+          ],
+          "nodes": 8,
+          "workers": 112,
+          "rpn": 16,
+          "sources": 2,
+          "reps": 3,
+          "source_role": "tune",
+          "batch": true,
+          "hosts": "cn[026,029,036,050,069,106,130,133]"
+        },
+        "runtime_warnings": {
+          "warn:reg_cache": 7680
+        },
+        "summary": {
+          "base": {
+            "sources": {
+              "22442342": {
+                "seconds": 0.29374,
+                "edge_attempts": 822360852,
+                "attempts_per_edge": 3.0639069158651644
+              },
+              "41856222": {
+                "seconds": 0.249472,
+                "edge_attempts": 719237489,
+                "attempts_per_edge": 2.679695551335164
+              }
+            },
+            "medians": {
+              "seconds": 0.271606,
+              "edge_attempts": 770799170.5,
+              "attempts_per_edge": 2.871801233600164
+            }
+          },
+          "base_cost": {
+            "sources": {
+              "22442342": {
+                "seconds": 0.338956,
+                "edge_attempts": 873538223,
+                "attempts_per_edge": 3.2545807551674,
+                "expansions_per_vertex": 3.254470944404602,
+                "stale_pop_fraction": 0.2651824888481968,
+                "cpu_ns_per_attempt": 323.01963186790056,
+                "work_ns_per_attempt": 223.50619224134397,
+                "queue_ns_per_attempt": 143.36800585524767,
+                "queue_work_fraction": 0.6414498158531449,
+                "lock_miss_fraction": 0.039375237964320554,
+                "work_share": 0.642865,
+                "idle_share": 0.263082,
+                "send_share": 0.005849,
+                "inter_node_fraction": 0.003267849412065915,
+                "pops_per_removal_call": 2.942849244539496,
+                "pop_queue_time_fraction": 0.3969763846547816
+              },
+              "41856222": {
+                "seconds": 0.24029,
+                "edge_attempts": 666429213,
+                "attempts_per_edge": 2.482945375718443,
+                "expansions_per_vertex": 2.4829037338495255,
+                "stale_pop_fraction": 0.2681620118119571,
+                "cpu_ns_per_attempt": 292.1302043251883,
+                "work_ns_per_attempt": 213.65527054702284,
+                "queue_ns_per_attempt": 136.4382043178757,
+                "queue_work_fraction": 0.6385903983016761,
+                "lock_miss_fraction": 0.0412761622817894,
+                "work_share": 0.674165,
+                "idle_share": 0.237769,
+                "send_share": 0.006614,
+                "inter_node_fraction": 0.0033800156410515587,
+                "pops_per_removal_call": 3.0712216333500875,
+                "pop_queue_time_fraction": 0.39662756499289653
+              }
+            },
+            "medians": {
+              "seconds": 0.28962299999999996,
+              "edge_attempts": 769983718.0,
+              "attempts_per_edge": 2.8687630654429217,
+              "expansions_per_vertex": 2.8686873391270638,
+              "stale_pop_fraction": 0.2666722503300769,
+              "cpu_ns_per_attempt": 307.5749180965444,
+              "work_ns_per_attempt": 218.5807313941834,
+              "queue_ns_per_attempt": 139.90310508656168,
+              "queue_work_fraction": 0.6400201070774105,
+              "lock_miss_fraction": 0.040325700123054975,
+              "work_share": 0.658515,
+              "idle_share": 0.25042549999999997,
+              "send_share": 0.0062315,
+              "inter_node_fraction": 0.0033239325265587366,
+              "pops_per_removal_call": 3.0070354389447917,
+              "pop_queue_time_fraction": 0.39680197482383905
+            }
+          },
+          "coalesce": {
+            "sources": {
+              "22442342": {
+                "seconds": 0.295876,
+                "edge_attempts": 693962579,
+                "attempts_per_edge": 2.585527679216089
+              },
+              "41856222": {
+                "seconds": 0.223987,
+                "edge_attempts": 591318531,
+                "attempts_per_edge": 2.2031021201993326
+              }
+            },
+            "medians": {
+              "seconds": 0.2599315,
+              "edge_attempts": 642640555.0,
+              "attempts_per_edge": 2.3943148997077106
+            }
+          },
+          "coalesce_cost": {
+            "sources": {
+              "22442342": {
+                "seconds": 0.296411,
+                "edge_attempts": 676871375,
+                "attempts_per_edge": 2.5218502096372446,
+                "expansions_per_vertex": 2.52179192006588,
+                "stale_pop_fraction": 0.27598997428524114,
+                "cpu_ns_per_attempt": 363.5663782383741,
+                "work_ns_per_attempt": 225.72836382687922,
+                "queue_ns_per_attempt": 143.48459807846112,
+                "queue_work_fraction": 0.6363420524681009,
+                "lock_miss_fraction": 0.03429375908400804,
+                "work_share": 0.575294,
+                "idle_share": 0.267538,
+                "send_share": 0.01343,
+                "inter_node_fraction": 0.0034537165169327417,
+                "pops_per_removal_call": 2.66840422090786,
+                "pop_queue_time_fraction": 0.40376208401193836
+              },
+              "41856222": {
+                "seconds": 0.235271,
+                "edge_attempts": 584800320,
+                "attempts_per_edge": 2.1788169274966425,
+                "expansions_per_vertex": 2.1787778586149216,
+                "stale_pop_fraction": 0.2756340120410787,
+                "cpu_ns_per_attempt": 337.2720716996188,
+                "work_ns_per_attempt": 214.85942073355912,
+                "queue_ns_per_attempt": 136.9580523446598,
+                "queue_work_fraction": 0.6387890647504173,
+                "lock_miss_fraction": 0.03530964901963299,
+                "work_share": 0.596053,
+                "idle_share": 0.243906,
+                "send_share": 0.014789,
+                "inter_node_fraction": 0.003511054618949634,
+                "pops_per_removal_call": 2.6838303700417527,
+                "pop_queue_time_fraction": 0.4030270076838497
+              }
+            },
+            "medians": {
+              "seconds": 0.265841,
+              "edge_attempts": 630835847.5,
+              "attempts_per_edge": 2.3503335685669438,
+              "expansions_per_vertex": 2.3502848893404007,
+              "stale_pop_fraction": 0.2758119931631599,
+              "cpu_ns_per_attempt": 350.41922496899645,
+              "work_ns_per_attempt": 220.29389228021915,
+              "queue_ns_per_attempt": 140.22132521156044,
+              "queue_work_fraction": 0.6375655586092591,
+              "lock_miss_fraction": 0.03480170405182051,
+              "work_share": 0.5856735,
+              "idle_share": 0.255722,
+              "send_share": 0.0141095,
+              "inter_node_fraction": 0.003482385567941188,
+              "pops_per_removal_call": 2.676117295474806,
+              "pop_queue_time_fraction": 0.403394545847894
+            }
+          },
+          "control": {
+            "sources": {
+              "22442342": {
+                "seconds": 0.300245,
+                "edge_attempts": 821315018,
+                "attempts_per_edge": 3.0600104049628594
+              },
+              "41856222": {
+                "seconds": 0.238893,
+                "edge_attempts": 658837018,
+                "attempts_per_edge": 2.4546587923888454
+              }
+            },
+            "medians": {
+              "seconds": 0.269569,
+              "edge_attempts": 740076018.0,
+              "attempts_per_edge": 2.757334598675852
+            }
+          }
+        },
+        "comparisons": {}
+      }
+    }
+  },
+  "traces": {
+    "base": {
+      "seconds": 0.22717,
+      "rounds": 536,
+      "threshold_changes": 271,
+      "edge_attempts": 144612570,
+      "summary": {
+        "pes": 896,
+        "processes": 128,
+        "nodes": 8,
+        "window_s_mean": 0.2266729520089286,
+        "time": [
+          {
+            "activity": "idle",
+            "pe_seconds": 128.976431,
+            "share": 0.6350422859121907,
+            "calls": 1520550
+          },
+          {
+            "activity": "SsspChares::process_heap",
+            "pe_seconds": 50.172097,
+            "share": 0.2470327556814482,
+            "calls": 8293183
+          },
+          {
+            "activity": "untraced",
+            "pe_seconds": 13.454939,
+            "share": 0.06624819087581268,
+            "calls": 0
+          },
+          {
+            "activity": "SsspChares::current_thresholds",
+            "pe_seconds": 4.133959,
+            "share": 0.020354407025166277,
+            "calls": 479360
+          },
+          {
+            "activity": "HTramRecv::receive",
+            "pe_seconds": 2.96079,
+            "share": 0.014578065427364438,
+            "calls": 852888
+          },
+          {
+            "activity": "HTram::receivePerPE",
+            "pe_seconds": 2.1485,
+            "share": 0.010578586651093963,
+            "calls": 5970216
+          },
+          {
+            "activity": "CkReductionMgr::RecvMsg",
+            "pe_seconds": 0.488823,
+            "share": 0.002406821718663116,
+            "calls": 479700
+          },
+          {
+            "activity": "CkArray::recvNoKeepBroadcast",
+            "pe_seconds": 0.230529,
+            "share": 0.0011350574829369514,
+            "calls": 958720
+          },
+          {
+            "activity": "SsspChares::clear_pq_hold",
+            "pe_seconds": 0.227668,
+            "share": 0.0011209707543315152,
+            "calls": 479360
+          },
+          {
+            "activity": "unpack",
+            "pe_seconds": 0.149863,
+            "share": 0.0007378816529173351,
+            "calls": 1401086
+          },
+          {
+            "activity": "pack",
+            "pe_seconds": 0.133575,
+            "share": 0.0006576842969140685,
+            "calls": 1333138
+          },
+          {
+            "activity": "Main::redn_wrapper_reduce_histogram",
+            "pe_seconds": 0.009991,
+            "share": 4.9192766688889824e-05,
+            "calls": 1072
+          },
+          {
+            "activity": "SsspChares::contribute_histogram",
+            "pe_seconds": 0.006904,
+            "share": 3.39932800740762e-05,
+            "calls": 896
+          },
+          {
+            "activity": "dummy_thread_chare::dummy_thread_ep",
+            "pe_seconds": 0.004555,
+            "share": 2.2427489967760297e-05,
+            "calls": 535
+          },
+          {
+            "activity": "CkArray::recvNoKeepExpeditedBroadcast",
+            "pe_seconds": 0.000341,
+            "share": 1.6789844300782133e-06,
+            "calls": 688
+          }
+        ],
+        "spread": {
+          "busy (entries+pack)": [
+            0.051972,
+            0.058756,
+            0.06767000000000001,
+            0.07628750000000001,
+            0.082399
+          ],
+          "idle": [
+            0.122945,
+            0.133631,
+            0.1435095,
+            0.15518900000000002,
+            0.162795
+          ],
+          "untraced": [
+            0.01052900000000001,
+            0.012649499999999994,
+            0.014789500000000011,
+            0.017536499999999997,
+            0.02689099999999997
+          ],
+          "window": [
+            0.226273,
+            0.2264535,
+            0.226674,
+            0.226861,
+            0.227133
+          ]
+        },
+        "busy_by_process": [
+          0.408289,
+          0.37165,
+          0.42036,
+          0.40795000000000003,
+          0.461917,
+          0.464421,
+          0.459621,
+          0.45809,
+          0.41958999999999996,
+          0.48797,
+          0.464095,
+          0.5004730000000001,
+          0.414601,
+          0.48673599999999995,
+          0.42034099999999996,
+          0.427833,
+          0.467717,
+          0.466895,
+          0.4981129999999999,
+          0.4971,
+          0.466029,
+          0.412775,
+          0.42523,
+          0.4775539999999999,
+          0.465999,
+          0.486492,
+          0.466366,
+          0.44916,
+          0.461195,
+          0.45642099999999997,
+          0.39377100000000004,
+          0.396334,
+          0.373976,
+          0.46260100000000004,
+          0.5049060000000001,
+          0.500695,
+          0.504319,
+          0.495381,
+          0.516419,
+          0.495141,
+          0.48647900000000005,
+          0.47053700000000004,
+          0.46602000000000005,
+          0.4964900000000001,
+          0.46813600000000005,
+          0.44797700000000007,
+          0.427296,
+          0.40817100000000006,
+          0.488938,
+          0.48388299999999995,
+          0.43800199999999995,
+          0.494556,
+          0.44392499999999996,
+          0.498902,
+          0.5398799999999999,
+          0.512216,
+          0.527128,
+          0.541687,
+          0.5260440000000001,
+          0.539334,
+          0.5243960000000001,
+          0.570542,
+          0.5657800000000001,
+          0.541378,
+          0.547998,
+          0.50038,
+          0.498918,
+          0.475576,
+          0.504821,
+          0.5251,
+          0.507829,
+          0.49954599999999993,
+          0.478627,
+          0.549485,
+          0.514489,
+          0.454978,
+          0.514796,
+          0.52155,
+          0.5565420000000001,
+          0.443232,
+          0.494816,
+          0.5147360000000001,
+          0.49397599999999997,
+          0.513191,
+          0.518494,
+          0.555301,
+          0.553815,
+          0.54235,
+          0.5048450000000001,
+          0.46680299999999997,
+          0.486083,
+          0.456298,
+          0.42888599999999993,
+          0.469893,
+          0.438562,
+          0.40543000000000007,
+          0.4862139999999999,
+          0.5125730000000001,
+          0.535944,
+          0.485277,
+          0.5209199999999999,
+          0.43989199999999995,
+          0.5071559999999999,
+          0.485447,
+          0.519911,
+          0.45542699999999997,
+          0.5025550000000001,
+          0.473453,
+          0.487293,
+          0.445198,
+          0.45894999999999997,
+          0.413888,
+          0.43565800000000005,
+          0.438956,
+          0.427088,
+          0.44628999999999996,
+          0.466522,
+          0.44982599999999995,
+          0.38134900000000005,
+          0.39801299999999995,
+          0.455175,
+          0.450174,
+          0.457067,
+          0.468651,
+          0.453395,
+          0.396635,
+          0.37575200000000003,
+          0.37737699999999996
+        ],
+        "sent": [
+          {
+            "ep": "SsspChares::process_heap",
+            "messages": 8293171,
+            "bytes": 663453680
+          },
+          {
+            "ep": "HTram::receivePerPE",
+            "messages": 5970216,
+            "bytes": 1239956592
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "messages": 852883,
+            "bytes": 113202352
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "messages": 479720,
+            "bytes": 1128301440
+          },
+          {
+            "ep": "SsspChares::clear_pq_hold",
+            "messages": 479360,
+            "bytes": 38348800
+          },
+          {
+            "ep": "CkArray::recvNoKeepBroadcast",
+            "messages": 69015,
+            "bytes": 9938160
+          },
+          {
+            "ep": "Main::redn_wrapper_reduce_histogram",
+            "messages": 536,
+            "bytes": 1260672
+          },
+          {
+            "ep": "SsspChares::current_thresholds",
+            "messages": 535,
+            "bytes": 77040
+          },
+          {
+            "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+            "messages": 18,
+            "bytes": 2016
+          },
+          {
+            "ep": "SsspChares::print_distances",
+            "messages": 1,
+            "bytes": 80
+          }
+        ],
+        "latency": [
+          {
+            "ep": "SsspChares::process_heap",
+            "locality": "same process",
+            "messages": 8293172,
+            "p50_p90_p99_max_ms": [
+              0.008,
+              0.064,
+              0.16,
+              6.933
+            ]
+          },
+          {
+            "ep": "HTram::receivePerPE",
+            "locality": "same process",
+            "messages": 5970216,
+            "p50_p90_p99_max_ms": [
+              0.005,
+              0.037,
+              0.139,
+              6.743
+            ]
+          },
+          {
+            "ep": "CkArray::recvNoKeepBroadcast",
+            "locality": "same process",
+            "messages": 958720,
+            "p50_p90_p99_max_ms": [
+              0.006,
+              0.021,
+              0.07,
+              6.527
+            ]
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "locality": "same node",
+            "messages": 609633,
+            "p50_p90_p99_max_ms": [
+              0.0025,
+              0.0075,
+              0.021,
+              0.283125
+            ]
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "locality": "other node",
+            "messages": 243247,
+            "p50_p90_p99_max_ms": [
+              0.009296875,
+              0.0195,
+              0.04835125000000153,
+              0.73475
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "same process",
+            "messages": 411646,
+            "p50_p90_p99_max_ms": [
+              0.006,
+              0.016,
+              0.043,
+              54.977
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "same node",
+            "messages": 64302,
+            "p50_p90_p99_max_ms": [
+              0.004796875,
+              0.01525,
+              0.0465,
+              165.3358125
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "other node",
+            "messages": 3752,
+            "p50_p90_p99_max_ms": [
+              0.007875,
+              0.016625,
+              0.04018124999999986,
+              0.2
+            ]
+          },
+          {
+            "ep": "SsspChares::current_thresholds",
+            "locality": "same process",
+            "messages": 479360,
+            "p50_p90_p99_max_ms": [
+              0.003,
+              0.009,
+              0.06,
+              6.515
+            ]
+          },
+          {
+            "ep": "SsspChares::clear_pq_hold",
+            "locality": "same process",
+            "messages": 479360,
+            "p50_p90_p99_max_ms": [
+              0.008,
+              0.053,
+              0.137,
+              2.112
+            ]
+          },
+          {
+            "ep": "Main::redn_wrapper_reduce_histogram",
+            "locality": "same process",
+            "messages": 1072,
+            "p50_p90_p99_max_ms": [
+              0.023,
+              0.037,
+              0.06928999999999996,
+              0.283
+            ]
+          },
+          {
+            "ep": "SsspChares::print_distances",
+            "locality": "same process",
+            "messages": 686,
+            "p50_p90_p99_max_ms": [
+              44.6185,
+              59.314,
+              78.34009999999994,
+              80.461
+            ]
+          },
+          {
+            "ep": "dummy_thread_chare::dummy_thread_ep",
+            "locality": "same process",
+            "messages": 435,
+            "p50_p90_p99_max_ms": [
+              0.0,
+              0.001,
+              0.003,
+              0.012
+            ]
+          },
+          {
+            "ep": "dummy_thread_chare::dummy_thread_ep",
+            "locality": "other node",
+            "messages": 99,
+            "p50_p90_p99_max_ms": [
+              0.2955,
+              15.430300000000003,
+              30.91361999999997,
+              38.3185
+            ]
+          },
+          {
+            "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+            "locality": "same process",
+            "messages": 250,
+            "p50_p90_p99_max_ms": [
+              0.01,
+              0.019,
+              0.02803999999999996,
+              0.16
+            ]
+          },
+          {
+            "ep": "SsspChares::contribute_histogram",
+            "locality": "same process",
+            "messages": 126,
+            "p50_p90_p99_max_ms": [
+              0.007,
+              0.0125,
+              0.023,
+              0.151
+            ]
+          }
+        ]
+      },
+      "backlog": {
+        "pes": 896,
+        "max_pending": 32,
+        "duplicate_pes": 896
+      }
+    },
+    "coalesce": {
+      "seconds": 0.20084,
+      "rounds": 513,
+      "threshold_changes": 251,
+      "edge_attempts": 245672970,
+      "summary": {
+        "pes": 896,
+        "processes": 128,
+        "nodes": 8,
+        "window_s_mean": 0.20024179910714288,
+        "time": [
+          {
+            "activity": "SsspChares::process_heap",
+            "pe_seconds": 80.66499,
+            "share": 0.44959589369664527,
+            "calls": 13858474
+          },
+          {
+            "activity": "idle",
+            "pe_seconds": 64.867149,
+            "share": 0.3615447522674763,
+            "calls": 919325
+          },
+          {
+            "activity": "untraced",
+            "pe_seconds": 19.261275,
+            "share": 0.1073550018088622,
+            "calls": 0
+          },
+          {
+            "activity": "SsspChares::current_thresholds",
+            "pe_seconds": 6.060268,
+            "share": 0.033777622826224624,
+            "calls": 458752
+          },
+          {
+            "activity": "HTramRecv::receive",
+            "pe_seconds": 4.29182,
+            "share": 0.023920968049275605,
+            "calls": 1305370
+          },
+          {
+            "activity": "HTram::receivePerPE",
+            "pe_seconds": 2.992617,
+            "share": 0.016679705961740943,
+            "calls": 9137590
+          },
+          {
+            "activity": "CkReductionMgr::RecvMsg",
+            "pe_seconds": 0.446688,
+            "share": 0.0024896685732381184,
+            "calls": 459047
+          },
+          {
+            "activity": "SsspChares::clear_pq_hold",
+            "pe_seconds": 0.234469,
+            "share": 0.001306840794242443,
+            "calls": 458752
+          },
+          {
+            "activity": "CkArray::recvNoKeepBroadcast",
+            "pe_seconds": 0.229878,
+            "share": 0.001281252310961638,
+            "calls": 917504
+          },
+          {
+            "activity": "unpack",
+            "pe_seconds": 0.179659,
+            "share": 0.0010013507553356864,
+            "calls": 1829985
+          },
+          {
+            "activity": "pack",
+            "pe_seconds": 0.161286,
+            "share": 0.0008989466596445016,
+            "calls": 1765017
+          },
+          {
+            "activity": "SsspChares::contribute_histogram",
+            "pe_seconds": 0.010829,
+            "share": 6.0356716499202094e-05,
+            "calls": 896
+          },
+          {
+            "activity": "Main::redn_wrapper_reduce_histogram",
+            "pe_seconds": 0.010034,
+            "share": 5.592568966229511e-05,
+            "calls": 1026
+          },
+          {
+            "activity": "dummy_thread_chare::dummy_thread_ep",
+            "pe_seconds": 0.004948,
+            "share": 2.7578265143416008e-05,
+            "calls": 512
+          },
+          {
+            "activity": "CkArray::recvNoKeepExpeditedBroadcast",
+            "pe_seconds": 0.000742,
+            "share": 4.135625047779846e-06,
+            "calls": 844
+          }
+        ],
+        "spread": {
+          "busy (entries+pack)": [
+            0.090939,
+            0.0987955,
+            0.106779,
+            0.113848,
+            0.123604
+          ],
+          "idle": [
+            0.052555,
+            0.0632585,
+            0.0716125,
+            0.08180100000000001,
+            0.090178
+          ],
+          "untraced": [
+            0.017025000000000012,
+            0.0191205,
+            0.021346500000000004,
+            0.023939999999999996,
+            0.028999000000000004
+          ],
+          "window": [
+            0.199694,
+            0.1999395,
+            0.200284,
+            0.2005165,
+            0.200793
+          ]
+        },
+        "busy_by_process": [
+          0.68573,
+          0.7328399999999999,
+          0.7083699999999999,
+          0.77237,
+          0.762987,
+          0.668239,
+          0.656041,
+          0.72126,
+          0.67682,
+          0.743591,
+          0.695366,
+          0.661716,
+          0.749373,
+          0.7101440000000001,
+          0.6725099999999999,
+          0.743304,
+          0.6947500000000001,
+          0.762384,
+          0.717799,
+          0.767772,
+          0.743263,
+          0.762737,
+          0.775893,
+          0.74701,
+          0.724902,
+          0.8049479999999999,
+          0.7296020000000001,
+          0.759557,
+          0.772524,
+          0.686304,
+          0.720882,
+          0.774561,
+          0.646582,
+          0.661585,
+          0.741781,
+          0.717764,
+          0.782091,
+          0.780665,
+          0.787452,
+          0.755665,
+          0.771486,
+          0.824084,
+          0.8002790000000001,
+          0.7972440000000001,
+          0.801347,
+          0.738957,
+          0.7567679999999999,
+          0.773346,
+          0.699355,
+          0.729785,
+          0.7345309999999998,
+          0.7164179999999999,
+          0.7086539999999999,
+          0.7943010000000001,
+          0.8006460000000001,
+          0.757519,
+          0.700535,
+          0.773096,
+          0.7438850000000001,
+          0.771108,
+          0.783644,
+          0.7990499999999999,
+          0.724956,
+          0.7041620000000001,
+          0.73887,
+          0.792495,
+          0.7560110000000001,
+          0.705968,
+          0.818294,
+          0.8336199999999999,
+          0.7334729999999999,
+          0.804345,
+          0.7593690000000001,
+          0.85511,
+          0.808461,
+          0.710735,
+          0.7969539999999999,
+          0.690415,
+          0.739544,
+          0.7571350000000001,
+          0.7075250000000001,
+          0.7442409999999999,
+          0.773286,
+          0.706632,
+          0.764281,
+          0.720948,
+          0.757551,
+          0.7815570000000001,
+          0.7485529999999999,
+          0.734206,
+          0.748693,
+          0.7226330000000001,
+          0.7144000000000001,
+          0.767698,
+          0.718205,
+          0.754291,
+          0.724725,
+          0.7649260000000001,
+          0.7640399999999999,
+          0.769834,
+          0.713119,
+          0.746074,
+          0.76749,
+          0.805165,
+          0.7867760000000001,
+          0.7187929999999999,
+          0.7693749999999999,
+          0.7992090000000002,
+          0.787085,
+          0.737021,
+          0.764316,
+          0.691866,
+          0.696137,
+          0.725753,
+          0.757999,
+          0.7592019999999999,
+          0.7612890000000001,
+          0.772054,
+          0.7622180000000001,
+          0.7194950000000001,
+          0.7392040000000002,
+          0.701989,
+          0.6545599999999999,
+          0.722875,
+          0.715659,
+          0.7463280000000001,
+          0.75088,
+          0.6429830000000001
+        ],
+        "sent": [
+          {
+            "ep": "SsspChares::process_heap",
+            "messages": 13858467,
+            "bytes": 1108677360
+          },
+          {
+            "ep": "HTram::receivePerPE",
+            "messages": 9137590,
+            "bytes": 1930661488
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "messages": 1305370,
+            "bytes": 175490960
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "messages": 459135,
+            "bytes": 1079885520
+          },
+          {
+            "ep": "SsspChares::clear_pq_hold",
+            "messages": 458752,
+            "bytes": 36700160
+          },
+          {
+            "ep": "CkArray::recvNoKeepBroadcast",
+            "messages": 66048,
+            "bytes": 9510912
+          },
+          {
+            "ep": "Main::redn_wrapper_reduce_histogram",
+            "messages": 513,
+            "bytes": 1206576
+          },
+          {
+            "ep": "SsspChares::current_thresholds",
+            "messages": 512,
+            "bytes": 73728
+          },
+          {
+            "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+            "messages": 32,
+            "bytes": 3584
+          },
+          {
+            "ep": "SsspChares::print_distances",
+            "messages": 1,
+            "bytes": 80
+          }
+        ],
+        "latency": [
+          {
+            "ep": "SsspChares::process_heap",
+            "locality": "same process",
+            "messages": 13858468,
+            "p50_p90_p99_max_ms": [
+              0.001,
+              0.003,
+              0.042,
+              3.048
+            ]
+          },
+          {
+            "ep": "HTram::receivePerPE",
+            "locality": "same process",
+            "messages": 9137590,
+            "p50_p90_p99_max_ms": [
+              0.009,
+              0.041,
+              0.095,
+              3.717
+            ]
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "locality": "same node",
+            "messages": 915980,
+            "p50_p90_p99_max_ms": [
+              0.003,
+              0.015,
+              0.047,
+              0.987
+            ]
+          },
+          {
+            "ep": "HTramRecv::receive",
+            "locality": "other node",
+            "messages": 389390,
+            "p50_p90_p99_max_ms": [
+              0.01275,
+              0.032,
+              0.086,
+              3.142
+            ]
+          },
+          {
+            "ep": "CkArray::recvNoKeepBroadcast",
+            "locality": "same process",
+            "messages": 917504,
+            "p50_p90_p99_max_ms": [
+              0.008,
+              0.034,
+              0.08,
+              3.437
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "same process",
+            "messages": 393915,
+            "p50_p90_p99_max_ms": [
+              0.008,
+              0.028,
+              0.07,
+              0.989
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "same node",
+            "messages": 61541,
+            "p50_p90_p99_max_ms": [
+              0.005,
+              0.019,
+              0.0655,
+              0.894
+            ]
+          },
+          {
+            "ep": "CkReductionMgr::RecvMsg",
+            "locality": "other node",
+            "messages": 3591,
+            "p50_p90_p99_max_ms": [
+              0.01,
+              0.0195,
+              0.058049999999999505,
+              0.793
+            ]
+          },
+          {
+            "ep": "SsspChares::current_thresholds",
+            "locality": "same process",
+            "messages": 458752,
+            "p50_p90_p99_max_ms": [
+              0.004,
+              0.016,
+              0.062,
+              3.431
+            ]
+          },
+          {
+            "ep": "SsspChares::clear_pq_hold",
+            "locality": "same process",
+            "messages": 458752,
+            "p50_p90_p99_max_ms": [
+              0.023,
+              0.066,
+              0.115,
+              1.36
+            ]
+          },
+          {
+            "ep": "Main::redn_wrapper_reduce_histogram",
+            "locality": "same process",
+            "messages": 1026,
+            "p50_p90_p99_max_ms": [
+              0.024,
+              0.036,
+              0.056,
+              0.24
+            ]
+          },
+          {
+            "ep": "SsspChares::print_distances",
+            "locality": "same process",
+            "messages": 637,
+            "p50_p90_p99_max_ms": [
+              27.003,
+              40.131,
+              51.454799999999985,
+              51.778
+            ]
+          },
+          {
+            "ep": "dummy_thread_chare::dummy_thread_ep",
+            "locality": "same process",
+            "messages": 362,
+            "p50_p90_p99_max_ms": [
+              0.0,
+              0.001,
+              0.0033899999999999863,
+              0.006
+            ]
+          },
+          {
+            "ep": "dummy_thread_chare::dummy_thread_ep",
+            "locality": "other node",
+            "messages": 146,
+            "p50_p90_p99_max_ms": [
+              2.601,
+              11.436,
+              23.883400000000115,
+              28.957
+            ]
+          },
+          {
+            "ep": "CkArray::recvNoKeepExpeditedBroadcast",
+            "locality": "same process",
+            "messages": 440,
+            "p50_p90_p99_max_ms": [
+              0.011,
+              0.031,
+              0.07522000000000002,
+              0.102
+            ]
+          },
+          {
+            "ep": "SsspChares::contribute_histogram",
+            "locality": "same process",
+            "messages": 224,
+            "p50_p90_p99_max_ms": [
+              0.008,
+              0.017400000000000033,
+              0.06231000000000003,
+              0.126
+            ]
+          }
+        ]
+      },
+      "backlog": {
+        "pes": 896,
+        "max_pending": 1,
+        "duplicate_pes": 0
+      }
+    }
+  },
+  "raw_sha256": {
+    "logs/AB-road-usa-z-8n-22355150/base-g0-r-1.launch.out": "a94b6d88e747a056bb90ebae910d4d8904658c07737e6e4ee8a69da6b51d6cd2",
+    "logs/AB-road-usa-z-8n-22355150/base-g0-r0.launch.out": "fb65a3d53de7c773bf2a872d00204b834c616762c26cfc5b10e758ab326496f1",
+    "logs/AB-road-usa-z-8n-22355150/base-g0-r1.launch.out": "b9fd17f0b7ea17d6d52af05d4e29c0447082976499de848b8bdd14ad2fda5ada",
+    "logs/AB-road-usa-z-8n-22355150/base-g0-r2.launch.out": "d10c167f59c30e92d0890780e535cd8b77ec3cde60714cc3f2a9120280b331ce",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-g0-r-1.launch.out": "bbe7321a804c8610e90d8f1ccefa49ff10c615e4f23d74299c2f1f8e19e859e3",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-g0-r0.launch.out": "5dd31837a2d347f304e3dd0efb60b7bc379a9c1b911b25221252d5a7d670cd72",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-g0-r1.launch.out": "2035f4af8d642f05c13e962490a3f8b2a42ece4910587a200ba20876fe6e9690",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-g0-r2.launch.out": "733c63cf49dbfa66844437969b972f2d42548717ac419018e59c13b9470d8c55",
+    "logs/AB-road-usa-z-8n-22355150/control-g0-r-1.launch.out": "fe0de2a1da7aa033c34605b31c906220f2b7adc769c8028aa0ae5c60bf53cb9c",
+    "logs/AB-road-usa-z-8n-22355150/control-g0-r0.launch.out": "c483514e42bea4c99d52b47cad82a38bfd2db6017e103e5772386318741db587",
+    "logs/AB-road-usa-z-8n-22355150/control-g0-r1.launch.out": "05196aafd8d872e065e2af990b2886766e98b0e605117733e82bc1fd2b27aa6a",
+    "logs/AB-road-usa-z-8n-22355150/control-g0-r2.launch.out": "7e526025e792e8f8acc08453230024d1811527310d3297a08874b8a22dd91763",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-g0-r-1.launch.out": "b8367cae5912e62e3dac7a50a990c1abad2aac6f51778d5b758082f8ff58a6ac",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-g0-r0.launch.out": "b7544b09e5af04acdf5bae4e3cd623d5e4332298781a9ea2ffa59817495c9da5",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-g0-r1.launch.out": "c7dbd5174a1b2b3b1155b9bce3803f8f9af97bdd7c55ce2efcd9ca29a0b28a00",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-g0-r2.launch.out": "af29b8171fff99e3453bb5f3e508f77cb2f55f36eef30bc157c2bf032f98c997",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-g0-r-1.launch.out": "2e622940ef8158e794d42fef06be821a5a18827665769f0150e7e280f518b33e",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-g0-r0.launch.out": "88aea6ddfe38067b209b2e91f6109a687c19a5464f80a7cca11ba9e3ce9039fb",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-g0-r1.launch.out": "2723a0539131f98587aeafd3aab51276fca49823d360c720092972e5cf97f51f",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-g0-r2.launch.out": "d3e83e49aba2f247842dc10e6e2057d8699a057c5414fc8d9c50ba694f72a734",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-s0-r-1.out": "bf71bb31b319fe929a31fbcfeeb3d3a115f3e43b6c5ba902d8c777540d6ec3da",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-s1-r-1.out": "fda11f956acbcde6db3683edf57fd3404ad6474fd72985d4ea78dc97def68513",
+    "logs/AB-road-usa-z-8n-22355150/base-s0-r-1.out": "fa2a2ff17ca0c638f73de5dfbebf24afdf807a0180f92fd060b341b6384b0224",
+    "logs/AB-road-usa-z-8n-22355150/base-s1-r-1.out": "e571d0faaa031503d2349d166cd91abf30ab9c7a4389b954aecb0ee5fa1d37a2",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-s0-r-1.out": "87bb3625241b439231c5ab6c5fc1557f46168031594e37c72aa19c66d71e72ae",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-s1-r-1.out": "c1869517a6254de2147976c8d6795ab3c6b98fcb5798ea5e6648f6747e74ecef",
+    "logs/AB-road-usa-z-8n-22355150/control-s0-r-1.out": "5a917bb2a7bf9d57553b4f0d492b6b4dcb735864fad4eaacf4e3b5700fdccf5f",
+    "logs/AB-road-usa-z-8n-22355150/control-s1-r-1.out": "13a165020c9904ada54a4bf1839a386ccca6e97b64f03986996cfd18ffc56fa5",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-s0-r-1.out": "e9ba3cc3661ebbe4d4efb58c719bc4816d9508b8421f7fa9714762d141f19e57",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-s1-r-1.out": "c71befff9edc35089bb20c1f70ba88cd3e4d07730ae8f70d75d1adfaf2b687a1",
+    "logs/AB-road-usa-z-8n-22355150/base-s0-r0.out": "a5cf5d9428129b0a64a1a64087fde632d14bd264adf95fa066cf13332b4c268c",
+    "logs/AB-road-usa-z-8n-22355150/base-s1-r0.out": "ee5113382937c2d4928e632a9e3494bca149cd48f42837d2f48f9c78406153e7",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-s0-r0.out": "ebe74974835a490d11b54d221360b933a5e4f52b8acb86d4283faab85b0d10c2",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-s1-r0.out": "b49a8e76058bb3c37735a90b33faad1dc30150cd6e4d902b0768abc31e1d3a29",
+    "logs/AB-road-usa-z-8n-22355150/control-s0-r0.out": "a23f0dd11cde6d748c396202008ad2d1bac3b3e3e9a7f7adb9659532f5404994",
+    "logs/AB-road-usa-z-8n-22355150/control-s1-r0.out": "cdd2de946042583cb6f28580d0f551bdc1a42d3c58bf06485097a8bb0b56f549",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-s0-r0.out": "fc2fdcb91bd3d9c9151e87845734d952516517b9997865759f0d406d3c661ad3",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-s1-r0.out": "ce24c1e02bf8f342c24f6f63fb2aaec63c5d11a0798d48531b9f59c389eb55d6",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-s0-r0.out": "12b33a1c5f0a25c3c4660287137bc32224ca44352c75d39b98a5caa9c5848ece",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-s1-r0.out": "87aa8452c1fd5ff5e6c8601498c94fa019dceb2115a6ae31ef2620db29edcd46",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-s0-r1.out": "f667423ab9d83e7958bc8547227f0c096123c0cf54f69e9247390733b145fd99",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-s1-r1.out": "74678e832aa3ce62d2e058ccba146ce4d87c2cf2090916f48e74311edcd827d9",
+    "logs/AB-road-usa-z-8n-22355150/control-s0-r1.out": "bef30d4b1157104d837acaed2569f1f07034ac37b74cac8dd187c6ff93851ee9",
+    "logs/AB-road-usa-z-8n-22355150/control-s1-r1.out": "86beb3f65440dd7cfd5dfaff8bf0d35898c05e73d1eaa54364214f943cd12422",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-s0-r1.out": "1c603e01b037fc0e628202f51ed14ca7a43628ae89c772e24b72b22234769986",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-s1-r1.out": "a81470563ab41c919a189d9d5e792290101a3fe39419a72e7329cd33118a3599",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-s0-r1.out": "9a553c9fcdcf5b0c5c0a577af247ac2e8c01b31b44519b90938aa23750ee4131",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-s1-r1.out": "4e198894968f805f3d9598f11a23632bcd98645272aefecd5be6c5212fb59bee",
+    "logs/AB-road-usa-z-8n-22355150/base-s0-r1.out": "501e29775297714190b4f86152b4df576cb66886f086261900bfadd399ea1e99",
+    "logs/AB-road-usa-z-8n-22355150/base-s1-r1.out": "eeff7271b3d955eced7edbd89b08a6f599874ba21cf623a32c0432613caa1277",
+    "logs/AB-road-usa-z-8n-22355150/control-s0-r2.out": "0e10b05cb0fc840a18e0ce077b8274861e0b4ed46f3c425fa71a1828e0ef5016",
+    "logs/AB-road-usa-z-8n-22355150/control-s1-r2.out": "9c46455a4989791ded14685199e80be6c46aad04d71d81d96f1e6a907bb9f0c0",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-s0-r2.out": "51785c8f01ff6c92daf0c45a8c745370a0aa974e29e5d80030b3063fb860c46a",
+    "logs/AB-road-usa-z-8n-22355150/base_cost-s1-r2.out": "9650b3356a9d0b798988c238d2e59abaef4f7cb744895bc8d8c8eddda19817a6",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-s0-r2.out": "007ebea69c7055c34267b93e329e36be943fee2a7fb9a3f5f5101621318c9bf4",
+    "logs/AB-road-usa-z-8n-22355150/coalesce_cost-s1-r2.out": "72cf9dbbb29abd6152ae1a6b8ed0a2b8c0b883004246956c7e305a60bc4c5059",
+    "logs/AB-road-usa-z-8n-22355150/base-s0-r2.out": "996a29aef0ecd9b7d8bf699985a03ac33703829b42a13431760b33b785c5162d",
+    "logs/AB-road-usa-z-8n-22355150/base-s1-r2.out": "4d76a827bd828284dd7724ec3f9de5f2164257ba664db81c6d6b60e3eb6a1cd3",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-s0-r2.out": "515f91e0af70208a47165217c166c7b83def488d3775c7d1b4d9dcfb025e31f0",
+    "logs/AB-road-usa-z-8n-22355150/coalesce-s1-r2.out": "959f57f702c5e6d4a4474377f07eac12e533611e3609a6421c4975bff84d2776",
+    "logs/AB-mesh26-z-8n-22355150/base-g0-r-1.launch.out": "0767e0e87c8ba336b78ecb29fbb5f7dfffc520f7aec88d38f69a5941339bb928",
+    "logs/AB-mesh26-z-8n-22355150/base-g0-r0.launch.out": "b6425ddd58226ff88e6906afcc7695d4009e456cd0853a125746bbd1682bfe4d",
+    "logs/AB-mesh26-z-8n-22355150/base-g0-r1.launch.out": "6601f9e2ba4cdbc0d31522203383c346067da31d516a22e710e5bcc3bbdfc953",
+    "logs/AB-mesh26-z-8n-22355150/base-g0-r2.launch.out": "2e914290927558bc0c0589ad416fbad01eba04e0e7e49e9d73a36ba9fc881d7c",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-g0-r-1.launch.out": "1197ec293ced9eb40a62288475518f340f6fffea3edd47e830b27e7560759d3f",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-g0-r0.launch.out": "c823dcf9fd4c6b9dd26e6bd93294b3953474c216724f730f3c7bfab940877827",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-g0-r1.launch.out": "29ba65b9477e344ba3ef6059bdea31061d87fd69556babbba382b3442546e1b7",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-g0-r2.launch.out": "fe9b24065ea691c3ac196e105c095f95d17be3dba3d0f7d3bf2475cdad296609",
+    "logs/AB-mesh26-z-8n-22355150/control-g0-r-1.launch.out": "656671752e606ed998bd27cefa9097005a128e4ea473d193c88374fc16971870",
+    "logs/AB-mesh26-z-8n-22355150/control-g0-r0.launch.out": "295963e6ebd22138dfa8c708e81a2823ef6e32ee3791b66b136af876916684fe",
+    "logs/AB-mesh26-z-8n-22355150/control-g0-r1.launch.out": "a6b885bd1eecef60a8ad2863ea02b22a44ae77087b2cb06caacff4021b3083ec",
+    "logs/AB-mesh26-z-8n-22355150/control-g0-r2.launch.out": "e5c31eba2ac2b7afa841de39ee698308be21e232fff105a2b40c817f5b411ab5",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-g0-r-1.launch.out": "f9e1379c4559bf452092eb00c03b861854b52aa5ab09fff1414ec4e60a53a16b",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-g0-r0.launch.out": "e4ff26533acfea177184ec2f39fa2460bf76efcbbdea99b5cd8fcd68ddaf7ec9",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-g0-r1.launch.out": "2ce97a830a2f6a26c6402d0fe5c5d99bf457b8a4fae16f7886c6df899cc92118",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-g0-r2.launch.out": "3b7cee9736cae1639bdf7690363e7359222d17b9b9178f97fa0f99efab09c2e1",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-g0-r-1.launch.out": "70d3a16f661782ebf315f4ed16f871829242d84821fde68f16346d51ce495363",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-g0-r0.launch.out": "094a9469bd388bf3d4c4f73eb30c03e7a6da0385496b436eab860239518f2bcb",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-g0-r1.launch.out": "2e46418f5491f29c19ce9f20a3fefa2c9b90b21e71523e43247af54f209aa9ab",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-g0-r2.launch.out": "c450672bd3486030fd22b718f5fb8ac87733324ca2c90ac45524eed4782f9ea9",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-s0-r-1.out": "2f5565733a32a394be762baa1557383c6a56017a9e0b959b262a4db738ad72e4",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-s1-r-1.out": "84664c39890d5c06f0421e8e5e03af2519cd3d64632b838067e5cb2971dd1d67",
+    "logs/AB-mesh26-z-8n-22355150/base-s0-r-1.out": "f8ade2ac9cada0a86f11a46e84012efbc116f850495cb930a82a85e4f0b1c481",
+    "logs/AB-mesh26-z-8n-22355150/base-s1-r-1.out": "87285364a40efc8c9611e670582945252267bf2860bc5d674fe0e68c0d5ccf38",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-s0-r-1.out": "3065b068a8919da79bda2abeb6193afe406f5cf013a06e95e78dfdddda74ddb1",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-s1-r-1.out": "1ec3905a7b847ffbe6ec4b58aca111d193698786bcf861a25a4bcab399757a73",
+    "logs/AB-mesh26-z-8n-22355150/control-s0-r-1.out": "a0c63a3115201d90aa0fe8d5cfeefb700e77a77af553af8da80d2b40955d7ac5",
+    "logs/AB-mesh26-z-8n-22355150/control-s1-r-1.out": "8e4ca3bef00a50f032223fee1e907d9903092b2a686f19aa8829a4620a8fdfd6",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-s0-r-1.out": "cebc53238d4b1b1962dbbee8bbe1c5e87b1e5a9faa404e9ab331ba26ccc214b4",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-s1-r-1.out": "de010a90d94795c67dba24a35a2719ebf14a07704a98e16fd1eb54e1a9a1d789",
+    "logs/AB-mesh26-z-8n-22355150/base-s0-r0.out": "ada56dc7a83cb176865f885f0cb0a88259c2ccf2929ca2a125f7f10a64dadc27",
+    "logs/AB-mesh26-z-8n-22355150/base-s1-r0.out": "1def8a71ca781626577a4916773d5165f97fe03afdbd678d466a546109aa2a5b",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-s0-r0.out": "ea62ab6e60df406e37ff773b90bed821433978ba28fcab31e448c0f683f09cde",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-s1-r0.out": "687903a3445e3a5c4eddf18e3ba9d7517c3fb42291f7db32f6374529c8270d78",
+    "logs/AB-mesh26-z-8n-22355150/control-s0-r0.out": "c4b669b0359bc6774b2cbf596388ba661e5871790f754cd2d0203c3c9c3aa8ec",
+    "logs/AB-mesh26-z-8n-22355150/control-s1-r0.out": "46a572fd193d46a5f79972d1e4e6c4334a1e934be7a2483a9c1e32f048c14931",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-s0-r0.out": "a89fa0a7227224cd41b2aa8e273604aaa696888ace45e6a8834ecb98823efd67",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-s1-r0.out": "cae7d5c9b9f13f9a700721e62e29030f92bd3899db3d230e0320484e47d7b031",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-s0-r0.out": "b9fe3814557cd55a24c819ce74cf7289af6457c517fafb467fe0f7eb50047e08",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-s1-r0.out": "4d3fd87ab1fe6753017feeed7784e06185fc9e8674550fb04917dedcd248464d",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-s0-r1.out": "4c569142563d90f28e225aa519ae26f4930b8199ee55e86c2971d13b5cb420ab",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-s1-r1.out": "9b1872c65f7bf0bb38ed5c3911c3276c1d8b2c60de237b55a7513ffa32aa3f03",
+    "logs/AB-mesh26-z-8n-22355150/control-s0-r1.out": "c05eaa5c0d19961057ab54486251e444500594677098f8ec17ed1251530ff69a",
+    "logs/AB-mesh26-z-8n-22355150/control-s1-r1.out": "80e8f435f9afd58b0881ee33e34acf8b9fb538e2ed6bcdff7b0970c1f4987951",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-s0-r1.out": "d01e1c90a089af7114a5d2421d5c311534ccbb92e3550cb5ba47d9f8404a071d",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-s1-r1.out": "8be91f9be43aebc897a353a1447a9c1363a756fbc98f2d55ce38ffae26199dd2",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-s0-r1.out": "c36bab71c32ebaf52c1c652db71f46ff6a4ca5d02e898b8a3d342dec59591872",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-s1-r1.out": "b151b2b802bb64b412a4725f8495003e026b54e703cad4d41e7f75421d6390f0",
+    "logs/AB-mesh26-z-8n-22355150/base-s0-r1.out": "fc62e504f78ad378c7569c47c2c7eb667bdf902e47939d85fcc1976db5c4d378",
+    "logs/AB-mesh26-z-8n-22355150/base-s1-r1.out": "e9f6473cced54894c06932a8b50edcc2c7b7a627ea491645c08c15befda10c17",
+    "logs/AB-mesh26-z-8n-22355150/control-s0-r2.out": "89d762000058d22f62954ef5fe46230d0cff74c16104a07ca5f16af574c2d75b",
+    "logs/AB-mesh26-z-8n-22355150/control-s1-r2.out": "d8feb6cd1d998e43040a2ed90656d4dbab049f8bbb8ab0ddd39539bd1362c81a",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-s0-r2.out": "04366eff12675bca7a3e2a518feb388c7e386db3e6dfe0bade0472abf16f760d",
+    "logs/AB-mesh26-z-8n-22355150/base_cost-s1-r2.out": "71c76c5dabbc5366a340a9fe478fc9ce8bfcf93ca7fb2d702e02919a9aa2df7f",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-s0-r2.out": "46400a66adf2544d344b065143d8dea8df461d7b44e152c17219a60e7cf10600",
+    "logs/AB-mesh26-z-8n-22355150/coalesce_cost-s1-r2.out": "9a08c8dd06da777aea347cdd798edcbbb1a5e6df38a2183865c6c226e3db31f6",
+    "logs/AB-mesh26-z-8n-22355150/base-s0-r2.out": "a03bdc2ab475ec9778d719defc379ea92dfb4513be01dc801c8880a9da7918c3",
+    "logs/AB-mesh26-z-8n-22355150/base-s1-r2.out": "2e6a7cb6e4ca60fa95d903c7414f50c0c91638a6867c53319f641c807abf462f",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-s0-r2.out": "f22bba99266db8c7ceeb977c19e796ca939d4adf3f2dfe294e28f7fa1645c02c",
+    "logs/AB-mesh26-z-8n-22355150/coalesce-s1-r2.out": "a0b6f6c4952a12a21a1aa712fe2220e7087c38c68513d27e2cadd4fcbf90988c",
+    "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355150/base/run.out": "c47f5a81aeafc7ad989dbd94de5a0782da06c44aa519b153e66b52ceef7fa52c",
+    "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355150/base/summary.json": "e9f8fa20e6c32532163a7bf7967380150cbb64c96eb1eea062f89985ed6a4976",
+    "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355150/base/heap-backlog.json": "e05dccb2f4e4900b1fda2ac2dda5a1990d64e26b700c43d4fb24dbf7b33b9685",
+    "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355150/coalesce/run.out": "b15e48baada6f8cc753f8a50163b6a4cc1dd5155409b7248a86dc090b5e8debe",
+    "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355150/coalesce/summary.json": "3c0b03180ee5125c1628853b4fb2e0618a98b39e277a098ab2a8a0229735daaf",
+    "/u/rao1/.tmp/road-rounds-20260924/profile/coalesce-22355150/coalesce/heap-backlog.json": "11ea26c5150cce1515681df4745307c93f92c64fdf924275eb4b8caec7a0c7c7"
+  },
+  "decision": "Reject current coalescing prototype. Road speedup 1.043/0.962 misses prediction; work increases 69/81%, above the 20% limit. Mesh speedup 0.993/1.114 is source-dependent and does not reverse the one-node regression.",
+  "caveats": [
+    "Matched road trace speedup is diagnostic only and differs from production outcomes.",
+    "Both jobs used the same physical nodes but different allocations/times; compare arms within each job.",
+    "Controller threshold-change count is an ordering-change counter, not a count of mathematically necessary SSSP rounds.",
+    "Controller progress classification excludes the initial observation and final termination round. An unchanged threshold is not an empty round; most such rounds still create or retire updates."
+  ],
+  "controller_progress": [
+    {
+      "arm": "base",
+      "source_index": 0,
+      "rep": 0,
+      "rounds": 529,
+      "observed_transitions": 527,
+      "unchanged_threshold": 257,
+      "unchanged_threshold_with_update_activity": 256,
+      "no_creation_or_retirement": 1
+    },
+    {
+      "arm": "base",
+      "source_index": 0,
+      "rep": 1,
+      "rounds": 538,
+      "observed_transitions": 536,
+      "unchanged_threshold": 266,
+      "unchanged_threshold_with_update_activity": 262,
+      "no_creation_or_retirement": 4
+    },
+    {
+      "arm": "base",
+      "source_index": 0,
+      "rep": 2,
+      "rounds": 538,
+      "observed_transitions": 536,
+      "unchanged_threshold": 263,
+      "unchanged_threshold_with_update_activity": 261,
+      "no_creation_or_retirement": 2
+    },
+    {
+      "arm": "base",
+      "source_index": 1,
+      "rep": 0,
+      "rounds": 798,
+      "observed_transitions": 796,
+      "unchanged_threshold": 396,
+      "unchanged_threshold_with_update_activity": 394,
+      "no_creation_or_retirement": 2
+    },
+    {
+      "arm": "base",
+      "source_index": 1,
+      "rep": 1,
+      "rounds": 770,
+      "observed_transitions": 768,
+      "unchanged_threshold": 380,
+      "unchanged_threshold_with_update_activity": 377,
+      "no_creation_or_retirement": 3
+    },
+    {
+      "arm": "base",
+      "source_index": 1,
+      "rep": 2,
+      "rounds": 803,
+      "observed_transitions": 801,
+      "unchanged_threshold": 398,
+      "unchanged_threshold_with_update_activity": 392,
+      "no_creation_or_retirement": 6
+    },
+    {
+      "arm": "coalesce",
+      "source_index": 0,
+      "rep": 0,
+      "rounds": 728,
+      "observed_transitions": 726,
+      "unchanged_threshold": 418,
+      "unchanged_threshold_with_update_activity": 418,
+      "no_creation_or_retirement": 0
+    },
+    {
+      "arm": "coalesce",
+      "source_index": 0,
+      "rep": 1,
+      "rounds": 688,
+      "observed_transitions": 686,
+      "unchanged_threshold": 410,
+      "unchanged_threshold_with_update_activity": 410,
+      "no_creation_or_retirement": 0
+    },
+    {
+      "arm": "coalesce",
+      "source_index": 0,
+      "rep": 2,
+      "rounds": 653,
+      "observed_transitions": 651,
+      "unchanged_threshold": 369,
+      "unchanged_threshold_with_update_activity": 369,
+      "no_creation_or_retirement": 0
+    },
+    {
+      "arm": "coalesce",
+      "source_index": 1,
+      "rep": 0,
+      "rounds": 967,
+      "observed_transitions": 965,
+      "unchanged_threshold": 547,
+      "unchanged_threshold_with_update_activity": 545,
+      "no_creation_or_retirement": 2
+    },
+    {
+      "arm": "coalesce",
+      "source_index": 1,
+      "rep": 1,
+      "rounds": 857,
+      "observed_transitions": 855,
+      "unchanged_threshold": 472,
+      "unchanged_threshold_with_update_activity": 470,
+      "no_creation_or_retirement": 2
+    },
+    {
+      "arm": "coalesce",
+      "source_index": 1,
+      "rep": 2,
+      "rounds": 968,
+      "observed_transitions": 966,
+      "unchanged_threshold": 555,
+      "unchanged_threshold_with_update_activity": 551,
+      "no_creation_or_retirement": 4
+    },
+    {
+      "arm": "control",
+      "source_index": 0,
+      "rep": 0,
+      "rounds": 539,
+      "observed_transitions": 537,
+      "unchanged_threshold": 267,
+      "unchanged_threshold_with_update_activity": 262,
+      "no_creation_or_retirement": 5
+    },
+    {
+      "arm": "control",
+      "source_index": 0,
+      "rep": 1,
+      "rounds": 534,
+      "observed_transitions": 532,
+      "unchanged_threshold": 264,
+      "unchanged_threshold_with_update_activity": 263,
+      "no_creation_or_retirement": 1
+    },
+    {
+      "arm": "control",
+      "source_index": 0,
+      "rep": 2,
+      "rounds": 535,
+      "observed_transitions": 533,
+      "unchanged_threshold": 262,
+      "unchanged_threshold_with_update_activity": 257,
+      "no_creation_or_retirement": 5
+    },
+    {
+      "arm": "control",
+      "source_index": 1,
+      "rep": 0,
+      "rounds": 796,
+      "observed_transitions": 794,
+      "unchanged_threshold": 394,
+      "unchanged_threshold_with_update_activity": 388,
+      "no_creation_or_retirement": 6
+    },
+    {
+      "arm": "control",
+      "source_index": 1,
+      "rep": 1,
+      "rounds": 802,
+      "observed_transitions": 800,
+      "unchanged_threshold": 398,
+      "unchanged_threshold_with_update_activity": 390,
+      "no_creation_or_retirement": 8
+    },
+    {
+      "arm": "control",
+      "source_index": 1,
+      "rep": 2,
+      "rounds": 794,
+      "observed_transitions": 792,
+      "unchanged_threshold": 393,
+      "unchanged_threshold_with_update_activity": 389,
+      "no_creation_or_retirement": 4
+    }
+  ]
+}

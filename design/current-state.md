@@ -376,10 +376,9 @@ not shorten the solve. There is no demonstrated one-node speedup; do not
 promote the prototype. The prediction and controls are in
 `benchmarks/delta-heap-coalesce-{road,mesh}-variants.json`.
 
-Eight-node attribution **22354948** is queued after successful correctness
-and one-node dependencies. It is needed to explain the previously observed distributed road
-round limit. Matched eight-node coalescing job **22355150** depends on both
-22354948 and successful completion of the one-node mesh/backlog checks. Raw one-node evidence is archived in
+Eight-node attribution **22354948** and matched coalescing job **22355150**
+completed on September 25 after their successful dependencies. Their results
+below address the distributed road round limit. Raw one-node evidence is archived in
 `design/onenode-data/delta-road-rounds-22354907.json`; logs are under
 `/u/rao1/.tmp/road-rounds-20260924/logs/`.
 
@@ -412,8 +411,8 @@ has 656 versus 2,781 rounds and 169,036 versus 334,539 HTram receive messages.
 Less backlog permits more polling and smaller/more frequent deliveries; it
 does not by itself reduce total work or solve time. These are diagnostic
 traces, not new production timing trials. Keep coalescing disabled and do
-not spend second-allocation/held-out trials on this version. The queued
-eight-node comparison can still test the distributed mechanism, but cannot
+not spend second-allocation/held-out trials on this version. The subsequent
+eight-node comparison tests the distributed mechanism, but does not
 reverse the failed general regression gate. Evidence:
 `design/onenode-data/delta-heap-coalesce-continuation-22355144.json`.
 
@@ -426,14 +425,82 @@ are missing. Production medians are **0.219/0.267 s**, with 545/806 rounds
 and 2.14/2.29 attempts/edge. Quiet speedup is 0.969/0.984× (controls
 0.997/0.977×): no logging improvement. At 16 × 7 per node, empty 267-long
 cycles average 165–229 us across launches (median 193 us), versus real
-rounds of 330–402 us. At 8 × 15 they average 97–101 us. This motivates a
-full-solver process-layout comparison; it does not establish one from the
-unloaded test alone. The phase driver now captures per-rank logs and checks
+rounds of 330–402 us. At 8 × 15 they average 97–101 us. This is unloaded-cycle evidence only; the user reports prior full-solver
+layout tests favor 16 × 7, which remains fixed. The phase driver now captures per-rank logs and checks
 exactly one record per PE per source; retained one-node data reproduce the
 previous summaries, and missing/duplicate/corrupt records are rejected.
-Pending eight-node attribution will use this correction; it has not yet
-been exercised on Slurm. No new jobs were submitted during this review.
+Eight-node attribution subsequently validated this correction on Slurm.
 Evidence: `design/onenode-data/delta-road-rounds-22355241.json`.
+
+**Eight-node attribution completed (September 25).** Job 22354948 passes
+29 solve digests, 12 unloaded-cycle checks, two work ledgers and all 1,792
+PE/source phase records. Production medians are 0.206/0.259 s and 531/797
+rounds, with median real-round costs 388/324 us. The unloaded 267-long cycle
+at 16 × 7 averages 183–224 us across launches (median 199 us), about
+51–61% of those loaded round costs. At 8 × 15 the launch means are
+123–177 us (median 133 us). The 16 × 7 p50 is only 94–105 us and p95 about
+600 us, so tails matter; a smaller 11-long payload does not improve the
+mean. This supports investigating collective round latency, not a claim
+that payload serialization, link bandwidth or process layout is the cause. Empty-cycle time
+cannot be subtracted from the loaded solve as communication overhead.
+
+The instrumented controller takes about 10 us/round and worker threshold
+handlers 6.5–8.7 us on average; work-counter runs report 45–57% idle PE time.
+Profile output goes directly to per-rank files, unlike the production arms'
+merged stdout, so its logging cost is not an exact production measurement.
+Quiet speedups 1.103/1.087× are not a consistent win beyond repeated-control
+speedups 1.137/1.068×. Retain the correct quiet-source outlier with 7.88
+attempts/edge, 282 rounds and 0.264 s; fewer rounds alone do not imply a gain.
+The single-source trace takes 0.229 s, versus a 0.206 s production median,
+and reports 74% idle time; treat its altered work/timing as diagnostic.
+
+**Eight-node coalescing closes as a negative road result.** Job 22355150
+passes 80 A/B solve digests, 32 work ledgers and both matched road-trace
+digests. Road baseline/coalesced medians are 0.1934/0.1854 s and
+0.2367/0.2459 s: **1.043/0.962× speedup**, missing the 1.05–1.20×
+prediction. Edge attempts rise **69%/81%**, exceeding the 20% work limit.
+Median rounds grow 538 → 688 and 798 → 967, while threshold changes grow
+only 271 → 283 and 401 → 412. Mesh gives **0.993/1.114× speedup**, with
+16–18% fewer attempts; this source-dependent result does not reverse its
+one-node regression. Keep the current prototype disabled and close further
+acceptance tests for it.
+
+The eight-node matched road trace verifies at most one pending callback on
+all 896 PEs (baseline maximum 32, duplicates on all PEs). Heap callback p90
+falls 64 → 3 us, but controller p90 barely changes, 37 → 36 us, missing the
+25% prediction. Idle time falls, while heap callback executions grow
+8.29M → 13.86M. The trace's 1.131× solve ratio is diagnostic and differs
+from production; it is not evidence of an accepted speedup. Both jobs used
+the same eight hosts at different times, with substantial launch variation.
+Their evidence is archived in `design/onenode-data/delta-road-rounds-22354948.json`
+and `design/onenode-data/delta-heap-coalesce-22355150.json`.
+
+The user reports that prior full-solver tests on other machines found
+16 × 7 best. Keep that layout fixed; do not prioritize another layout screen
+from the unloaded measurements. Those comparisons also change worker count
+(8 × 15 has 120/node versus 112), so they are not a full-solver layout result.
+
+A closer check of all 18 timed road launches shows why simply skipping
+unchanged-threshold rounds is not justified. In the six baseline solves,
+257–398 observed round transitions repeat the threshold, but 256–394 of
+those still create or retire updates; only 1–6 observed transitions per solve
+have neither. The first observation and final termination round are excluded.
+Threshold-change counts alone do not measure wasted rounds or necessary
+algorithmic steps.
+
+The next concrete hypothesis is **contribution placement**. On the ordinary
+controller path, `current_thresholds()` queues hold release and `process_heap()`,
+then calls `contribute_histogram()` synchronously before those queued actions
+execute. Its snapshot therefore excludes the work those callbacks will do
+under the new thresholds. Test whether contributing after one bounded local
+work turn yields fewer global rounds and lower time. This is a hypothesis,
+not proof that delayed contributions will help: extra wait or changed ordering
+may outweigh fresher snapshots. Preserve width 131072, slice 8, batch 8,
+16 × 7, `+old-scheduler`, one contribution per PE per epoch (including idle
+PEs), and the stable-count termination rule. Do not wait for full local/global
+quiescence or combine this with coalescing. The proposed screen is not
+implemented or queued. No jobs remain in the queue, and none were submitted
+during this review.
 
 ## Evidence and provenance
 

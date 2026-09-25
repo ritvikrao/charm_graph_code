@@ -64,5 +64,49 @@
     "Nested phase timings are inclusive; PE-time sums are not wall-clock critical paths.",
     "Unloaded cycles omit graph work and idle callbacks; do not subtract as communication time.",
     "Suppressing output can alter asynchronous work and rounds; report both."
-  ]
+  ],
+  "layout_decision": {
+    "recorded": "2026-09-25",
+    "rpn": 16,
+    "workers_per_node": 112,
+    "reason": "User reports prior full-solver comparisons on other machines found 16x7 best. Unloaded-cycle measurements do not justify another layout sweep; keep 16x7 fixed."
+  },
+  "next_contribution_screen": {
+    "recorded": "2026-09-25",
+    "status": "hypothesis_not_implemented_or_submitted",
+    "hypothesis": "current_thresholds queues hold release and heap draining, then immediately snapshots the histogram. Taking the snapshot after one bounded local work turn may reduce feedback lag and rounds.",
+    "evidence_limit": "Unchanged thresholds are not empty rounds: most still create or retire updates. This experiment must demonstrate lower solve time rather than just fewer polls.",
+    "fixed_settings": {
+      "rpn": 16,
+      "workers_per_node": 112,
+      "bucket_width": 131072,
+      "heap_slice": 8,
+      "queue_batch": 8,
+      "process_queue": "nearest",
+      "scheduler": "+old-scheduler",
+      "coalescing": false
+    },
+    "correctness_requirements": [
+      "One contribution per PE per epoch, including idle PEs",
+      "One controller epoch in flight",
+      "Preserve stable-count termination",
+      "Bound local work by existing slice; do not wait for queue exhaustion",
+      "Serial digests and work accounting before timing"
+    ],
+    "prediction": {
+      "road_round_reduction_range": [
+        0.15,
+        0.3
+      ],
+      "road_speedup_range": [
+        1.05,
+        1.2
+      ],
+      "edge_work_change_limit": 0.2
+    },
+    "screen": "Two training sources, one node first, one warmup and three measured launches, interleaved baseline/candidate/repeated-baseline arms. Same graph and source settings as this protocol.",
+    "acceptance": "Road speedup >=1.05 beyond control variation, edge work within 20%; mesh speedup >=0.95 and within control noise if below 1. Second allocation and held-out confirmation required for acceptance.",
+    "stop_rule": "Reject if rounds fall without solve-time benefit or work/regression limits fail; no open-ended timer, layout or width sweep.",
+    "distributed_followup": "Keep the eight-node endpoint in cpu if warranted; user declined reducing it to four nodes."
+  }
 }

@@ -467,8 +467,61 @@ driver now captures profile output per rank; use that fix in pending eight-node
 attribution 22354948. Retain all completed timings; rerun only missing four-node
 diagnostics if the eight-node evidence leaves a relevant question unresolved.
 At four nodes, the 267-long empty cycle averages about 193 us at 16 × 7
-versus 101 us at 8 × 15. A matched full-solver comparison of those layouts is
-the next concrete candidate, subject to the eight-node attribution. Distinguish
+versus 101 us at 8 × 15. These are unloaded results only; the September 25 decision below retains
+16 × 7 based on the user's prior full-solver tests. Distinguish
 useful threshold advances from repeated controller polls and report work as
 well as rounds. Do not infer a solve speedup from the unloaded benchmark or
 lower callback latency alone. No new jobs were submitted in this review.
+
+
+### September 25 decision after the eight-node jobs
+
+Both jobs completed with all gates valid: attribution 22354948 has 29 solve
+digests, 12 empty-cycle checks and 1,792 PE/source profile records; comparison
+22355150 has 82 solve digests and 32 work ledgers. Preserve the partial
+four-node result as such; its missing diagnostics need no rerun for the
+current decision because the corrected eight-node capture succeeded.
+
+Close the current coalescing prototype. Road speedup 1.043/0.962× misses
+its prediction, with 69/81% extra work above the 20% bound. Mesh's
+0.993/1.114× at eight nodes does not undo the one-node regression. Suppressing
+heap backlog is insufficient: in the matched eight-node trace, controller
+p90 barely changes (37 → 36 us), and total heap callbacks increase.
+
+**Keep 16 × 7 fixed.** The user has already tested other layouts on other
+machines and found this best. The unloaded 8 × 15 result is not a full-solver
+win and also uses more workers. Drop the suggested layout screen. Preserve
+`+old-scheduler`, width 131072, nearest queue, batch 8 and heap slice 8.
+
+Audit progress before changing round cadence. Existing logs show that about
+half the baseline rounds retain the threshold, but almost all of those still
+create or retire updates. Do not label them empty or skip them without a
+correctness argument. The current ordinary path queues hold release and
+heap draining, then contributes its histogram before those callbacks run.
+That is a concrete potential source of delayed feedback to the controller.
+
+The next bounded prototype should test **contributing after one local work
+turn**, instead of immediately after queueing that work. Keep heap work
+bounded by the existing slice, preserve asynchronous communication progress,
+and require exactly one contribution from every PE per epoch, including idle
+PEs. Keep the current stable-count termination check and one controller epoch
+in flight. Do not wait for queue exhaustion or global quiescence; do not add
+arbitrary timer delays or combine this with rejected coalescing. The old
+node-controller/interval screen remains closed.
+
+Preregister a prediction of 15–30% fewer road rounds and 1.05–1.20× solve
+speedup, with edge work within 20%; these are hypotheses, not achieved gains.
+Test serial correctness and accounting first, then the two training sources
+on one node with matched production/control arms, one warmup and three
+measured launches. Check time, rounds, threshold changes and edge attempts
+separately; fewer rounds without lower time is a failure. Require road
+speedup at least 1.05× beyond control variation and mesh speedup at least
+0.95× (within control noise if below 1), then a second allocation and held-out
+confirmation before acceptance. Preserve the eight-node endpoint in `cpu`
+if the mechanism advances to a distributed test; the user declined reducing
+it to four nodes. Stop this prototype if its prediction fails rather than
+opening another cadence sweep.
+
+The hypothesis and fixed settings are recorded in
+`benchmarks/delta-road-rounds-protocol.json`. The prototype is not implemented
+or queued. No new jobs were submitted in this review, and the queue is empty.
