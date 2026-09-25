@@ -91,6 +91,8 @@ prepare_one() {
       # OSM car graphs, largest connected component (prepare_osm.sbatch).
       road-eu)      dimacs "$name" OSM-road-d.EU.gr.gz "$(cat "$RAW/OSM-road-d.EU.vertices")" ;;
       road-na)      dimacs "$name" OSM-road-d.NA.gr.gz "$(cat "$RAW/OSM-road-d.NA.vertices")" ;;
+      # OSM planet 2025-12-29, car graph, largest component (Afro-Eurasia).
+      road-planet)  dimacs "$name" OSM-road-d.PLANET.gr.gz "$(cat "$RAW/OSM-road-d.PLANET.vertices")" ;;
       youtube)      snap "$name" com-youtube.ungraph.txt.gz 1134890 ;;
       orkut)        snap "$name" com-orkut.ungraph.txt.gz 3072441 ;;
       *) echo "UNKNOWN $name"; return 1 ;;
@@ -110,6 +112,7 @@ prepare_one() {
     road-usa|road-usa-w4) z=(coords "$RAW/USA-road-d.USA.co.gz") ;;
     road-eu) z=(coords "$RAW/OSM-road-d.EU.co.gz") ;;
     road-na) z=(coords "$RAW/OSM-road-d.NA.co.gz") ;;
+    road-planet) z=(coords "$RAW/OSM-road-d.PLANET.co.gz") ;;
   esac
   if [ -n "$z" ] && [ ! -s "$base-z.reference.txt" ]; then
     "$PY" "$APP/benchmarks/reorder_graph.py" "$CAMPAIGN" "$name" "$name-z" "${z[@]}" \
