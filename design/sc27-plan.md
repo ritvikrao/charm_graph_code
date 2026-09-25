@@ -923,3 +923,33 @@ Full result: current-state §19 and `onenode-data/delta-road-time-22401351.json`
 The source implementation, experiments and results are committed stepwise.
 Stop the bounded study. The ordinary/distributed default is unchanged;
 no new global gate or distributed performance claim follows from this test.
+
+
+### Delta RMAT one-node comparison (2026-09-25)
+
+The user requests an RMAT run after the road study. Use the existing
+`rmat25` input (33,554,432 vertices,1,047,199,108 stored directed edges,
+maximum weight1000) and its independent full reference for two training
+and four test sources. One exclusive `cpu-interactive` node,16×7,
+`+old-scheduler`, same frozen September25 runtime. No layout sweep or
+new solver change is part of this comparison.
+
+Compare original ACIC, the latest road-study binary and a duplicate
+original control against Wasp. RMAT's automatic gate disables process
+sharing/chunks; lazy relaxation and degree256 hub hints remain enabled.
+The shared heap slice is inactive. Verify those modes and every PE's
+affinity; do not interpret timing noise as a chunk optimization gain.
+Use no road-specific admission-width override.
+
+Wasp gets a bounded32/64/96/128-thread × delta1/4/16/64/256 search on the
+two training sources, then repeats the two fastest settings on both.
+Freeze before the held-out comparison. Each arm/test source gets a
+warmup and three randomized timed launches, for112 full solves including
+training and smoke checks. Full digest mismatch, wrong modes or affinity,
+truncation/rescue or launch failure aborts the job. The non-lazy edge-work
+ledger formula is inapplicable to lazy tokens and is deliberately unused.
+This is a one-node ACIC/Wasp result, not a distributed scaling claim.
+
+Protocol: `benchmarks/delta-rmat25-wasp-protocol.json`. Campaign:
+`/work/hdd/mzu/rao1/acic-rmat25-wasp-20260925`. All binaries, harness code,
+commands, runtime/graph hashes and individual solves are archived.

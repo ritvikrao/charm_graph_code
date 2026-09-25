@@ -1,0 +1,90 @@
+{
+  "recorded": "2026-09-25",
+  "graph": "rmat25",
+  "vertices": 33554432,
+  "stored_directed_edges": 1047199108,
+  "max_weight": 1000,
+  "order_seed": 20260930,
+  "layout": {
+    "ranks": 16,
+    "ppn": 7,
+    "span": 128,
+    "workers": 112
+  },
+  "common_flags": [
+    "--process-share",
+    "auto",
+    "--reader-tile",
+    "auto",
+    "--slack-control",
+    "off",
+    "--process-queue",
+    "nearest",
+    "--process-queue-batch",
+    "8",
+    "--lazy-heavy",
+    "auto",
+    "--hub-hints",
+    "auto",
+    "+old-scheduler"
+  ],
+  "variants": [
+    {
+      "label": "base",
+      "binary": "acic_base",
+      "slice": 8,
+      "layout": {
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      }
+    },
+    {
+      "label": "current",
+      "binary": "acic_current",
+      "slice": 64,
+      "layout": {
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      }
+    },
+    {
+      "label": "control",
+      "binary": "acic_base",
+      "slice": 8,
+      "layout": {
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      }
+    }
+  ],
+  "wasp_threads": [
+    32,
+    64,
+    96,
+    128
+  ],
+  "wasp_deltas": [
+    1,
+    4,
+    16,
+    64,
+    256
+  ],
+  "wasp_selection": "Two training sources only; one warmup, one solve per setting/source, repeat top two once on both sources; freeze geometric mean of per-source medians. Bounded grid, not a global optimum.",
+  "timing": "Four held-out sources, one warmup and three measured repetitions per arm/source, randomized within repetition. Solve-only timers; every launch and repetition retained.",
+  "expected_modes": {
+    "process_sharing": "off",
+    "lazy_heavy": "on",
+    "hub_hints": "degree256"
+  },
+  "interpretation": "This is an ACIC/Wasp comparison and inactive-path regression check. RMAT uses the nonshared lazy-heavy path; private chunks and shared-heap slice are inactive. No chunk optimization gain may be claimed.",
+  "validation": "Full independent reference digest, correct lazy/hint/share modes, old scheduler startup and every PE affinity. Stop on any invalid launch. Non-lazy edge-ledger formula is not applicable to RMAT; no edge-attempt estimate from that formula.",
+  "scope": "One exclusive Delta cpu-interactive node,128 cores, at most one node active. Current binary is frozen road-study build551571d; original is the matching earlier baseline. No solver/runtime rebuild or defaults changed.",
+  "planned_solves": 112
+}

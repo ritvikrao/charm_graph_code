@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#SBATCH --account=mzu-delta-cpu
+#SBATCH --partition=cpu-interactive
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=128
+#SBATCH --mem=0
+#SBATCH --exclusive
+#SBATCH --time=01:00:00
+#SBATCH --job-name=acic-rmat25-wasp
+set -euo pipefail
+ulimit -c 0
+ROOT=${1:?campaign}
+APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
+export SLURM_MPI_TYPE=cray_shasta PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
+unset LCT_PMI_BACKEND ACIC_PROF_TIMER ACIC_PROF_OFF ACIC_PROF_DIR ACIC_PREBIND ACIC_LAUNCH_PREFIX
+python3 "$APP/benchmarks/rmat_wasp.py" "$ROOT"
