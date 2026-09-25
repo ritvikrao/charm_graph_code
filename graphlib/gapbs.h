@@ -23,10 +23,14 @@
  *     ...         DestID   neighbours[num_edges]
  *     if directed: the same two arrays again, for the in-edges
  *
- * DestID is int32 for .sg, and {int32 v; int32 w} for .wsg -- GAPBS fixes both
- * node ids and weights at int32, and refuses anything else. Reads are done with
- * memcpy because the header fields are not naturally aligned: num_edges starts
- * at byte 1.
+ * DestID is int32 for .sg, and {int32 v; int32 w} for .wsg -- GAPBS's default
+ * build fixes both node ids and weights at int32. A GAPBS built with
+ * `typedef int64_t NodeID` (benchmark.h) writes the wide layout instead: int64
+ * for .sg, and {int64 v; int32 w} padded to 16 bytes for .wsg. The header does
+ * not say which, but the file size does, so the reader accepts both and the
+ * writer uses the wide one only for graphs past 2^31 - 1 vertices. Reads are
+ * done with memcpy because the header fields are not naturally aligned:
+ * num_edges starts at byte 1.
  *
  * Byte order is the writer's. GAPBS makes the same assumption; a file written
  * on a big-endian machine is not portable, and the sanity checks below will
@@ -52,8 +56,9 @@ struct GapbsHeader {
   bool weighted = false;
   int64_t num_edges = 0; // directed edge count, as written
   int64_t num_nodes = 0;
+  bool wide = false; // 64-bit node ids (see the layout note above)
 
-  int dest_size() const { return weighted ? 8 : 4; }
+  int dest_size() const { return (weighted ? 8 : 4) * (wide ? 2 : 1); }
   // Byte offset of the out-edge offsets array.
   int64_t offsets_at() const { return 17; }
   int64_t neighbours_at() const { return 17 + (num_nodes + 1) * 8; }
@@ -97,14 +102,18 @@ inline GapbsHeader gapbs_read_header(const std::string &path) {
                    "opposite byte order)",
                    path.c_str(), (long long)h.num_nodes,
                    (long long)h.num_edges, h.weighted ? ".wsg" : ".sg");
-  if (actual != h.expected_size())
+  const int64_t narrow = h.expected_size();
+  h.wide = true;
+  const int64_t wide = h.expected_size();
+  h.wide = actual == wide;
+  if (actual != narrow && actual != wide)
     GRAPHLIB_ABORT("graphlib: %s is %lld bytes but %lld nodes and %lld %s "
-                   "edges need %lld. Truncated, or not the format the suffix "
-                   "claims.",
+                   "edges need %lld (32-bit ids) or %lld (64-bit ids). "
+                   "Truncated, or not the format the suffix claims.",
                    path.c_str(), (long long)actual, (long long)h.num_nodes,
                    (long long)h.num_edges,
                    h.directed ? "directed" : "undirected",
-                   (long long)h.expected_size());
+                   (long long)narrow, (long long)wide);
   return h;
 }
 
@@ -167,14 +176,14 @@ inline void gapbs_read_slice(const std::string &path, const GapbsHeader &h,
   // large graph is hundreds of megabytes, and this keeps the transient buffer
   // to a fixed size on top of the CSR that has to exist anyway.
   const size_t block = 1 << 16;
-  std::vector<int32_t> raw(block * 2);
+  const size_t record = (size_t)h.dest_size();
+  std::vector<unsigned char> raw(block * record);
   int64_t done = 0;
   int64_t vertex = first;
   while (done < count) {
     size_t want = (size_t)((count - done) < (int64_t)block ? (count - done)
                                                            : (int64_t)block);
-    size_t words = h.weighted ? want * 2 : want;
-    if (std::fread(raw.data(), 4, words, f) != words)
+    if (std::fread(raw.data(), record, want, f) != want)
       GRAPHLIB_ABORT("graphlib: short read of the neighbour array in %s",
                      path.c_str());
     for (size_t i = 0; i < want; i++) {
@@ -182,12 +191,22 @@ inline void gapbs_read_slice(const std::string &path, const GapbsHeader &h,
       // be given a weight that depends on both endpoints.
       while (vertex < last && row_offset[(size_t)(vertex - first + 1)] <= done + (int64_t)i)
         vertex++;
+      const unsigned char *at = raw.data() + i * record;
       Edge e;
-      if (h.weighted) {
-        e.end = (long)raw[i * 2];
-        e.distance = (cost)raw[i * 2 + 1];
+      if (h.wide) {
+        int64_t v;
+        std::memcpy(&v, at, 8);
+        e.end = (long)v;
       } else {
-        e.end = (long)raw[i];
+        int32_t v;
+        std::memcpy(&v, at, 4);
+        e.end = (long)v;
+      }
+      if (h.weighted) {
+        int32_t w; // after the id: offset 8 in the wide layout, 4 otherwise
+        std::memcpy(&w, at + (h.wide ? 8 : 4), 4);
+        e.distance = (cost)w;
+      } else {
         e.distance = weight((long)vertex, e.end);
       }
       if (e.end < 0 || e.end >= h.num_nodes)
@@ -214,17 +233,17 @@ inline void gapbs_read_slice(const std::string &path, const GapbsHeader &h,
  */
 inline void gapbs_write_wsg(const std::string &path, long num_nodes,
                             const std::vector<long> &row_offset,
-                            const std::vector<Edge> &edges) {
+                            const std::vector<Edge> &edges,
+                            bool force_wide = false) {
   std::FILE *f = std::fopen(path.c_str(), "wb");
   if (!f)
     GRAPHLIB_ABORT("graphlib: cannot write %s", path.c_str());
 
-  // GAPBS fixes node ids and weights at int32 and refuses anything else, so a
-  // graph that does not fit has to be rejected here rather than silently
-  // truncated into a file that reads back as a different graph.
-  if (num_nodes > (long)2147483647)
-    GRAPHLIB_ABORT("graphlib: %ld vertices does not fit GAPBS's int32 node ids",
-                   num_nodes);
+  // GAPBS's default build fixes node ids and weights at int32. Past 2^31 - 1
+  // vertices the ids are written wide (64-bit, the layout a GAPBS built with
+  // int64_t NodeID reads); a weight that does not fit is rejected rather than
+  // silently truncated into a file that reads back as a different graph.
+  const bool wide = force_wide || num_nodes > (long)2147483647;
   for (size_t i = 0; i < edges.size(); i++)
     if (edges[i].distance > (cost)2147483647 || edges[i].distance < 0)
       GRAPHLIB_ABORT("graphlib: edge weight %ld does not fit GAPBS's int32 "
@@ -245,13 +264,26 @@ inline void gapbs_write_wsg(const std::string &path, long num_nodes,
     offsets[(size_t)v] = (int64_t)row_offset[(size_t)v];
   std::fwrite(offsets.data(), 8, offsets.size(), f);
 
-  std::vector<int32_t> out(2 * (size_t)num_edges);
-  for (size_t i = 0; i < (size_t)num_edges; i++) {
-    out[i * 2] = (int32_t)edges[i].end;
-    out[i * 2 + 1] = (int32_t)edges[i].distance;
-  }
+  // One record per edge: {int32 v; int32 w}, or {int64 v; int32 w; 4 bytes
+  // of padding} when wide, as GAPBS lays out NodeWeight<int64_t, int32_t>.
+  const size_t record = wide ? 16 : 8;
+  auto put = [&](std::vector<unsigned char> &out, size_t slot, long v, cost w) {
+    unsigned char *at = out.data() + slot * record;
+    if (wide) {
+      const int64_t v64 = (int64_t)v;
+      std::memcpy(at, &v64, 8);
+    } else {
+      const int32_t v32 = (int32_t)v;
+      std::memcpy(at, &v32, 4);
+    }
+    const int32_t w32 = (int32_t)w;
+    std::memcpy(at + (wide ? 8 : 4), &w32, 4);
+  };
+  std::vector<unsigned char> out((size_t)num_edges * record, 0);
+  for (size_t i = 0; i < (size_t)num_edges; i++)
+    put(out, i, edges[i].end, edges[i].distance);
   if (num_edges > 0)
-    std::fwrite(out.data(), 4, out.size(), f);
+    std::fwrite(out.data(), 1, out.size(), f);
 
   // In-edge index: the transpose, built by counting sort.
   std::vector<int64_t> in_offsets((size_t)num_nodes + 2, 0);
@@ -259,18 +291,17 @@ inline void gapbs_write_wsg(const std::string &path, long num_nodes,
     in_offsets[(size_t)edges[i].end + 1]++;
   for (long v = 0; v < num_nodes; v++)
     in_offsets[(size_t)v + 1] += in_offsets[(size_t)v];
-  std::vector<int32_t> in_neigh(2 * (size_t)num_edges);
+  std::vector<unsigned char> in_neigh((size_t)num_edges * record, 0);
   std::vector<int64_t> cursor(in_offsets.begin(), in_offsets.begin() + num_nodes);
   for (long v = 0; v < num_nodes; v++) {
     for (long j = row_offset[(size_t)v]; j < row_offset[(size_t)v + 1]; j++) {
       int64_t slot = cursor[(size_t)edges[(size_t)j].end]++;
-      in_neigh[(size_t)slot * 2] = (int32_t)v;
-      in_neigh[(size_t)slot * 2 + 1] = (int32_t)edges[(size_t)j].distance;
+      put(in_neigh, (size_t)slot, v, edges[(size_t)j].distance);
     }
   }
   std::fwrite(in_offsets.data(), 8, (size_t)num_nodes + 1, f);
   if (num_edges > 0)
-    std::fwrite(in_neigh.data(), 4, in_neigh.size(), f);
+    std::fwrite(in_neigh.data(), 1, in_neigh.size(), f);
   std::fclose(f);
 }
 

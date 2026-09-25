@@ -1,0 +1,542 @@
+{
+  "orkut@5539286": {
+    "job": "5539286",
+    "graph": "orkut",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r1-oec-d64",
+      "gluon-sync": "gluon-sync-r8-oec-d64"
+    },
+    "sources": [
+      {
+        "source": "1892699",
+        "gluon_async": 1.031305818,
+        "gluon_sync": 1.124433864,
+        "frozen": 0.065065,
+        "h2tls": 0.061027,
+        "gluon_best": 1.031305818,
+        "speedup_frozen": 15.850392960885271,
+        "speedup_h2tls": 16.899172792370592,
+        "h2tls_over_frozen": 1.066167434086552
+      },
+      {
+        "source": "254572",
+        "gluon_async": 1.039826912,
+        "gluon_sync": 1.236428218,
+        "frozen": 0.065414,
+        "h2tls": 0.063032,
+        "gluon_best": 1.039826912,
+        "speedup_frozen": 15.896091234292355,
+        "speedup_h2tls": 16.49680974742988,
+        "h2tls_over_frozen": 1.037790328721919
+      },
+      {
+        "source": "2549343",
+        "gluon_async": 1.011171821,
+        "gluon_sync": 1.210248649,
+        "frozen": 0.065291,
+        "h2tls": 0.061092,
+        "gluon_best": 1.011171821,
+        "speedup_frozen": 15.48715475333507,
+        "speedup_h2tls": 16.55162412427159,
+        "h2tls_over_frozen": 1.0687324035880312
+      },
+      {
+        "source": "2608772",
+        "gluon_async": 0.939701636,
+        "gluon_sync": 1.128540296,
+        "frozen": 0.064314,
+        "h2tls": 0.062597,
+        "gluon_best": 0.939701636,
+        "speedup_frozen": 14.611152097521536,
+        "speedup_h2tls": 15.01192766426506,
+        "h2tls_over_frozen": 1.0274294295253765
+      }
+    ]
+  },
+  "rmat25@5539286": {
+    "job": "5539286",
+    "graph": "rmat25",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r8-cvc-d0",
+      "gluon-sync": "gluon-sync-r8-oec-d1024"
+    },
+    "sources": [
+      {
+        "source": "20659448",
+        "gluon_async": 0.841038679,
+        "gluon_sync": 0.777377332,
+        "frozen": 0.201355,
+        "h2tls": 0.169773,
+        "gluon_best": 0.777377332,
+        "speedup_frozen": 3.860730212808224,
+        "speedup_h2tls": 4.578922042963251,
+        "h2tls_over_frozen": 1.1860248685008805
+      },
+      {
+        "source": "21987187",
+        "gluon_async": 0.843165049,
+        "gluon_sync": 0.828778228,
+        "frozen": 0.209319,
+        "h2tls": 0.157362,
+        "gluon_best": 0.828778228,
+        "speedup_frozen": 3.959402768023925,
+        "speedup_h2tls": 5.266698618472058,
+        "h2tls_over_frozen": 1.3301750104853778
+      },
+      {
+        "source": "23077392",
+        "gluon_async": 0.840322084,
+        "gluon_sync": 0.793967214,
+        "frozen": 0.196172,
+        "h2tls": 0.160177,
+        "gluon_best": 0.793967214,
+        "speedup_frozen": 4.047301419162776,
+        "speedup_h2tls": 4.956811614651292,
+        "h2tls_over_frozen": 1.2247201533303782
+      },
+      {
+        "source": "26007212",
+        "gluon_async": 0.903957831,
+        "gluon_sync": 0.84646846,
+        "frozen": 0.205137,
+        "h2tls": 0.169608,
+        "gluon_best": 0.84646846,
+        "speedup_frozen": 4.12635682495113,
+        "speedup_h2tls": 4.99073428140182,
+        "h2tls_over_frozen": 1.2094771473043724
+      }
+    ]
+  },
+  "uniform25@5539286": {
+    "job": "5539286",
+    "graph": "uniform25",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r8-oec-d64",
+      "gluon-sync": "gluon-sync-r8-oec-d64"
+    },
+    "sources": [
+      {
+        "source": "23077392",
+        "gluon_async": 2.360576061,
+        "gluon_sync": 2.345044099,
+        "frozen": 0.238146,
+        "h2tls": 0.210435,
+        "gluon_best": 2.345044099,
+        "speedup_frozen": 9.847085817103792,
+        "speedup_h2tls": 11.143793090503005,
+        "h2tls_over_frozen": 1.1316843680946609
+      },
+      {
+        "source": "26007212",
+        "gluon_async": 2.259794122,
+        "gluon_sync": 2.187845929,
+        "frozen": 0.231237,
+        "h2tls": 0.220101,
+        "gluon_best": 2.187845929,
+        "speedup_frozen": 9.461487257662052,
+        "speedup_h2tls": 9.940190771509442,
+        "h2tls_over_frozen": 1.0505949541346928
+      },
+      {
+        "source": "7224676",
+        "gluon_async": 2.346743763,
+        "gluon_sync": 2.234687362,
+        "frozen": 0.222133,
+        "h2tls": 0.217594,
+        "gluon_best": 2.234687362,
+        "speedup_frozen": 10.06013227210725,
+        "speedup_h2tls": 10.269986130132263,
+        "h2tls_over_frozen": 1.0208599501824498
+      },
+      {
+        "source": "9130980",
+        "gluon_async": 2.107206002,
+        "gluon_sync": 2.178000045,
+        "frozen": 0.230344,
+        "h2tls": 0.228858,
+        "gluon_best": 2.107206002,
+        "speedup_frozen": 9.14808287604626,
+        "speedup_h2tls": 9.207482377718934,
+        "h2tls_over_frozen": 1.00649310926426
+      }
+    ]
+  },
+  "rmat26@5539899": {
+    "job": "5539899",
+    "graph": "rmat26",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r8-cvc-d1024",
+      "gluon-sync": "gluon-sync-r8-oec-d1024"
+    },
+    "sources": [
+      {
+        "source": "27797227",
+        "gluon_async": 1.201882825,
+        "gluon_sync": 1.27982275,
+        "frozen": 0.366813,
+        "h2tls": 0.270844,
+        "gluon_best": 1.201882825,
+        "speedup_frozen": 3.276554606843269,
+        "speedup_h2tls": 4.437546428940645,
+        "h2tls_over_frozen": 1.3543331216493628
+      },
+      {
+        "source": "47836480",
+        "gluon_async": 0.971382285,
+        "gluon_sync": 1.051279765,
+        "frozen": 0.390981,
+        "h2tls": 0.306878,
+        "gluon_best": 0.971382285,
+        "speedup_frozen": 2.4844743990117166,
+        "speedup_h2tls": 3.1653695768350945,
+        "h2tls_over_frozen": 1.274060049922119
+      },
+      {
+        "source": "48422984",
+        "gluon_async": 1.046034638,
+        "gluon_sync": 1.13656928,
+        "frozen": 0.356482,
+        "h2tls": 0.277518,
+        "gluon_best": 1.046034638,
+        "speedup_frozen": 2.934326664459917,
+        "speedup_h2tls": 3.769249699118616,
+        "h2tls_over_frozen": 1.2845364985334287
+      },
+      {
+        "source": "8530897",
+        "gluon_async": 1.028737263,
+        "gluon_sync": 1.091519968,
+        "frozen": 0.363547,
+        "h2tls": 0.296446,
+        "gluon_best": 1.028737263,
+        "speedup_frozen": 2.829722877647182,
+        "speedup_h2tls": 3.470234926428422,
+        "h2tls_over_frozen": 1.2263515108991183
+      }
+    ]
+  },
+  "rmat27@5539900": {
+    "job": "5539900",
+    "graph": "rmat27",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r8-cvc-d64",
+      "gluon-sync": "gluon-sync-r8-cvc-d1024"
+    },
+    "sources": [
+      {
+        "source": "115531848",
+        "gluon_async": 1.723023542,
+        "gluon_sync": 1.481099625,
+        "frozen": 0.711903,
+        "h2tls": 0.549457,
+        "gluon_best": 1.481099625,
+        "speedup_frozen": 2.080479538645012,
+        "speedup_h2tls": 2.6955696715120565,
+        "h2tls_over_frozen": 1.2956482490895556
+      },
+      {
+        "source": "126157692",
+        "gluon_async": 1.501069205,
+        "gluon_sync": 1.297338929,
+        "frozen": 0.718751,
+        "h2tls": 0.563521,
+        "gluon_best": 1.297338929,
+        "speedup_frozen": 1.8049907812302173,
+        "speedup_h2tls": 2.3022015665787077,
+        "h2tls_over_frozen": 1.2754644458680333
+      },
+      {
+        "source": "27797227",
+        "gluon_async": 1.545299464,
+        "gluon_sync": 1.381704167,
+        "frozen": 0.707037,
+        "h2tls": 0.591007,
+        "gluon_best": 1.381704167,
+        "speedup_frozen": 1.954217625103071,
+        "speedup_h2tls": 2.3378812213730127,
+        "h2tls_over_frozen": 1.196325931841755
+      },
+      {
+        "source": "54213880",
+        "gluon_async": 1.433858701,
+        "gluon_sync": 1.259601157,
+        "frozen": 0.857839,
+        "h2tls": 0.568066,
+        "gluon_best": 1.259601157,
+        "speedup_frozen": 1.4683421446215432,
+        "speedup_h2tls": 2.2173500209482704,
+        "h2tls_over_frozen": 1.510104459693064
+      }
+    ]
+  },
+  "orkut@5539985": {
+    "job": "5539985",
+    "graph": "orkut",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r1-oec-d64",
+      "gluon-sync": "gluon-sync-r8-oec-d64"
+    },
+    "sources": [
+      {
+        "source": "1892699",
+        "gluon_async": 1.041196759,
+        "gluon_sync": 1.12667238,
+        "frozen": 0.064241,
+        "h2tls": 0.062992,
+        "gluon_best": 1.041196759,
+        "speedup_frozen": 16.207667361965097,
+        "speedup_h2tls": 16.529031607188212,
+        "h2tls_over_frozen": 1.0198279146558293
+      },
+      {
+        "source": "254572",
+        "gluon_async": 1.040706171,
+        "gluon_sync": 1.259290957,
+        "frozen": 0.07003,
+        "h2tls": 0.061465,
+        "gluon_best": 1.040706171,
+        "speedup_frozen": 14.860862073397117,
+        "speedup_h2tls": 16.931687480680065,
+        "h2tls_over_frozen": 1.1393475961929553
+      },
+      {
+        "source": "2549343",
+        "gluon_async": 0.99961378,
+        "gluon_sync": 1.209858615,
+        "frozen": 0.068647,
+        "h2tls": 0.062533,
+        "gluon_best": 0.99961378,
+        "speedup_frozen": 14.561652803472839,
+        "speedup_h2tls": 15.985380199254791,
+        "h2tls_over_frozen": 1.097772376185374
+      },
+      {
+        "source": "2608772",
+        "gluon_async": 0.941241322,
+        "gluon_sync": 1.164349307,
+        "frozen": 0.066197,
+        "h2tls": 0.061795,
+        "gluon_best": 0.941241322,
+        "speedup_frozen": 14.218791214103357,
+        "speedup_h2tls": 15.231674439679585,
+        "h2tls_over_frozen": 1.0712355368557327
+      }
+    ]
+  },
+  "rmat25@5539985": {
+    "job": "5539985",
+    "graph": "rmat25",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r8-cvc-d0",
+      "gluon-sync": "gluon-sync-r8-oec-d1024"
+    },
+    "sources": [
+      {
+        "source": "20659448",
+        "gluon_async": 0.823562253,
+        "gluon_sync": 0.787010716,
+        "frozen": 0.208661,
+        "h2tls": 0.160164,
+        "gluon_best": 0.787010716,
+        "speedup_frozen": 3.7717192767215724,
+        "speedup_h2tls": 4.9137803501411055,
+        "h2tls_over_frozen": 1.302795884218676
+      },
+      {
+        "source": "21987187",
+        "gluon_async": 0.840867309,
+        "gluon_sync": 0.82209984,
+        "frozen": 0.219483,
+        "h2tls": 0.155972,
+        "gluon_best": 0.82209984,
+        "speedup_frozen": 3.7456196607482126,
+        "speedup_h2tls": 5.270816813274178,
+        "h2tls_over_frozen": 1.407194881132511
+      },
+      {
+        "source": "23077392",
+        "gluon_async": 0.842714463,
+        "gluon_sync": 0.82665831,
+        "frozen": 0.200087,
+        "h2tls": 0.156753,
+        "gluon_best": 0.82665831,
+        "speedup_frozen": 4.1314943499577685,
+        "speedup_h2tls": 5.273636294042219,
+        "h2tls_over_frozen": 1.2764476596939132
+      },
+      {
+        "source": "26007212",
+        "gluon_async": 0.880259942,
+        "gluon_sync": 0.851437497,
+        "frozen": 0.204849,
+        "h2tls": 0.16666,
+        "gluon_best": 0.851437497,
+        "speedup_frozen": 4.156415198512075,
+        "speedup_h2tls": 5.108829335173407,
+        "h2tls_over_frozen": 1.229143165726629
+      }
+    ]
+  },
+  "rmat26@5539985": {
+    "job": "5539985",
+    "graph": "rmat26",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r8-cvc-d64",
+      "gluon-sync": "gluon-sync-r8-oec-d1024"
+    },
+    "sources": [
+      {
+        "source": "27797227",
+        "gluon_async": 1.171854265,
+        "gluon_sync": 1.267628117,
+        "frozen": 0.336041,
+        "h2tls": null,
+        "gluon_best": 1.171854265,
+        "speedup_frozen": 3.487235977157549,
+        "speedup_h2tls": null,
+        "h2tls_over_frozen": null
+      },
+      {
+        "source": "47836480",
+        "gluon_async": 0.959665888,
+        "gluon_sync": 1.059273918,
+        "frozen": 0.384227,
+        "h2tls": null,
+        "gluon_best": 0.959665888,
+        "speedup_frozen": 2.4976534392429475,
+        "speedup_h2tls": null,
+        "h2tls_over_frozen": null
+      },
+      {
+        "source": "48422984",
+        "gluon_async": 1.037973396,
+        "gluon_sync": 1.147944702,
+        "frozen": 0.359363,
+        "h2tls": null,
+        "gluon_best": 1.037973396,
+        "speedup_frozen": 2.8883702440151042,
+        "speedup_h2tls": null,
+        "h2tls_over_frozen": null
+      },
+      {
+        "source": "8530897",
+        "gluon_async": 1.039386841,
+        "gluon_sync": 1.081948308,
+        "frozen": 0.36575,
+        "h2tls": null,
+        "gluon_best": 1.039386841,
+        "speedup_frozen": 2.841795874231032,
+        "speedup_h2tls": null,
+        "h2tls_over_frozen": null
+      }
+    ]
+  },
+  "rmat27@5539985": {
+    "job": "5539985",
+    "graph": "rmat27",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r8-cvc-d64",
+      "gluon-sync": "gluon-sync-r8-cvc-d0"
+    },
+    "sources": [
+      {
+        "source": "115531848",
+        "gluon_async": 1.671716109,
+        "gluon_sync": 1.447878397,
+        "frozen": 0.783736,
+        "h2tls": 0.563927,
+        "gluon_best": 1.447878397,
+        "speedup_frozen": 1.8474057552543204,
+        "speedup_h2tls": 2.5674925956728445,
+        "h2tls_over_frozen": 1.3897827201038433
+      },
+      {
+        "source": "126157692",
+        "gluon_async": 1.489193563,
+        "gluon_sync": 1.284860557,
+        "frozen": 0.751265,
+        "h2tls": 0.562443,
+        "gluon_best": 1.284860557,
+        "speedup_frozen": 1.7102627661344534,
+        "speedup_h2tls": 2.284428034485272,
+        "h2tls_over_frozen": 1.3357175749364822
+      },
+      {
+        "source": "27797227",
+        "gluon_async": 1.580023903,
+        "gluon_sync": 1.373006148,
+        "frozen": 0.714387,
+        "h2tls": 0.573753,
+        "gluon_best": 1.373006148,
+        "speedup_frozen": 1.921936076664329,
+        "speedup_h2tls": 2.3930265253515017,
+        "h2tls_over_frozen": 1.2451124438565029
+      },
+      {
+        "source": "54213880",
+        "gluon_async": 1.404558807,
+        "gluon_sync": 1.28428846,
+        "frozen": 0.803636,
+        "h2tls": 0.574392,
+        "gluon_best": 1.28428846,
+        "speedup_frozen": 1.5980972231209154,
+        "speedup_h2tls": 2.23590937896071,
+        "h2tls_over_frozen": 1.399107229905709
+      }
+    ]
+  },
+  "uniform25@5539985": {
+    "job": "5539985",
+    "graph": "uniform25",
+    "gluon_selected": {
+      "gluon-async": "gluon-async-r8-oec-d64",
+      "gluon-sync": "gluon-sync-r8-oec-d64"
+    },
+    "sources": [
+      {
+        "source": "23077392",
+        "gluon_async": 2.424824441,
+        "gluon_sync": 2.346847087,
+        "frozen": 0.217993,
+        "h2tls": 0.208935,
+        "gluon_best": 2.346847087,
+        "speedup_frozen": 10.76569929768387,
+        "speedup_h2tls": 11.232426769090866,
+        "h2tls_over_frozen": 1.0433531959700384
+      },
+      {
+        "source": "26007212",
+        "gluon_async": 2.237950926,
+        "gluon_sync": 2.214272002,
+        "frozen": 0.235706,
+        "h2tls": 0.225027,
+        "gluon_best": 2.214272002,
+        "speedup_frozen": 9.394211441371878,
+        "speedup_h2tls": 9.840028094406449,
+        "h2tls_over_frozen": 1.0474565274389296
+      },
+      {
+        "source": "7224676",
+        "gluon_async": 2.386984313,
+        "gluon_sync": 2.240418923,
+        "frozen": 0.224014,
+        "h2tls": 0.213571,
+        "gluon_best": 2.240418923,
+        "speedup_frozen": 10.001245114144652,
+        "speedup_h2tls": 10.490276877478683,
+        "h2tls_over_frozen": 1.0488970880878021
+      },
+      {
+        "source": "9130980",
+        "gluon_async": 2.165843793,
+        "gluon_sync": 2.185676536,
+        "frozen": 0.243994,
+        "h2tls": 0.238384,
+        "gluon_best": 2.165843793,
+        "speedup_frozen": 8.87662726542456,
+        "speedup_h2tls": 9.085525005872878,
+        "h2tls_over_frozen": 1.0235334586213838
+      }
+    ]
+  }
+}

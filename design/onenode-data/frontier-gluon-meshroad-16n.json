@@ -1,0 +1,296 @@
+{
+  "mesh24-z@5541240": {
+    "job": "5541240",
+    "graph": "mesh24-z",
+    "baselines_selected": {
+      "gluon-async": "gluon-async-r8-oec-d64"
+    },
+    "sources": [
+      {
+        "source": "11959333",
+        "gluon-async": 4.166667434,
+        "frozen": 0.087207,
+        "h2tls": 0.071704,
+        "gluon_best": 4.166667434,
+        "speedup_frozen_over_gluon_best": 47.779047943399036,
+        "speedup_h2tls_over_gluon_best": 58.109274712707794,
+        "speedup_h2tls_over_frozen": 1.2162083007921456
+      },
+      {
+        "source": "1835524",
+        "gluon-async": 4.313553928,
+        "frozen": 0.094476,
+        "h2tls": 0.075159,
+        "gluon_best": 4.313553928,
+        "speedup_frozen_over_gluon_best": 45.6576689106228,
+        "speedup_h2tls_over_gluon_best": 57.392380526616904,
+        "speedup_h2tls_over_frozen": 1.2570151279287909
+      },
+      {
+        "source": "4910385",
+        "gluon-async": 3.772132693,
+        "frozen": 0.084926,
+        "h2tls": 0.072499,
+        "gluon_best": 3.772132693,
+        "speedup_frozen_over_gluon_best": 44.41670033911876,
+        "speedup_h2tls_over_gluon_best": 52.03013411219466,
+        "speedup_h2tls_over_frozen": 1.1714092608173907
+      },
+      {
+        "source": "6871281",
+        "gluon-async": 3.139956415,
+        "frozen": 0.072618,
+        "h2tls": 0.059969,
+        "gluon_best": 3.139956415,
+        "speedup_frozen_over_gluon_best": 43.23936785645432,
+        "speedup_h2tls_over_gluon_best": 52.35965940736047,
+        "speedup_h2tls_over_frozen": 1.2109256449165402
+      }
+    ]
+  },
+  "mesh26-z@5541240": {
+    "job": "5541240",
+    "graph": "mesh26-z",
+    "baselines_selected": {
+      "gluon-async": "gluon-async-r8-oec-d64"
+    },
+    "sources": [
+      {
+        "source": "21824001",
+        "gluon-async": 13.627835872,
+        "frozen": 0.271974,
+        "h2tls": 0.214885,
+        "gluon_best": 13.627835872,
+        "speedup_frozen_over_gluon_best": 50.1071274165913,
+        "speedup_h2tls_over_gluon_best": 63.419205025944116,
+        "speedup_h2tls_over_frozen": 1.2656723363659632
+      },
+      {
+        "source": "35305828",
+        "gluon-async": 12.59202224,
+        "frozen": 0.24985,
+        "h2tls": 0.204529,
+        "gluon_best": 12.59202224,
+        "speedup_frozen_over_gluon_best": 50.39832795677407,
+        "speedup_h2tls_over_gluon_best": 61.565950256442854,
+        "speedup_h2tls_over_frozen": 1.2215871587892182
+      },
+      {
+        "source": "41458868",
+        "gluon-async": 12.032540239,
+        "frozen": 0.223775,
+        "h2tls": 0.182857,
+        "gluon_best": 12.032540239,
+        "speedup_frozen_over_gluon_best": 53.770708251592,
+        "speedup_h2tls_over_gluon_best": 65.80300584062957,
+        "speedup_h2tls_over_frozen": 1.2237704873206934
+      },
+      {
+        "source": "44514593",
+        "gluon-async": 15.818941557,
+        "frozen": 0.278876,
+        "h2tls": 0.224483,
+        "gluon_best": 15.818941557,
+        "speedup_frozen_over_gluon_best": 56.7239258917942,
+        "speedup_h2tls_over_gluon_best": 70.46832747691363,
+        "speedup_h2tls_over_frozen": 1.2423034260946264
+      }
+    ]
+  },
+  "road-usa-z@5541195": {
+    "job": "5541195",
+    "graph": "road-usa-z",
+    "baselines_selected": {
+      "gluon-async": "gluon-async-r8-oec-d8388608"
+    },
+    "sources": [
+      {
+        "source": "10159848",
+        "gluon-async": 7.045068234,
+        "frozen": 0.139947,
+        "h2tls": 0.11904,
+        "gluon_best": 7.045068234,
+        "speedup_frozen_over_gluon_best": 50.34097361143862,
+        "speedup_h2tls_over_gluon_best": 59.18236083669355,
+        "speedup_h2tls_over_frozen": 1.1756300403225806
+      },
+      {
+        "source": "22613654",
+        "gluon-async": 8.74610814,
+        "frozen": 0.148769,
+        "h2tls": 0.120825,
+        "gluon_best": 8.74610814,
+        "speedup_frozen_over_gluon_best": 58.78985635448245,
+        "speedup_h2tls_over_gluon_best": 72.38657678460584,
+        "speedup_h2tls_over_frozen": 1.23127663976826
+      },
+      {
+        "source": "3073839",
+        "gluon-async": 3.912341542,
+        "frozen": 0.149344,
+        "h2tls": 0.125535,
+        "gluon_best": 3.912341542,
+        "speedup_frozen_over_gluon_best": 26.19684447985858,
+        "speedup_h2tls_over_gluon_best": 31.165344660851552,
+        "speedup_h2tls_over_frozen": 1.1896602541123988
+      },
+      {
+        "source": "8718204",
+        "gluon-async": 6.407392392,
+        "frozen": 0.19688,
+        "h2tls": 0.163329,
+        "gluon_best": 6.407392392,
+        "speedup_frozen_over_gluon_best": 32.54465863470134,
+        "speedup_h2tls_over_gluon_best": 39.22997380746836,
+        "speedup_h2tls_over_frozen": 1.205419735625639
+      }
+    ]
+  },
+  "mesh24-z@5541196": {
+    "job": "5541196",
+    "graph": "mesh24-z",
+    "baselines_selected": {
+      "gluon-async": "gluon-async-r8-oec-d64"
+    },
+    "sources": [
+      {
+        "source": "11959333",
+        "gluon-async": 4.154060824,
+        "frozen": 0.087509,
+        "h2tls": 0.070194,
+        "gluon_best": 4.154060824,
+        "speedup_frozen_over_gluon_best": 47.47009820704156,
+        "speedup_h2tls_over_gluon_best": 59.179713707724304,
+        "speedup_h2tls_over_frozen": 1.246673504857965
+      },
+      {
+        "source": "1835524",
+        "gluon-async": 4.264377219,
+        "frozen": 0.096248,
+        "h2tls": 0.076141,
+        "gluon_best": 4.264377219,
+        "speedup_frozen_over_gluon_best": 44.30613850677417,
+        "speedup_h2tls_over_gluon_best": 56.00632010349221,
+        "speedup_h2tls_over_frozen": 1.2640758592611077
+      },
+      {
+        "source": "4910385",
+        "gluon-async": 3.812345296,
+        "frozen": 0.084815,
+        "h2tls": 0.0704,
+        "gluon_best": 3.812345296,
+        "speedup_frozen_over_gluon_best": 44.94895119966987,
+        "speedup_h2tls_over_gluon_best": 54.152632045454546,
+        "speedup_h2tls_over_frozen": 1.2047585227272726
+      },
+      {
+        "source": "6871281",
+        "gluon-async": 3.121301985,
+        "frozen": 0.072739,
+        "h2tls": 0.058963,
+        "gluon_best": 3.121301985,
+        "speedup_frozen_over_gluon_best": 42.91098289775774,
+        "speedup_h2tls_over_gluon_best": 52.93662101656972,
+        "speedup_h2tls_over_frozen": 1.2336380441972083
+      }
+    ]
+  },
+  "mesh26-z@5541196": {
+    "job": "5541196",
+    "graph": "mesh26-z",
+    "baselines_selected": {
+      "gluon-async": "gluon-async-r8-oec-d64"
+    },
+    "sources": [
+      {
+        "source": "21824001",
+        "gluon-async": 13.604627424,
+        "frozen": 0.269701,
+        "h2tls": 0.218604,
+        "gluon_best": 13.604627424,
+        "speedup_frozen_over_gluon_best": 50.44337033974661,
+        "speedup_h2tls_over_gluon_best": 62.23411933907889,
+        "speedup_h2tls_over_frozen": 1.2337422919983168
+      },
+      {
+        "source": "35305828",
+        "gluon-async": 12.313088435,
+        "frozen": 0.249966,
+        "h2tls": 0.201462,
+        "gluon_best": 12.313088435,
+        "speedup_frozen_over_gluon_best": 49.259052971204085,
+        "speedup_h2tls_over_gluon_best": 61.11866473578143,
+        "speedup_h2tls_over_frozen": 1.2407600440777913
+      },
+      {
+        "source": "41458868",
+        "gluon-async": 12.31316478,
+        "frozen": 0.224466,
+        "h2tls": 0.179344,
+        "gluon_best": 12.31316478,
+        "speedup_frozen_over_gluon_best": 54.855366870706476,
+        "speedup_h2tls_over_gluon_best": 68.65668647961459,
+        "speedup_h2tls_over_frozen": 1.251594700686948
+      },
+      {
+        "source": "44514593",
+        "gluon-async": 15.727558559,
+        "frozen": 0.277802,
+        "h2tls": 0.221454,
+        "gluon_best": 15.727558559,
+        "speedup_frozen_over_gluon_best": 56.61427404770304,
+        "speedup_h2tls_over_gluon_best": 71.01952802387855,
+        "speedup_h2tls_over_frozen": 1.2544456185031654
+      }
+    ]
+  },
+  "road-usa-z@5541196": {
+    "job": "5541196",
+    "graph": "road-usa-z",
+    "baselines_selected": {
+      "gluon-async": "gluon-async-r8-oec-d32768"
+    },
+    "sources": [
+      {
+        "source": "10159848",
+        "gluon-async": 6.954228195,
+        "frozen": 0.140556,
+        "h2tls": 0.117697,
+        "gluon_best": 6.954228195,
+        "speedup_frozen_over_gluon_best": 49.47656588832921,
+        "speedup_h2tls_over_gluon_best": 59.08585771090172,
+        "speedup_h2tls_over_frozen": 1.194219054011572
+      },
+      {
+        "source": "22613654",
+        "gluon-async": 8.738988195,
+        "frozen": 0.146741,
+        "h2tls": 0.11968,
+        "gluon_best": 8.738988195,
+        "speedup_frozen_over_gluon_best": 59.55382745790201,
+        "speedup_h2tls_over_gluon_best": 73.01962061330214,
+        "speedup_h2tls_over_frozen": 1.226111296791444
+      },
+      {
+        "source": "3073839",
+        "gluon-async": 3.911874451,
+        "frozen": 0.149017,
+        "h2tls": 0.12421,
+        "gluon_best": 3.911874451,
+        "speedup_frozen_over_gluon_best": 26.251195843427258,
+        "speedup_h2tls_over_gluon_best": 31.494037927703083,
+        "speedup_h2tls_over_frozen": 1.1997182191449964
+      },
+      {
+        "source": "8718204",
+        "gluon-async": 6.397011861,
+        "frozen": 0.196577,
+        "h2tls": 0.165933,
+        "gluon_best": 6.397011861,
+        "speedup_frozen_over_gluon_best": 32.542015907252626,
+        "speedup_h2tls_over_gluon_best": 38.551776084323194,
+        "speedup_h2tls_over_frozen": 1.1846769479247647
+      }
+    ]
+  }
+}

@@ -50,6 +50,9 @@ dimacs() {    # name file vertices [awk weight filter]
   gzip -dc "$RAW/$2" | { if [ -n "${4:-}" ]; then awk "$4"; else cat; fi; } |
     "$BIN/prepare_graph" dimacs "$3" 0 1 "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
 }
+meshz() {     # name vertices seed: Morton-ordered mesh written directly (prepare_graph meshz)
+  "$BIN/prepare_graph" meshz 2 "$2" "$3" "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
+}
 snap() {      # name file vertices
   gzip -dc "$RAW/$2" | "$BIN/prepare_graph" snap "$3" 0 1 "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
 }
@@ -71,6 +74,10 @@ prepare_one() {
       uniform20-s2) generate "$name" 1 1048576 2 ;;
       mesh24)       generate "$name" 2 16777216 1 ;;
       mesh26)       generate "$name" 2 67108864 1 ;;
+      # Larger meshes are generated in Morton order directly: byte-identical
+      # to gen + reorder_graph.py at 2^24 and 2^26, which do not fit past 2^28.
+      mesh28-z)     meshz "$name" 268435456 1 ;;
+      mesh30-z)     meshz "$name" 1073741824 1 ;;
       rmat24)       generate "$name" 3 16777216 1 ;;
       rmat25)       generate "$name" 3 33554432 1 ;;
       rmat26)       generate "$name" 3 67108864 1 ;;
@@ -84,6 +91,8 @@ prepare_one() {
       # OSM car graphs, largest connected component (prepare_osm.sbatch).
       road-eu)      dimacs "$name" OSM-road-d.EU.gr.gz "$(cat "$RAW/OSM-road-d.EU.vertices")" ;;
       road-na)      dimacs "$name" OSM-road-d.NA.gr.gz "$(cat "$RAW/OSM-road-d.NA.vertices")" ;;
+      # OSM planet 2025-12-29, car graph, largest component (Afro-Eurasia).
+      road-planet)  dimacs "$name" OSM-road-d.PLANET.gr.gz "$(cat "$RAW/OSM-road-d.PLANET.vertices")" ;;
       youtube)      snap "$name" com-youtube.ungraph.txt.gz 1134890 ;;
       orkut)        snap "$name" com-orkut.ungraph.txt.gz 3072441 ;;
       *) echo "UNKNOWN $name"; return 1 ;;
@@ -103,6 +112,7 @@ prepare_one() {
     road-usa|road-usa-w4) z=(coords "$RAW/USA-road-d.USA.co.gz") ;;
     road-eu) z=(coords "$RAW/OSM-road-d.EU.co.gz") ;;
     road-na) z=(coords "$RAW/OSM-road-d.NA.co.gz") ;;
+    road-planet) z=(coords "$RAW/OSM-road-d.PLANET.co.gz") ;;
   esac
   if [ -n "$z" ] && [ ! -s "$base-z.reference.txt" ]; then
     "$PY" "$APP/benchmarks/reorder_graph.py" "$CAMPAIGN" "$name" "$name-z" "${z[@]}" \
@@ -115,7 +125,7 @@ galois_one() {
   "$PY" "$APP/benchmarks/to_galois.py" "$DATA/$1.wsg" && touch "$DATA/$1.gr.done" ||
     { echo "CONVERSION FAILED $1"; return 1; }
 }
-export -f generate dimacs snap prepare_one galois_one
+export -f generate dimacs snap meshz prepare_one galois_one
 export CAMPAIGN
 
 printf '%s\n' ${NAMES//,/ } | xargs -P "$PARALLEL" -I{} bash -c 'prepare_one {}'

@@ -109,7 +109,7 @@ class Campaign:
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
             if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'acic_ipdps', 'acic_ipdps_wide', 'acic_ipdps2', 'acic_ipdps2_wide', 'riken_sssp',
-                             'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp', 'wasp_sssp']:
+                             'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp', 'gluon_sssp64', 'wasp_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -122,7 +122,7 @@ class Campaign:
         # its own per-node total; the record keeps the allocation's budget.
         workers = config.get('workers', self.args.workers)
         per_graph_rule = None
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': 'gluon_sssp'}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': self.args.gluon_binary}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -219,6 +219,18 @@ class Campaign:
         record['digest'] = digest
         record['expected'] = {k: int(expected[k]) for k in KEYS}
         record['valid'] = record['returncode'] == 0 and digest == record['expected']
+        # RIKEN aims only at Graph500 accuracy (validate.hpp: relative 1e-5 per
+        # edge), and on the OSM roads it leaves a few distances slightly long.
+        # --riken-tolerance accepts such a run as timed but inexact: every
+        # vertex reached, and the distance sum high by at most that fraction.
+        if engine.startswith('riken') and record['returncode'] == 0 and digest:
+            expected_sum = record['expected']['distance_sum']
+            record['exact'] = digest == record['expected']
+            record['relative_distance_error'] = (digest['distance_sum']-expected_sum) / max(1, expected_sum)
+            if (not record['exact'] and self.args.riken_tolerance > 0 and
+                    digest['reachable'] == record['expected']['reachable'] and
+                    0 <= record['relative_distance_error'] <= self.args.riken_tolerance):
+                record['valid'] = True
         t = re.search(r'^Compute time: ([\d.eE+-]+)', output, re.M) if engine.startswith('acic') else re.search(r'^BENCH .*?\bsolve_seconds=([\d.eE+-]+)', output, re.M)
         if t:
             record['seconds'] = float(t[1])
@@ -1198,7 +1210,7 @@ class Campaign:
                             cpus=stride(rpn), delta=delta, denominator=denominator, presolve=0)
             arms['riken'] = ([riken(r, mid) for r in layouts(self.args.riken_layouts)],
                              lambda layout: [riken(layout['rpn'], d) for d in deltas])
-        partitions = ['oec'] if self.nodes == 1 else ['oec', 'cvc']
+        partitions = ['oec'] if self.nodes == 1 else self.args.gluon_partitions.split(',')
         # Gluon's -delta raises the priority threshold by delta every round
         # (sssp_push.cpp), so a solve takes at least max_distance/delta rounds.
         # On meshes and roads d/16 and d mean thousands of rounds; the optional
@@ -1207,13 +1219,20 @@ class Campaign:
         gluon_deltas = sorted({0, mid, denominator} |
                               {denominator * m for m in map(int, filter(None, self.args.gluon_delta_multipliers.split(',')))
                                if denominator * m <= max_distance // 4})
+        # --gluon-deltas pins the grid: the largest graphs reuse the delta their
+        # family's smaller members selected, since a full search would not fit.
+        if self.args.gluon_deltas:
+            gluon_deltas = sorted(int(d) for d in self.args.gluon_deltas.split(','))
+
+        layout_delta = (gluon_deltas[0] if self.args.gluon_deltas
+                        else max(1, denominator // self.args.gluon_layout_divisor))
 
         def gluon(model, rpn, partition, delta):
             return dict(engine='gluon', name=f'gluon-{model.lower()}-r{rpn}-{partition}-d{delta}', model=model,
                         rpn=rpn, threads=machine.gluon_threads_per_rank(rpn), cpus=stride(rpn), partition=partition, delta=delta)
         for model in ['Async', 'Sync']:
             arms['gluon-'+model.lower()] = (
-                [gluon(model, r, p, max(1, denominator // self.args.gluon_layout_divisor))
+                [gluon(model, r, p, layout_delta)
                  for r in layouts(self.args.gluon_layouts) for p in partitions],
                 lambda layout, model=model: [gluon(model, layout['rpn'], layout['partition'], d) for d in gluon_deltas])
         if self.nodes == 1:
@@ -1479,6 +1498,14 @@ if __name__ == '__main__':
     # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
     # fair-baseline re-take extends the grid downward.
     parser.add_argument('--delta-divisors', default='64,16,4,1')
+    parser.add_argument('--gluon-binary', default='gluon_sssp',
+                        help='gluon_sssp64 (benchmarks/gluon64.patch) for graphs past 2^32 vertices; oec only')
+    parser.add_argument('--riken-tolerance', type=float, default=0.0,
+                        help='accept a RIKEN run whose distance sum is high by at most this fraction (recorded as exact=False)')
+    parser.add_argument('--gluon-partitions', default='oec,cvc',
+                        help='Gluon partitioners tried beyond one node')
+    parser.add_argument('--gluon-deltas', default='',
+                        help='pin the Gluon delta grid (comma list); the layout stage uses the first')
     parser.add_argument('--gluon-layout-divisor', type=int, default=16,
                         help="Gluon layout stage's delta, denominator / this (16: the mid delta; 1 for meshes and roads)")
     parser.add_argument('--gluon-delta-multipliers', default='',

@@ -110,6 +110,7 @@ double reduction_delay =
     0.1;                   // each histogram reduction happens at this interval
 int initial_threshold = 3; // initial histo threshold
 bool verify_mode = false;  // --verify: check the result against serial Dijkstra
+bool certify_mode = false; // --certify: a distributed proof that the distances are exact
 enum { PROCESS_SHARE_OFF = 0, PROCESS_SHARE_ON = 1, PROCESS_SHARE_AUTO = 2 };
 int process_share_mode = PROCESS_SHARE_OFF;
 enum { PROCESS_QUEUE_LOCAL = 0, PROCESS_QUEUE_NEAREST = 1 };
@@ -134,6 +135,15 @@ static bool process_share_active() {
          (process_share_mode == PROCESS_SHARE_AUTO && num_global_edges < 8L * V);
 }
 bool result_digest = false; // --result-digest: emit distances' digest after timing
+// Every PE holds two ints per M vertices (dest_table, dest_uniform). At
+// M = 1024 that is 128 MB per PE at 2^34 vertices, so M grows with V to keep
+// the tables near 2^22 entries. Only the ranges that straddle a partition
+// boundary are slower to look up, and there are at most N of them. Main calls
+// this whenever it learns V, before the readonlies are sent.
+static void scale_dest_table_divisor() {
+  while (V / M > (1L << 22))
+    M <<= 1;
+}
 // Everything needed to rebuild the graph from scratch, used by the serial
 // reference. Filled in by Main; not a Charm readonly, because only PE 0 needs
 // it and the chares get their slice through their own entry methods.
@@ -872,6 +882,8 @@ private:
   long start_vertex;
   long *partition_index;
   double start_time;
+  DistanceDigest parallel_digest; // this source's, kept across --certify
+  double certify_begin = 0.0;
   // Every timer below is -1 until something assigns it, so an unmeasured
   // phase reports -1 rather than a plausible zero. Before this, read_time was
   // an uninitialized double that only MODE_CSV and modes 1-2 ever wrote, so
@@ -987,6 +999,8 @@ public:
       std::string arg = m->argv[i];
       if (arg == "--verify")
         verify_mode = true;
+      else if (arg == "--certify")
+        certify_mode = true;
       else if (arg == "--result-digest")
         result_digest = true;
       else if (arg == "--reader-tile" || arg.rfind("--reader-tile=", 0) == 0) {
@@ -1520,7 +1534,7 @@ public:
             << "<start vertex> "
             << "<mode 0=csv,1=uniform,2=mesh,3=rmat,4=gapbs> "
             << "<tram percentile> <heap percentile> "
-            << "[--verify] [--result-digest] [--timeout <seconds>] [--bufsize <items>]" << endl
+            << "[--verify] [--certify] [--result-digest] [--timeout <seconds>] [--bufsize <items>]" << endl
             << "       [--bufsize-policy fixed|acceptance] [--bufsize-acc-items <items>] "
             << "[--bufsize-range <min>:<max>]" << endl
             << "       [--bucket-width <distance units>] "
@@ -1613,6 +1627,7 @@ public:
     }
     current_buffer_size = buffer_size;
     V = atol(args[0].c_str());          // number of vertices
+    scale_dest_table_divisor();
     std::string file_name = args[1];    // file name or edge count
     S = atoi(args[2].c_str());          // randomization seed
     start_vertex = atol(args[3].c_str());
@@ -1784,6 +1799,7 @@ public:
       // its own rows and reads only those: no exchange and no parsing.
       GapbsHeader header = gapbs_read_header(file_name);
       V = header.num_nodes;
+      scale_dest_table_divisor();
       num_global_edges = header.num_edges;
       average_degree = num_global_edges / (V > 0 ? V : 1);
 #ifdef INFO_PRINTS
@@ -2941,7 +2957,7 @@ public:
     if (n > 7 && values[7])
       ckout << "TRAM hold: absorbed " << values[6] << " of " << values[7]
             << " items (" << 100.0 * values[6] / values[7] << "%)" << endl;
-    if (verify_mode || result_digest)
+    if (verify_mode || result_digest || certify_mode)
       arr.verify_hash();
     else
       finish_source();
@@ -2980,9 +2996,9 @@ public:
   void source_reset_done() { start_source(); }
 
   /**
-   * Compare the parallel result against serial Dijkstra over the same
-   * generated graph. Exits nonzero on mismatch so a regression script can gate
-   * on it.
+   * The parallel digest has arrived: print it, then run --certify if asked,
+   * then check_digest(). Exits nonzero on any failure so a regression script
+   * can gate on it.
    */
   void done_verify(unsigned long long *values, int n) {
     DistanceDigest parallel;
@@ -2993,7 +3009,64 @@ public:
     ckout << "VERIFY parallel digest h1=" << parallel.h1
           << " h2=" << parallel.h2 << " reachable=" << parallel.reachable
           << " distance_sum=" << parallel.distance_sum << endl;
+    parallel_digest = parallel;
+    if (certify_mode && !run_truncated) {
+      certify_begin = CkWallTimer();
+      const TileLayout layout(V, reader_tile_size, reader_tile_owners);
+      arr.certify_start((int)source_epoch, layout.internal(start_vertex));
+      CkStartQD(CkCallback(CkIndex_Main::certify_quiet(), mainProxy));
+      return;
+    }
+    check_digest();
+  }
 
+  // --certify: every candidate has reached its owner.
+  void certify_quiet() { arr.certify_collect((int)source_epoch); }
+
+  /**
+   * The certificate. With positive weights, two local conditions make the
+   * distances exact, so a graph too large for serial Dijkstra can still prove
+   * its answer: no edge (u, v, w) has d(u) + w < d(v) (nothing can still
+   * improve -- so d is at most the true distance), and every reached vertex
+   * other than the source has an edge with d(u) + w == d(v) (a tight
+   * predecessor; following them strictly decreases d, so they lead back to
+   * the source along a real path of length d -- so d is at least the true
+   * distance), with d(source) == 0. Unreached vertices are covered by the
+   * first condition: a finite candidate below infinity is a violation.
+   */
+  // The certificate's two reductions (sums, then the largest distance) may
+  // arrive in either order; the verdict waits for both.
+  std::vector<long> certify_values;
+  long certify_max_distance = -1;
+  int certify_parts = 0;
+  void certify_max(long value) {
+    certify_max_distance = value;
+    if (++certify_parts == 2) certify_finish();
+  }
+  void certify_done(long *values, int n) {
+    certify_values.assign(values, values + n);
+    if (++certify_parts == 2) certify_finish();
+  }
+  void certify_finish() {
+    certify_parts = 0;
+    const long *values = certify_values.data();
+    ckout << "CERTIFY edges=" << values[3] << " violations=" << values[0]
+          << " untight=" << values[1] << " bad_source=" << values[2]
+          << " nonpositive_weights=" << values[4]
+          << " max_distance=" << certify_max_distance
+          << " (" << CkWallTimer() - certify_begin << " s)" << endl;
+    // A zero-weight cycle could make vertices tight with no path behind them.
+    if (values[0] || values[1] || values[2] || values[4]) {
+      ckout << "CERTIFY FAIL" << endl;
+      CkExit(1);
+      return;
+    }
+    ckout << "CERTIFY PASS" << endl;
+    check_digest();
+  }
+
+  void check_digest() {
+    const DistanceDigest &parallel = parallel_digest;
     // Digest reduction is outside compute_time. External benchmark drivers
     // compare it with an independently produced reference for every run.
     // --verify still performs its in-process Dijkstra check when both flags
@@ -3412,7 +3485,7 @@ private:
   long skew_top_arrivals = 0;
   long bfs_created = 0;          // bfs created messages
   long bfs_processed = 0;         // bfs processed messages
-  int updates_noted = 0; // updates that have either updated a vertex value, or
+  long updates_noted = 0; // updates that have either updated a vertex value, or
                          // are confirmed to not be an improvement
   int *dest_table; // destination table for faster pe calculation
   // get_dest_proc_fast() runs for every update created. M is a readonly, so
@@ -4541,11 +4614,15 @@ public:
                                   sent_cache_shift];
         const unsigned long v = (unsigned long)new_update.dest_vertex;
         const unsigned long d = (unsigned long)new_update.distance;
-        if (e.vertex == v && e.distance <= d) {
+        // 0xffffffff is the empty entry's vertex, so that one id is never
+        // cached: past 2^32 vertices it is a real vertex, and an empty entry
+        // (distance 0) would filter every update to it.
+        const bool cacheable = v < 0xffffffffUL && (d >> 32) == 0;
+        if (cacheable && e.vertex == v && e.distance <= d) {
           send_filtered++;
           continue;
         }
-        if (((v | d) >> 32) == 0) {
+        if (cacheable) {
           e.vertex = (uint32_t)v;
           e.distance = (uint32_t)d;
         }
@@ -5383,6 +5460,126 @@ public:
    * digest. Summation makes the reduction invariant to PE count, so a run on
    * any number of PEs must produce the same digest for the same graph.
    */
+  // --certify (Main::certify_done has the argument). Each PE sends d(u) + w
+  // along every edge to the owner of the far end, a slice of rows per
+  // message to itself so arriving candidates are handled in between; Main
+  // detects completion by quiescence. Per source: the epoch resets the state,
+  // since a candidate can arrive before this PE's own certify_start.
+  int certify_epoch = -1;
+  long certify_source = -1; // internal id
+  long certify_cursor = 0;  // next local vertex to scan
+  long certify_violations = 0, certify_edges = 0, certify_nonpositive = 0;
+  int certify_batch_pairs = 0;
+  std::vector<uint8_t> certify_tight;
+  std::vector<std::vector<long>> certify_out;
+
+  void certify_prepare(int epoch) {
+    if (certify_epoch == epoch) return;
+    certify_epoch = epoch;
+    certify_cursor = certify_violations = certify_edges = certify_nonpositive = 0;
+    certify_tight.assign((size_t)num_vertices, 0);
+    certify_out.assign((size_t)N, {});
+    // At most 16 MB of outgoing buffers per PE, whatever N is.
+    certify_batch_pairs = (int)std::max(64L, std::min(1024L, (1L << 20) / N));
+  }
+
+  void certify_note(long vertex, cost candidate) {
+    const long i = vertex - start_vertex;
+    if (candidate < distances[i])
+      certify_violations++;
+    else if (candidate == distances[i])
+      certify_tight[(size_t)i] = 1;
+  }
+
+  void certify_send(int pe) {
+    std::vector<long> &out = certify_out[(size_t)pe];
+    thisProxy[pe].certify_batch(certify_epoch, (int)out.size(), out.data());
+    out.clear();
+  }
+
+  void certify_start(int epoch, long source) {
+    certify_prepare(epoch);
+    certify_source = source;
+    // Test hook: ACIC_CERTIFY_PERTURB=<vertex> (an input id) adds 1 to that
+    // vertex's distance first, so a test can watch the certificate fail.
+    if (const char *perturb = getenv("ACIC_CERTIFY_PERTURB")) {
+      const TileLayout layout(V, reader_tile_size, reader_tile_owners);
+      const long i = layout.internal(atol(perturb)) - start_vertex;
+      if (i >= 0 && i < num_vertices && distances[i] != lmax) {
+        distances[i] += 1;
+        ckout << "CERTIFY test: perturbed vertex " << perturb << endl;
+      }
+    }
+    certify_step();
+  }
+
+  void certify_step() {
+    long budget = 1L << 18;
+    while (certify_cursor < num_vertices && budget > 0) {
+      const long u = certify_cursor++;
+      const long degree = local_graph.degree(u);
+      const Edge *adjacency = local_graph.edges(u);
+      budget -= degree + 1;
+      for (long k = 0; k < degree; k++)
+        if (adjacency[k].distance <= 0)
+          certify_nonpositive++;
+      const cost du = distances[u];
+      if (du == lmax)
+        continue;
+      for (long k = 0; k < degree; k++) {
+        const long v = adjacency[k].end;
+        const cost candidate = du + adjacency[k].distance;
+        certify_edges++;
+        const int pe = get_dest_proc_fast(v);
+        if (pe == thisIndex) {
+          certify_note(v, candidate);
+          continue;
+        }
+        std::vector<long> &out = certify_out[(size_t)pe];
+        out.push_back(v);
+        out.push_back(candidate);
+        if ((int)out.size() >= 2 * certify_batch_pairs)
+          certify_send(pe);
+      }
+    }
+    if (certify_cursor < num_vertices) {
+      thisProxy[thisIndex].certify_step();
+      return;
+    }
+    for (int pe = 0; pe < N; pe++)
+      if (!certify_out[(size_t)pe].empty())
+        certify_send(pe);
+  }
+
+  void certify_batch(int epoch, int n, long *items) {
+    certify_prepare(epoch);
+    for (int i = 0; i + 1 < n; i += 2)
+      certify_note(items[i], items[i + 1]);
+  }
+
+  void certify_collect(int epoch) {
+    certify_prepare(epoch); // a PE that neither scanned nor received anything
+    long untight = 0, bad_source = 0, max_distance = 0;
+    for (long i = 0; i < num_vertices; i++) {
+      if (distances[i] != lmax)
+        max_distance = std::max(max_distance, (long)distances[i]);
+      if (start_vertex + i == certify_source) {
+        if (distances[i] != 0)
+          bad_source++;
+      } else if (distances[i] != lmax && !certify_tight[(size_t)i]) {
+        untight++;
+      }
+    }
+    long values[5] = {certify_violations, untight, bad_source, certify_edges,
+                      certify_nonpositive};
+    std::vector<uint8_t>().swap(certify_tight);
+    std::vector<std::vector<long>>().swap(certify_out);
+    contribute(sizeof values, values, CkReduction::sum_long,
+               CkCallback(CkReductionTarget(Main, certify_done), mainProxy));
+    contribute(sizeof max_distance, &max_distance, CkReduction::max_long,
+               CkCallback(CkReductionTarget(Main, certify_max), mainProxy));
+  }
+
   void verify_hash() {
     DistanceDigest digest;
     TileLayout layout(V, reader_tile_size, reader_tile_owners);

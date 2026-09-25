@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Isolated builds: production, D0, and the frozen pre-plan revision.
 # Usage: build_onenode.sh CAMPAIGN LABEL [REVISION|working] [diagnostic]
+# WIRE=compact64 builds the 12-byte wire for graphs past 2^31 vertices
+# (default: the Makefile's, compact).
 set -euo pipefail
 ROOT=${1:?campaign directory}
 LABEL=${2:?binary label}
@@ -59,12 +61,12 @@ elif [ "$KIND" != production ]; then
   exit 2
 fi
 FLAGS="${FLAGS}${ACIC_BUILD_FLAGS:+ $ACIC_BUILD_FLAGS}"
-make -C "$WORK/src" "$TARGET" CHARMC_SMP="$CHARMC $FLAGS" HTRAM_DIR="$WORK/htram" ${PAPI_HOME:+PAPI_HOME=$PAPI_HOME} \
+make -C "$WORK/src" "$TARGET" CHARMC_SMP="$CHARMC $FLAGS" HTRAM_DIR="$WORK/htram" ${PAPI_HOME:+PAPI_HOME=$PAPI_HOME} ${WIRE:+WIRE=$WIRE} \
   > "$WORK/build.log" 2>&1 || { tail -40 "$WORK/build.log"; exit 1; }
 install -m755 "$WORK/src/$TARGET" "$ROOT/bin/$LABEL"
 {
   echo "revision=$REV kind=$KIND build=$WORK"
-  echo "compiler=$CHARMC flags=$FLAGS"
+  echo "compiler=$CHARMC flags=$FLAGS wire=${WIRE:-default}"
   g++ --version | head -n 1
   git -C "$APP" rev-parse HEAD
   git -C "$HTRAM" rev-parse HEAD

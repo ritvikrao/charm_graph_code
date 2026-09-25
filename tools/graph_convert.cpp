@@ -13,7 +13,8 @@
  * Builds without Charm++:
  *   c++ -O2 -std=c++17 -DGRAPH_GEN_STANDALONE -I. tools/graph_convert.cpp
  *
- *   graph_convert gen  <mode 1|2|3> <vertices> <edges|degree> <seed> <out.wsg>
+ *   graph_convert gen  <mode 1|2|3> <vertices> <edges|degree> <seed> <out.wsg> [--wide]
+ *     (--wide: 64-bit ids, which graphs past 2^31 - 1 vertices always get)
  *   graph_convert csv  <in.csv> <vertices> <seed> <out.wsg>
  *   graph_convert stat <file.sg|file.wsg>
  *   graph_convert source <mode 1|2|3> <vertices> <edges|degree> <seed>
@@ -77,7 +78,8 @@ static int do_gen(int argc, char **argv) {
   std::vector<long> row_offset;
   std::vector<Edge> edges;
   flatten(csr, row_offset, edges);
-  gapbs_write_wsg(out, spec.num_vertices, row_offset, edges);
+  const bool wide = argc > 7 && std::string(argv[7]) == "--wide";
+  gapbs_write_wsg(out, spec.num_vertices, row_offset, edges, wide);
   std::printf("wrote %s: %ld vertices, %ld edges (%s)\n", out.c_str(),
               spec.num_vertices, (long)edges.size(), mode_name(spec.mode));
   return 0;
@@ -197,9 +199,10 @@ static int do_stat(int argc, char **argv) {
     return 2;
   }
   GapbsHeader h = gapbs_read_header(argv[2]);
-  std::printf("%s: %s, %s, %lld vertices, %lld edges, %lld bytes\n", argv[2],
+  std::printf("%s: %s, %s, %s ids, %lld vertices, %lld edges, %lld bytes\n", argv[2],
               h.directed ? "directed" : "undirected",
-              h.weighted ? "weighted" : "unweighted", (long long)h.num_nodes,
+              h.weighted ? "weighted" : "unweighted", h.wide ? "64-bit" : "32-bit",
+              (long long)h.num_nodes,
               (long long)h.num_edges, (long long)h.expected_size());
   return 0;
 }
@@ -208,7 +211,7 @@ int main(int argc, char **argv) {
   if (argc < 2) {
     std::fprintf(stderr,
                  "usage: %s gen  <mode 1|2|3> <vertices> <edges|degree> "
-                 "<seed> <out.wsg>\n"
+                 "<seed> <out.wsg> [--wide]\n"
                  "       %s csv  <in.csv> <vertices> <seed> <out.wsg>\n"
                  "       %s stat <file.sg|file.wsg>\n"
                  "       %s source <mode 1|2|3> <vertices> <edges|degree> "

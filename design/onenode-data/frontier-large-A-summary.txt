@@ -1,0 +1,95 @@
+
+## mesh24-z @ 4n
+  frozen (5541369) t=0.143-0.159s  gluon[5541369] 22.7-58.2x/4  riken[5541369] 54.4-71.2x/4  gap 0.49-0.52x/4  wasp 0.44-0.51x/4
+  tls (5541369) t=0.115-0.128s  gluon[5541369] 27.8-72.7x/4  riken[5541369] 67.7-87.4x/4  gap 0.61-0.64x/4  wasp 0.53-0.64x/4  tls/frozen 1.23-1.25x
+  gluon t=3.54-9.28s (4 src)
+  riken t=7.82-11.13s (4 src)
+
+## mesh26-z @ 16n
+  frozen (5541370) t=0.224-0.279s  gluon[5541370] 49.3-57.3x/4  riken[5541370] 76.2-169.0x/4  gap 1.24-1.41x/4  wasp 0.95-1.22x/4
+  tls (5541370) t=0.181-0.223s  gluon[5541370] 61.4-71.8x/4  riken[5541370] 94.0-205.8x/4  gap 1.55-1.74x/4  wasp 1.20-1.50x/4  tls/frozen 1.21-1.26x
+  gluon t=12.29-15.98s (4 src)
+  riken t=17.05-45.83s (4 src)
+
+## mesh26-z @ 64n
+  frozen (5541660) t=0.165-0.223s  gluon[5541371] 44.2-51.0x/4  riken[5541371] 54.4-90.4x/4  gap 1.55-1.91x/4  wasp 1.23-1.65x/4
+  tls (5541660) t=0.138-0.181s  gluon[5541371] 55.4-62.9x/4  riken[5541371] 65.3-113.3x/4  gap 1.94-2.29x/4  wasp 1.52-1.98x/4  tls/frozen 1.20-1.25x
+  gluon t=8.19-11.38s (4 src)
+  riken t=8.98-20.16s (4 src)
+
+## mesh28-z @ 16n
+  frozen (5541663) t=0.742-0.872s  gluon[5541663] 61.3-78.1x/2  riken[5541663] 466.5-624.6x/2  gap 1.74-2.11x/4  wasp 1.04-1.29x/4
+  tls (5541663) t=0.595-0.691s  gluon[5541663] 75.7-97.1x/2  riken[5541663] 580.4-771.7x/2  gap 2.19-2.64x/4  wasp 1.32-1.61x/4  tls/frozen 1.24-1.26x
+  gluon t=47.94-61.57s (2 src)
+  riken t=367.83-488.60s (2 src)
+
+## mesh28-z @ 64n
+  frozen (5541664) t=0.397-0.494s  gluon[5541664] 59.3-86.3x/4  riken[5541664] 240.6-322.0x/4  gap 3.07-3.95x/4  wasp 1.85-2.41x/4
+  tls (5541664) t=0.327-0.409s  gluon[5541664] 71.6-104.8x/4  riken[5541664] 292.1-389.2x/4  gap 3.70-4.79x/4  wasp 2.23-2.92x/4  tls/frozen 1.21-1.22x
+  gluon t=26.94-36.25s (4 src)
+  riken t=101.01-159.06s (4 src)
+
+## mesh30-z @ 32n
+  frozen (5541665) t=1.644-1.977s  gluon[5541665] 76.8-107.1x/4  gap 3.50-3.80x/4  wasp 1.65-2.05x/4
+  tls (5541665) t=1.319-1.575s  gluon[5541665] 95.1-133.5x/4  gap 4.40-4.73x/4  wasp 2.07-2.56x/4  tls/frozen 1.24-1.26x
+  gluon t=140.89-176.09s (4 src)
+
+## mesh30-z @ 64n
+  frozen (5541667) t=1.090-1.400s  gluon[5541667] 68.2-156.5x/4  gap 4.95-5.73x/4  wasp 2.32-3.10x/4
+  tls (5541667) t=0.887-1.124s  gluon[5541667] 85.1-192.4x/4  gap 6.16-7.04x/4  wasp 2.90-3.80x/4  tls/frozen 1.23-1.25x
+  gluon t=87.58-170.64s (4 src)
+
+## road-eu-z @ 4n
+  frozen (5541426) t=0.711-0.853s  riken[5541714] 358.2-1808.2x/2  gap 0.81-0.89x/4  wasp 0.42-0.53x/4
+  tls (5541426) t=0.590-0.708s  riken[5541714] 432.2-2179.4x/2  gap 0.98-1.07x/4  wasp 0.50-0.64x/4  tls/frozen 1.21-1.24x
+  riken t=254.81-1542.01s (2 src)
+  riken inexact: rel err 4.97e-05-6.40e-05
+
+## road-eu-z @ 16n
+  frozen (5541428) t=0.373-0.509s  gluon[5541428] 14.5-110.3x/4  riken[5541716] 234.0-965.1x/4  gap 1.36-1.69x/4  wasp 0.70-1.01x/4
+  tls (5541428) t=0.305-0.413s  gluon[5541428] 17.9-134.9x/4  riken[5541716] 286.1-1187.0x/4  gap 1.68-2.07x/4  wasp 0.86-1.24x/4  tls/frozen 1.22-1.24x
+  gluon t=7.40-41.12s (4 src)
+  riken t=87.21-490.81s (4 src)
+  riken inexact: rel err 4.87e-05-6.40e-05
+
+## road-eu-z @ 64n
+  frozen (5541660) t=0.317-0.442s  gluon[5541429] 8.2-50.8x/4  riken[5541717] 104.9-442.5x/4  gap 1.57-1.99x/4  wasp 0.81-1.19x/4
+  tls (5541660) t=0.265-0.364s  gluon[5541429] 10.0-60.9x/4  riken[5541717] 125.6-537.3x/4  gap 1.90-2.39x/4  wasp 0.98-1.43x/4  tls/frozen 1.20-1.23x
+  gluon t=3.64-16.11s (4 src)
+  riken t=33.26-195.51s (4 src)
+  riken inexact: rel err 4.87e-05-6.40e-05
+
+## road-na-z @ 4n
+  frozen (5541426) t=0.601-0.713s  riken[5541713] 238.4-889.4x/4  gap 0.95-1.14x/4  wasp 0.41-0.53x/4
+  tls (5541426) t=0.487-0.585s  riken[5541713] 294.1-1075.7x/4  gap 1.15-1.41x/4  wasp 0.49-0.65x/4  tls/frozen 1.20-1.24x
+  riken t=143.27-629.39s (4 src)
+  riken inexact: rel err 3.01e-05-3.68e-05
+
+## road-na-z @ 16n
+  frozen (5541428) t=0.390-0.486s  gluon[5541428] 22.8-78.8x/4  riken[5541715] 131.4-413.9x/4  gap 1.38-1.76x/4  wasp 0.59-0.82x/4
+  tls (5541428) t=0.315-0.405s  gluon[5541428] 27.4-97.5x/4  riken[5541715] 162.5-496.0x/4  gap 1.66-2.17x/4  wasp 0.71-1.01x/4  tls/frozen 1.20-1.24x
+  gluon t=11.09-30.73s (4 src)
+  riken t=51.22-201.10s (4 src)
+  riken inexact: rel err 3.01e-05-3.68e-05
+
+## road-na-z @ 64n
+  frozen (5541660) t=0.335-0.457s  gluon[5541429] 12.5-38.4x/4  riken[5541717] 68.3-196.6x/4  gap 1.49-2.05x/4  wasp 0.63-0.95x/4
+  tls (5541660) t=0.279-0.384s  gluon[5541429] 15.1-46.1x/4  riken[5541717] 82.0-238.5x/4  gap 1.77-2.45x/4  wasp 0.75-1.14x/4  tls/frozen 1.19-1.21x
+  gluon t=5.52-12.86s (4 src)
+  riken t=22.86-86.89s (4 src)
+  riken inexact: rel err 3.01e-05-3.68e-05
+
+## road-usa-z @ 4n
+  frozen (5541369) t=0.214-0.284s  gluon[5541369] 27.9-102.8x/4  gap 0.50-0.55x/4  wasp 0.27-0.33x/4
+  tls (5541369) t=0.177-0.233s  gluon[5541369] 34.0-122.7x/4  gap 0.61-0.67x/4  wasp 0.33-0.40x/4  tls/frozen 1.19-1.22x
+  gluon t=6.27-23.04s (4 src)
+
+## road-usa-z @ 16n
+  frozen (5541370) t=0.140-0.194s  gluon[5541370] 26.3-60.0x/4  gap 0.73-0.84x/4  wasp 0.40-0.50x/4
+  tls (5541370) t=0.118-0.165s  gluon[5541370] 31.7-72.1x/4  gap 0.86-1.00x/4  wasp 0.47-0.60x/4  tls/frozen 1.18-1.21x
+  gluon t=3.93-8.67s (4 src)
+
+## road-usa-z @ 64n
+  frozen (5541660) t=0.113-0.162s  gluon[5541371] 21.5-46.5x/4  gap 0.88-1.05x/4  wasp 0.48-0.62x/4
+  tls (5541660) t=0.100-0.147s  gluon[5541371] 24.1-52.4x/4  gap 0.97-1.18x/4  wasp 0.53-0.70x/4  tls/frozen 1.10-1.13x
+  gluon t=2.59-5.29s (4 src)

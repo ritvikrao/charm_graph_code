@@ -78,6 +78,9 @@ mainmodule sssp_smp
     entry [reductiontarget] void done(long msg_stats[N], int N); //bcast to chares to print results and end program
     entry [reductiontarget] void done_max_cost(cost max_cost);
     entry [reductiontarget] void done_verify(unsigned long long values[n], int n);
+    entry void certify_quiet(); // --certify: every candidate has reached its owner
+    entry [reductiontarget] void certify_done(long values[n], int n);
+    entry [reductiontarget] void certify_max(long value); // largest finite distance
     entry [reductiontarget] void done_tram_stats(unsigned long long values[n], int n);
   };
   array [1D] SsspChares
@@ -109,6 +112,10 @@ mainmodule sssp_smp
     entry void stop_periodic_flush();
     entry void get_max_cost(); // get max cost as correctness check
     entry void verify_hash(); // fold local distances into a checksum
+    entry void certify_start(int epoch, long source); // --certify: send d(u) + w along every edge
+    entry void certify_step(); // the next slice of rows
+    entry void certify_batch(int epoch, int n, long items[n]); // (vertex, candidate) pairs
+    entry void certify_collect(int epoch); // count untight vertices and reduce
   };
   nodegroup ControlNode
   {

@@ -10,7 +10,8 @@
 #    logs/external-<N>n-56w-<job>-<graph>-selected.json.
 #
 # Each graph is GRAPH:FAMILY, and FAMILY names
-# benchmarks/frontier-gluon-FAMILY-<N>n-variants.json. Extra arguments go to
+# benchmarks/$VARIANTS_PREFIX-FAMILY-<N>n-variants.json (VARIANTS_PREFIX
+# defaults to frontier-gluon; the larger-input study uses frontier-large). Extra arguments go to
 # run.py (e.g. --gluon-layout-divisor 1 --gluon-delta-multipliers 4,16,64 for
 # meshes and roads, whose max distance is thousands of mid deltas).
 #
@@ -29,23 +30,36 @@ shift 2
 SOURCES=${SOURCES:-4}
 REPS=${REPS:-3}
 TIMEOUT=${TIMEOUT:-240}
+VARIANTS_PREFIX=${VARIANTS_PREFIX:-frontier-gluon}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 PY=${ACIC_PYTHON:-$(dirname "$ROOT")/venv/bin/python}
 N=$SLURM_NNODES
 printf 'job=%s hosts=%s pairs=%s run.py args=%s\n' "$SLURM_JOB_ID" "$SLURM_JOB_NODELIST" "$PAIRS" "$*"
 GRAPHS=$(tr ',' '\n' <<< "$PAIRS" | cut -d: -f1 | paste -sd,)
 
-# --- ACIC (LCI environment, as onenode_ab.sbatch).
-(
+# --- ACIC (LCI environment, as onenode_ab.sbatch). SKIP_ACIC=1 runs the
+# baselines only (mesh30-z's Gluon and RIKEN need a job each).
+[ -n "${SKIP_ACIC:-}" ] || (
   module swap PrgEnv-cray PrgEnv-gnu/8.6.0 >/dev/null 2>&1
   module load gcc-native/13.2 cray-mpich/8.1.31 libfabric/2.3.1 >/dev/null 2>&1
-  export PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
+  export PMI_MAX_KVS_ENTRIES=${PMI_MAX_KVS_ENTRIES:-600000} FI_CXI_RX_MATCH_MODE=hybrid
   unset LCT_PMI_BACKEND ACIC_SRUN_MPI
   for pair in ${PAIRS//,/ }; do
     graph=${pair%%:*}
-    variants=$APP/benchmarks/frontier-gluon-${pair#*:}-${N}n-variants.json
-    "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$variants" \
-      --sources "$SOURCES" --reps "$REPS" --source-role test --batch || echo "ACIC $graph: exit $?"
+    variants=$APP/benchmarks/$VARIANTS_PREFIX-${pair#*:}-${N}n-variants.json
+    # onenode_ab.py stops a graph at its first failed check (a stall is a
+    # failure even when the answer is right), which also loses every other
+    # arm. Keep that attempt aside and rerun the production arm alone.
+    if ! "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$variants" \
+         --sources "$SOURCES" --reps "$REPS" --source-role test --batch; then
+      echo "ACIC $graph: failed check; rerunning the frozen arm alone"
+      mv "$ROOT/logs/AB-$graph-${N}n-$SLURM_JOB_ID" "$ROOT/logs/AB-$graph-${N}n-$SLURM_JOB_ID.failed"
+      variants=$ROOT/logs/gluon-variants-$SLURM_JOB_ID-$graph-frozen.json
+      "$PY" -c 'import json,sys; json.dump([v for v in json.load(open(sys.argv[1])) if v["label"] == "frozen"], open(sys.argv[2], "w"), indent=2)' \
+        "$APP/benchmarks/$VARIANTS_PREFIX-${pair#*:}-${N}n-variants.json" "$variants"
+      "$PY" "$APP/benchmarks/onenode_ab.py" "$ROOT" "$graph" "$variants" \
+        --sources "$SOURCES" --reps "$REPS" --source-role test --batch || echo "ACIC $graph frozen: exit $?"
+    fi
     "$PY" "$APP/benchmarks/check_priority_runs.py" "$ROOT" "$SLURM_JOB_ID" \
       --config "$variants" --graphs "$graph" --sources "$SOURCES" --source-role test --reps "$REPS" \
       --output "$ROOT/logs/onenode-audit-$SLURM_JOB_ID-$graph.json" || echo "audit $graph: exit $?"
@@ -53,7 +67,7 @@ GRAPHS=$(tr ',' '\n' <<< "$PAIRS" | cut -d: -f1 | paste -sd,)
 )
 
 # --- Gluon (Cray MPICH environment, as compare.sbatch).
-(
+[ -n "${SKIP_GLUON:-}" ] || (
   module swap PrgEnv-cray PrgEnv-gnu/8.6.0 >/dev/null 2>&1
   module load gcc-native/13.2 cray-mpich/8.1.31 boost/1.85.0 >/dev/null 2>&1
   module unload cray-libsci darshan-runtime >/dev/null 2>&1 || true
