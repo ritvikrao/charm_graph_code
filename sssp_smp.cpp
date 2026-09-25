@@ -1985,6 +1985,12 @@ public:
     ckout << "Process sharing: " << (process_share_active() ? "on" : "off") << endl;
     ckout << "Process queue: " << (process_queue_policy == PROCESS_QUEUE_NEAREST ? "nearest" : "local")
           << (process_share_active() ? "" : " (inactive)") << endl;
+#ifdef ACIC_PROCESS_CHUNKS
+    ckout << "Process queue storage: private-chunks64 band"
+          << ACIC_CHUNK_DISTANCE_WIDTH << " (experimental build)" << endl;
+#else
+    ckout << "Process queue storage: heap" << endl;
+#endif
     ckout << "Process queue batch: " << process_queue_batch
           << (process_share_active() ? "" : " (inactive)") << endl;
     ckout << "Process drain cap: ";

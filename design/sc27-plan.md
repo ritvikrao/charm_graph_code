@@ -585,3 +585,37 @@ slice with batch 8 held fixed; do not combine interventions in the first A/B.
 Recheck multi-node progress and the distributed mesh endpoint before changing
 the paper's mesh profile. No solver intervention was implemented in this
 attribution task. Full results and trace paths are in current-state §16.
+
+
+### Queue step implemented: bounded private chunks (2026-09-25)
+
+`ACIC_PROCESS_CHUNKS` selects an experimental application queue. Producers
+keep private partial chunks, publish full 64-item chunks, and steal published
+chunks under per-producer mutexes. Original histogram charges remain live
+through every transfer. Admission is rechecked after controller changes; a
+partly admissible old overflow bucket cannot hide its eligible work. The
+existing heap remains the default build.
+
+The first FIFO prototype passed small correctness but lost distance order
+inside the unbounded overflow bucket: job 22379048 was cancelled after more
+than 188B created updates and 129.8 seconds, without a completed mesh answer.
+The revised queue subdivides original buckets by native distance and gives
+earlier published bands precedence over later private work. Width 4096 gave
+only 1.04/1.02x speedups (job 22379156), with about 4 scans/edge versus 1.4–1.5.
+A preregistered narrower-band screen (job 22379228) selected width **256**
+over 1024 on both training sources; full values are in
+`onenode-data/delta-mesh28-chunks-training.json`. Its speedup exceeds 2x.
+The chunk size stays 64 and queue batch/heap slice stay 8 for this step.
+
+The original queue tests and new admission, overflow, source reuse, and
+8-thread exact-once stress tests pass; AddressSanitizer/UBSan and
+ThreadSanitizer pass. Each queue screening gate passed 32 serial checks and
+32 Bellman certificates on one node at 16 × 7. All 24 width-4096 and 32
+narrower-band full-graph screening solves match the independent references.
+This is training evidence, with held-out confirmation pending. No new
+multi-node run is authorized by the current one-node resource limit.
+
+Step 2 now tests heap slices 8/32/64 on the frozen 256-band queue, with queue
+batch 8 held fixed. Step 3 will profile the selected combination, bracketed
+by production controls, and validate original, chunk-only, and combined
+settings on four held-out sources. Preserve 16 × 7 and +old-scheduler.

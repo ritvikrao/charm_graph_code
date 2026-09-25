@@ -1,0 +1,36 @@
+{
+  "step": 1,
+  "mechanism": "owner-private partial chunks, publish 64-element FIFO chunks per original distance bucket; nearest among public bins",
+  "prediction": "At least 1.20x speedup on both training sources. Extra edge scans are permitted if solve time improves. Correctness, queue drain and generation admission are mandatory.",
+  "selection": "two training sources; one warmup and three repeats with duplicate production control; confirm any winner on four held-out sources in a second allocation",
+  "layout": "16x7 +old-scheduler",
+  "campaign": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925",
+  "experiments": [
+    {
+      "job": "22379048",
+      "reason": "Abort screening: private FIFO chunks lost distance ordering in the overflow bucket; observed work/time greatly exceed baseline. Small correctness gates passed, large solve incomplete.",
+      "created": 188287143730,
+      "solve_elapsed_lower_bound": 129.835125,
+      "complete": false
+    },
+    {
+      "step": 1,
+      "mechanism": "Private 64-element chunks with FIFO restricted to 4096-wide distance bands inside original admission buckets; earlier published bands precede later private bands.",
+      "prediction": "At least 1.20x speedup on both training sources. Extra edge scans are permitted if solve time improves. Correctness, queue drain and generation admission are mandatory.",
+      "selection": "two training sources; one warmup and three repeats with duplicate production control; confirm any winner on four held-out sources in a second allocation",
+      "layout": "16x7 +old-scheduler",
+      "campaign": "/work/hdd/mzu/rao1/acic-mesh28-opt-20260925",
+      "revision": 2,
+      "reason": "V1 unbounded overflow FIFO produced excessive work and was aborted; retain bounded distance priority."
+    },
+    {
+      "reason": "4096-wide chunks cut per-edge cost but make about 4.0 scans per edge versus baseline 1.4, largely cancelling the gain. Test narrower 1024 and 256 bands to recover ordering.",
+      "prediction": "1024 or 256 bands reduce scans toward 2.0 and give at least 1.20x training speedup; select by geometric mean time on two training sources, then held-out confirmation.",
+      "chunk_size": 64,
+      "heap_slice": 8,
+      "batch": 8,
+      "selection_sources": "tune only",
+      "layout": "16x7 +old-scheduler"
+    }
+  ]
+}
