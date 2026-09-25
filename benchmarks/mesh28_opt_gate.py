@@ -12,7 +12,8 @@ ap=argparse.ArgumentParser(description=__doc__)
 ap.add_argument('campaign',type=Path)
 ap.add_argument('binaries',nargs='+')
 ap.add_argument('--heap-slice',type=int,default=8)
-a=ap.parse_args();root=a.campaign;app=Path(__file__).resolve().parents[1]
+ap.add_argument('--max-weight',type=int,default=1000)
+a=ap.parse_args();assert 0<a.max_weight<2**31;root=a.campaign;app=Path(__file__).resolve().parents[1]
 out=root/'logs'/('chunk-gate-'+os.environ['SLURM_JOB_ID']);out.mkdir()
 for shape,n in [('empty',16),('path',1025),('disconnected',2051),('mesh',4096)]:
     adj=[[] for _ in range(n)]
@@ -20,11 +21,11 @@ for shape,n in [('empty',16),('path',1025),('disconnected',2051),('mesh',4096)]:
     if shape in ['path','disconnected']:
         for v in range(n-2):
             if shape=='disconnected' and v==1023:continue
-            add(v,v+1,1+(v*97)%1000)
+            add(v,v+1,1+(v*97)%a.max_weight)
     if shape=='mesh':
         for v in range(n):
-            if v%64<63:add(v,v+1,1+(v*31)%1000)
-            if v+64<n:add(v,v+64,1+(v*71)%1000)
+            if v%64<63:add(v,v+1,1+(v*31)%a.max_weight)
+            if v+64<n:add(v,v+64,1+(v*71)%a.max_weight)
     offsets=[0]
     for row in adj:offsets.append(offsets[-1]+len(row))
     graph=out/(shape+'.wsg')
@@ -46,6 +47,9 @@ for shape,n in [('empty',16),('path',1025),('disconnected',2051),('mesh',4096)]:
                 d=dict(kv.split('=') for kv in c.split())
                 assert int(d['queue_pushes'])==int(d['queue_pops'])
                 assert int(d['expansions'])+int(d['stale_pops'])==int(d['queue_pops'])
+                if 'chunk_published_items' in d:
+                    assert int(d['chunk_published_items'])==int(d['chunk_taken_items'])
+                    assert int(d['chunk_publications'])==int(d['chunk_takes'])
         (out/(binary+'-'+shape+'.command.json')).write_text(json.dumps(cmd)+'\n')
         print('PASS',binary,shape,'4 serial + 4 certificates',flush=True)
 print('GATE COMPLETE',out,flush=True)

@@ -789,3 +789,53 @@ Separately investigate partial chunk publication and road-specific distance
 bands at fixed 16×7, then combine only promising choices with the selected
 layout. This distinguishes a placement gain from a queue algorithm gain.
 Campaign: `/work/hdd/mzu/rao1/acic-road-opt-20260925`.
+
+
+The first layout launch, **22400947**, stopped after 19 correct solves because
+the harness incorrectly expected plural `processes` for the single-process
+case. All raw outputs were revalidated with the corrected parser; timings
+are excluded from selection. Replacement **22401042** reruns the entire
+protocol on one node. The pilot rejection is archived in the campaign.
+
+### Road queue ablation and combined confirmation
+
+Commit `551571d` adds compile-time `ACIC_CHUNK_PARTIAL`. An unsuccessful
+worker requests work using a per-producer atomic flag. Only the owner reads
+its private queue and services the request at the next pop: publish up to
+half the earliest band's items, capped at 32, provided admission allows
+them and its published bin is empty. Donation uses the existing bin mutex;
+peers never touch private storage. The owner retains work, and a singleton
+remains private. Original histogram charges and admission checks are intact.
+This is a bounded hypothesis test, not a generally enabled queue policy.
+
+The work build additionally measures publication/take counts and items,
+partial donations, peer-transferred items, requests/services, failed scans,
+and private items/bands sampled every 1024 pop calls. These counters compile
+out of production, including the extra reduction fields. They distinguish
+fragmentation and sharing from a simple change in queue-call time.
+
+`benchmarks/delta-road-queue-protocol.json` freezes six 16×7 arms: heap/slice8,
+heap/slice64, and the 2×2 of full-only/requested-partial chunks with native
+bands 256/65536, all chunk arms at slice64. Road admission width stays
+131072. Add a duplicate heap/slice8 training control. Two training sources,
+warmup plus three repeats, randomized. A candidate must improve both source
+medians ≥5%, beat both baseline/control geometric means by ≥5%, and use
+≤1.25× edge work per source; otherwise retain heap/slice8. No held-out
+source participates in the choice. Wider bands may increase FIFO disorder;
+partial sharing may lose to atomic/mutex overhead. Neither is assumed to win.
+
+Before timing, every new production/cost binary passes empty/path/disconnected/
+mesh graphs with four sources including reset, serial verification and
+Bellman certificates, using road-scale weights. Existing queue admission,
+overflow and 8-thread exactly-once tests pass, as do ASan/UBSan and TSan.
+Large runs check the full independent reference and actual CPU bindings.
+Cost builds require publication/take conservation in addition to the usual
+queue/edge ledger. Instrumented timings never substitute for production.
+
+After selection, the second allocation repeats baseline, queue-only,
+layout-only, combined, duplicate baseline and Wasp on four test sources,
+warmup plus three repeats. Layout was chosen only from the first allocation's
+training sources. This both checks transfer and repeats the layout result
+on another node allocation. Diagnose all six queue arms on the two training
+sources and the combined profile if its layout differs. Runs remain
+sequential on one exclusive `cpu-interactive` node with `+old-scheduler`.

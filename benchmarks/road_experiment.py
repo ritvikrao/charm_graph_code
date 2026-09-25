@@ -41,6 +41,12 @@ def validate(reference, row):
     assert f'Starting Reconverse with {ranks} {process_word}, {ranks*ppn} PEs' in t
     assert 'Using the original scheduler (+old-scheduler)' in t
     assert 'Process sharing: on' in t
+    if row.get('partial'):
+        assert 'Process partial chunks: requested, owner-serviced' in t
+    elif row.get('band'):
+        assert 'Process partial chunks:' not in t
+    if row.get('band'):
+        assert f'Process queue storage: private-chunks64 band{row["band"]}' in t
     maps = core_maps(layout)
     # Runtime prints this only after successful affinity binding.
     pins = [(int(pe), int(rank), int(cpu)) for pe,rank,cpu in
@@ -53,6 +59,10 @@ def validate(reference, row):
     result['scan_factor'] = result['edge_attempts']/57708624
     if row.get('work_cost'):
         c = check_work_accounting(t, 23947347)
+        if 'chunk_published_items' in c:
+            assert c['chunk_published_items']==c['chunk_taken_items']
+            assert c['chunk_publications']==c['chunk_takes']
+            assert c['chunk_peer_taken_items']<=c['chunk_taken_items']
         result['counters'] = c
         result['comm'] = fields(t, 'COMM_SHARE')
         clock = fields(t, 'WORK_CLOCK')

@@ -1,0 +1,149 @@
+{
+  "recorded": "2026-09-25",
+  "order_seed": 20260928,
+  "graph": "road-usa-z",
+  "candidates": [
+    {
+      "label": "heap8",
+      "binary": "acic_base",
+      "cost_binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "8"
+      ],
+      "band": 0,
+      "partial": false
+    },
+    {
+      "label": "heap64",
+      "binary": "acic_base",
+      "cost_binary": "acic_base_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 0,
+      "partial": false
+    },
+    {
+      "label": "full256",
+      "binary": "acic_chunks_256",
+      "cost_binary": "acic_full_256_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 256,
+      "partial": false
+    },
+    {
+      "label": "partial256",
+      "binary": "acic_partial_256",
+      "cost_binary": "acic_partial_256_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 256,
+      "partial": true
+    },
+    {
+      "label": "full65536",
+      "binary": "acic_full_65536",
+      "cost_binary": "acic_full_65536_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 65536,
+      "partial": false
+    },
+    {
+      "label": "partial65536",
+      "binary": "acic_partial_65536",
+      "cost_binary": "acic_partial_65536_cost",
+      "layout": {
+        "label": "16x7-span128",
+        "ranks": 16,
+        "ppn": 7,
+        "span": 128,
+        "workers": 112
+      },
+      "flags": [
+        "--heap-slice",
+        "64"
+      ],
+      "band": 65536,
+      "partial": true
+    }
+  ],
+  "common_flags": [
+    "--process-share",
+    "auto",
+    "--reader-tile",
+    "auto",
+    "--slack-control",
+    "off",
+    "--process-queue",
+    "nearest",
+    "--process-queue-batch",
+    "8",
+    "--hub-hints",
+    "auto",
+    "+old-scheduler",
+    "--bucket-width",
+    "131072"
+  ],
+  "wasp": {
+    "threads": 64,
+    "delta": 32768
+  },
+  "layout_summary": "/work/hdd/mzu/rao1/acic-road-opt-20260925/logs/layout-22401042/summary.json",
+  "training": "All six candidates and duplicate original control, fixed 16x7. Two training sources; warmup plus three randomized repetitions. No test source used to select.",
+  "selection": "Candidate must improve both source medians at least 5%, beat both baseline and duplicate control geometric means by 5%, and use <=1.25x edge work on each training source. Select fastest eligible by geomean of source medians; fall back to original heap8.",
+  "heldout": "Freeze queue and prior training-selected layout. Randomized base/queue/layout/combined/control/Wasp, four test sources, warmup plus three measured repetitions. This repeats layout comparison in a second allocation.",
+  "work": "All six candidates on both training sources plus selected combined if layout differs; diagnostic time is not production timing. Verify publication/take and normal work ledgers.",
+  "predictions": [
+    "Broader band65536 may fill more 64-entry chunks with road weights up to368855, at risk of extra relaxations from FIFO disorder.",
+    "At fixed band, owner-serviced partial publication may increase peer transfers and reduce idle/pop-probe cost, at risk of atomic and mutex overhead.",
+    "Heap slice64 is an independent low-overhead alternative to reduce scheduling without changing queue ordering.",
+    "Layout and queue may interact; only the frozen 2x2 confirmation supports combined benefit."
+  ],
+  "correctness": "Unit tests, ASan/UBSan/TSan; full small-graph serial and Bellman-certificate gate with road-scale weights and source reuse; every large solve full independent digest, actual affinity, old scheduler. Abort on first invalid solve.",
+  "scope": "One node at a time in cpu-interactive; queue is compile-time opt-in; no global or distributed default change."
+}
