@@ -1,0 +1,303 @@
+diff --git a/libcusp/include/galois/graphs/BasePolicies.h b/libcusp/include/galois/graphs/BasePolicies.h
+index 22fdf63d1..e3e19ccbb 100644
+--- a/libcusp/include/galois/graphs/BasePolicies.h
++++ b/libcusp/include/galois/graphs/BasePolicies.h
+@@ -87,7 +87,7 @@ public:
+    * @param gid GID of node to get master of
+    * @returns Host ID of host that read the node specified by the GID.
+    */
+-  uint32_t retrieveMaster(uint32_t gid) const {
++  uint32_t retrieveMaster(uint64_t gid) const {
+     for (auto h = 0U; h < _numHosts; ++h) {
+       uint64_t start, end;
+       std::tie(start, end) = _gid2host[h];
+diff --git a/libcusp/include/galois/graphs/GenericPartitioners.h b/libcusp/include/galois/graphs/GenericPartitioners.h
+index 942a2ceb6..526fbf738 100644
+--- a/libcusp/include/galois/graphs/GenericPartitioners.h
++++ b/libcusp/include/galois/graphs/GenericPartitioners.h
+@@ -12,7 +12,7 @@ public:
+   NoCommunication(uint32_t, uint32_t numHosts, uint64_t, uint64_t)
+       : galois::graphs::ReadMasterAssignment(0, numHosts, 0, 0) {}
+ 
+-  uint32_t getEdgeOwner(uint32_t src, uint32_t, uint64_t) const {
++  uint32_t getEdgeOwner(uint64_t src, uint64_t, uint64_t) const {
+     return retrieveMaster(src);
+   }
+ 
+diff --git a/libcusp/include/galois/graphs/NewGeneric.h b/libcusp/include/galois/graphs/NewGeneric.h
+index bfc92d989..38504fdfc 100644
+--- a/libcusp/include/galois/graphs/NewGeneric.h
++++ b/libcusp/include/galois/graphs/NewGeneric.h
+@@ -29,6 +29,7 @@
+ 
+ #include "galois/graphs/DistributedGraph.h"
+ #include "galois/DReducible.h"
++#include <limits>
+ #include <optional>
+ #include <sstream>
+ 
+@@ -55,7 +56,7 @@ class NewDistGraphGeneric : public DistGraph<NodeTy, EdgeTy> {
+   std::vector<galois::DGAccumulator<uint64_t>> hostLoads;
+   std::vector<uint64_t> old_hostLoads;
+ 
+-  uint32_t G2LEdgeCut(uint64_t gid, uint32_t globalOffset) const {
++  uint32_t G2LEdgeCut(uint64_t gid, uint64_t globalOffset) const {
+     assert(base_DistGraph::isLocal(gid));
+     // optimized for edge cuts
+     if (gid >= globalOffset && gid < globalOffset + base_DistGraph::numOwned)
+@@ -193,6 +194,12 @@ public:
+     graphPartitioner = std::make_unique<Partitioner>(
+         host, _numHosts, base_DistGraph::numGlobalNodes,
+         base_DistGraph::numGlobalEdges);
++    // gluon64.patch makes only the edge cut (oec) path 64-bit clean.
++    if (base_DistGraph::numGlobalNodes > std::numeric_limits<uint32_t>::max() &&
++        !graphPartitioner->noCommunication()) {
++      GALOIS_DIE("more than 2^32 nodes: only the oec partition is 64-bit "
++                 "clean in this build");
++    }
+     // TODO abstract this away somehow
+     graphPartitioner->saveGIDToHost(base_DistGraph::gid2host);
+ 
+@@ -1488,7 +1495,7 @@ private:
+           auto ii = bufGraph.edgeBegin(n);
+           auto ee = bufGraph.edgeEnd(n);
+           for (; ii < ee; ++ii) {
+-            uint32_t dst = bufGraph.edgeDestination(*ii);
++            uint64_t dst = bufGraph.edgeDestination(*ii);
+             if (graphPartitioner->retrieveMaster(dst) != myID) {
+               incomingMirrors.set(dst);
+             }
+@@ -1523,14 +1530,14 @@ private:
+ 
+     if (additionalMirrorCount > 0) {
+       // TODO move this part below into separate function
+-      uint32_t totalNumNodes = base_DistGraph::numGlobalNodes;
++      uint64_t totalNumNodes = base_DistGraph::numGlobalNodes;
+       uint32_t activeThreads = galois::getActiveThreads();
+       std::vector<uint64_t> threadPrefixSums(activeThreads);
+       galois::on_each([&](unsigned tid, unsigned nthreads) {
+         size_t beginNode;
+         size_t endNode;
+         std::tie(beginNode, endNode) =
+-            galois::block_range(0u, totalNumNodes, tid, nthreads);
++            galois::block_range(uint64_t{0}, totalNumNodes, tid, nthreads);
+         uint64_t count = 0;
+         for (size_t i = beginNode; i < endNode; i++) {
+           if (incomingMirrors.test(i))
+@@ -1551,7 +1558,7 @@ private:
+         size_t beginNode;
+         size_t endNode;
+         std::tie(beginNode, endNode) =
+-            galois::block_range(0u, totalNumNodes, tid, nthreads);
++            galois::block_range(uint64_t{0}, totalNumNodes, tid, nthreads);
+         // start location to start adding things into prefix sums/vectors
+         uint32_t threadStartLocation = 0;
+         if (tid != 0) {
+@@ -2564,7 +2571,7 @@ private:
+                                         base_DistGraph::numOwned);
+     for (uint32_t i = base_DistGraph::numOwned; i < base_DistGraph::numNodes;
+          i++) {
+-      uint32_t globalID = base_DistGraph::localToGlobalVector[i];
++      uint64_t globalID = base_DistGraph::localToGlobalVector[i];
+       base_DistGraph::mirrorNodes[graphPartitioner->retrieveMaster(globalID)]
+           .push_back(globalID);
+     }
+diff --git a/libgalois/include/galois/graphs/BufferedGraph.h b/libgalois/include/galois/graphs/BufferedGraph.h
+index 714050631..8ed9e461d 100644
+--- a/libgalois/include/galois/graphs/BufferedGraph.h
++++ b/libgalois/include/galois/graphs/BufferedGraph.h
+@@ -26,7 +26,9 @@
+ #ifndef GALOIS_GRAPHS_BUFGRAPH_H
+ #define GALOIS_GRAPHS_BUFGRAPH_H
+ 
++#include <algorithm>
+ #include <fstream>
++#include <vector>
+ 
+ #include <boost/iterator/counting_iterator.hpp>
+ 
+@@ -42,8 +44,8 @@ namespace graphs {
+  * memory buffers for access.
+  *
+  * @tparam EdgeDataType type of the edge data
+- * @todo version 2 Galois binary graph support; currently only suppports
+- * version 1
++ * Reads version 1 (32-bit edge destinations) and version 2 (64-bit) files;
++ * destinations are held as 64-bit global ids either way (gluon64.patch).
+  */
+ template <typename EdgeDataType>
+ class BufferedGraph {
+@@ -52,17 +54,29 @@ private:
+   //! buffer that tells you where a particular node's edges begin
+   uint64_t* outIndexBuffer = nullptr;
+   //! buffer that tells the destination of edges
+-  uint32_t* edgeDestBuffer = nullptr;
++  uint64_t* edgeDestBuffer = nullptr;
+   //! buffer that stores edge data
+   EdgeDataType* edgeDataBuffer = nullptr;
+ 
+   //! size of the entire graph (not just locallly loaded portion)
+-  uint32_t globalSize = 0;
++  uint64_t globalSize = 0;
+   //! number of edges in the entire graph (not just locallly loaded portion)
+   uint64_t globalEdgeSize = 0;
+ 
+   //! number of nodes loaded into this graph
+-  uint32_t numLocalNodes = 0;
++  uint64_t numLocalNodes = 0;
++  //! Galois binary graph version of the file (1 or 2)
++  uint64_t graphVersion = 1;
++  //! bytes per edge destination in the file
++  uint64_t destBytes() const { return graphVersion == 2 ? sizeof(uint64_t) : sizeof(uint32_t); }
++
++  void readVersion(std::ifstream& graphFile) {
++    graphFile.seekg(0);
++    graphFile.read((char*)&graphVersion, sizeof(uint64_t));
++    if (graphVersion != 1 && graphVersion != 2) {
++      GALOIS_DIE("unknown Galois graph version ", graphVersion);
++    }
++  }
+   //! number of edges loaded into this graph
+   uint64_t numLocalEdges = 0;
+ 
+@@ -138,7 +152,7 @@ private:
+     }
+ 
+     assert(edgeDestBuffer == nullptr);
+-    edgeDestBuffer = (uint32_t*)malloc(sizeof(uint32_t) * numEdgesToLoad);
++    edgeDestBuffer = (uint64_t*)malloc(sizeof(uint64_t) * numEdgesToLoad);
+ 
+     if (edgeDestBuffer == nullptr) {
+       GALOIS_DIE("Failed to allocate memory for edge dest buffer.");
+@@ -146,19 +160,38 @@ private:
+ 
+     // position to start of contiguous chunk of edges to read
+     uint64_t readPosition = (4 + numGlobalNodes) * sizeof(uint64_t) +
+-                            (sizeof(uint32_t) * edgeStart);
++                            (destBytes() * edgeStart);
+     graphFile.seekg(readPosition);
+ 
+-    uint64_t numBytesToLoad = numEdgesToLoad * sizeof(uint32_t);
+-    uint64_t bytesRead      = 0;
+-    while (numBytesToLoad > 0) {
+-      graphFile.read(((char*)this->edgeDestBuffer) + bytesRead, numBytesToLoad);
+-      size_t numRead = graphFile.gcount();
+-      numBytesToLoad -= numRead;
+-      bytesRead += numRead;
++    if (graphVersion == 2) {
++      uint64_t numBytesToLoad = numEdgesToLoad * sizeof(uint64_t);
++      uint64_t bytesRead      = 0;
++      while (numBytesToLoad > 0) {
++        graphFile.read(((char*)this->edgeDestBuffer) + bytesRead,
++                       numBytesToLoad);
++        size_t numRead = graphFile.gcount();
++        if (numRead == 0) {
++          GALOIS_DIE("short read of edge destinations");
++        }
++        numBytesToLoad -= numRead;
++        bytesRead += numRead;
++      }
++    } else {
++      // version 1: 32-bit destinations, widened chunk by chunk
++      std::vector<uint32_t> chunk(1 << 22);
++      uint64_t done = 0;
++      while (done < numEdgesToLoad) {
++        uint64_t want = std::min<uint64_t>(chunk.size(), numEdgesToLoad - done);
++        graphFile.read((char*)chunk.data(), want * sizeof(uint32_t));
++        if ((uint64_t)graphFile.gcount() != want * sizeof(uint32_t)) {
++          GALOIS_DIE("short read of edge destinations");
++        }
++        for (uint64_t i = 0; i < want; ++i) {
++          edgeDestBuffer[done + i] = chunk[i];
++        }
++        done += want;
++      }
+     }
+-
+-    assert(numBytesToLoad == 0);
+     // save edge offset of this graph for later use
+     edgeOffset = edgeStart;
+   }
+@@ -197,10 +230,10 @@ private:
+ 
+     // position after nodes + edges
+     uint64_t baseReadPosition = (4 + numGlobalNodes) * sizeof(uint64_t) +
+-                                (sizeof(uint32_t) * numGlobalEdges);
++                                (destBytes() * numGlobalEdges);
+ 
+-    // version 1 padding TODO make version agnostic
+-    if (numGlobalEdges % 2) {
++    // version 1 pads 32-bit destinations to 8 bytes; version 2 needs none
++    if (graphVersion == 1 && numGlobalEdges % 2) {
+       baseReadPosition += sizeof(uint32_t);
+     }
+ 
+@@ -248,6 +281,7 @@ private:
+     edgeOffset     = 0;
+     numLocalNodes  = 0;
+     numLocalEdges  = 0;
++    graphVersion   = 1;
+     resetReadCounters();
+   }
+ 
+@@ -291,14 +325,14 @@ public:
+    * @returns the total number of nodes in the graph (not just local loaded
+    * nodes)
+    */
+-  uint32_t size() const { return globalSize; }
++  uint64_t size() const { return globalSize; }
+ 
+   /**
+    * Gets the number of global edges in the graph
+    * @returns the total number of edges in the graph (not just local loaded
+    * edges)
+    */
+-  uint32_t sizeEdges() const { return globalEdgeSize; }
++  uint64_t sizeEdges() const { return globalEdgeSize; }
+ 
+   //! @returns node offset of this buffered graph
+   uint64_t getNodeOffset() const { return nodeOffset; }
+@@ -317,6 +351,10 @@ public:
+     std::ifstream graphFile(filename.c_str());
+     uint64_t header[4];
+     graphFile.read(((char*)header), sizeof(uint64_t) * 4);
++    graphVersion = header[0];
++    if (graphVersion != 1 && graphVersion != 2) {
++      GALOIS_DIE("unknown Galois graph version ", graphVersion);
++    }
+ 
+     numLocalNodes = globalSize = header[2];
+     numLocalEdges = globalEdgeSize = header[3];
+@@ -353,6 +391,7 @@ public:
+     }
+ 
+     std::ifstream graphFile(filename.c_str());
++    readVersion(graphFile);
+ 
+     globalSize     = numGlobalNodes;
+     globalEdgeSize = numGlobalEdges;
+@@ -445,7 +484,7 @@ public:
+     assert(edgeOffset <= globalEdgeID);
+     assert(globalEdgeID < (edgeOffset + numLocalEdges));
+ 
+-    numBytesReadEdgeDest += sizeof(uint32_t);
++    numBytesReadEdgeDest += destBytes();
+ 
+     uint64_t localEdgeID = globalEdgeID - edgeOffset;
+     return edgeDestBuffer[localEdgeID];
+diff --git a/libgluon/include/galois/graphs/GluonSubstrate.h b/libgluon/include/galois/graphs/GluonSubstrate.h
+index 11a89157e..ef383c5c6 100644
+--- a/libgluon/include/galois/graphs/GluonSubstrate.h
++++ b/libgluon/include/galois/graphs/GluonSubstrate.h
+@@ -446,6 +446,11 @@ public:
+ 
+     // set this global value for use on GPUs mostly
+     enforcedDataMode = _enforcedDataMode;
++    // gidsData sends global ids as 32-bit unsigned ints (gluon64.patch)
++    if (_enforcedDataMode == DataCommMode::gidsData &&
++        userGraph.globalSize() > std::numeric_limits<uint32_t>::max()) {
++      GALOIS_DIE("the gids data mode cannot carry ids past 2^32");
++    }
+ 
+     initBareMPI();
+     // master setup from mirrors done by setupCommunication call
