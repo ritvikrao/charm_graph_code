@@ -80,6 +80,10 @@ def main():
     def kvs_entries(ranks):
         return str(max(100000, 2 * ranks * ranks, int(os.environ.get('PMI_MAX_KVS_ENTRIES', '0') or 0)))
     env.pop('LCT_PMI_BACKEND', None)
+    # One launch reads the graph and solves its sources; the terrain graph
+    # (1.1 TB) needs longer than the default six minutes and 300 s.
+    step_minutes = int(os.environ.get('ACIC_AB_STEP_MINUTES', '6'))
+    solve_timeout = os.environ.get('ACIC_AB_TIMEOUT', '300')
     records = []
     with (out / 'runs.jsonl').open('w', buffering=1) as stream:
         groups = [list(range(args.sources))] if args.batch else [[i] for i in range(args.sources)]
@@ -94,11 +98,11 @@ def main():
                     vn, rpn = variant['nodes'], variant['rpn']
                     command = ['srun', '-N', str(vn), '-n', str(vn * rpn),
                         '--ntasks-per-node', str(rpn), '-c', str(machine.cpus_per_rank(rpn)),
-                        *machine.acic_srun_extra(vn), '--cpu-bind=none', '--unbuffered', '--kill-on-bad-exit=1', '--time=00:06:00',
+                        *machine.acic_srun_extra(vn), '--cpu-bind=none', '--unbuffered', '--kill-on-bad-exit=1', f'--time={step_minutes}',
                         'bash', str(app / 'benchmarks/launch_acic.sh'), str(rpn), str(variant['workers']),
                         str(args.campaign / 'bin' / variant['binary']), '0',
                         str(args.campaign / 'graphs' / f'{graph}.wsg'), '1', sources[0], '4', '0.999', '0.005',
-                        '--result-digest', '--timeout', '300'] + variant.get('flags', [])
+                        '--result-digest', '--timeout', solve_timeout] + variant.get('flags', [])
                     if args.batch:
                         command += ['--sources', ','.join(sources)]
                     with log.open('w') as output:
@@ -106,7 +110,7 @@ def main():
                         subprocess.run(command, env={**env, 'PMI_MAX_KVS_ENTRIES': kvs_entries(vn * rpn),
                                                      **variant.get('env', {})},
                                        stdout=output, stderr=subprocess.STDOUT,
-                                       check=True, timeout=420)
+                                       check=True, timeout=step_minutes * 60 + 60)
                     if args.batch:
                         chunks = re.split(r'^SOURCE_RUN index=\d+ source=(\d+)\n', log.read_text(), flags=re.M)
                         if chunks[1::2] != sources:
