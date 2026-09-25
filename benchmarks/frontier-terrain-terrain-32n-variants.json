@@ -1,0 +1,50 @@
+[
+  {
+    "label": "w64",
+    "binary": "acic_w64m",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 32,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-25 before submission. terrain-ae-z (Copernicus GLO-90 land south of 50N, component containing Central Asia; 8,196,328,992 vertices, 65,560,096,540 edges, 1.11 TB; references certified by ACIC at 16 nodes, job 5546087, 34.6-44.5 s per solve). w64 = acic_w64m (88aa0c3, production runtime, WIRE=compact64), tls64 = acic_tls_w64m (88aa0c3, initial-exec TLS runtime, --hub-hints auto); mesh settings, 8 x 7, four held-out sources, batch launches. Predictions: every solve returns the certified digest; tls64 over w64 1.10-1.30x; w64 strong scaling 16 -> 64 nodes 1.8-3.0x and 8 -> 16 nodes 1.5-2.0x; where Gluon (gluon_sssp64, oec) runs in the same allocation, ACIC's speedup over it is 30-150x."
+  },
+  {
+    "label": "tls64",
+    "binary": "acic_tls_w64m",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--hub-hints",
+      "auto"
+    ],
+    "nodes": 32,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-25 before submission. terrain-ae-z (Copernicus GLO-90 land south of 50N, component containing Central Asia; 8,196,328,992 vertices, 65,560,096,540 edges, 1.11 TB; references certified by ACIC at 16 nodes, job 5546087, 34.6-44.5 s per solve). w64 = acic_w64m (88aa0c3, production runtime, WIRE=compact64), tls64 = acic_tls_w64m (88aa0c3, initial-exec TLS runtime, --hub-hints auto); mesh settings, 8 x 7, four held-out sources, batch launches. Predictions: every solve returns the certified digest; tls64 over w64 1.10-1.30x; w64 strong scaling 16 -> 64 nodes 1.8-3.0x and 8 -> 16 nodes 1.5-2.0x; where Gluon (gluon_sssp64, oec) runs in the same allocation, ACIC's speedup over it is 30-150x."
+  }
+]

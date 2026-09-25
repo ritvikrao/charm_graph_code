@@ -1276,42 +1276,52 @@ class Campaign:
             tune = [x for x in refs if x['role'] == 'tune']
             test = [x for x in refs if x['role'] == 'test'][:self.args.sources]
             arms = self.external_candidates(graph)
-            # One discarded warmup per system, so a cold page cache is not
-            # charged to whichever candidate happens to run first.
-            for engine in sorted({c['engine'] for layouts, _ in arms.values() for c in layouts}):
-                c = next(c for layouts, _ in arms.values() for c in layouts if c['engine'] == engine)
-                self.run(graph, int(tune[0]['source']), c, tune[0], 'external-warmup')
             samples = defaultdict(list)
+            if self.args.external_no_search:
+                # Pinned: each arm's first layout candidate (its pinned
+                # settings) goes straight to the held-out sources, with no
+                # warmup or search. For graphs whose baseline solves take tens
+                # of minutes (terrain-ae-z), where the settings come from a
+                # separate pilot.
+                selected = {arm: layouts[0] for arm, (layouts, _) in arms.items()}
+                record = {arm: dict(layout=c['name'], reason='pinned (--external-no-search)')
+                          for arm, c in selected.items()}
+            else:
+                # One discarded warmup per system, so a cold page cache is not
+                # charged to whichever candidate happens to run first.
+                for engine in sorted({c['engine'] for layouts, _ in arms.values() for c in layouts}):
+                    c = next(c for layouts, _ in arms.values() for c in layouts if c['engine'] == engine)
+                    self.run(graph, int(tune[0]['source']), c, tune[0], 'external-warmup')
 
-            def measure(candidates, rows, stage):
-                # A candidate already run on a row (the chosen layout's default
-                # parameters) is not run on it again.
-                order = [(row, c) for row in rows for c in candidates
-                         if int(row['source']) not in {r['source'] for r in samples[c['name']]}]
-                rng.shuffle(order)
-                for row, c in order:
-                    samples[c['name']].append(self.run(graph, int(row['source']), c, row, 'external-'+stage))
+                def measure(candidates, rows, stage):
+                    # A candidate already run on a row (the chosen layout's default
+                    # parameters) is not run on it again.
+                    order = [(row, c) for row in rows for c in candidates
+                             if int(row['source']) not in {r['source'] for r in samples[c['name']]}]
+                    rng.shuffle(order)
+                    for row, c in order:
+                        samples[c['name']].append(self.run(graph, int(row['source']), c, row, 'external-'+stage))
 
-            layout_candidates = [c for layouts, _ in arms.values() for c in layouts]
-            measure(layout_candidates, tune[:1], 'layout')
-            selected, record = {}, {}
-            for arm, (layouts, grid) in arms.items():
-                valid = [c for c in layouts if all(r['valid'] for r in samples[c['name']])]
-                if not valid:
-                    record[arm] = dict(selected=None, reason='no valid layout')
-                    continue
-                layout = min(valid, key=lambda c: geomean(samples[c['name']]))
-                selected[arm] = layout
-                record[arm] = dict(layout=layout['name'])
-            parameter_candidates = {arm: arms[arm][1](selected[arm]) for arm in selected if arms[arm][1]}
-            measure([c for cs in parameter_candidates.values() for c in cs], tune, 'parameters')
-            for arm, candidates in parameter_candidates.items():
-                valid = [c for c in candidates if all(r['valid'] for r in samples[c['name']])]
-                if valid:
-                    selected[arm] = min(valid, key=lambda c: geomean(samples[c['name']]))
-                else:
-                    record[arm] = dict(record[arm], reason='no valid parameters at the chosen layout')
-                    del selected[arm]
+                layout_candidates = [c for layouts, _ in arms.values() for c in layouts]
+                measure(layout_candidates, tune[:1], 'layout')
+                selected, record = {}, {}
+                for arm, (layouts, grid) in arms.items():
+                    valid = [c for c in layouts if all(r['valid'] for r in samples[c['name']])]
+                    if not valid:
+                        record[arm] = dict(selected=None, reason='no valid layout')
+                        continue
+                    layout = min(valid, key=lambda c: geomean(samples[c['name']]))
+                    selected[arm] = layout
+                    record[arm] = dict(layout=layout['name'])
+                parameter_candidates = {arm: arms[arm][1](selected[arm]) for arm in selected if arms[arm][1]}
+                measure([c for cs in parameter_candidates.values() for c in cs], tune, 'parameters')
+                for arm, candidates in parameter_candidates.items():
+                    valid = [c for c in candidates if all(r['valid'] for r in samples[c['name']])]
+                    if valid:
+                        selected[arm] = min(valid, key=lambda c: geomean(samples[c['name']]))
+                    else:
+                        record[arm] = dict(record[arm], reason='no valid parameters at the chosen layout')
+                        del selected[arm]
             test_arms = [dict(c, name=arm, chosen=c['name']) for arm, c in selected.items()]
             if 'adaptive' in selected:
                 test_arms.append(dict(selected['adaptive'], name='control', chosen=selected['adaptive']['name']))
@@ -1498,6 +1508,8 @@ if __name__ == '__main__':
     # chose the smallest offered (d16) on every RMAT graph and mesh26, so the
     # fair-baseline re-take extends the grid downward.
     parser.add_argument('--delta-divisors', default='64,16,4,1')
+    parser.add_argument('--external-no-search', action='store_true',
+                        help='external mode: run each arm\'s pinned settings (first layout candidate) on the held-out sources with no warmup or search')
     parser.add_argument('--gluon-binary', default='gluon_sssp',
                         help='gluon_sssp64 (benchmarks/gluon64.patch) for graphs past 2^32 vertices; oec only')
     parser.add_argument('--riken-tolerance', type=float, default=0.0,
