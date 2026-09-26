@@ -1615,10 +1615,91 @@ final size command addressed a trace prefix as a directory after the four
 valid solves and Projections report completed. The script's size command is
 corrected; no measurement was repeated for this bookkeeping error.
 
+### 22. Delta one-node road gap to Wasp: size, topology and scheduling (2026-09-25)
+
+**Answer.** Small inputs likely magnify ACIC's fixed costs, but size does
+not by itself explain why `road-usa-z` fares worse than other inputs. On the
+same 128-core Delta node, original ACIC is far behind Wasp on both the
+57.7M-edge road and the comparably sized 67.1M-edge `mesh24-z`. The road has
+an additional disadvantage: it needs many more controller rounds and leaves
+more PEs idle despite fewer edge attempts. The larger OSM roads approach Wasp
+at 16–64 Frontier nodes (§ Results by dataset), and the >1B-edge RMAT25 and
+optimized mesh28 one-node studies have smaller gaps (§§17, 20). Those are
+different graphs and profiles, so they support an amortization hypothesis but
+do not isolate input size as a cause.
+
+Job **22411020** completed on one exclusive Delta `cpu-interactive` node
+(cn107): 120/120 digest-checked solves. ACIC used the frozen original heap
+binary (revision `87f04af`), 16 processes × 7 workers and `+old-scheduler`.
+Wasp ran on the same node with settings selected on separate training sources;
+each held-out source had a warmup and three timed repetitions. The road's
+64-thread/Δ32768 Wasp setting was frozen from the earlier road study; the
+weight-scaled road and mesh used bounded local screens. ACIC/Wasp speedup is
+Wasp time divided by ACIC time:
+
+| Graph | Stored edges | ACIC / Wasp speedup | ACIC medians (s) | Wasp medians (s) | ACIC rounds |
+|---|---:|---:|---|---|---|
+| `road-usa-z` | 57.7M | 0.202× | 0.519 / 0.444 | 0.101 / 0.093 | 807 / 614 |
+| `road-usa-w4-z` | 57.7M | 0.204× | 0.521 / 0.449 | 0.106 / 0.092 | 809 / 594 |
+| `mesh24-z` | 67.1M | 0.257× | 0.340 / 0.343 | 0.082 / 0.095 | 290 / 286 |
+
+These are original-heap comparisons used to hold the ACIC implementation
+fixed across graphs. The separately accepted one-node road full-chunk profile
+raises its Wasp speedup only to **0.232–0.263×** (§19).
+
+The `w4` graph divides every road weight by four, retaining topology; ACIC's
+width was scaled 131072→32768 and Wasp's Δ 32768→8192. The unchanged ratio
+rules out native weight magnitude with proportionally scaled buckets as the
+main explanation. `mesh24-z` shows that a graph of this size can also have a
+roughly fourfold one-node ACIC gap, while road is slower still. ACIC makes
+about 90–96M road edge attempts versus 100–103M on mesh, so extra road edge
+work does not explain its longer time.
+
+Job **22411141** (cn036) completed 64/64 digest-checked solves with the Wasp
+artifact's full, no-option, pull-only and leaves-only SSSP paths. Road has
+19.9% degree-one vertices (mean degree 2.41); mesh has none (degree 4).
+Relative to no-option, pull-only speeds Wasp up **1.52×** on road and **1.71×**
+on mesh, while leaves-only yields **0.96×** and **0.91×**. Full/no-option is
+**1.36×** on road and **1.50×** on mesh. Wasp's low-degree pull path matters
+on both sparse inputs; leaf pruning alone does not account for the
+road-specific gap. These are standalone single-feature variants, not direct
+ablations of the full Wasp path, so their ratios cannot be used to partition
+the full gap. Even no-option Wasp is around 0.13–0.15 s on road in this screen,
+well below original ACIC's 0.44–0.52 s in the separate comparison.
+
+Job **22411198** (cn107) completed 8/8 digest-checked solves and 112-PE
+Projections logs for each graph. It used one baseline ACIC build and layout,
+with traced and plain controls on road source 8718204 and mesh source 4910385.
+Road has **30.2% idle PE time** versus mesh's **11.0%**, and **5.35M**
+`process_heap` callbacks versus **4.35M**. `current_thresholds` has 90,272
+callbacks versus 30,800, but only 1.2% versus 1.0% of PE time. Road's
+same-process heap send-to-execute p90 is **0.297 ms**, shorter than mesh's
+**0.751 ms**. The traced solve is 1.011× its plain-control mean on road and
+1.060× on mesh. Idle appears throughout the road solve, not only at the end.
+
+Together, the measurements are consistent with road's narrow frontier
+offering less ready parallel work while ACIC repeatedly coordinates global
+priority progress. Wasp uses local frontiers, stealing and a low-degree pull
+path; their individual contributions to the remaining ACIC/Wasp gap are not
+isolated. The trace does not show a slower individual heap callback wait on
+road, and direct threshold computation is a small PE-time
+share; the coordination cadence and work availability are the better-supported
+limits. This is an inference from matched observations, not an ablation of
+ACIC's controller. Projections PE-time shares are not causal wall-time shares.
+No solver default changes follow from this diagnostic study.
+
+Campaign report and raw records:
+`/work/hdd/mzu/rao1/acic-road-gap-20260925/report.md` and its `probe-22411020/`,
+`features-22411141/`, `traces/baseline-22411198/` subdirectories. Compact
+archive: `design/onenode-data/delta-road-gap-20260925.json`. Reproduce the
+192-solve audit with `benchmarks/road_gap_report.py`; the three recorded
+protocols and Slurm scripts are under `benchmarks/` and `scripts/delta/`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta one-node road gap attribution | `design/onenode-data/delta-road-gap-20260925.json`; `benchmarks/road_gap_report.py`; gap, feature and trace protocols / jobs 22411020, 22411141, 22411198 |
 | Delta selected road Projections trace | `design/onenode-data/delta-road-projections-22410269.json`; `scripts/delta/road_projections.sbatch` |
 | Delta RMAT25 / Wasp, one node | `design/onenode-data/delta-rmat25-wasp-22401925.json`; `benchmarks/delta-rmat25-wasp-protocol.json` |
 | Delta road layout / queue ablation | `design/onenode-data/delta-road-layout-22401042.json` and `delta-road-queue-22401233.json`; completed time-focused confirmation `delta-road-time-22401351.json` |

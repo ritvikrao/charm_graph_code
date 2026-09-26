@@ -1,0 +1,210 @@
+{
+  "jobs": {
+    "gap": "22411020",
+    "features": "22411141",
+    "trace": "22411198"
+  },
+  "validated_solves": 192,
+  "graphs": {
+    "road-usa-z": {
+      "vertices": 23947347,
+      "edges": 57708624,
+      "wasp_selection": {
+        "threads": 64,
+        "delta": 32768
+      },
+      "acic_speedup_over_wasp": 0.20249027789762822,
+      "sources": {
+        "8718204": {
+          "acic_seconds": 0.518747,
+          "wasp_seconds": 0.101496109,
+          "speedup_over_wasp": 0.1956562813857237,
+          "acic_rounds": 807,
+          "acic_edge_attempts": 93875980
+        },
+        "22613654": {
+          "acic_seconds": 0.444255,
+          "wasp_seconds": 0.0930994,
+          "speedup_over_wasp": 0.20956297621861317,
+          "acic_rounds": 614,
+          "acic_edge_attempts": 90186668
+        }
+      },
+      "average_degree": 2.4098128281182882,
+      "leaf_fraction": 0.19885313391917694,
+      "wasp_feature_speedups": {
+        "full_over_noopt": 1.3612310642184184,
+        "pull_over_noopt": 1.5173797389726376,
+        "leaves_over_noopt": 0.9641313632186822
+      },
+      "wasp_feature_medians": {
+        "8718204": {
+          "full": 0.106615009,
+          "noopt": 0.145554152,
+          "pull": 0.094777597,
+          "leaves": 0.149569114
+        },
+        "22613654": {
+          "full": 0.095741944,
+          "noopt": 0.129945036,
+          "pull": 0.086674239,
+          "leaves": 0.136041042
+        }
+      },
+      "trace": {
+        "source": "8718204",
+        "runs": [
+          {
+            "label": "warmup",
+            "seconds": 0.414063,
+            "rounds": 810,
+            "edge_attempts": 93926322
+          },
+          {
+            "label": "plain-before",
+            "seconds": 0.533395,
+            "rounds": 804,
+            "edge_attempts": 93181471
+          },
+          {
+            "label": "traced",
+            "seconds": 0.537242,
+            "rounds": 807,
+            "edge_attempts": 93849989
+          },
+          {
+            "label": "plain-after",
+            "seconds": 0.529476,
+            "rounds": 801,
+            "edge_attempts": 93984578
+          }
+        ],
+        "pe_window_s": 0.5395096875,
+        "plain_mean_s": 0.5314355,
+        "overhead_ratio": 1.0109260672273495,
+        "trace_log_count": 112,
+        "trace_log_bytes": 163683430,
+        "idle_share": 0.30168169395210614,
+        "heap_entry_share": 0.5746703707574429,
+        "heap_entry_calls": 5348808,
+        "threshold_share": 0.011995911962722105,
+        "threshold_calls": 90272,
+        "untraced_share": 0.08827830362174914,
+        "heap_send_to_execute_p90_ms": 0.297
+      }
+    },
+    "road-usa-w4-z": {
+      "vertices": 23947347,
+      "edges": 57708624,
+      "wasp_selection": {
+        "threads": 64,
+        "delta": 8192
+      },
+      "acic_speedup_over_wasp": 0.20421542994956746,
+      "sources": {
+        "8718204": {
+          "acic_seconds": 0.52067,
+          "wasp_seconds": 0.106204298,
+          "speedup_over_wasp": 0.2039762191023105,
+          "acic_rounds": 809,
+          "acic_edge_attempts": 96159875
+        },
+        "22613654": {
+          "acic_seconds": 0.448893,
+          "wasp_seconds": 0.091778383,
+          "speedup_over_wasp": 0.2044549213286908,
+          "acic_rounds": 594,
+          "acic_edge_attempts": 92122098
+        }
+      }
+    },
+    "mesh24-z": {
+      "vertices": 16777216,
+      "edges": 67092480,
+      "wasp_selection": {
+        "threads": 128,
+        "delta": 4096
+      },
+      "acic_speedup_over_wasp": 0.2572894945365403,
+      "sources": {
+        "4910385": {
+          "acic_seconds": 0.339985,
+          "wasp_seconds": 0.08160783,
+          "speedup_over_wasp": 0.24003361913025578,
+          "acic_rounds": 290,
+          "acic_edge_attempts": 99837484
+        },
+        "11959333": {
+          "acic_seconds": 0.343371,
+          "wasp_seconds": 0.094696875,
+          "speedup_over_wasp": 0.2757858846553728,
+          "acic_rounds": 286,
+          "acic_edge_attempts": 103477407
+        }
+      },
+      "average_degree": 3.9990234375,
+      "leaf_fraction": 0.0,
+      "wasp_feature_speedups": {
+        "full_over_noopt": 1.5031349439673733,
+        "pull_over_noopt": 1.7079298491521069,
+        "leaves_over_noopt": 0.907003711536116
+      },
+      "wasp_feature_medians": {
+        "4910385": {
+          "full": 0.085214882,
+          "noopt": 0.131578657,
+          "pull": 0.073136495,
+          "leaves": 0.148954646
+        },
+        "11959333": {
+          "full": 0.099943667,
+          "noopt": 0.146245065,
+          "pull": 0.090197078,
+          "leaves": 0.157034287
+        }
+      },
+      "trace": {
+        "source": "4910385",
+        "runs": [
+          {
+            "label": "warmup",
+            "seconds": 0.329531,
+            "rounds": 193,
+            "edge_attempts": 108663580
+          },
+          {
+            "label": "plain-before",
+            "seconds": 0.353142,
+            "rounds": 297,
+            "edge_attempts": 102889528
+          },
+          {
+            "label": "traced",
+            "seconds": 0.366895,
+            "rounds": 276,
+            "edge_attempts": 101209515
+          },
+          {
+            "label": "plain-after",
+            "seconds": 0.339267,
+            "rounds": 288,
+            "edge_attempts": 101494631
+          }
+        ],
+        "pe_window_s": 0.36812040178571426,
+        "plain_mean_s": 0.3462045,
+        "overhead_ratio": 1.0597638101180082,
+        "trace_log_count": 112,
+        "trace_log_bytes": 112398808,
+        "idle_share": 0.10972737107921673,
+        "heap_entry_share": 0.7711270223239509,
+        "heap_entry_calls": 4348131,
+        "threshold_share": 0.010091467307922958,
+        "threshold_calls": 30800,
+        "untraced_share": 0.08870050159491441,
+        "heap_send_to_execute_p90_ms": 0.751
+      }
+    }
+  },
+  "scope": "One-node attribution. The Wasp feature modes are standalone single-feature variants; Projections PE-time shares are not causal wall-time fractions."
+}
