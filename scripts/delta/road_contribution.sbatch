@@ -42,7 +42,7 @@ fi
 grep -q "^revision=$REV kind=production " "$ROOT/bin/acic_contrib_immediate.manifest"
 grep -q "^revision=$REV kind=production " "$ROOT/bin/acic_contrib_post_work.manifest"
 grep -q '^compiler=.* flags= wire=' "$ROOT/bin/acic_contrib_immediate.manifest"
-grep -q ' flags=-DACIC_POST_WORK_CONTRIBUTION wire=' "$ROOT/bin/acic_contrib_post_work.manifest"
+grep -q ' flags= -DACIC_POST_WORK_CONTRIBUTION wire=' "$ROOT/bin/acic_contrib_post_work.manifest"
 
 BUILD=$(sed -n 's/.* build=//p' "$ROOT/bin/acic_contrib_post_work.manifest")
 export SLURM_MPI_TYPE=cray_shasta PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
