@@ -1,0 +1,42 @@
+{
+  "purpose": "Distinguish small-input amortization from road structure and weight magnitude in the one-node ACIC/Wasp gap.",
+  "recorded_before_job": "2026-09-25",
+  "predictions": [
+    "If input size alone explains the road gap, mesh24-z (67.1M edges) should have a similar ACIC/Wasp ratio to road-usa-z (57.7M edges) at one node.",
+    "If native weight magnitude alone explains the road gap, dividing road weights by four while scaling both engines' bucket widths should greatly improve the ACIC/Wasp ratio.",
+    "A road-specific latency/work-availability limit predicts more controller rounds and a larger Wasp gap than on the similarly sized mesh, even if the weight-scaled road retains its gap."
+  ],
+  "machine": "One exclusive Delta cpu-interactive node, ACIC 16 processes x 7 workers, Wasp independently tuned on two training sources.",
+  "campaign": "/work/hdd/mzu/rao1/acic-road-gap-20260925",
+  "graphs_root": "/work/hdd/mzu/rao1/acic-ipdps27-onenode-20260919/graphs",
+  "binaries_root": "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin",
+  "acic_binary": "acic_base",
+  "wasp_binary": "wasp_sssp",
+  "graphs": [
+    {
+      "name": "road-usa-z",
+      "bucket_width": 131072,
+      "wasp_selected": {"threads": 64, "delta": 32768},
+      "selection": "Frozen from the completed Delta road study; no new search."
+    },
+    {
+      "name": "road-usa-w4-z",
+      "bucket_width": 32768,
+      "wasp_threads": [32, 64, 128],
+      "wasp_deltas": [2048, 8192, 32768]
+    },
+    {
+      "name": "mesh24-z",
+      "bucket_width": null,
+      "wasp_threads": [32, 64, 128],
+      "wasp_deltas": [1024, 4096, 16384]
+    }
+  ],
+  "training_sources": 2,
+  "test_sources": 2,
+  "wasp_training_repetitions": 2,
+  "test_warmups": 1,
+  "test_repetitions": 3,
+  "correctness": "Every solve must match its graph's independent full-graph digest. ACIC process count, scheduler and profile must be checked from each log.",
+  "scope": "A bounded attribution screen, not an optimization acceptance or a global Wasp tuning claim."
+}
