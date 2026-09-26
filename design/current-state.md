@@ -1575,10 +1575,51 @@ and `report.md`: `logs/compare-22401925/`. Compact archive:
 with `benchmarks/rmat_wasp_report.py`; protocol:
 `benchmarks/delta-rmat25-wasp-protocol.json`.
 
+### 21. Delta road selected profile: one-node Projections trace (2026-09-25)
+
+Job **22410269** ran on one exclusive `cpu-interactive` node, **cn050**, using
+held-out `road-usa-z` source **8718204**. The untraced binary is the accepted
+16×7 full-chunk/band-65536/slice-64 road profile. The Projections binary was
+rebuilt from source `551571d` with the same two application defines and htram
+revision; the solver source hashes match the frozen production manifest. All
+four solves (warmup, plain, traced, plain) match the independent full-graph
+digest. The 112 compressed PE logs occupy 67 MB, and no trace buffer flushed.
+The Projections window (0.42461 s) agrees with the traced compute time
+(0.42478 s). Plain controls took 0.42579 and 0.39867 s, so the traced run is
+1.030× their mean, within the control spread.
+
+Across 47.6 PE-seconds in the trace, **idle is 55.3%** and
+`SsspChares::process_heap` is **36.9%** (1.27M calls). `process_heap` includes
+relaxation work as well as queue management; it is not a queue-only fraction.
+Untraced runtime accounts for 4.4%, `current_thresholds` for 1.3%, and the
+two htram receive methods together for 1.3%. Idle remains 45–67% across the
+50 ms bins, rather than appearing only in the last bin. Busy PE time per
+process has a max/median ratio of 1.11. Same-process `process_heap`
+send-to-execute latency has median 0.028 ms and p90 0.140 ms. A separate
+backlog scan finds duplicate pending heap callbacks on all 112 PEs, with a
+maximum of 33 and a median of two already pending when a heap callback runs.
+
+This is a selected-profile attribution on one source and host, not a matched
+comparison to the original heap. It identifies both idle time and heap-entry
+work without proving which change would shorten the critical path. The
+earlier work-cost idle share used different instrumentation; do not compare
+its percentage directly with this Projections share. The accepted road
+profile and rejection of the coalescing prototype remain unchanged.
+
+Artifacts: `/work/hdd/mzu/rao1/acic-road-opt-20260925/traces/road-usa-z-8718204-22410269/`
+contains the trace, `projections.md`, `projections.json`, `heap-backlog.json`,
+all solve logs and `audit.json`; compact audit:
+`design/onenode-data/delta-road-projections-22410269.json`. Reproduce with
+`scripts/delta/road_projections.sbatch`. Slurm reports exit 1 because the
+final size command addressed a trace prefix as a directory after the four
+valid solves and Projections report completed. The script's size command is
+corrected; no measurement was repeated for this bookkeeping error.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta selected road Projections trace | `design/onenode-data/delta-road-projections-22410269.json`; `scripts/delta/road_projections.sbatch` |
 | Delta RMAT25 / Wasp, one node | `design/onenode-data/delta-rmat25-wasp-22401925.json`; `benchmarks/delta-rmat25-wasp-protocol.json` |
 | Delta road layout / queue ablation | `design/onenode-data/delta-road-layout-22401042.json` and `delta-road-queue-22401233.json`; completed time-focused confirmation `delta-road-time-22401351.json` |
 | Delta road/uniform chunk transfer | `design/onenode-data/delta-chunks-road-uniform-22392217.json`; `benchmarks/delta-chunks-road-uniform-protocol.json`; sequential Wasp boundary job 22398569 |

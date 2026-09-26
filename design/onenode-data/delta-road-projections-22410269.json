@@ -1,0 +1,71 @@
+{
+  "job": 22410269,
+  "node": "cn050",
+  "graph": "road-usa-z",
+  "source": 8718204,
+  "layout": "16x7",
+  "profile": "full chunks band65536, batch8, slice64, width131072, +old-scheduler",
+  "runs": [
+    {
+      "label": "warmup",
+      "seconds": 0.330732,
+      "rounds": 1353,
+      "edge_attempts": 167212343,
+      "digest_valid": true
+    },
+    {
+      "label": "plain-before",
+      "seconds": 0.425787,
+      "rounds": 1228,
+      "edge_attempts": 167286057,
+      "digest_valid": true
+    },
+    {
+      "label": "traced",
+      "seconds": 0.424781,
+      "rounds": 1243,
+      "edge_attempts": 167350477,
+      "digest_valid": true
+    },
+    {
+      "label": "plain-after",
+      "seconds": 0.398669,
+      "rounds": 1098,
+      "edge_attempts": 163148600,
+      "digest_valid": true
+    }
+  ],
+  "plain_control_mean_s": 0.41222800000000004,
+  "trace_overhead_ratio": 1.030451594748537,
+  "projections_window_s": 0.42460972321428575,
+  "projections_pe_time": {
+    "idle": 0.5529055053055127,
+    "SsspChares::process_heap": 0.36942079311529125,
+    "untraced": 0.044013001098550816,
+    "SsspChares::current_thresholds": 0.012960893563414925,
+    "HTramRecv::receive": 0.007483195335111198,
+    "HTram::receivePerPE": 0.005753539768420534,
+    "CkReductionMgr::RecvMsg": 0.00274970992795506,
+    "SsspChares::clear_pq_hold": 0.0017698815818029871,
+    "CkArray::recvNoKeepBroadcast": 0.0011463678337054434,
+    "unpack": 0.0005153682197532275,
+    "pack": 0.0004563224014388507,
+    "Main::redn_wrapper_reduce_histogram": 0.00040539328037139313,
+    "dummy_thread_chare::dummy_thread_ep": 0.0002519120026375481,
+    "SsspChares::contribute_histogram": 0.00016630818270954657,
+    "CkArray::recvNoKeepExpeditedBroadcast": 1.8083833244431668e-06
+  },
+  "trace_logs": 112,
+  "trace_log_bytes": 67053622,
+  "binary_sha256": {
+    "acic_full_65536": "8a92b978dbc4ecfdb9e0339863798c0c86b944358900b50a410876690202c18f",
+    "acic_full_65536_prj_22410269": "1ab55ba4767438d2fd90866a800a3b92417f48415115231230beab94c206e712"
+  },
+  "heap_backlog": {
+    "max_pending": 33,
+    "duplicate_pes": 112,
+    "median_pending_at_execution": 2.0,
+    "median_pending_at_threshold": 0.0
+  },
+  "note": "Slurm batch exit 1 was caused by the final du command after all solves, digest checks, and Projections report completed; the script is corrected."
+}
