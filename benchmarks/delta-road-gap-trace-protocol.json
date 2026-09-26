@@ -1,0 +1,17 @@
+{
+  "purpose": "Compare ACIC Projections on road-usa-z and a similar-size mesh with one frozen baseline binary and layout.",
+  "recorded_before_job": "2026-09-25",
+  "prediction": "If road's extra one-node cost is primarily lack of ready work, its idle share should exceed mesh24-z on the matched baseline. If it is coordination, road should instead show more threshold callbacks/rounds and longer callback delays. PE-time shares are not wall-time or causal fractions.",
+  "campaign": "/work/hdd/mzu/rao1/acic-road-gap-20260925",
+  "graphs_root": "/work/hdd/mzu/rao1/acic-ipdps27-onenode-20260919/graphs",
+  "baseline_binary": "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/acic_base",
+  "baseline_revision": "87f04af",
+  "graphs": {
+    "road-usa-z": {"source": "8718204", "bucket_width": 131072},
+    "mesh24-z": {"source": "4910385", "bucket_width": null}
+  },
+  "layout": "16 processes x 7 PEs on one exclusive cpu-interactive node",
+  "launches_per_graph": ["warmup", "plain-before", "traced", "plain-after"],
+  "correctness": "Each solve must pass the independent full-graph digest; tracing must cover solve only and must not flush its buffer.",
+  "scope": "Single-source attribution, not a performance comparison across allocations or a new optimization."
+}
