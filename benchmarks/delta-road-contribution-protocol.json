@@ -1,0 +1,59 @@
+{
+  "recorded": "2026-09-26",
+  "hypothesis": "The ordinary reduction controller snapshots every PE before the hold-release and bounded heap callbacks queued by the new thresholds execute. Moving the contribution behind exactly one normal-priority heap turn should give the controller fresher frontier state, reduce road rounds, and lower road solve time.",
+  "scope": "One exclusive Delta CPU node, 16 processes x 7 workers, 112 workers total, +old-scheduler. Compare separately built immediate and post-work binaries plus a duplicate immediate control. Do not combine contribution placement with heap coalescing, a round delay, or other queue changes.",
+  "common_flags": [
+    "--process-share",
+    "auto",
+    "--reader-tile",
+    "auto",
+    "--slack-control",
+    "off",
+    "--process-queue",
+    "nearest",
+    "--process-queue-batch",
+    "8",
+    "--hub-hints",
+    "auto",
+    "--bucket-width",
+    "131072",
+    "--heap-slice",
+    "8",
+    "+old-scheduler"
+  ],
+  "variants": [
+    {
+      "label": "immediate",
+      "binary": "acic_contrib_immediate"
+    },
+    {
+      "label": "post_work",
+      "binary": "acic_contrib_post_work"
+    },
+    {
+      "label": "control",
+      "binary": "acic_contrib_immediate"
+    }
+  ],
+  "graphs": [
+    {
+      "name": "road-usa-z",
+      "role": "test",
+      "sources": 4,
+      "reps": 5
+    },
+    {
+      "name": "mesh24-z",
+      "role": "test",
+      "sources": 2,
+      "reps": 3
+    }
+  ],
+  "acceptance": {
+    "road_time": "The geometric mean over per-source medians, using the geometric mean of the two immediate copies as the reference, improves by at least 10%, and post-work is faster than each immediate copy on at least three of four road sources.",
+    "road_work": "The geometric mean edge-attempt ratio versus the duplicate-immediate reference is at most 1.10.",
+    "mesh_regression": "The worst per-source post-work slowdown versus the duplicate-immediate reference is no larger than the greater of 5% and the observed immediate/control timing floor.",
+    "decision": "Passing is a screen, not default adoption: rerun in a second allocation before promotion. Any failed gate rejects the mechanism without tuning on these held-out sources."
+  },
+  "prediction": "Post-work contribution reduces controller rounds enough to improve road time by at least 10% without more than 10% additional edge work, while mesh24 remains within the duplicate-control noise floor."
+}

@@ -2002,6 +2002,14 @@ public:
     ckout << (process_share_active() ? "" : " (inactive)") << endl;
     ckout << "Heap slice: " << heap_slice
           << (process_share_active() ? "" : " (inactive)") << endl;
+#ifdef ACIC_POST_WORK_CONTRIBUTION
+    if (control_mode != CONTROL_REDUCTION || round_delay_ms != 0.0)
+      CkAbort("post-work contribution requires --control reduction and --round-delay 0");
+    ckout << "Contribution placement: after one bounded local work turn"
+          << " (experimental build)" << endl;
+#else
+    ckout << "Contribution placement: immediate" << endl;
+#endif
 #ifdef ACIC_COALESCE_HEAP
     ckout << "Heap wakeups: coalesced"
           << (process_share_active() ? "" : " (inactive)") << endl;
@@ -5081,6 +5089,16 @@ public:
                  CkReduction::sum_long, cb);
   }
 
+  // Normal-priority barrier used only by the contribution-placement A/B.
+  // current_thresholds() sends this after clear_pq_hold() and process_heap()
+  // to the same array element. Charm++ preserves that same-sender ordering,
+  // while the existing expedited contribute_histogram entry would be allowed
+  // to jump ahead. Calling the reduction directly here therefore samples the
+  // state after one bounded heap turn without waiting for local quiescence.
+  void contribute_histogram_after_work(int behind_first_nonzero) {
+    contribute_histogram(behind_first_nonzero);
+  }
+
   /**
    * One line per PE, printed only when Main has seen the run stop making
    * progress. Answers where this PE's share of the outstanding work is: still
@@ -5323,11 +5341,15 @@ public:
     // is testable by making the period longer and seeing whether the tail
     // grows with it. Default 0 keeps the closed loop, which is what every
     // measurement so far was taken with.
+#ifdef ACIC_POST_WORK_CONTRIBUTION
+    arr[thisIndex].contribute_histogram_after_work(behind_first_nonzero);
+#else
     if (round_delay_ms > 0.0) {
       pending_first_nonzero = behind_first_nonzero;
       CcdCallFnAfter(delayed_contribute, (void *)this, round_delay_ms);
     } else
       contribute_histogram(behind_first_nonzero);
+#endif
   }
 
   int pending_first_nonzero = 0;

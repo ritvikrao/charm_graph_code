@@ -105,6 +105,7 @@ mainmodule sssp_smp
     entry void pickup_fallback(); // --control node: apply the round this process holds
     entry void process_update(Update new_vertex_and_distance); //receives an updated vertex num and distance, and calls this method on neighbor chares
     entry [expedited] void contribute_histogram(int behind_first_nonzero); //contributes histogram to main pe
+    entry void contribute_histogram_after_work(int behind_first_nonzero); //normal-priority barrier for the contribution-placement experiment
     entry void clear_pq_hold();
     entry void report_progress_state(int tag); // one line per PE, on a stall
     entry void current_thresholds(int _heap_threshold, int _tram_threshold, int _bfs_threshold, int behind_first_nonzero, int phase, int starved, int coarsen, int extend, int buffer_size_now); // broadcast bucket limit
