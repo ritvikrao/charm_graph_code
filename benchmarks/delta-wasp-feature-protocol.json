@@ -1,0 +1,16 @@
+{
+  "purpose": "Attribute the sparse-graph advantage of the Wasp SC25 SSSP artifact using its own no-opt, pull-only and leaves-only implementations.",
+  "recorded_before_job": "2026-09-25",
+  "prediction": "If leaf pruning or bidirectional relaxation explains a material part of the road-specific gap, its single-feature speedup over no-opt should be at least 1.20x on road-usa-z and larger than on mesh24-z. Otherwise the remaining gap is likely in the scheduling/coordination path or a feature interaction.",
+  "scope": "A single-allocation mechanism screen; feature-only modes are not full-binary ablations and do not establish an ACIC optimization.",
+  "graphs_root": "/work/hdd/mzu/rao1/acic-ipdps27-onenode-20260919/graphs",
+  "full_binary": "/work/hdd/mzu/rao1/acic-road-opt-20260925/bin/wasp_sssp",
+  "graphs": {
+    "road-usa-z": {"threads": 64, "delta": 32768, "sources": ["8718204", "22613654"]},
+    "mesh24-z": {"threads": 128, "delta": 4096, "sources": ["4910385", "11959333"]}
+  },
+  "modes": ["full", "noopt", "pull", "leaves"],
+  "warmups_per_cell": 1,
+  "timed_repetitions_per_cell": 3,
+  "correctness": "Every solve must match its graph's independent full-graph digest."
+}
