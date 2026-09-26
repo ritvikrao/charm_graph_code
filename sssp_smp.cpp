@@ -2002,11 +2002,19 @@ public:
     ckout << (process_share_active() ? "" : " (inactive)") << endl;
     ckout << "Heap slice: " << heap_slice
           << (process_share_active() ? "" : " (inactive)") << endl;
+#if defined(ACIC_POST_WORK_CONTRIBUTION) && defined(ACIC_FUSED_POST_WORK_CONTRIBUTION)
+#error "select only one post-work contribution implementation"
+#endif
 #ifdef ACIC_POST_WORK_CONTRIBUTION
     if (control_mode != CONTROL_REDUCTION || round_delay_ms != 0.0)
       CkAbort("post-work contribution requires --control reduction and --round-delay 0");
     ckout << "Contribution placement: after one bounded local work turn"
           << " (experimental build)" << endl;
+#elif defined(ACIC_FUSED_POST_WORK_CONTRIBUTION)
+    if (control_mode != CONTROL_REDUCTION || round_delay_ms != 0.0)
+      CkAbort("fused post-work contribution requires --control reduction and --round-delay 0");
+    ckout << "Contribution placement: after one bounded local work turn"
+          << " (fused experimental build)" << endl;
 #else
     ckout << "Contribution placement: immediate" << endl;
 #endif
@@ -5099,6 +5107,15 @@ public:
     contribute_histogram(behind_first_nonzero);
   }
 
+  // The first implementation above proved that a fresher snapshot reduces
+  // rounds, but paid for a second queued entry on every PE in every round.
+  // Fuse the already-bounded heap turn and contribution to keep the ordering
+  // while restoring the original one-entry dispatch count.
+  void process_heap_then_contribute(int behind_first_nonzero) {
+    process_heap();
+    contribute_histogram(behind_first_nonzero);
+  }
+
   /**
    * One line per PE, printed only when Main has seen the run stop making
    * progress. Answers where this PE's share of the outstanding work is: still
@@ -5293,7 +5310,6 @@ public:
       arr[thisIndex].clear_pq_hold();
     }
 // add user event
-#endif
     // This was `rand() % 5 == 0`. rand() keeps process-global state, shared by
     // every worker thread in an SMP process: a contention point where it is
     // thread-safe at all, and an uncontrolled random factor in every
@@ -5317,6 +5333,7 @@ public:
     }
     //    tram->sanityCheck();
     //    tram->flush_everything();
+#ifndef ACIC_FUSED_POST_WORK_CONTRIBUTION
     {
     ROUND_SCOPE(queue_dispatch);
 #ifdef ACIC_COALESCE_HEAP
@@ -5335,13 +5352,17 @@ public:
       arr[thisIndex].process_heap();
     }
     }
+#endif
+#endif
     // The controller's cadence is normally not a knob: this call closes the
     // loop, so a round costs exactly a reduction plus a broadcast and nothing
     // sets the period. H4 says the tail advances only at that cadence, which
     // is testable by making the period longer and seeing whether the tail
     // grows with it. Default 0 keeps the closed loop, which is what every
     // measurement so far was taken with.
-#ifdef ACIC_POST_WORK_CONTRIBUTION
+#ifdef ACIC_FUSED_POST_WORK_CONTRIBUTION
+    arr[thisIndex].process_heap_then_contribute(behind_first_nonzero);
+#elif defined(ACIC_POST_WORK_CONTRIBUTION)
     arr[thisIndex].contribute_histogram_after_work(behind_first_nonzero);
 #else
     if (round_delay_ms > 0.0) {

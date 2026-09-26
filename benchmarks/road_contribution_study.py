@@ -31,6 +31,8 @@ def main():
     root = args.campaign.resolve()
     app = Path(__file__).resolve().parents[1]
     protocol = json.loads(args.protocol.read_text())
+    candidate = protocol.get("candidate_label", "post_work")
+    thresholds = protocol.get("thresholds", {})
     job = os.environ["SLURM_JOB_ID"]
     protocol_dir = root / "protocol"
     protocol_dir.mkdir(parents=True, exist_ok=True)
@@ -54,11 +56,14 @@ def main():
 
     summaries = {}
     total_solves = 0
-    expected_placement = {
+    placement_lines = {
         "immediate": "Contribution placement: immediate",
         "control": "Contribution placement: immediate",
         "post_work": "Contribution placement: after one bounded local work turn (experimental build)",
+        "fused_post_work": "Contribution placement: after one bounded local work turn (fused experimental build)",
     }
+    labels = [variant["label"] for variant in protocol["variants"]]
+    expected_placement = {label: placement_lines[label] for label in labels}
     for graph in protocol["graphs"]:
         name = graph["name"]
         directory = root / "logs" / f"AB-{name}-1n-{job}"
@@ -71,8 +76,8 @@ def main():
             raise ValueError(f"{name}: wrong variants")
         if manifest_variants["immediate"]["sha256"] != manifest_variants["control"]["sha256"]:
             raise ValueError("duplicate controls do not use the same binary")
-        if manifest_variants["immediate"]["sha256"] == manifest_variants["post_work"]["sha256"]:
-            raise ValueError("post-work and immediate binaries are identical")
+        if manifest_variants["immediate"]["sha256"] == manifest_variants[candidate]["sha256"]:
+            raise ValueError("candidate and immediate binaries are identical")
 
         meta = (root / "graphs" / f"{name}.meta").read_text()
         vertices = int(re.search(r"vertices=(\d+)", meta)[1])
@@ -113,9 +118,9 @@ def main():
                 "source": next(row["source"] for row in rows if row["source_index"] == source_index),
                 "variants": cells,
                 "duplicate_reference": reference,
-                "post_work_speedup": reference["seconds"] / cells["post_work"]["seconds"],
-                "post_work_round_ratio": cells["post_work"]["rounds"] / reference["rounds"],
-                "post_work_work_ratio": cells["post_work"]["edge_attempts"] / reference["edge_attempts"],
+                "candidate_speedup": reference["seconds"] / cells[candidate]["seconds"],
+                "candidate_round_ratio": cells[candidate]["rounds"] / reference["rounds"],
+                "candidate_work_ratio": cells[candidate]["edge_attempts"] / reference["edge_attempts"],
             })
         noise = math.exp(max(abs(math.log(source["variants"]["immediate"]["seconds"] /
                                           source["variants"]["control"]["seconds"]))
@@ -124,30 +129,35 @@ def main():
             "directory": str(directory),
             "binary_sha256": {label: value["sha256"] for label, value in manifest_variants.items()},
             "sources": sources,
-            "geomean_speedup": geometric_mean(source["post_work_speedup"] for source in sources),
-            "geomean_round_ratio": geometric_mean(source["post_work_round_ratio"] for source in sources),
-            "geomean_work_ratio": geometric_mean(source["post_work_work_ratio"] for source in sources),
+            "geomean_speedup": geometric_mean(source["candidate_speedup"] for source in sources),
+            "geomean_round_ratio": geometric_mean(source["candidate_round_ratio"] for source in sources),
+            "geomean_work_ratio": geometric_mean(source["candidate_work_ratio"] for source in sources),
             "duplicate_timing_floor": noise,
         }
 
     road = summaries["road-usa-z"]
     mesh = summaries["mesh24-z"]
     road_faster_than_both = sum(
-        source["variants"]["post_work"]["seconds"] < min(
+        source["variants"][candidate]["seconds"] < min(
             source["variants"]["immediate"]["seconds"],
             source["variants"]["control"]["seconds"])
         for source in road["sources"])
-    mesh_worst_slowdown = max(1.0 / source["post_work_speedup"] for source in mesh["sources"])
+    mesh_worst_slowdown = max(1.0 / source["candidate_speedup"] for source in mesh["sources"])
+    road_speedup_gate = thresholds.get("road_geomean_speedup", 1.10)
+    road_source_gate = thresholds.get("road_faster_than_both_sources", 3)
+    road_work_gate = thresholds.get("road_geomean_work_ratio", 1.10)
+    mesh_floor = thresholds.get("mesh_slowdown_floor", 1.05)
     gates = {
-        "road_geomean_speedup_at_least_1_10": road["geomean_speedup"] >= 1.10,
-        "road_faster_than_both_on_three_sources": road_faster_than_both >= 3,
-        "road_work_growth_at_most_1_10": road["geomean_work_ratio"] <= 1.10,
-        "mesh_within_regression_limit": mesh_worst_slowdown <= max(1.05, mesh["duplicate_timing_floor"]),
+        "road_geomean_speedup": road["geomean_speedup"] >= road_speedup_gate,
+        "road_faster_than_both_sources": road_faster_than_both >= road_source_gate,
+        "road_work_growth": road["geomean_work_ratio"] <= road_work_gate,
+        "mesh_within_regression_limit": mesh_worst_slowdown <= max(mesh_floor, mesh["duplicate_timing_floor"]),
     }
     result = {
         "status": "SCREEN_PASS_CONFIRM" if all(gates.values()) else "REJECT",
         "job": job,
         "host": os.environ.get("SLURM_JOB_NODELIST"),
+        "candidate": candidate,
         "protocol_sha256": hashlib.sha256(frozen_protocol.read_bytes()).hexdigest(),
         "validated_solves": total_solves,
         "gates": gates,

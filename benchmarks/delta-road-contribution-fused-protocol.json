@@ -1,0 +1,66 @@
+{
+  "recorded": "2026-09-26",
+  "candidate_label": "fused_post_work",
+  "hypothesis": "The queued post-work screen reduced road rounds by 12.1% and edge attempts by 1.5% but added one entry per PE per round and did not improve time. Fusing the bounded heap turn and contribution into the existing one-entry dispatch should retain the fresher snapshot without that callback overhead.",
+  "scope": "Exploratory follow-up on designated tuning sources only. One exclusive Delta CPU node, 16 processes x 7 workers, 112 workers total, +old-scheduler. Compare a separately built fused binary with two copies of the immediate baseline. Do not reinterpret the rejected held-out post-work screen or promote from these tuning data.",
+  "common_flags": [
+    "--process-share",
+    "auto",
+    "--reader-tile",
+    "auto",
+    "--slack-control",
+    "off",
+    "--process-queue",
+    "nearest",
+    "--process-queue-batch",
+    "8",
+    "--hub-hints",
+    "auto",
+    "--bucket-width",
+    "131072",
+    "--heap-slice",
+    "8",
+    "+old-scheduler"
+  ],
+  "variants": [
+    {
+      "label": "immediate",
+      "binary": "acic_fused_immediate"
+    },
+    {
+      "label": "fused_post_work",
+      "binary": "acic_fused_post_work"
+    },
+    {
+      "label": "control",
+      "binary": "acic_fused_immediate"
+    }
+  ],
+  "graphs": [
+    {
+      "name": "road-usa-z",
+      "role": "tune",
+      "sources": 2,
+      "reps": 5
+    },
+    {
+      "name": "mesh24-z",
+      "role": "tune",
+      "sources": 2,
+      "reps": 3
+    }
+  ],
+  "thresholds": {
+    "road_geomean_speedup": 1.05,
+    "road_faster_than_both_sources": 2,
+    "road_geomean_work_ratio": 1.10,
+    "mesh_slowdown_floor": 1.05
+  },
+  "acceptance": {
+    "road_time": "At least 5% geometric-mean improvement and faster than both immediate copies on both road tuning sources.",
+    "road_work": "At most 10% geometric-mean edge-attempt growth.",
+    "mesh_regression": "Worst mesh tuning-source slowdown no larger than the greater of 5% and the duplicate-immediate timing floor.",
+    "decision": "A pass authorizes only a fresh independent confirmation. A failure rejects contribution placement; do not tune further on these sources."
+  },
+  "prediction": "Fusion retains roughly the 12% round reduction of queued post-work contribution and converts it into at least a 5% road time improvement."
+}
