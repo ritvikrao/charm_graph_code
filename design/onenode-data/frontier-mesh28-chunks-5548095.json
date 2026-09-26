@@ -1,0 +1,1989 @@
+{
+  "allocations": [
+    {
+      "job": 5548095,
+      "graph": "mesh28-z",
+      "manifest": {
+        "variants": [
+          {
+            "label": "heap",
+            "binary": "acic_heap69",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto"
+            ],
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-25 before submission (Frontier replication of Delta jobs 22379228/22379316; one node, 8 x 7, TLS runtime, all binaries from 69adfc1; four held-out mesh28-z sources, one warmup and three repetitions, duplicate heap control). Delta training: 256-band chunks >2x over the heap at slice 8, slice 64 a further 1.16-1.20x. Frontier profile 5546915 put 57% of CPU in heap push/pop on 8 x 7. Predictions, speedup = heap time / arm time per source: c256_s8 1.5-2.4x; c256_s64 1.8-2.8x and faster than c256_s8 on every source; heap_control within 0.95-1.05x of heap; c256_s64 speedup over Wasp (same allocation, delta 4096) 0.30-0.50x (heap was 0.155x on source 141442404); edge attempts per edge c256_s64 within 1.0-2.0 (heap 1.36); every solve matches the reference digest. Accept for the Frontier mesh profile only if c256_s64 >= 1.20x on all four sources beyond the heap/control spread.",
+            "sha256": "ef604888ab65be1f314d4b9241d86b2a9d4e33eb0dc49873b2454d7abac8b585",
+            "nodes": 1
+          },
+          {
+            "label": "c256_s8",
+            "binary": "acic_c256",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto"
+            ],
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-25 before submission (Frontier replication of Delta jobs 22379228/22379316; one node, 8 x 7, TLS runtime, all binaries from 69adfc1; four held-out mesh28-z sources, one warmup and three repetitions, duplicate heap control). Delta training: 256-band chunks >2x over the heap at slice 8, slice 64 a further 1.16-1.20x. Frontier profile 5546915 put 57% of CPU in heap push/pop on 8 x 7. Predictions, speedup = heap time / arm time per source: c256_s8 1.5-2.4x; c256_s64 1.8-2.8x and faster than c256_s8 on every source; heap_control within 0.95-1.05x of heap; c256_s64 speedup over Wasp (same allocation, delta 4096) 0.30-0.50x (heap was 0.155x on source 141442404); edge attempts per edge c256_s64 within 1.0-2.0 (heap 1.36); every solve matches the reference digest. Accept for the Frontier mesh profile only if c256_s64 >= 1.20x on all four sources beyond the heap/control spread.",
+            "sha256": "e8520b4ab9c8b41b03cc57132e2b33fb3211acf328e29cfffb9fbdd1eeb81185",
+            "nodes": 1
+          },
+          {
+            "label": "c256_s64",
+            "binary": "acic_c256",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "64",
+              "--hub-hints",
+              "auto"
+            ],
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-25 before submission (Frontier replication of Delta jobs 22379228/22379316; one node, 8 x 7, TLS runtime, all binaries from 69adfc1; four held-out mesh28-z sources, one warmup and three repetitions, duplicate heap control). Delta training: 256-band chunks >2x over the heap at slice 8, slice 64 a further 1.16-1.20x. Frontier profile 5546915 put 57% of CPU in heap push/pop on 8 x 7. Predictions, speedup = heap time / arm time per source: c256_s8 1.5-2.4x; c256_s64 1.8-2.8x and faster than c256_s8 on every source; heap_control within 0.95-1.05x of heap; c256_s64 speedup over Wasp (same allocation, delta 4096) 0.30-0.50x (heap was 0.155x on source 141442404); edge attempts per edge c256_s64 within 1.0-2.0 (heap 1.36); every solve matches the reference digest. Accept for the Frontier mesh profile only if c256_s64 >= 1.20x on all four sources beyond the heap/control spread.",
+            "sha256": "e8520b4ab9c8b41b03cc57132e2b33fb3211acf328e29cfffb9fbdd1eeb81185",
+            "nodes": 1
+          },
+          {
+            "label": "heap_control",
+            "binary": "acic_heap69",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto"
+            ],
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-25 before submission (Frontier replication of Delta jobs 22379228/22379316; one node, 8 x 7, TLS runtime, all binaries from 69adfc1; four held-out mesh28-z sources, one warmup and three repetitions, duplicate heap control). Delta training: 256-band chunks >2x over the heap at slice 8, slice 64 a further 1.16-1.20x. Frontier profile 5546915 put 57% of CPU in heap push/pop on 8 x 7. Predictions, speedup = heap time / arm time per source: c256_s8 1.5-2.4x; c256_s64 1.8-2.8x and faster than c256_s8 on every source; heap_control within 0.95-1.05x of heap; c256_s64 speedup over Wasp (same allocation, delta 4096) 0.30-0.50x (heap was 0.155x on source 141442404); edge attempts per edge c256_s64 within 1.0-2.0 (heap 1.36); every solve matches the reference digest. Accept for the Frontier mesh profile only if c256_s64 >= 1.20x on all four sources beyond the heap/control spread.",
+            "sha256": "ef604888ab65be1f314d4b9241d86b2a9d4e33eb0dc49873b2454d7abac8b585",
+            "nodes": 1
+          },
+          {
+            "label": "heap_cost",
+            "binary": "acic_heap69_cost",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "8",
+              "--hub-hints",
+              "auto"
+            ],
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-25 before submission (Frontier replication of Delta jobs 22379228/22379316; one node, 8 x 7, TLS runtime, all binaries from 69adfc1; four held-out mesh28-z sources, one warmup and three repetitions, duplicate heap control). Delta training: 256-band chunks >2x over the heap at slice 8, slice 64 a further 1.16-1.20x. Frontier profile 5546915 put 57% of CPU in heap push/pop on 8 x 7. Predictions, speedup = heap time / arm time per source: c256_s8 1.5-2.4x; c256_s64 1.8-2.8x and faster than c256_s8 on every source; heap_control within 0.95-1.05x of heap; c256_s64 speedup over Wasp (same allocation, delta 4096) 0.30-0.50x (heap was 0.155x on source 141442404); edge attempts per edge c256_s64 within 1.0-2.0 (heap 1.36); every solve matches the reference digest. Accept for the Frontier mesh profile only if c256_s64 >= 1.20x on all four sources beyond the heap/control spread.",
+            "work_cost": true,
+            "sha256": "f1d02f9be5cfc2f96f6e7932a67449a2f1dbf9bd597150b52f9692cffca40dee",
+            "nodes": 1
+          },
+          {
+            "label": "c256_s64_cost",
+            "binary": "acic_c256_cost",
+            "flags": [
+              "--process-share",
+              "auto",
+              "--reader-tile",
+              "auto",
+              "--slack-control",
+              "off",
+              "--process-queue",
+              "nearest",
+              "--process-queue-batch",
+              "8",
+              "+old-scheduler",
+              "--heap-slice",
+              "64",
+              "--hub-hints",
+              "auto"
+            ],
+            "rpn": 8,
+            "workers": 56,
+            "prediction": "Recorded 2026-09-25 before submission (Frontier replication of Delta jobs 22379228/22379316; one node, 8 x 7, TLS runtime, all binaries from 69adfc1; four held-out mesh28-z sources, one warmup and three repetitions, duplicate heap control). Delta training: 256-band chunks >2x over the heap at slice 8, slice 64 a further 1.16-1.20x. Frontier profile 5546915 put 57% of CPU in heap push/pop on 8 x 7. Predictions, speedup = heap time / arm time per source: c256_s8 1.5-2.4x; c256_s64 1.8-2.8x and faster than c256_s8 on every source; heap_control within 0.95-1.05x of heap; c256_s64 speedup over Wasp (same allocation, delta 4096) 0.30-0.50x (heap was 0.155x on source 141442404); edge attempts per edge c256_s64 within 1.0-2.0 (heap 1.36); every solve matches the reference digest. Accept for the Frontier mesh profile only if c256_s64 >= 1.20x on all four sources beyond the heap/control spread.",
+            "work_cost": true,
+            "sha256": "52d6fef64fd72c0229ffea6556537698adde1dca06e1ecd8aacb3c26a755d661",
+            "nodes": 1
+          }
+        ],
+        "nodes": 1,
+        "workers": 56,
+        "rpn": 8,
+        "sources": 4,
+        "reps": 3,
+        "source_role": "test",
+        "batch": true,
+        "hosts": "frontier08094"
+      },
+      "runtime_warnings": {},
+      "summary": {
+        "c256_s64": {
+          "sources": {
+            "141442404": {
+              "seconds": 2.385549,
+              "edge_attempts": 1568188320,
+              "attempts_per_edge": 1.4605783302909265
+            },
+            "160224940": {
+              "seconds": 2.369884,
+              "edge_attempts": 1562390992,
+              "attempts_per_edge": 1.4551788182920176
+            },
+            "190849552": {
+              "seconds": 2.251595,
+              "edge_attempts": 1473736545,
+              "attempts_per_edge": 1.3726078907314008
+            },
+            "9130980": {
+              "seconds": 2.3863,
+              "edge_attempts": 1557684420,
+              "attempts_per_edge": 1.4507952139853908
+            }
+          },
+          "medians": {
+            "seconds": 2.3777165,
+            "edge_attempts": 1560037706.0,
+            "attempts_per_edge": 1.4529870161387042
+          }
+        },
+        "c256_s64_cost": {
+          "sources": {
+            "141442404": {
+              "seconds": 2.624078,
+              "edge_attempts": 1553992816,
+              "attempts_per_edge": 1.447356929987449,
+              "expansions_per_vertex": 1.4473406299948692,
+              "stale_pop_fraction": 0.27419299836805294,
+              "cpu_ns_per_attempt": 94.44602080575486,
+              "work_ns_per_attempt": 86.63007775069742,
+              "queue_ns_per_attempt": 21.586119910522672,
+              "queue_work_fraction": 0.24886275492474014,
+              "lock_miss_fraction": 0.0027886329113529914,
+              "work_share": 0.917814,
+              "idle_share": 0.058927,
+              "send_share": 0.000333,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 6.090702187326014,
+              "pop_queue_time_fraction": 0.48396285450915766
+            },
+            "160224940": {
+              "seconds": 2.628688,
+              "edge_attempts": 1560131613,
+              "attempts_per_edge": 1.4530744791860393,
+              "expansions_per_vertex": 1.4530630111694336,
+              "stale_pop_fraction": 0.27323088936308754,
+              "cpu_ns_per_attempt": 93.92899663716038,
+              "work_ns_per_attempt": 87.09673885404304,
+              "queue_ns_per_attempt": 21.489711392149996,
+              "queue_work_fraction": 0.24743659098425794,
+              "lock_miss_fraction": 0.0031062424066922536,
+              "work_share": 0.925379,
+              "idle_share": 0.051058,
+              "send_share": 0.000333,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 6.291482331215968,
+              "pop_queue_time_fraction": 0.4822955926681239
+            },
+            "190849552": {
+              "seconds": 2.476524,
+              "edge_attempts": 1474733609,
+              "attempts_per_edge": 1.3735365356229232,
+              "expansions_per_vertex": 1.37353128567338,
+              "stale_pop_fraction": 0.2761038562952007,
+              "cpu_ns_per_attempt": 94.13591896717938,
+              "work_ns_per_attempt": 87.81622335698732,
+              "queue_ns_per_attempt": 21.419755219302417,
+              "queue_work_fraction": 0.24387232009344517,
+              "lock_miss_fraction": 0.0036290355284322178,
+              "work_share": 0.932717,
+              "idle_share": 0.043708,
+              "send_share": 0.000346,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 6.495739173120457,
+              "pop_queue_time_fraction": 0.4837160487511702
+            },
+            "9130980": {
+              "seconds": 2.646379,
+              "edge_attempts": 1559313501,
+              "attempts_per_edge": 1.452312506504754,
+              "expansions_per_vertex": 1.4522947445511818,
+              "stale_pop_fraction": 0.27375898507209473,
+              "cpu_ns_per_attempt": 95.24091666798184,
+              "work_ns_per_attempt": 85.75409365355067,
+              "queue_ns_per_attempt": 21.657275068113993,
+              "queue_work_fraction": 0.25276093855801524,
+              "lock_miss_fraction": 0.002149963634722103,
+              "work_share": 0.900924,
+              "idle_share": 0.074827,
+              "send_share": 0.000392,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 5.705844422273537,
+              "pop_queue_time_fraction": 0.4910718337844706
+            }
+          },
+          "medians": {
+            "seconds": 2.6263829999999997,
+            "edge_attempts": 1556653158.5,
+            "attempts_per_edge": 1.4498347182461013,
+            "expansions_per_vertex": 1.4498176872730255,
+            "stale_pop_fraction": 0.2739759917200738,
+            "cpu_ns_per_attempt": 94.29096988646711,
+            "work_ns_per_attempt": 86.86340830237023,
+            "queue_ns_per_attempt": 21.537915651336334,
+            "queue_work_fraction": 0.24814967295449902,
+            "lock_miss_fraction": 0.0029474376590226227,
+            "work_share": 0.9215964999999999,
+            "idle_share": 0.0549925,
+            "send_share": 0.0003395,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.191092259270991,
+            "pop_queue_time_fraction": 0.48383945163016395
+          }
+        },
+        "c256_s8": {
+          "sources": {
+            "141442404": {
+              "seconds": 2.883102,
+              "edge_attempts": 1594459613,
+              "attempts_per_edge": 1.4850468719674286
+            },
+            "160224940": {
+              "seconds": 2.892447,
+              "edge_attempts": 1601502052,
+              "attempts_per_edge": 1.4916060547292258
+            },
+            "190849552": {
+              "seconds": 2.731394,
+              "edge_attempts": 1513527151,
+              "attempts_per_edge": 1.4096680423289742
+            },
+            "9130980": {
+              "seconds": 2.902349,
+              "edge_attempts": 1588513525,
+              "attempts_per_edge": 1.4795088079657768
+            }
+          },
+          "medians": {
+            "seconds": 2.8877745,
+            "edge_attempts": 1591486569.0,
+            "attempts_per_edge": 1.4822778399666028
+          }
+        },
+        "heap": {
+          "sources": {
+            "141442404": {
+              "seconds": 5.409149,
+              "edge_attempts": 1469247149,
+              "attempts_per_edge": 1.3684265596820184
+            },
+            "160224940": {
+              "seconds": 5.436946,
+              "edge_attempts": 1477000033,
+              "attempts_per_edge": 1.375647436296926
+            },
+            "190849552": {
+              "seconds": 5.125982,
+              "edge_attempts": 1400426115,
+              "attempts_per_edge": 1.3043280648477915
+            },
+            "9130980": {
+              "seconds": 5.50946,
+              "edge_attempts": 1471343764,
+              "attempts_per_edge": 1.3703793037478351
+            }
+          },
+          "medians": {
+            "seconds": 5.4230475,
+            "edge_attempts": 1470295456.5,
+            "attempts_per_edge": 1.3694029317149268
+          }
+        },
+        "heap_control": {
+          "sources": {
+            "141442404": {
+              "seconds": 5.408179,
+              "edge_attempts": 1465605304,
+              "attempts_per_edge": 1.3650346201927113
+            },
+            "160224940": {
+              "seconds": 5.439781,
+              "edge_attempts": 1474657168,
+              "attempts_per_edge": 1.3734653400485641
+            },
+            "190849552": {
+              "seconds": 5.122541,
+              "edge_attempts": 1392318308,
+              "attempts_per_edge": 1.2967766202544653
+            },
+            "9130980": {
+              "seconds": 5.480388,
+              "edge_attempts": 1471114367,
+              "attempts_per_edge": 1.3701656481026803
+            }
+          },
+          "medians": {
+            "seconds": 5.42398,
+            "edge_attempts": 1468359835.5,
+            "attempts_per_edge": 1.3676001341476958
+          }
+        },
+        "heap_cost": {
+          "sources": {
+            "141442404": {
+              "seconds": 5.668344,
+              "edge_attempts": 1466697639,
+              "attempts_per_edge": 1.3660519985330997,
+              "expansions_per_vertex": 1.3660351894795895,
+              "stale_pop_fraction": 0.2669529310061882,
+              "cpu_ns_per_attempt": 197.5233027180185,
+              "work_ns_per_attempt": 189.6131708438647,
+              "queue_ns_per_attempt": 111.54265930323419,
+              "queue_work_fraction": 0.5872614252297361,
+              "lock_miss_fraction": 0.09606396052209283,
+              "work_share": 0.87537,
+              "idle_share": 0.053718,
+              "send_share": 0.000538,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 4.833982402395921,
+              "pop_queue_time_fraction": 0.44643363448894724
+            },
+            "160224940": {
+              "seconds": 5.671075,
+              "edge_attempts": 1466725675,
+              "attempts_per_edge": 1.3660781106865612,
+              "expansions_per_vertex": 1.3660638183355331,
+              "stale_pop_fraction": 0.2663684561764395,
+              "cpu_ns_per_attempt": 197.54940791619615,
+              "work_ns_per_attempt": 190.34952757918586,
+              "queue_ns_per_attempt": 112.15228305153165,
+              "queue_work_fraction": 0.5890151947167737,
+              "lock_miss_fraction": 0.10096046816423332,
+              "work_share": 0.879348,
+              "idle_share": 0.049605,
+              "send_share": 0.000537,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 4.993224398906977,
+              "pop_queue_time_fraction": 0.4471108354525871
+            },
+            "190849552": {
+              "seconds": 5.331099,
+              "edge_attempts": 1395391199,
+              "attempts_per_edge": 1.2996386476963901,
+              "expansions_per_vertex": 1.2996316701173782,
+              "stale_pop_fraction": 0.26858682412311735,
+              "cpu_ns_per_attempt": 195.59586769688377,
+              "work_ns_per_attempt": 191.25595513008892,
+              "queue_ns_per_attempt": 111.17873767752363,
+              "queue_work_fraction": 0.5818716804157209,
+              "lock_miss_fraction": 0.12553556252867556,
+              "work_share": 0.891763,
+              "idle_share": 0.036804,
+              "send_share": 0.000508,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 5.534220638668009,
+              "pop_queue_time_fraction": 0.44663745968864205
+            },
+            "9130980": {
+              "seconds": 5.75458,
+              "edge_attempts": 1467963551,
+              "attempts_per_edge": 1.3672310429193348,
+              "expansions_per_vertex": 1.3672128729522228,
+              "stale_pop_fraction": 0.2665841244881705,
+              "cpu_ns_per_attempt": 200.83797230875524,
+              "work_ns_per_attempt": 188.85118013396777,
+              "queue_ns_per_attempt": 111.57792963124474,
+              "queue_work_fraction": 0.5908112855772868,
+              "lock_miss_fraction": 0.07830818093321883,
+              "work_share": 0.8595,
+              "idle_share": 0.069646,
+              "send_share": 0.000613,
+              "inter_node_fraction": 0.0,
+              "pops_per_removal_call": 4.300631622591469,
+              "pop_queue_time_fraction": 0.44198754315877936
+            }
+          },
+          "medians": {
+            "seconds": 5.6697095,
+            "edge_attempts": 1466711657.0,
+            "attempts_per_edge": 1.3660650546098303,
+            "expansions_per_vertex": 1.3660495039075613,
+            "stale_pop_fraction": 0.26676852774717935,
+            "cpu_ns_per_attempt": 197.53635531710734,
+            "work_ns_per_attempt": 189.9813492115253,
+            "queue_ns_per_attempt": 111.56029446723946,
+            "queue_work_fraction": 0.5881383099732549,
+            "lock_miss_fraction": 0.09851221434316307,
+            "work_share": 0.877359,
+            "idle_share": 0.0516615,
+            "send_share": 0.0005375,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.913603400651449,
+            "pop_queue_time_fraction": 0.4465355470887946
+          }
+        }
+      },
+      "comparisons": {},
+      "rows": [
+        {
+          "variant": "c256_s64_cost",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.642693,
+            "edge_attempts": 1552538800,
+            "attempts_per_edge": 1.4460026894065112,
+            "expansions_per_vertex": 1.445984411984682,
+            "stale_pop_fraction": 0.27354638310703777,
+            "cpu_ns_per_attempt": 95.29841151409549,
+            "work_ns_per_attempt": 85.82045485755332,
+            "queue_ns_per_attempt": 21.69576019813231,
+            "queue_work_fraction": 0.25280406907820996,
+            "lock_miss_fraction": 0.002110728749205034,
+            "work_share": 0.900323,
+            "idle_share": 0.075742,
+            "send_share": 0.000389,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.687176626096985,
+            "pop_queue_time_fraction": 0.48987464104434925
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "141442404",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.633801,
+            "edge_attempts": 1565610127,
+            "attempts_per_edge": 1.4581770543860608,
+            "expansions_per_vertex": 1.4581614844501019,
+            "stale_pop_fraction": 0.273356261112026,
+            "cpu_ns_per_attempt": 94.1939303219645,
+            "work_ns_per_attempt": 86.63265500198185,
+            "queue_ns_per_attempt": 21.55078872994395,
+            "queue_work_fraction": 0.24876057105084615,
+            "lock_miss_fraction": 0.0028171321447247313,
+            "work_share": 0.91959,
+            "idle_share": 0.057393,
+            "send_share": 0.000324,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.116531202791875,
+            "pop_queue_time_fraction": 0.48270673953194093
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "160224940",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.626633,
+            "edge_attempts": 1571249671,
+            "attempts_per_edge": 1.4634296096143273,
+            "expansions_per_vertex": 1.4634161107242107,
+            "stale_pop_fraction": 0.27318303664579247,
+            "cpu_ns_per_attempt": 93.60090770259261,
+            "work_ns_per_attempt": 86.88788263237129,
+            "queue_ns_per_attempt": 21.51698413394572,
+            "queue_work_fraction": 0.2476407927326942,
+            "lock_miss_fraction": 0.003280386222985043,
+            "work_share": 0.928147,
+            "idle_share": 0.04846,
+            "send_share": 0.00034,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.355180804327137,
+            "pop_queue_time_fraction": 0.4798408078810906
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "190849552",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.474115,
+            "edge_attempts": 1471847241,
+            "attempts_per_edge": 1.3708482318648356,
+            "expansions_per_vertex": 1.37084336951375,
+            "stale_pop_fraction": 0.2761519622263974,
+            "cpu_ns_per_attempt": 94.11923969425031,
+            "work_ns_per_attempt": 88.12436194932542,
+            "queue_ns_per_attempt": 21.439673554601352,
+            "queue_work_fraction": 0.24328883727895712,
+            "lock_miss_fraction": 0.0038648342787473947,
+            "work_share": 0.936162,
+            "idle_share": 0.040364,
+            "send_share": 0.000339,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.581401670134165,
+            "pop_queue_time_fraction": 0.48098476753485164
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.492396,
+            "edge_attempts": 1470026342,
+            "attempts_per_edge": 1.3691522840075985
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "141442404",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.421959,
+            "edge_attempts": 1468415589,
+            "attempts_per_edge": 1.3676520618102725
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "160224940",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.430285,
+            "edge_attempts": 1474499789,
+            "attempts_per_edge": 1.373318760486587
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "190849552",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.105447,
+            "edge_attempts": 1402572612,
+            "attempts_per_edge": 1.3063272679819116
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.912691,
+            "edge_attempts": 1587320083,
+            "attempts_per_edge": 1.4783972606462181
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "141442404",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.894345,
+            "edge_attempts": 1598986261,
+            "attempts_per_edge": 1.4892628987630208
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "160224940",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.904884,
+            "edge_attempts": 1604999311,
+            "attempts_per_edge": 1.4948633297934955
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "190849552",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.739235,
+            "edge_attempts": 1514910782,
+            "attempts_per_edge": 1.4109567277693293
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.399536,
+            "edge_attempts": 1567881102,
+            "attempts_per_edge": 1.460292193767811
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "141442404",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.383874,
+            "edge_attempts": 1564548425,
+            "attempts_per_edge": 1.4571882069914912
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "160224940",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.384578,
+            "edge_attempts": 1560711609,
+            "attempts_per_edge": 1.453614675524994
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "190849552",
+          "rep": -1,
+          "metrics": {
+            "seconds": 2.255105,
+            "edge_attempts": 1477480162,
+            "attempts_per_edge": 1.3760946185671934
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.457398,
+            "edge_attempts": 1466854915,
+            "attempts_per_edge": 1.3661984821629962
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "141442404",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.376307,
+            "edge_attempts": 1468957906,
+            "attempts_per_edge": 1.3681571647040043
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "160224940",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.399789,
+            "edge_attempts": 1473452685,
+            "attempts_per_edge": 1.3723435093688126
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "190849552",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.103978,
+            "edge_attempts": 1396265047,
+            "attempts_per_edge": 1.3004525317411126
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "9130980",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.75677,
+            "edge_attempts": 1469927111,
+            "attempts_per_edge": 1.3690598622962231,
+            "expansions_per_vertex": 1.3690412603318691,
+            "stale_pop_fraction": 0.26666442747741986,
+            "cpu_ns_per_attempt": 200.54126285109385,
+            "work_ns_per_attempt": 188.49585460839901,
+            "queue_ns_per_attempt": 111.63722203879114,
+            "queue_work_fraction": 0.5922529292260457,
+            "lock_miss_fraction": 0.07977971619592823,
+            "work_share": 0.85947,
+            "idle_share": 0.069442,
+            "send_share": 0.000607,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.328879963736951,
+            "pop_queue_time_fraction": 0.44425147948235216
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "141442404",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.660903,
+            "edge_attempts": 1466056983,
+            "attempts_per_edge": 1.3654553047184368,
+            "expansions_per_vertex": 1.3654379285871983,
+            "stale_pop_fraction": 0.2669175103588876,
+            "cpu_ns_per_attempt": 197.5192906209158,
+            "work_ns_per_attempt": 189.26590863624023,
+            "queue_ns_per_attempt": 111.4447124074594,
+            "queue_work_fraction": 0.5888261293884186,
+            "lock_miss_fraction": 0.09709259224098542,
+            "work_share": 0.875285,
+            "idle_share": 0.053693,
+            "send_share": 0.000541,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.850286533090269,
+            "pop_queue_time_fraction": 0.4466115311069185
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "160224940",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.661553,
+            "edge_attempts": 1468309472,
+            "attempts_per_edge": 1.3675532266202008,
+            "expansions_per_vertex": 1.367539081722498,
+            "stale_pop_fraction": 0.26621243632634056,
+            "cpu_ns_per_attempt": 197.15526905488764,
+            "work_ns_per_attempt": 189.93218685713143,
+            "queue_ns_per_attempt": 111.97681022875506,
+            "queue_work_fraction": 0.5895620541292715,
+            "lock_miss_fraction": 0.10283030632558039,
+            "work_share": 0.879615,
+            "idle_share": 0.049373,
+            "send_share": 0.000534,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.019741099141632,
+            "pop_queue_time_fraction": 0.44676900661610935
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "190849552",
+          "rep": -1,
+          "metrics": {
+            "seconds": 5.3269,
+            "edge_attempts": 1392478774,
+            "attempts_per_edge": 1.2969260749847165,
+            "expansions_per_vertex": 1.2969196923077106,
+            "stale_pop_fraction": 0.26883966191418884,
+            "cpu_ns_per_attempt": 195.43112755986613,
+            "work_ns_per_attempt": 191.18640152427918,
+            "queue_ns_per_attempt": 111.83586633594517,
+            "queue_work_fraction": 0.5849572220843483,
+            "lock_miss_fraction": 0.1301785203812311,
+            "work_share": 0.892448,
+            "idle_share": 0.03589,
+            "send_share": 0.000508,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.61120379455442,
+            "pop_queue_time_fraction": 0.44694986101354534
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.504679,
+            "edge_attempts": 1476238672,
+            "attempts_per_edge": 1.3749383203291903
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "141442404",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.41607,
+            "edge_attempts": 1469247149,
+            "attempts_per_edge": 1.3684265596820184
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "160224940",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.44733,
+            "edge_attempts": 1477936047,
+            "attempts_per_edge": 1.3765192204747656
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "190849552",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.125982,
+            "edge_attempts": 1400426115,
+            "attempts_per_edge": 1.3043280648477915
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.901443,
+            "edge_attempts": 1588291083,
+            "attempts_per_edge": 1.4793016300644986
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "141442404",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.878078,
+            "edge_attempts": 1593717409,
+            "attempts_per_edge": 1.4843555984352705
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "160224940",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.897322,
+            "edge_attempts": 1601502052,
+            "attempts_per_edge": 1.4916060547292258
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "190849552",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.731394,
+            "edge_attempts": 1513527151,
+            "attempts_per_edge": 1.4096680423289742
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.3863,
+            "edge_attempts": 1555273586,
+            "attempts_per_edge": 1.4485498128091285
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "141442404",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.397795,
+            "edge_attempts": 1568188320,
+            "attempts_per_edge": 1.4605783302909265
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "160224940",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.369884,
+            "edge_attempts": 1548180328,
+            "attempts_per_edge": 1.44194329827651
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "190849552",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.251595,
+            "edge_attempts": 1473736545,
+            "attempts_per_edge": 1.3726078907314008
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.480388,
+            "edge_attempts": 1471114367,
+            "attempts_per_edge": 1.3701656481026803
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "141442404",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.394866,
+            "edge_attempts": 1465444520,
+            "attempts_per_edge": 1.364884869283804
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "160224940",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.458857,
+            "edge_attempts": 1474657168,
+            "attempts_per_edge": 1.3734653400485641
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "190849552",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.122541,
+            "edge_attempts": 1406734560,
+            "attempts_per_edge": 1.3102036207024812
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.759718,
+            "edge_attempts": 1467963551,
+            "attempts_per_edge": 1.3672310429193348,
+            "expansions_per_vertex": 1.3672128729522228,
+            "stale_pop_fraction": 0.26646364577908743,
+            "cpu_ns_per_attempt": 200.83797230875524,
+            "work_ns_per_attempt": 188.85118013396777,
+            "queue_ns_per_attempt": 112.31747449011759,
+            "queue_work_fraction": 0.594740654574896,
+            "lock_miss_fraction": 0.07830818093321883,
+            "work_share": 0.8595,
+            "idle_share": 0.069646,
+            "send_share": 0.000613,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.300631622591469,
+            "pop_queue_time_fraction": 0.44198754315877936
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "141442404",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.668344,
+            "edge_attempts": 1466697639,
+            "attempts_per_edge": 1.3660519985330997,
+            "expansions_per_vertex": 1.3660351894795895,
+            "stale_pop_fraction": 0.2669529310061882,
+            "cpu_ns_per_attempt": 197.5233027180185,
+            "work_ns_per_attempt": 189.6131708438647,
+            "queue_ns_per_attempt": 111.93070455623386,
+            "queue_work_fraction": 0.5903108104679196,
+            "lock_miss_fraction": 0.09678894148745468,
+            "work_share": 0.876123,
+            "idle_share": 0.053075,
+            "send_share": 0.000538,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.858193558793258,
+            "pop_queue_time_fraction": 0.4460188918137607
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "160224940",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.681265,
+            "edge_attempts": 1469745996,
+            "attempts_per_edge": 1.3688911755122974,
+            "expansions_per_vertex": 1.3688767366111279,
+            "stale_pop_fraction": 0.2663728050810443,
+            "cpu_ns_per_attempt": 197.54940791619615,
+            "work_ns_per_attempt": 190.34952757918586,
+            "queue_ns_per_attempt": 112.15228305153165,
+            "queue_work_fraction": 0.5891912865655842,
+            "lock_miss_fraction": 0.10096046816423332,
+            "work_share": 0.879348,
+            "idle_share": 0.049605,
+            "send_share": 0.000537,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.993224398906977,
+            "pop_queue_time_fraction": 0.44639759680037705
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "190849552",
+          "rep": 0,
+          "metrics": {
+            "seconds": 5.345597,
+            "edge_attempts": 1395391199,
+            "attempts_per_edge": 1.2996386476963901,
+            "expansions_per_vertex": 1.2996316701173782,
+            "stale_pop_fraction": 0.26870251263258504,
+            "cpu_ns_per_attempt": 195.59586769688377,
+            "work_ns_per_attempt": 191.31009152939342,
+            "queue_ns_per_attempt": 111.7440032407375,
+            "queue_work_fraction": 0.5840988436491801,
+            "lock_miss_fraction": 0.12553556252867556,
+            "work_share": 0.891763,
+            "idle_share": 0.036804,
+            "send_share": 0.00051,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.534220638668009,
+            "pop_queue_time_fraction": 0.4461441181896666
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "9130980",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.646379,
+            "edge_attempts": 1559561849,
+            "attempts_per_edge": 1.4525438127213255,
+            "expansions_per_vertex": 1.4525264129042625,
+            "stale_pop_fraction": 0.27375898507209473,
+            "cpu_ns_per_attempt": 95.00957842166348,
+            "work_ns_per_attempt": 85.64186029918716,
+            "queue_ns_per_attempt": 21.64691698907697,
+            "queue_work_fraction": 0.25276093855801524,
+            "lock_miss_fraction": 0.0021669150265900363,
+            "work_share": 0.901257,
+            "idle_share": 0.074697,
+            "send_share": 0.000403,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.705844422273537,
+            "pop_queue_time_fraction": 0.4910718337844706
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "141442404",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.624078,
+            "edge_attempts": 1555668238,
+            "attempts_per_edge": 1.448917383560584,
+            "expansions_per_vertex": 1.4489022307097912,
+            "stale_pop_fraction": 0.27382446312965075,
+            "cpu_ns_per_attempt": 94.44602080575486,
+            "work_ns_per_attempt": 86.62857073771536,
+            "queue_ns_per_attempt": 21.586119910522672,
+            "queue_work_fraction": 0.24918014607304095,
+            "lock_miss_fraction": 0.00265390834937305,
+            "work_share": 0.917093,
+            "idle_share": 0.059754,
+            "send_share": 0.000329,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.057097581731079,
+            "pop_queue_time_fraction": 0.4870479930454182
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "160224940",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.628688,
+            "edge_attempts": 1559671818,
+            "attempts_per_edge": 1.452646235584929,
+            "expansions_per_vertex": 1.4526348002254963,
+            "stale_pop_fraction": 0.2733272025800896,
+            "cpu_ns_per_attempt": 94.36945110910506,
+            "work_ns_per_attempt": 87.13051709446225,
+            "queue_ns_per_attempt": 21.55927812054935,
+            "queue_work_fraction": 0.24743659098425794,
+            "lock_miss_fraction": 0.0029633131469768157,
+            "work_share": 0.923159,
+            "idle_share": 0.053411,
+            "send_share": 0.000351,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.220323565397872,
+            "pop_queue_time_fraction": 0.4822955926681239
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "190849552",
+          "rep": 0,
+          "metrics": {
+            "seconds": 2.460852,
+            "edge_attempts": 1463148777,
+            "attempts_per_edge": 1.3627466614965422,
+            "expansions_per_vertex": 1.3627397157251835,
+            "stale_pop_fraction": 0.27623202017575965,
+            "cpu_ns_per_attempt": 94.1719450085697,
+            "work_ns_per_attempt": 87.8318425440614,
+            "queue_ns_per_attempt": 21.419755219302417,
+            "queue_work_fraction": 0.24387232009344517,
+            "lock_miss_fraction": 0.003581755455882518,
+            "work_share": 0.932539,
+            "idle_share": 0.043794,
+            "send_share": 0.00035,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.480009194714621,
+            "pop_queue_time_fraction": 0.4842052421608624
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.902349,
+            "edge_attempts": 1588513525,
+            "attempts_per_edge": 1.4795088079657768
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "141442404",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.883102,
+            "edge_attempts": 1594459613,
+            "attempts_per_edge": 1.4850468719674286
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "160224940",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.892447,
+            "edge_attempts": 1603096369,
+            "attempts_per_edge": 1.4930909687743799
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "190849552",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.752486,
+            "edge_attempts": 1516537225,
+            "attempts_per_edge": 1.4124715633097786
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.387774,
+            "edge_attempts": 1561202678,
+            "attempts_per_edge": 1.4540720470861326
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "141442404",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.385549,
+            "edge_attempts": 1566615418,
+            "attempts_per_edge": 1.459113361736084
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "160224940",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.384837,
+            "edge_attempts": 1564311952,
+            "attempts_per_edge": 1.45696796090555
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "190849552",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.253026,
+            "edge_attempts": 1471360687,
+            "attempts_per_edge": 1.3703950654817851
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.486879,
+            "edge_attempts": 1467951274,
+            "attempts_per_edge": 1.367219608374177
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "141442404",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.415814,
+            "edge_attempts": 1465605304,
+            "attempts_per_edge": 1.3650346201927113
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "160224940",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.439781,
+            "edge_attempts": 1470546455,
+            "attempts_per_edge": 1.3696367065526551
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "190849552",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.129166,
+            "edge_attempts": 1389160083,
+            "attempts_per_edge": 1.2938351144809859
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.75458,
+            "edge_attempts": 1469824196,
+            "attempts_per_edge": 1.368964009383059,
+            "expansions_per_vertex": 1.3689460381865501,
+            "stale_pop_fraction": 0.2665841244881705,
+            "cpu_ns_per_attempt": 200.4217475693263,
+            "work_ns_per_attempt": 188.6585380446411,
+            "queue_ns_per_attempt": 110.63734204772643,
+            "queue_work_fraction": 0.586442273932744,
+            "lock_miss_fraction": 0.080246208027399,
+            "work_share": 0.860479,
+            "idle_share": 0.068145,
+            "send_share": 0.000603,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.357055951020491,
+            "pop_queue_time_fraction": 0.44658332588331634
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "141442404",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.666244,
+            "edge_attempts": 1468650762,
+            "attempts_per_edge": 1.367871097102966,
+            "expansions_per_vertex": 1.3678540475666523,
+            "stale_pop_fraction": 0.26683228603063597,
+            "cpu_ns_per_attempt": 197.3345842706205,
+            "work_ns_per_attempt": 189.12821290593521,
+            "queue_ns_per_attempt": 111.06770386229248,
+            "queue_work_fraction": 0.5872614252297361,
+            "lock_miss_fraction": 0.09606396052209283,
+            "work_share": 0.87537,
+            "idle_share": 0.053718,
+            "send_share": 0.000545,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.833982402395921,
+            "pop_queue_time_fraction": 0.44740901971728847
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "160224940",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.671075,
+            "edge_attempts": 1466725675,
+            "attempts_per_edge": 1.3660781106865612,
+            "expansions_per_vertex": 1.3660638183355331,
+            "stale_pop_fraction": 0.26635694856189784,
+            "cpu_ns_per_attempt": 197.6589840046265,
+            "work_ns_per_attempt": 190.5734833475251,
+            "queue_ns_per_attempt": 112.25067740179631,
+            "queue_work_fraction": 0.5890151947167737,
+            "lock_miss_fraction": 0.1029674040392296,
+            "work_share": 0.880153,
+            "idle_share": 0.048591,
+            "send_share": 0.000539,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.037032638809676,
+            "pop_queue_time_fraction": 0.4471108354525871
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "190849552",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.331099,
+            "edge_attempts": 1400489009,
+            "attempts_per_edge": 1.3043866430251274,
+            "expansions_per_vertex": 1.3043785728514194,
+            "stale_pop_fraction": 0.2681992563703111,
+            "cpu_ns_per_attempt": 194.38118771269842,
+            "work_ns_per_attempt": 190.64696851183928,
+            "queue_ns_per_attempt": 110.93207193414695,
+            "queue_work_fraction": 0.5818716804157209,
+            "lock_miss_fraction": 0.13369185577757633,
+            "work_share": 0.894344,
+            "idle_share": 0.033638,
+            "send_share": 0.000508,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.696076959835541,
+            "pop_queue_time_fraction": 0.44663745968864205
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.652403,
+            "edge_attempts": 1559313501,
+            "attempts_per_edge": 1.452312506504754,
+            "expansions_per_vertex": 1.4522947445511818,
+            "stale_pop_fraction": 0.27339395733949234,
+            "cpu_ns_per_attempt": 95.24091666798184,
+            "work_ns_per_attempt": 85.75409365355067,
+            "queue_ns_per_attempt": 21.657275068113993,
+            "queue_work_fraction": 0.252550917925972,
+            "lock_miss_fraction": 0.0021366035351076673,
+            "work_share": 0.900245,
+            "idle_share": 0.075704,
+            "send_share": 0.000391,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.6839226866948875,
+            "pop_queue_time_fraction": 0.49328488593878755
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "141442404",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.634009,
+            "edge_attempts": 1553992816,
+            "attempts_per_edge": 1.447356929987449,
+            "expansions_per_vertex": 1.4473406299948692,
+            "stale_pop_fraction": 0.27424269051690287,
+            "cpu_ns_per_attempt": 94.90528238001842,
+            "work_ns_per_attempt": 87.28188419115574,
+            "queue_ns_per_attempt": 21.64527065058466,
+            "queue_work_fraction": 0.24799270606005058,
+            "lock_miss_fraction": 0.0027886329113529914,
+            "work_share": 0.919534,
+            "idle_share": 0.057245,
+            "send_share": 0.000343,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.118972048696918,
+            "pop_queue_time_fraction": 0.4838552799724842
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "160224940",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.629192,
+            "edge_attempts": 1567285570,
+            "attempts_per_edge": 1.4597375275181639,
+            "expansions_per_vertex": 1.4597258754074574,
+            "stale_pop_fraction": 0.27293616999958065,
+            "cpu_ns_per_attempt": 93.92899663716038,
+            "work_ns_per_attempt": 87.09673885404304,
+            "queue_ns_per_attempt": 21.475213362754356,
+            "queue_work_fraction": 0.24656736458000544,
+            "lock_miss_fraction": 0.003223839215365604,
+            "work_share": 0.927128,
+            "idle_share": 0.04958,
+            "send_share": 0.00032,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.336431359351842,
+            "pop_queue_time_fraction": 0.48223405879887077
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "190849552",
+          "rep": 1,
+          "metrics": {
+            "seconds": 2.476524,
+            "edge_attempts": 1474882360,
+            "attempts_per_edge": 1.3736750792432515,
+            "expansions_per_vertex": 1.3736683391034603,
+            "stale_pop_fraction": 0.2761038562952007,
+            "cpu_ns_per_attempt": 94.01689694695379,
+            "work_ns_per_attempt": 87.80278041972107,
+            "queue_ns_per_attempt": 21.346804529607436,
+            "queue_work_fraction": 0.24312219302810148,
+            "lock_miss_fraction": 0.0037442437262200715,
+            "work_share": 0.93376,
+            "idle_share": 0.042611,
+            "send_share": 0.000346,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.519054779479495,
+            "pop_queue_time_fraction": 0.48300434849125534
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "9130980",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.527472,
+            "edge_attempts": 1471343764,
+            "attempts_per_edge": 1.3703793037478351
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "141442404",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.409149,
+            "edge_attempts": 1470141757,
+            "attempts_per_edge": 1.3692597791635313
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "160224940",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.436946,
+            "edge_attempts": 1477000033,
+            "attempts_per_edge": 1.375647436296926
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "190849552",
+          "rep": 1,
+          "metrics": {
+            "seconds": 5.131767,
+            "edge_attempts": 1407202929,
+            "attempts_per_edge": 1.3106398499507517
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.376378,
+            "edge_attempts": 1557684420,
+            "attempts_per_edge": 1.4507952139853908
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "141442404",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.382794,
+            "edge_attempts": 1570196695,
+            "attempts_per_edge": 1.4624488894365897
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "160224940",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.369495,
+            "edge_attempts": 1562390992,
+            "attempts_per_edge": 1.4551788182920176
+          }
+        },
+        {
+          "variant": "c256_s64",
+          "source": "190849552",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.248144,
+            "edge_attempts": 1481823438,
+            "attempts_per_edge": 1.3801398564555054
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.473162,
+            "edge_attempts": 1473129076,
+            "attempts_per_edge": 1.3720421066055992
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "141442404",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.408179,
+            "edge_attempts": 1469072169,
+            "attempts_per_edge": 1.3682635869108437
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "160224940",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.431515,
+            "edge_attempts": 1475620626,
+            "attempts_per_edge": 1.3743626850032475
+          }
+        },
+        {
+          "variant": "heap_control",
+          "source": "190849552",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.089874,
+            "edge_attempts": 1392318308,
+            "attempts_per_edge": 1.2967766202544653
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.740932,
+            "edge_attempts": 1461025498,
+            "attempts_per_edge": 1.3607690831298307,
+            "expansions_per_vertex": 1.36075097322464,
+            "stale_pop_fraction": 0.2669599584277693,
+            "cpu_ns_per_attempt": 201.1325958946406,
+            "work_ns_per_attempt": 188.8554473400436,
+            "queue_ns_per_attempt": 111.57792963124474,
+            "queue_work_fraction": 0.5908112855772868,
+            "lock_miss_fraction": 0.07740419610713746,
+            "work_share": 0.858256,
+            "idle_share": 0.07072,
+            "send_share": 0.000621,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.275083008086385,
+            "pop_queue_time_fraction": 0.4414873312880158
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "141442404",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.681214,
+            "edge_attempts": 1463630775,
+            "attempts_per_edge": 1.3631955845149484,
+            "expansions_per_vertex": 1.3631784729659557,
+            "stale_pop_fraction": 0.2670085836282629,
+            "cpu_ns_per_attempt": 198.45137385349116,
+            "work_ns_per_attempt": 190.10294040858767,
+            "queue_ns_per_attempt": 111.54265930323419,
+            "queue_work_fraction": 0.5867487323630864,
+            "lock_miss_fraction": 0.09523562855248349,
+            "work_share": 0.874563,
+            "idle_share": 0.054622,
+            "send_share": 0.000538,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.815787431400601,
+            "pop_queue_time_fraction": 0.44643363448894724
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "160224940",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.662792,
+            "edge_attempts": 1465019824,
+            "attempts_per_edge": 1.364489316169009,
+            "expansions_per_vertex": 1.3644755482673645,
+            "stale_pop_fraction": 0.2663684561764395,
+            "cpu_ns_per_attempt": 197.54583941793814,
+            "work_ns_per_attempt": 190.33104838040745,
+            "queue_ns_per_attempt": 111.0465319501292,
+            "queue_work_fraction": 0.5834388708256611,
+            "lock_miss_fraction": 0.10025888392360377,
+            "work_share": 0.879295,
+            "idle_share": 0.049673,
+            "send_share": 0.000523,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 4.972456256719577,
+            "pop_queue_time_fraction": 0.45046535107506985
+          }
+        },
+        {
+          "variant": "heap_cost",
+          "source": "190849552",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.329159,
+            "edge_attempts": 1386682134,
+            "attempts_per_edge": 1.2915272037748495,
+            "expansions_per_vertex": 1.2915182821452618,
+            "stale_pop_fraction": 0.26858682412311735,
+            "cpu_ns_per_attempt": 196.28005570885938,
+            "work_ns_per_attempt": 191.25595513008892,
+            "queue_ns_per_attempt": 111.17873767752363,
+            "queue_work_fraction": 0.581308632203906,
+            "lock_miss_fraction": 0.11931697729933045,
+            "work_share": 0.888679,
+            "idle_share": 0.039882,
+            "send_share": 0.000506,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.406508522621312,
+            "pop_queue_time_fraction": 0.4483108780632189
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.635611,
+            "edge_attempts": 1549176760,
+            "attempts_per_edge": 1.442871354536238,
+            "expansions_per_vertex": 1.442854929715395,
+            "stale_pop_fraction": 0.27408852809075657,
+            "cpu_ns_per_attempt": 95.24946534441945,
+            "work_ns_per_attempt": 85.83347002959172,
+            "queue_ns_per_attempt": 21.71880766523733,
+            "queue_work_fraction": 0.25303424943381186,
+            "lock_miss_fraction": 0.002149963634722103,
+            "work_share": 0.900924,
+            "idle_share": 0.074827,
+            "send_share": 0.000392,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 5.712276021809518,
+            "pop_queue_time_fraction": 0.4889539717876375
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "141442404",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.6122,
+            "edge_attempts": 1549816709,
+            "attempts_per_edge": 1.44346738986565,
+            "expansions_per_vertex": 1.443452648818493,
+            "stale_pop_fraction": 0.27419299836805294,
+            "cpu_ns_per_attempt": 94.37319059321098,
+            "work_ns_per_attempt": 86.63007775069742,
+            "queue_ns_per_attempt": 21.558999808382996,
+            "queue_work_fraction": 0.24886275492474014,
+            "lock_miss_fraction": 0.0028081730303397942,
+            "work_share": 0.917814,
+            "idle_share": 0.058927,
+            "send_share": 0.000333,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.090702187326014,
+            "pop_queue_time_fraction": 0.48396285450915766
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "160224940",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.61276,
+            "edge_attempts": 1560131613,
+            "attempts_per_edge": 1.4530744791860393,
+            "expansions_per_vertex": 1.4530630111694336,
+            "stale_pop_fraction": 0.27323088936308754,
+            "cpu_ns_per_attempt": 93.77017746514954,
+            "work_ns_per_attempt": 86.78523008686705,
+            "queue_ns_per_attempt": 21.489711392149996,
+            "queue_work_fraction": 0.24761945518425227,
+            "lock_miss_fraction": 0.0031062424066922536,
+            "work_share": 0.925379,
+            "idle_share": 0.051058,
+            "send_share": 0.000333,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.291482331215968,
+            "pop_queue_time_fraction": 0.4823247789182913
+          }
+        },
+        {
+          "variant": "c256_s64_cost",
+          "source": "190849552",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.479423,
+            "edge_attempts": 1474733609,
+            "attempts_per_edge": 1.3735365356229232,
+            "expansions_per_vertex": 1.37353128567338,
+            "stale_pop_fraction": 0.27601916648233393,
+            "cpu_ns_per_attempt": 94.13591896717938,
+            "work_ns_per_attempt": 87.81622335698732,
+            "queue_ns_per_attempt": 21.455830503869997,
+            "queue_work_fraction": 0.24432650008926635,
+            "lock_miss_fraction": 0.0036290355284322178,
+            "work_share": 0.932717,
+            "idle_share": 0.043708,
+            "send_share": 0.000332,
+            "inter_node_fraction": 0.0,
+            "pops_per_removal_call": 6.495739173120457,
+            "pop_queue_time_fraction": 0.4837160487511702
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.50946,
+            "edge_attempts": 1469007427,
+            "attempts_per_edge": 1.3682032875443366
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "141442404",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.404762,
+            "edge_attempts": 1467706007,
+            "attempts_per_edge": 1.3669911717376029
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "160224940",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.428645,
+            "edge_attempts": 1473164947,
+            "attempts_per_edge": 1.3720755161168279
+          }
+        },
+        {
+          "variant": "heap",
+          "source": "190849552",
+          "rep": 2,
+          "metrics": {
+            "seconds": 5.095173,
+            "edge_attempts": 1394177373,
+            "attempts_per_edge": 1.2985081151387037
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "9130980",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.905995,
+            "edge_attempts": 1588671554,
+            "attempts_per_edge": 1.4796559929243775
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "141442404",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.901981,
+            "edge_attempts": 1596707578,
+            "attempts_per_edge": 1.48714058030869
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "160224940",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.88921,
+            "edge_attempts": 1601486562,
+            "attempts_per_edge": 1.4915916276619867
+          }
+        },
+        {
+          "variant": "c256_s8",
+          "source": "190849552",
+          "rep": 2,
+          "metrics": {
+            "seconds": 2.730162,
+            "edge_attempts": 1509380816,
+            "attempts_per_edge": 1.4058062312353126
+          }
+        }
+      ]
+    }
+  ],
+  "checked_solves": 96,
+  "diagnostic_solves": 32,
+  "checked_launches": 24,
+  "raw_sha256": {
+    "logs/AB-mesh28-z-1n-5548095/heap-g0-r-1.launch.out": "9b7fb375471749737a3135f1efa38589c8f15401ec5e9da3c0cc4cbb22dcf649",
+    "logs/AB-mesh28-z-1n-5548095/heap-g0-r0.launch.out": "a7d0cdaeffa62a6407bcd320126bb9d4098feecb1a7d7e5d191f6e0036caa920",
+    "logs/AB-mesh28-z-1n-5548095/heap-g0-r1.launch.out": "d4da7c3f04510f2b9ad5aa67bef1deda5f9b189cee84da44c8aa723ac694fa76",
+    "logs/AB-mesh28-z-1n-5548095/heap-g0-r2.launch.out": "17a6d458476bb388c2caa002a783d44a2e7f518590bf675737ed03301b23d387",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-g0-r-1.launch.out": "67e6eedc0c74812de684ab969a264fac3d7447c0874514c6ebab0e2a6454b364",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-g0-r0.launch.out": "2d1ed90b9022fc8b8920811b82b17c54cf3656de8c0678794f5ee8398def2af1",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-g0-r1.launch.out": "e59aeaba6247290810d66401a32025085b7003be09aad8ef729f326316516db4",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-g0-r2.launch.out": "f6b2aa92c30a03d6f847f58d0f24afc20dd5c595ff62e7a0168e293c39e633b1",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-g0-r-1.launch.out": "13eba65f11a2888dee24d53f0032bc655e3a7b887df81663952c3fa59eafff25",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-g0-r0.launch.out": "a95d4ca613e381f29547592ed3d129319ec718af55114642733a09660df78187",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-g0-r1.launch.out": "16202fd96d2bfbf4a82caffacc9d7e4ccf0059b919f357b802e2589d83da8bc1",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-g0-r2.launch.out": "4b2105a28921f11545e8714098a0759b7118cc13262767a6e5515592fecc4492",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-g0-r-1.launch.out": "b722f35a0e4171df0bee6fdcac65294426a6341d895233572b1fbbc5c6ba3b28",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-g0-r0.launch.out": "7783b75358f68e8047189f929792f49f3cedaeac05a9e54d8d422118b4b720d6",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-g0-r1.launch.out": "4ac7158bf91085b00c9125d2644ef889e38d05c76e842390e5ed7ef226143850",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-g0-r2.launch.out": "a0f5c2ad916c9cf9c2e0bdbe1247194aec97203ee6de5c7e4a06ab8ee820848d",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-g0-r-1.launch.out": "605696c5d43a3bc8474aa40634adecbecfd1559ca2324af298a3d3c003548951",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-g0-r0.launch.out": "71bf9d1bf9d46df2ed41fcebddc489e7f0436f2646489ada9c6c673f82ea1611",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-g0-r1.launch.out": "4d589222b97d0eb8c495575adcbf04ecbf3c19695bc04dfbbe58cd3bec1a6df6",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-g0-r2.launch.out": "9f7ef79573d211e4c6f57d41c7122eb74bddaf5fbff18c9740c1966b01cca208",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-g0-r-1.launch.out": "96718e3a5c7beaf17040c8ee5e9454ece383ca74aed1e4315b6fe089617f28e2",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-g0-r0.launch.out": "53ac505434135450c7c975313434dec27da7edb8ced3c735fe9c2f913268a074",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-g0-r1.launch.out": "b1e95163d5a2d789bc90c89cc89b7c4664baa5bef93e7a5e530ec77a79d060e5",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-g0-r2.launch.out": "09d49b9778f483a8a6597ccd3111b17bd98eef4d5194b58b3de698303c0b8e5f",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s0-r-1.out": "892dca40d4da6f7cf59d15ba6f019b2c16071a5d46c135c94b5326b6b6e05d5b",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s1-r-1.out": "bf2a6849ad1d90c634aedd77faa2c489b0e0914a1ee402b9f3e467e9f5aaed2c",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s2-r-1.out": "a4f976a101613c7e68b3fcc4f0b63bb65515e44e6c674f86565f082bd9abad25",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s3-r-1.out": "b49c904db0afed3e194de7ab63076c74a1e79c41e2d480d73c11948a1c852c04",
+    "logs/AB-mesh28-z-1n-5548095/heap-s0-r-1.out": "237eaee47eb0d00ea15860a664ad7165fdd29e5ee6adc3761b5a7f0a350fdd6d",
+    "logs/AB-mesh28-z-1n-5548095/heap-s1-r-1.out": "45f89883faf15aa14fcb7d1b06848b46533d4dacf6bdf6603acec9f59d02c0aa",
+    "logs/AB-mesh28-z-1n-5548095/heap-s2-r-1.out": "e886126188c60413f8c8c9a0bf2a8d1594ed73d499a4aa657ad533723d13381e",
+    "logs/AB-mesh28-z-1n-5548095/heap-s3-r-1.out": "7aeafe178bcb404ed82fc6ecf7aaa9eb9180db66983794d26e9dcb83f0a615e1",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s0-r-1.out": "24cd791421dc02506c85e406bd39942038a89b10575e4a00cf8f4195117c7708",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s1-r-1.out": "f4b43f9f6a2127f4dcbc843fcd2569fe5e70f9b20b382c4b9358e9e92c463d24",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s2-r-1.out": "7daf69a6b2973a1be68dc250eac98d025c3e53a8cee7b86a3a5bcaa9c80306f5",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s3-r-1.out": "090363b59c3dec89cc46708b81caf57486e76e417b18c4e230114a15e6efd9d6",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s0-r-1.out": "fdf80039a2431389493e9ae4cb54034596d23a697ac1d64acde9dd175a116f3e",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s1-r-1.out": "55e3b3e67aefe5345a3455ab66539583255a00f6da02bea793a213d1e2c4c9e4",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s2-r-1.out": "f453c780b7a8bacdb02f8bc86c5de72214731af1bd4439df20e5809f20de8692",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s3-r-1.out": "7f6b29dedbfe12f677b3549d33f4e248f60004282abdbe3ab433ba9ae3b8d908",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s0-r-1.out": "e31a40e5f9eae42e943179a2d2a3ba280b44b8fe7936f10269b2dcb9c8996141",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s1-r-1.out": "0ffbce26031157ffba038b1dec07589bd95306cd2d17579877440d059c977f05",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s2-r-1.out": "9b9dfce7d5d0d232f0573ceeefc6608a4d151a301ed011993a7d7a62218f5c25",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s3-r-1.out": "645e4825dcaa1421b06555733803dbcee5577fc99e4315db4111da557b4d4742",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s0-r-1.out": "5239ec568d7c12eb02e7c9a873e448cc42d844cd569ca9b73de6409afc3deed4",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s1-r-1.out": "f0cbb86790d37d13eeabb73e2940e7ee749b5184cf32f464bfad85aa93dca24e",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s2-r-1.out": "45349609edd0482fbb3c129f33add54ca63dc5a5c65538a80a6230579576c316",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s3-r-1.out": "e4b7938a947459edf38530e6cd533f6483f291bc6f30a4a72856ec608c39c268",
+    "logs/AB-mesh28-z-1n-5548095/heap-s0-r0.out": "dd44d10c05edd8191faf4a5c56ab8e22a1ad09865c4677966f224ba032159dd2",
+    "logs/AB-mesh28-z-1n-5548095/heap-s1-r0.out": "e3d46c32662567a01c3d1a9dde97474009c3748d929ce6cc8ea4292452299d00",
+    "logs/AB-mesh28-z-1n-5548095/heap-s2-r0.out": "152ad7816830c01434a80eb205d7c8040cc4e5e26be0a3f9245950dcb1413396",
+    "logs/AB-mesh28-z-1n-5548095/heap-s3-r0.out": "7b1990e4795b47d1a00dd015fc916e41c3f5a1f376e1fcc766f77955e937aec9",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s0-r0.out": "06e597a8458a5644bdbe3b2c3ef4a643800ae017cd9a5f45671f72332f18f80b",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s1-r0.out": "37cd1f2cf3670ae192b3b7c9259b7a068eaf95f4445bff4398069a376cf7b35a",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s2-r0.out": "e824402ff3c733b825ea4e9879a3cbeb19db1d10a9be01852b33726488210b81",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s3-r0.out": "651a656dd8708ec45177dc43ac79b850e63b97717ab81b3acf8f244c792a1502",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s0-r0.out": "dd54cfa0454fa35930f1774005abbcf403e997cdcddf6c77f24a984ecdb663af",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s1-r0.out": "005fe9d1e72cff68c7ade38eaa290859c1ce4b868bc1e1ee25ef11153df87794",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s2-r0.out": "ba7a3dd894769ba1475fe0ef211b0bf52ce02103e2ac1c1fc27cc9dc8fbc57ce",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s3-r0.out": "1c82df698d03004e2aa4f3f3405bbfe510903692e81ee56a272314c7e6e11f86",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s0-r0.out": "02f545fe942a689a2c849dce6621f6a31ce5b4d1bed88a2f875fd4521c8dc42c",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s1-r0.out": "971e5c340b3f6bfb322519752c570bb8879080d06bbac7bd77016deb73bded2d",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s2-r0.out": "e9a0c99ad6b412142e96d25d5dbbe1f8c9295d7f298454b32c7d78ba386f092b",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s3-r0.out": "ec941c88ad7427fd97aade78513e58412f05389e59b968d0297947ff29247e05",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s0-r0.out": "92e42e0a8140f318ff22d3628b3fefd12a78d5e1d45c1850906511c28460570d",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s1-r0.out": "4fe8b33811cb16fb2be41679d8aee47019e5fbe356df811cffb7b2c961e9a62a",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s2-r0.out": "62f52e8c8f780177e7b2d2b02a30c34217f140298b9a81d6d5d9ac78a89686c7",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s3-r0.out": "0cd3f29c5d6228ea1f156cb14195cd7dbbd54d72df87d2e4a2e2d0c11ca30035",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s0-r0.out": "d9dcc1b00c3fd5a661a861f8d9322a25d3a4fc38882e3e95219839b73481dd23",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s1-r0.out": "602fd638ca03bcfaa313d159d6e5954f56550f29e7436162ca68a2aa5c754111",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s2-r0.out": "3dcb89d28351e8f05a4fdd527fbcddd772721b5a4fe28bfa7781d69fd7a4d15b",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s3-r0.out": "c52efea4556ee6c393a5159de792e5286c64f591a5a5738a8e81cc3bc6306891",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s0-r1.out": "2cb3763e54cbabab742052acfc07fae91442743ee8558ece007f7dddfc180baf",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s1-r1.out": "0a74fe01591423e44d345e94e1baa5cda910f87debb73146c19bdfe4cb18fb24",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s2-r1.out": "8bfd1476428dfcffe3d6f20874d9836cb5c94733a80e3b588e82f0c8373cec4e",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s3-r1.out": "e9836a6043e856c1ce252deb848858720b3b2516bdd642b941abddbe3fb682a1",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s0-r1.out": "c79ae41ea30b30093ccd27b6389b034cab867e53a7d5a72b74b070b91a765386",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s1-r1.out": "48d883b761d150a4ee59dca2c22c48c1d80acb08faf811a77a3dd665663d72e6",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s2-r1.out": "66312c57c05b4a36db2d7ce88fc84589c815542a2de67fcf4fab86232b6faf8a",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s3-r1.out": "8d8c7121960593bf155eb75e02ee96bf3231a26dbcb5c800d637939a1afce3c1",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s0-r1.out": "382d4b77f5d59ed719b5c5b0fc28a45ff9a481808b954bd50a31c5d097068d59",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s1-r1.out": "8fd7c6ec90dbe57e115cf441cef996e986f49e6e243e6c5ff61de54f00722b60",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s2-r1.out": "15ad58583c669e98cd30b6c4115b1a55884730393ba1d252d055a0b17ef504cd",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s3-r1.out": "5eae580376b1e111e0d958f29e0dc31d99fef1a648da93acb195957f61845647",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s0-r1.out": "488822a78ce169553297cf82ac57458db4382dca72092e62bfd3152070f4ce54",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s1-r1.out": "e75c36a6d78e3751d4bcbea6edeb13781de74c52b4a01f8b02b7efbb470621df",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s2-r1.out": "7c6d75b5fa7eff125a2225957621ec4a4173a949b6e01facf46efacdf8eb6a67",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s3-r1.out": "1edc759f456c4c00bfb1cd3e98546b026c9b59e2223b0fdd22310a07e867efb6",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s0-r1.out": "553e877688e7070d3cab940ac6bb945758d466c5f6404fdf637dd4ac7f7a3436",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s1-r1.out": "c2a57960e443994762f7567980b54b2f57a4b231eac3724db1c5eec7aa1b6079",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s2-r1.out": "69df7c2adeb849cf44c0523fd25facd19a71ebc3177ce192c7cf77c0e7a0ac35",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s3-r1.out": "1ae48a66192230b5da4728de7a6624c60367b0fd4d60127412a35339e830b18b",
+    "logs/AB-mesh28-z-1n-5548095/heap-s0-r1.out": "efb1a83672e4cd1ac25765335e0fd37a716fc498734f7424ea925a3016d79fb9",
+    "logs/AB-mesh28-z-1n-5548095/heap-s1-r1.out": "ce9eb0ff36507d9db958e5756d058c48052d183b3ae7fa78c51436d637030cf5",
+    "logs/AB-mesh28-z-1n-5548095/heap-s2-r1.out": "f5ac8fedf8faf631ba96aae1aecde9a14ed7ffa9d2e19f16814b567ef4aef9fd",
+    "logs/AB-mesh28-z-1n-5548095/heap-s3-r1.out": "de4503a685f4aa4201b1230195d76bbc4db0d78190162e640c35006ab24b7400",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s0-r2.out": "bff6ba9542cb41a231ff1030e1d8fa63683083c5d0b06f42d23b71ac97d5c8ac",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s1-r2.out": "7a3aea1120e0908acd99bdbe60c2423a5b941609f0336c372d198d112ce7e3e6",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s2-r2.out": "fdfff4805bd171a2f6a2054adaf04450ffdb217856b37991d7eb1a9bb593cdca",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64-s3-r2.out": "90616f235a95d4fa75038c93019e126a853f1e027f98d18d65e21a90afea4826",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s0-r2.out": "dde844d98e594fab355314c1c91615ec8f2c1e4309edf306aa0ab32344ac4d95",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s1-r2.out": "02a603e7dccf9e6e0744cb2a9404463031ae94cad6ce3d432cabbeccca94a093",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s2-r2.out": "54f3a10d969da1afe3b19f8dbe5996224c8988beaa559f2215693f35b45c14f2",
+    "logs/AB-mesh28-z-1n-5548095/heap_control-s3-r2.out": "8ef56b22ae32fda4df35c56b4c74496a71a8f9ea4a971c9106fe8d1fd8da6bcf",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s0-r2.out": "ac294ea0698fb15770ad9a8154ab419cb3b259017a7ed1522b6825310d854b86",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s1-r2.out": "9150b7146ca1fd7f8d64f3e90d90fdb53fabadb92df0e45d2bf937369c83ab74",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s2-r2.out": "91b69a9dff774449e9c6ea35b74938ba348b38a10efefeaf175db9af58eceb8a",
+    "logs/AB-mesh28-z-1n-5548095/heap_cost-s3-r2.out": "81237184422e0049886833eaef8a1e45291d26a932a9dad3b1ad2e434c0a48d9",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s0-r2.out": "d149ded68c8253e857cd614f9446225920c0607d21b43e764ed4a6beb9504f3d",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s1-r2.out": "8c1eddd1eaf71eda473ae0f917bbdc0a7f737b748f3ccb22ad2ba350db38d392",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s2-r2.out": "b8cc5c39d8361f0e375432eaba24db5dbfcbfdb70fd0fe48a8019e18de8b3eaa",
+    "logs/AB-mesh28-z-1n-5548095/c256_s64_cost-s3-r2.out": "f6c3d7d1ef61c3276c83e6f6c50aca0100cd5aa1f16ac40aeaf370946707ddb3",
+    "logs/AB-mesh28-z-1n-5548095/heap-s0-r2.out": "631130f47e87a698f4a686eb107d42258566dd87483f80295135c458d4583b32",
+    "logs/AB-mesh28-z-1n-5548095/heap-s1-r2.out": "cb04c6a750697ffb3f32f0e5fb9cc6ae0ad3b08c4122a8a6b6f246e4a54822da",
+    "logs/AB-mesh28-z-1n-5548095/heap-s2-r2.out": "491bf6af2d3dd1718828b5b98c22eea71415c0672869429792e64c3e05e6e0c9",
+    "logs/AB-mesh28-z-1n-5548095/heap-s3-r2.out": "a19c2ebe6c15bc20d025102182e5374c23119b6fe72bde64143901df26ea93cb",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s0-r2.out": "7f467c15f82ab276dad87cfba5de22b2709a378fdf458cae61c644266bdeea5f",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s1-r2.out": "a2404de5912722f50d47968dd13a1d1f984a68c8b6b40fb154333cbf686400e2",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s2-r2.out": "00b11b2815065f8a79794da484b08ba49cf1ac5ebb2ffed5a0f12ecf4781f5ed",
+    "logs/AB-mesh28-z-1n-5548095/c256_s8-s3-r2.out": "801c4f33e9154fe7679ed9980e4e0325336f8365ab8c03506c324e1b24ab4960"
+  }
+}

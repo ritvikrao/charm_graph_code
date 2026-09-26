@@ -32,6 +32,10 @@ L = args.campaign / 'logs'
 PROD = 'ACIC production'            # acic_slice, 5ab6d5b
 TLS_H2 = 'ACIC TLS (acic_hint2_tls)'  # hints v2 working tree, initial-exec TLS runtime
 TLS = 'ACIC TLS (acic_tls)'          # 7afd94d, initial-exec TLS runtime
+W64 = 'ACIC production (acic_w64m)'  # 88aa0c3, WIRE=compact64 (ids past 2^31)
+TLS64 = 'ACIC TLS (acic_tls_w64m)'   # 88aa0c3, WIRE=compact64, initial-exec TLS runtime
+HEAP69 = 'ACIC TLS, heap queue (acic_heap69)'          # 69adfc1, initial-exec TLS runtime
+CHUNKS = 'ACIC TLS, chunk queue, slice 64 (acic_c256)'  # 69adfc1, ACIC_PROCESS_CHUNKS band 256
 # job -> {variant label: implementation}; the layout is part of the name when
 # it is not 8 processes x 7 workers per node.
 ACIC_JOBS = {
@@ -45,12 +49,19 @@ for j in ['5539286', '5539899', '5539900', '5539985', '5541240', '5541195', '554
     ACIC_JOBS[j] = {'frozen': PROD, 'h2tls': TLS_H2}
 for j in ['5541369', '5541370', '5541660', '5541426', '5541428', '5541663', '5541664', '5541665', '5541667']:
     ACIC_JOBS[j] = {'frozen': PROD, 'tls': TLS}
+for j in ['5546135', '5546136', '5546137']:  # road-planet-z
+    ACIC_JOBS[j] = {'frozen': PROD, 'tls': TLS}
+for j in ['5546130', '5546131']:  # terrain-ae-z
+    ACIC_JOBS[j] = {'w64': W64, 'tls64': TLS64}
+ACIC_JOBS['5548095'] = {'heap': HEAP69, 'c256_s64': CHUNKS}  # one-node mesh28-z queue A/B
 EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900', '5539985',
                  '5541240', '5541195', '5541196', '5541369', '5541370', '5541371', '5541428', '5541429',
-                 '5541663', '5541664', '5541665', '5541667', '5541713', '5541714', '5541715', '5541716', '5541717']
+                 '5541663', '5541664', '5541665', '5541667', '5541713', '5541714', '5541715', '5541716', '5541717',
+                 '5546135', '5546136', '5546137']
 ONE_NODE_JOBS = ['5529591', '5538465', '5538410', '5541358', '5541661',
                  '5536541', '5538411', '5541359', '5541662']
 DATASETS = ['mesh24-z', 'mesh26-z', 'mesh28-z', 'mesh30-z', 'road-usa-z', 'road-na-z', 'road-eu-z',
+            'road-planet-z', 'terrain-ae-z',
             'orkut', 'uniform25', 'rmat25', 'rmat26', 'rmat27']
 BASELINES = ['GAPBS', 'Wasp', 'Gluon', 'RIKEN']
 

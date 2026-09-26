@@ -1,6 +1,6 @@
 # ACIC current evidence
 
-*Status 2026-09-25. Results are grouped by dataset, then node count, then
+*Status 2026-09-26. Results are grouped by dataset, then node count, then
 implementation (§ Results by dataset); the mechanism sections that follow keep
 only the measurements specific to each mechanism. Raw summaries remain under
 `design/onenode-data/`; job logs remain in the recorded campaign directories;
@@ -14,8 +14,8 @@ faster; below 1× means it is slower.*
 
 **Against distributed SSSP.** ACIC is faster than tuned Gluon (D-Galois) on
 every graph, node count and held-out source measured: 1.5–5.3× on RMAT
-25–27, 8.9–17× on `uniform25` and orkut, and 8–192× on meshes and roads
-(4–64 nodes). It is faster than RIKEN on every mesh and road (54–2,179×;
+25–27, 8.9–17× on `uniform25` and orkut, and 8–244× on meshes and roads
+(4–64 nodes; 44–244× on the OSM planet road graph). It is faster than RIKEN on every mesh and road (54–2,179×;
 RIKEN's answers on the OSM roads are slightly inexact), and slower than RIKEN
 on every scale-free graph (0.29–0.90×).
 
@@ -47,10 +47,19 @@ RMAT25 also disables chunks: current ACIC reaches 0.754–0.833× over Wasp
 roads (cheaper rounds; the hub hints resolve off), 1.0–1.1× on orkut and
 `uniform25`, and 1.2–1.5× on RMAT, where the hints act.
 
-**Not yet measured.** Road and mesh inputs past one node's memory: the OSM
-planet road graph (`road-planet-z`, 199.5M vertices, fits one node) and the
-Copernicus terrain graph (`terrain-ae-z`, past 2^32 vertices; Gluon needs
-`gluon64.patch`) are being prepared.
+**Real inputs at scale.** On the OSM planet road graph (`road-planet-z`,
+199.5M vertices), ACIC TLS takes 1.78–1.97 s at 4 nodes, 0.87–1.06 s at 16
+and 0.63–0.83 s at 64, 44–244× faster than Gluon-Async at every node count.
+The Copernicus terrain graph (`terrain-ae-z`, 8.2B vertices, 65.6B edges,
+1.11 TB) does not fit one node. ACIC solves it exactly in 45–57 s at 8
+nodes and 26–35 s at 16 (TLS, wide ids; answers certified). Frontier
+replicates the Delta one-node mesh queue gain: 2.27–2.31× over the heap on
+`mesh28-z` (§25).
+
+**Not yet measured.** Gluon on `terrain-ae-z` (its input copy did not finish
+within Frontier's 2-hour limit), ACIC on it at 32 and 64 nodes, and one-node
+GAPBS and Wasp on `road-planet-z` (tuning jobs crashed on a harness
+regression, now fixed).
 
 ## Implementations
 
@@ -59,6 +68,8 @@ Copernicus terrain graph (`terrain-ae-z`, past 2^32 vertices; Gluon needs
 | ACIC production | `acic_slice` (5ab6d5b) | 8 processes × 7 workers per node (4 × 14 where named), process-wide nearest queue, batch 8, heap slice 8, `+old-scheduler`; roads add `--bucket-width 131072` |
 | ACIC TLS (acic_hint2_tls) | hints v2 working tree on the initial-exec TLS runtime | production settings plus `--hub-hints auto` (Gluon study, jobs 5539286–5541240) |
 | ACIC TLS (acic_tls) | 7afd94d on the initial-exec TLS runtime | production settings plus `--hub-hints auto` (larger-input study, jobs 5541369 onward) |
+| ACIC production (acic_w64m), ACIC TLS (acic_tls_w64m) | 88aa0c3, `WIRE=compact64` (ids past 2^31), production and TLS runtimes | mesh settings; TLS adds `--hub-hints auto` (`terrain-ae-z`) |
+| ACIC TLS, heap queue (acic_heap69) / chunk queue, slice 64 (acic_c256) | 69adfc1 on the TLS runtime; `acic_c256` adds `-DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256` | production mesh settings plus `--hub-hints auto`; heap slice 8 (heap) or 64 (chunks); one-node queue study, job 5548095 |
 | GAPBS | `gap_sssp`, one node | 56 threads, Δ tuned on the training sources |
 | Wasp | SC25 artifact `wasp_sssp`, one node | 56 threads, Δ tuned on the training sources |
 | Gluon | D-Galois `sssp-push` (`gluon.patch`: timer and digest only) | ranks per node, partition (oec/cvc) and Δ tuned on training sources per mode; Async and Sync on scale-free, Async only on mesh and road (Sync was 20–40× slower); pinned to 8 ranks, oec, Δ 64 on `mesh28-z`/`mesh30-z` |
@@ -164,6 +175,8 @@ and 5541370.
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC TLS, chunk queue, slice 64 (acic_c256) | 2.25–2.39 | 4 | 5548095 |
+| 1 | ACIC TLS, heap queue (acic_heap69) | 5.13–5.51 | 4 | 5548095 |
 | 1 | GAPBS | 1.51–1.57 | 4 | 5541661 |
 | 1 | Wasp | 0.911–1.01 | 4 | 5541662 |
 | 16 | ACIC production | 0.742–0.872 | 4 | 5541663 |
@@ -179,6 +192,8 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
+| 1 | ACIC TLS, chunk queue, slice 64 (acic_c256) | 0.63–0.68× | 0.38–0.45× | — | — |
+| 1 | ACIC TLS, heap queue (acic_heap69) | 0.27–0.30× | 0.17–0.20× | — | — |
 | 16 | ACIC production | 1.74–2.11× | 1.04–1.29× | 61.3–78.1× | 466–625× |
 | 16 | ACIC TLS (acic_tls) | 2.19–2.64× | 1.32–1.61× | 75.7–97.1× | 580–772× |
 | 64 | ACIC production | 3.07–3.95× | 1.85–2.41× | 59.3–86.3× | 241–322× |
@@ -190,6 +205,13 @@ RIKEN settings are pinned from the smaller meshes (Gluon 8 ranks, oec, Δ 64;
 RIKEN 8 ranks, Δ 1024). From 16 to 64 nodes ACIC gains 1.8×. Weak-scaling
 series (about 4.2M vertices per node), production: `mesh24-z`@4 0.143–0.159 s,
 `mesh26-z`@16 0.223–0.277 s, `mesh28-z`@64 0.397–0.494 s.
+
+The one-node rows are the Frontier replication of the Delta queue study (§25):
+both binaries built from 69adfc1 on the TLS runtime, 8 × 7, same allocation.
+Their speedups over GAPBS and Wasp pair across jobs. Wasp was faster on job
+5548095's node than in 5541662: on the one source it ran there (9130980,
+0.737–0.758 s), the chunk queue's in-allocation speedup over Wasp is 0.32×
+and the heap's 0.14×.
 
 #### `mesh30-z` (1,073.7M vertices, 4,294.8M edges)
 
@@ -329,6 +351,63 @@ RIKEN on `road-eu-z` reaches every vertex but its distance sum is high by 4.9e-0
 No Gluon at 4 nodes (as `road-na-z`). RIKEN at 4 nodes ran two sources once
 each (up to 1,542 s per solve).
 
+#### `road-planet-z` (199.5M vertices, 496.0M edges)
+
+| Nodes | Implementation | Time per solve (s) | Sources | Jobs |
+|---:|---|---:|---:|---|
+| 4 | ACIC production | 2.15–2.37 | 4 | 5546135 |
+| 4 | ACIC TLS (acic_tls) | 1.78–1.97 | 4 | 5546135 |
+| 4 | Gluon (Async) | 253–474 | 4 | 5546135 |
+| 16 | ACIC production | 1.05–1.26 | 4 | 5546136 |
+| 16 | ACIC TLS (acic_tls) | 0.867–1.06 | 4 | 5546136 |
+| 16 | Gluon (Async) | 91.2–165 | 4 | 5546136 |
+| 64 | ACIC production | 0.744–0.977 | 4 | 5546137 |
+| 64 | ACIC TLS (acic_tls) | 0.626–0.829 | 4 | 5546137 |
+| 64 | Gluon (Async) | 31.3–60.9 | 4 | 5546137 |
+
+ACIC's speedup (baseline time / ACIC time, range over held-out sources):
+
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
+|---:|---|---:|---:|---:|---:|
+| 4 | ACIC production | — | — | 114–202× | — |
+| 4 | ACIC TLS (acic_tls) | — | — | 141–244× | — |
+| 16 | ACIC production | — | — | 78.8–142× | — |
+| 16 | ACIC TLS (acic_tls) | — | — | 94.8–172× | — |
+| 64 | ACIC production | — | — | 35.9–71.2× | — |
+| 64 | ACIC TLS (acic_tls) | — | — | 43.5–84.6× | — |
+
+OSM planet 2025-12-29, RoutingKit car graph, largest component
+(Afro-Eurasia); maximum distance 13.0M–18.0M, so RIKEN is excluded (past
+2^24). Gluon is pinned to 8 ranks, oec, Δ 131072 at 4 nodes; job 5546135 hit
+its 2-hour limit during Gluon's last repetition, so one source has two Gluon
+solves. TLS over production 1.15–1.24×. TLS strong scaling: 4 → 16 nodes
+1.86–2.05×, 16 → 64 nodes 1.27–1.38×. The graph fits one node, but the
+one-node GAPBS and Wasp tuning jobs (5546133/5546134) crashed at start on a
+harness regression (`run.py --gluon-binary`, fixed in 9028c4d) and have not
+been rerun, so no one-node comparison exists yet.
+
+### Terrain (Copernicus DEM, past 2^32 vertices)
+
+#### `terrain-ae-z` (8,196.3M vertices, 65,560.1M edges)
+
+| Nodes | Implementation | Time per solve (s) | Sources | Jobs |
+|---:|---|---:|---:|---|
+| 8 | ACIC production (acic_w64m) | 57.9–73.7 | 4 | 5546130 |
+| 8 | ACIC TLS (acic_tls_w64m) | 44.9–57.3 | 4 | 5546130 |
+| 16 | ACIC production (acic_w64m) | 34.2–44.6 | 4 | 5546131 |
+| 16 | ACIC TLS (acic_tls_w64m) | 26.4–34.7 | 4 | 5546131 |
+
+Copernicus GLO-90 land south of 50°N, 8-neighbour Tobler walking time
+(deciseconds, capped at 36,000), the component containing the Tian Shan,
+Morton ids; 1.11 TB as a wide `.wsg`. No one-node baseline can hold it.
+Every solve returns the digest of the certified reference (job 5546087, ACIC
+`--certify` at 16 nodes). Two repetitions per source. TLS over production
+1.29–1.30× (predicted 1.10–1.30×); 8 → 16 nodes 1.63–1.70× (predicted
+1.5–2.0×). There is no Gluon time yet: the version-2 Galois copy (job 5546090)
+wrote 607 GB of about 850 GB before the 2-hour limit that Frontier sets for
+jobs under 92 nodes, so the 64-node Gluon Δ pilot (5546129) never became
+eligible. The 32- and 64-node ACIC runs wait on that pilot.
+
 ### Scale-free
 
 #### `orkut` (3.1M vertices, 234.4M edges)
@@ -438,8 +517,8 @@ speedup over Gluon falls from about 4× on `rmat25` to about 2× here.
 
 | Dataset | Size | Status |
 |---|---|---|
-| `road-planet-z` (OSM planet 2025-12-29, largest component) | 199.5M vertices, 478.9M one-way edges before symmetrizing | extracted (job 5545069); files and references in job 5545070 |
-| `terrain-ae-z` (Copernicus GLO-90, land south of 50°N, component containing Central Asia) | expected about 8e9 vertices, 1.1 TB | building (job 5545904); references by certified ACIC (`terrain_reference.sbatch`); Gluon via `gluon64.patch` (oec only; validated in job 5545185) |
+| `road-planet-z` | 199.5M vertices, 496.0M edges | one-node GAPBS and Wasp tuning to rerun (5546133/5546134 crashed at start; harness fixed in 9028c4d) |
+| `terrain-ae-z` | 8.2B vertices, 65.6B edges, 1.11 TB | Gluon: the version-2 `.gr` copy needs a parallel or resumable `to_galois.py` (5546090 wrote 607 GB of about 850 GB in the 2-hour limit); then the 64-node Δ pilot (5546129, never eligible) and held-out Gluon with ACIC at 32 and 64 nodes |
 
 ## Mechanism chain established September 18–23
 
@@ -1783,10 +1862,50 @@ Raw campaigns are
 22442497, 22442513 and 22442557 failed before timing because of harness/staging
 checks and produced no measurement data. No jobs remain queued.
 
+### 25. Frontier mesh28-z: the chunk queue replicates (2026-09-25)
+
+A one-node Frontier trace first confirmed the Delta attribution (job 5546915,
+source 141442404, production flags on the TLS runtime, built from 2bacfc4):
+
+- **8 × 7:** 5.42–5.45 s per solve against Wasp's 0.82–0.85 s on the same
+  node. Queue push and pop took 57% of CPU, 183 ns per push and 718 ns per
+  pop call.
+- **1 × 56:** 10.0 s, with a 5.4 µs pop that scans 56 hints across all eight
+  L3 domains.
+- **Both layouts:** under 6% idle. 99.7% of edge attempts stayed inside their
+  process.
+- **Queued callbacks:** self-sent `process_heap` messages waited a median of
+  0.79 ms, because `current_thresholds` adds a callback chain every round.
+
+Job 5548095 then compared the queues on the four held-out sources. All
+binaries were built from 69adfc1 on the TLS runtime, 8 × 7, one warmup and
+three repetitions. All 96 timed and 32 work-cost solves pass the audit.
+Predictions are recorded in `benchmarks/frontier-1n-chunks-mesh-variants.json`
+(commit 3f6133b).
+
+| Arm | Time per solve (s) | Speedup over heap | Prediction |
+|---|---:|---:|---|
+| heap, slice 8 (`acic_heap69`) | 5.13–5.51 | 1.00× | — |
+| chunks band 256, slice 8 (`acic_c256`) | 2.73–2.90 | 1.88–1.90× | 1.5–2.4×, met |
+| chunks band 256, slice 64 | 2.25–2.39 | 2.27–2.31× | 1.8–2.8×, met; faster than slice 8 on every source, met |
+| heap control | 5.12–5.48 | 1.00–1.01× | within 0.95–1.05×, met |
+
+With the chunk queue, CPU per edge attempt falls from 194–201 ns to 94–95 ns
+and queue calls from 57% to 23% of CPU, while attempts per edge rise from
+1.29–1.37 to 1.36–1.46 (work-cost arms, 16 solves each). Wasp in the same allocation ran only one source (a harness
+bug, fixed in 9028c4d). There the chunk queue's speedup is 0.32×, within the
+predicted 0.30–0.50×. Delta measured 2.53–2.55× over the heap and 0.61–0.70×
+over Wasp (§17). The gain carries across machines; Wasp's margin is larger on
+Frontier's 56-core node. The chunk queue stays opt-in and mesh-only (§18).
+Its effect on multi-node meshes is unmeasured. Record:
+`design/onenode-data/frontier-mesh28-chunks-5548095.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Frontier mesh28-z one-node queue replication | `design/onenode-data/frontier-mesh28-chunks-5548095.json` (audit, 96 + 32 solves); `benchmarks/frontier-1n-chunks-mesh-variants.json` (predictions, 3f6133b); `scripts/frontier/chunks_1n.sbatch`; profile job 5546915 (`scripts/frontier/profile_1n.sbatch`; traces under `campaign/profile/mesh28-z-1n-5546915/`) |
+| Frontier `road-planet-z` and `terrain-ae-z` | jobs 5546135/5546136/5546137 (planet, ACIC + Gluon-Async) and 5546130/5546131 (terrain, ACIC); `benchmarks/frontier-large-road-*-variants.json`, `benchmarks/frontier-terrain-terrain-*-variants.json`; certified terrain reference 5546087; rows in `design/onenode-data/results-by-dataset.json` |
 | Delta road contribution placement | `design/onenode-data/delta-road-contribution-22442601.json`, `delta-road-contribution-fused-22442746.json`; `benchmarks/delta-road-contribution{,-fused}-protocol.json`; jobs 22442601 and 22442746 |
 | Delta road-eu / Wasp, one node | `design/onenode-data/delta-road-eu-22442237.json`; `benchmarks/delta-road-eu-compare-protocol.json`; preparation jobs 22442048/22442049/22442191/22442205 and comparison job 22442237 |
 | Delta one-node road gap attribution | `design/onenode-data/delta-road-gap-20260925.json`; `benchmarks/road_gap_report.py`; gap, feature and trace protocols / jobs 22411020, 22411141, 22411198 |
@@ -1842,10 +1961,19 @@ and paths are consolidated in [configurations.md](configurations.md).
    keeps gaining on meshes (`mesh26-z` 1.3× from 16 to 64, `mesh28-z` 1.8×,
    `mesh30-z` 1.4–1.5× from 32 to 64) but barely on roads.
 6. ACIC is faster than tuned Gluon on every graph, node count and held-out
-   source measured (1.5–192×), and faster than RIKEN on every mesh and road.
+   source measured (1.5–244×), and faster than RIKEN on every mesh and road.
 7. On meshes from `mesh26-z` up and on the OSM roads, ACIC at 16–64 nodes beats
    tuned one-node GAPBS, and the mesh margin over GAPBS and Wasp grows with
    input size (`mesh30-z` at 64 nodes: 5.0–7.0× and 2.3–3.8×).
+8. ACIC solves a real 8.2-billion-vertex, 65.6-billion-edge terrain graph
+   (1.11 TB, past one node's memory and past 2^32 ids) exactly: every solve
+   matches a distributed certificate of optimality, in 26–35 s at 16 nodes
+   (TLS), 1.63–1.70× faster than at 8 nodes.
+9. On the 199.5M-vertex OSM planet road graph, ACIC is 44–244× faster than
+   Gluon-Async at 4, 16 and 64 nodes, and gains 1.86–2.05× from 4 to 16 nodes
+   and 1.27–1.38× from 16 to 64.
+10. The Delta one-node mesh queue result replicates on Frontier: 2.27–2.31×
+    over the heap on four held-out `mesh28-z` sources (§25).
 
 ## Claims not supported
 
@@ -1857,8 +1985,10 @@ and paths are consolidated in [configurations.md](configurations.md).
   Wasp, and on `road-usa-z` it loses to it.
 - ACIC scales on roads beyond 16 Frontier nodes (1.1–1.2× from 16 to 64), or
   has any strong-scaling curve on Anvil.
-- Results on inputs past one node's memory (pending: `road-planet-z` fits one
-  node; `terrain-ae-z` does not).
+- Any comparison with another code on inputs past one node's memory: Gluon on
+  `terrain-ae-z` is not yet measured, and no one-node baseline fits it.
+- Any one-node comparison on `road-planet-z` (GAPBS and Wasp not yet run).
+- Multi-node behavior of the one-node chunk queue.
 - The current candidate is regression-free on RMAT. The Frontier frozen-binary
   gate returned NO-GO by its recorded rule (`rmat26`, `rmat27`, 2.5–5% on
   single sources, §10).
