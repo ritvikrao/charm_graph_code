@@ -20,7 +20,7 @@ APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 mkdir -p "$ROOT/bin" "$ROOT/build" "$ROOT/graphs" "$ROOT/logs" "$ROOT/protocol"
 
 for graph in road-usa-z mesh24-z; do
-  for suffix in .wsg .meta .perm .placement.json .reference.txt; do
+  for suffix in .wsg .meta .perm .reference.txt; do
     source_path=$SOURCE/graphs/$graph$suffix
     target_path=$ROOT/graphs/$graph$suffix
     test -f "$source_path"
