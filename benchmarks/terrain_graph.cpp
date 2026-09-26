@@ -1,15 +1,28 @@
-// Copernicus DEM GLO-90 terrain as an 8-neighbour cost-distance graph, in the
-// wide GAPBS .wsg layout (int64 ids; {int64 v; int32 w; 4 bytes pad} per edge,
-// graphlib/gapbs.h).
+// Copernicus DEM GLO-90 or GLO-30 terrain as an 8-neighbour cost-distance
+// graph, in the wide GAPBS .wsg layout (int64 ids; {int64 v; int32 w; 4 bytes
+// pad} per edge, graphlib/gapbs.h), optionally narrow, optionally also (or
+// only) as a Galois .gr.
 //
 //   terrain_graph TILEDIR LAT0 LAT1 LON0 LON1 SEED_LAT SEED_LON SOURCES OUT.wsg
+//       [--arcsec 3|1] [--count] [--narrow] [--gr OUT.gr] [--part K/P]
 //
-// TILEDIR holds one raw little-endian float32 1200 x 1200 array per 1-degree
-// tile (gdal_translate -of ENVI of the Copernicus COG), named like the COG with
-// .f32: Copernicus_DSM_COG_30_N45_00_E006_00_DEM.f32 covers pixel centres at
-// latitudes 45 + 1/1200 .. 46 and longitudes 6 .. 7 - 1/1200. The region is
-// the tiles with south edge in [LAT0, LAT1) and west edge in [LON0, LON1);
-// every such tile is 1200 x 1200 on one 3" grid only within [-50, 50).
+// TILEDIR holds one raw little-endian float32 T x T array per 1-degree tile
+// (gdal_translate -of ENVI of the Copernicus COG), named like the COG with
+// .f32. --arcsec 3 (the default) reads GLO-90: T = 1200,
+// Copernicus_DSM_COG_30_N45_00_E006_00_DEM.f32 covers pixel centres at
+// latitudes 45 + 1/1200 .. 46 and longitudes 6 .. 7 - 1/1200. --arcsec 1 reads
+// GLO-30: T = 3600, Copernicus_DSM_COG_10_... . The region is the tiles with
+// south edge in [LAT0, LAT1) and west edge in [LON0, LON1); every such tile is
+// T x T on one uniform grid only within [-50, 50).
+//
+// Options. --count stops after the component and writes nothing. --narrow
+// writes int32 ids ({int32 v; int32 w} per edge) and a version-1 .gr; it needs
+// fewer than 2^31 vertices. --gr also writes the Galois .gr that
+// benchmarks/to_galois.py would make from the .wsg (version 2 for wide ids,
+// version 1 for narrow); OUT.wsg "-" writes only the .gr. --part K/P writes
+// only the blocks whose first edge falls in the K-th of P equal edge ranges,
+// into existing or new files without truncating them, so P jobs can write one
+// graph; part 0 also writes the headers and the final offset.
 //
 // Vertices. A cell is land when its height is not exactly 0 (Copernicus writes
 // the ocean as 0; land below sea level keeps its negative height) and its tile
@@ -49,7 +62,8 @@
 
 namespace {
 
-constexpr int T = 1200;           // cells per tile side
+int T = 1200;                     // cells per tile side (--arcsec)
+const char *TILE_PREFIX = "30";   // Copernicus_DSM_COG_<prefix>_: 30 for GLO-90, 10 for GLO-30
 constexpr int B = 64;             // Morton block side
 constexpr double RADIUS = 6371008.8;
 constexpr int MAX_WEIGHT = 36000;
@@ -67,7 +81,7 @@ uint64_t morton(uint64_t row, uint64_t col) { return spread(row) | (spread(col) 
 
 std::string tile_name(int lat, int lon) {
   char s[96];
-  snprintf(s, sizeof s, "Copernicus_DSM_COG_30_%c%02d_00_%c%03d_00_DEM.f32",
+  snprintf(s, sizeof s, "Copernicus_DSM_COG_%s_%c%02d_00_%c%03d_00_DEM.f32", TILE_PREFIX,
            lat < 0 ? 'S' : 'N', std::abs(lat), lon < 0 ? 'W' : 'E', std::abs(lon));
   return s;
 }
@@ -118,9 +132,36 @@ void pwrite_all(int fd, const void *data, size_t bytes, off_t at) {
 }  // namespace
 
 int main(int argc, char **argv) try {
-  if (argc != 10)
-    throw std::runtime_error("usage: terrain_graph TILEDIR LAT0 LAT1 LON0 LON1 SEED_LAT SEED_LON SOURCES OUT.wsg");
+  if (argc < 10)
+    throw std::runtime_error("usage: terrain_graph TILEDIR LAT0 LAT1 LON0 LON1 SEED_LAT SEED_LON SOURCES OUT.wsg"
+                             " [--arcsec 3|1] [--count] [--narrow] [--gr OUT.gr] [--part K/P]");
   const std::string dir = argv[1], out = argv[9];
+  bool count_only = false, narrow = false;
+  std::string gr_out;
+  int part = 0, parts = 1;
+  for (int i = 10; i < argc; ++i) {
+    const std::string a = argv[i];
+    auto value = [&]() -> std::string {
+      if (i + 1 >= argc) throw std::runtime_error(a + " needs a value");
+      return argv[++i];
+    };
+    if (a == "--arcsec") {
+      const std::string v = value();
+      if (v == "3") { T = 1200; TILE_PREFIX = "30"; }
+      else if (v == "1") { T = 3600; TILE_PREFIX = "10"; }
+      else throw std::runtime_error("--arcsec must be 3 or 1");
+    } else if (a == "--count") count_only = true;
+    else if (a == "--narrow") narrow = true;
+    else if (a == "--gr") gr_out = value();
+    else if (a == "--part") {
+      const std::string v = value();
+      const size_t slash = v.find('/');
+      if (slash == std::string::npos) throw std::runtime_error("--part needs K/P");
+      part = std::stoi(v.substr(0, slash)); parts = std::stoi(v.substr(slash + 1));
+      if (parts < 1 || part < 0 || part >= parts) throw std::runtime_error("--part needs 0 <= K < P");
+    } else throw std::runtime_error("unknown option " + a);
+  }
+  if (out == "-" && gr_out.empty() && !count_only) throw std::runtime_error("nothing to write");
   Raster g;
   g.lat0 = std::stoi(argv[2]); g.lat1 = std::stoi(argv[3]);
   g.lon0 = std::stoi(argv[4]); g.lon1 = std::stoi(argv[5]);
@@ -144,7 +185,8 @@ int main(int argc, char **argv) try {
     const size_t got = fread(t.data(), 4, t.size(), f);
     const bool extra = fgetc(f) != EOF;
     fclose(f);
-    if (got != t.size() || extra) throw std::runtime_error("tile is not 1200 x 1200 float32: " + tile_name(lat, lon));
+    if (got != t.size() || extra)
+      throw std::runtime_error("tile is not " + std::to_string(T) + " x " + std::to_string(T) + " float32: " + tile_name(lat, lon));
     long k = 0;
     for (float h : t) k += h != 0.0f && std::isfinite(h);
     for (float h : t) if (!std::isfinite(h)) throw std::runtime_error("non-finite height in " + tile_name(lat, lon));
@@ -204,6 +246,8 @@ int main(int argc, char **argv) try {
   printf("component=%ld of %ld land cells, BFS levels=%ld, seed row=%lld col=%lld (%.1f s)\n", component,
          land_cells.load(), levels, (long long)(seed / g.cols), (long long)(seed % g.cols), omp_get_wtime() - t0);
   fflush(stdout);
+  if (count_only) return 0;
+  if (narrow && component >= (1L << 31)) throw std::runtime_error("--narrow needs fewer than 2^31 vertices");
 
   // 3. Morton blocks: kept-cell bitmaps in in-block Morton order, blocks in
   // Morton order of (block row, block column); ids are block start + rank.
@@ -245,28 +289,47 @@ int main(int argc, char **argv) try {
   printf("vertices=%lld directed_edges=%lld (%.1f s)\n", (long long)n, (long long)m, omp_get_wtime() - t0);
   fflush(stdout);
 
-  // 4. The file: header, n + 1 offsets, m 16-byte edges. Each block writes its
-  // own slice of both.
-  const int fd = open(out.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-  if (fd < 0) throw std::runtime_error("cannot open " + out);
-  char head[17]; head[0] = 0;
-  std::memcpy(head + 1, &m, 8); std::memcpy(head + 9, &n, 8);
-  pwrite_all(fd, head, 17, 0);
+  // 4. The files. Each block writes its own slice of every array: the .wsg
+  // header, n + 1 offsets and m edges (16 bytes wide, 8 narrow); the .gr
+  // header, n end offsets, m destinations (8 bytes in version 2, 4 in version
+  // 1, then 4 bytes of padding when m is odd) and m weights.
+  const int flags = O_WRONLY | O_CREAT | (parts == 1 ? O_TRUNC : 0);
+  const int fd = out == "-" ? -1 : open(out.c_str(), flags, 0644);
+  if (out != "-" && fd < 0) throw std::runtime_error("cannot open " + out);
+  const int gfd = gr_out.empty() ? -1 : open(gr_out.c_str(), flags, 0644);
+  if (!gr_out.empty() && gfd < 0) throw std::runtime_error("cannot open " + gr_out);
+  const int64_t erec = narrow ? 8 : 16, gdst = narrow ? 4 : 8;
   const off_t offsets_at = 17, edges_at = 17 + (n + 1) * 8;
-  pwrite_all(fd, &m, 8, offsets_at + n * 8);
+  const off_t g_dst_at = 32 + n * 8, g_w_at = g_dst_at + m * gdst + (narrow && (m & 1) ? 4 : 0);
+  if (part == 0) {
+    if (fd >= 0) {
+      char head[17]; head[0] = 0;
+      std::memcpy(head + 1, &m, 8); std::memcpy(head + 9, &n, 8);
+      pwrite_all(fd, head, 17, 0);
+      pwrite_all(fd, &m, 8, offsets_at + n * 8);
+    }
+    if (gfd >= 0) {
+      const uint64_t head[4] = {narrow ? 1ULL : 2ULL, 4, uint64_t(n), uint64_t(m)};
+      pwrite_all(gfd, head, 32, 0);
+      if (narrow && (m & 1)) { const uint32_t zero = 0; pwrite_all(gfd, &zero, 4, g_dst_at + m * 4); }
+    }
+  }
+  const int64_t lo = m / parts * part + std::min<int64_t>(part, m % parts);
+  const int64_t hi = m / parts * (part + 1) + std::min<int64_t>(part + 1, m % parts);
   std::atomic<int32_t> max_weight{0};
-  std::atomic<long> capped{0};
+  std::atomic<long> capped{0}, part_blocks{0}, part_edges{0};
 #pragma omp parallel
   {
-    std::vector<int64_t> off;
-    std::vector<char> rec;
+    std::vector<int64_t> off, ends;
+    std::vector<char> rec, dst;
+    std::vector<int32_t> wts;
     std::vector<std::pair<int64_t, int32_t>> nb;
-    int32_t my_max = 0; long my_capped = 0;
+    int32_t my_max = 0; long my_capped = 0, my_blocks = 0, my_edges = 0;
 #pragma omp for schedule(dynamic, 16)
     for (int64_t b = 0; b < blocks; ++b) {
-      if (!count[b]) continue;
+      if (!count[b] || estart[b] < lo || estart[b] >= hi) continue;
       const int64_t r0 = (b / bcols) * B, c0 = (b % bcols) * B;
-      off.clear(); rec.clear();
+      off.clear(); ends.clear(); rec.clear(); dst.clear(); wts.clear();
       int64_t at = estart[b];
       for (uint64_t k = 0; k < uint64_t(B) * B; ++k) {        // in-block Morton order
         if (!(bits[size_t(b) * 64 + (k >> 6)] >> (k & 63) & 1)) continue;
@@ -284,27 +347,54 @@ int main(int argc, char **argv) try {
         std::sort(nb.begin(), nb.end());
         off.push_back(at);
         for (auto &[v, w] : nb) {
-          char e[16] = {};
-          std::memcpy(e, &v, 8); std::memcpy(e + 8, &w, 4);
-          rec.insert(rec.end(), e, e + 16);
+          if (fd >= 0) {
+            char e[16] = {};
+            if (narrow) { const int32_t v32 = int32_t(v); std::memcpy(e, &v32, 4); std::memcpy(e + 4, &w, 4); }
+            else { std::memcpy(e, &v, 8); std::memcpy(e + 8, &w, 4); }
+            rec.insert(rec.end(), e, e + erec);
+          }
+          if (gfd >= 0) {
+            if (narrow) { const uint32_t v32 = uint32_t(v); dst.insert(dst.end(), (char *)&v32, (char *)&v32 + 4); }
+            else { const uint64_t v64 = uint64_t(v); dst.insert(dst.end(), (char *)&v64, (char *)&v64 + 8); }
+            wts.push_back(w);
+          }
         }
         at += int64_t(nb.size());
+        ends.push_back(at);
       }
       if (at != estart[b] + edge_count[b]) throw std::runtime_error("edge count mismatch");
-      pwrite_all(fd, off.data(), off.size() * 8, offsets_at + vstart[b] * 8);
-      pwrite_all(fd, rec.data(), rec.size(), edges_at + estart[b] * 16);
+      if (fd >= 0) {
+        pwrite_all(fd, off.data(), off.size() * 8, offsets_at + vstart[b] * 8);
+        pwrite_all(fd, rec.data(), rec.size(), edges_at + estart[b] * erec);
+      }
+      if (gfd >= 0) {
+        pwrite_all(gfd, ends.data(), ends.size() * 8, 32 + vstart[b] * 8);
+        pwrite_all(gfd, dst.data(), dst.size(), g_dst_at + estart[b] * gdst);
+        pwrite_all(gfd, wts.data(), wts.size() * 4, g_w_at + estart[b] * 4);
+      }
+      ++my_blocks; my_edges += edge_count[b];
     }
     int32_t cur = max_weight.load();
     while (my_max > cur && !max_weight.compare_exchange_weak(cur, my_max)) {}
-    capped += my_capped;
+    capped += my_capped; part_blocks += my_blocks; part_edges += my_edges;
   }
-  if (fsync(fd) || close(fd)) throw std::runtime_error("close failed");
-  int64_t denominator = 1;
-  while (denominator < max_weight) denominator *= 2;
-  printf("vertices=%lld arcs=%lld max_weight=%d riken_denominator=%lld\n", (long long)n, (long long)m,
-         max_weight.load(), (long long)denominator);
-  printf("capped_edges=%ld bytes=%lld (%.1f s)\n", capped.load(), (long long)(edges_at + m * 16),
-         omp_get_wtime() - t0);
+  if (fd >= 0 && (fsync(fd) || close(fd))) throw std::runtime_error("close failed");
+  if (gfd >= 0 && (fsync(gfd) || close(gfd))) throw std::runtime_error("close failed");
+  const long long wsg_bytes = edges_at + m * erec, gr_bytes = g_w_at + m * 4;
+  if (parts > 1) {
+    // A part sees only its own weights; the job that joins the parts takes
+    // the largest max_weight and sums capped_edges and part_edges.
+    printf("part=%d/%d blocks=%ld part_edges=%ld max_weight=%d capped_edges=%ld wsg_bytes=%lld gr_bytes=%lld (%.1f s)\n",
+           part, parts, part_blocks.load(), part_edges.load(), max_weight.load(), capped.load(), wsg_bytes, gr_bytes,
+           omp_get_wtime() - t0);
+  } else {
+    int64_t denominator = 1;
+    while (denominator < max_weight) denominator *= 2;
+    printf("vertices=%lld arcs=%lld max_weight=%d riken_denominator=%lld\n", (long long)n, (long long)m,
+           max_weight.load(), (long long)denominator);
+    printf("capped_edges=%ld bytes=%lld gr_bytes=%lld (%.1f s)\n", capped.load(), fd >= 0 ? wsg_bytes : 0LL,
+           gfd >= 0 ? gr_bytes : 0LL, omp_get_wtime() - t0);
+  }
 
   // 5. Sources, as reference_gap draws them.
   std::set<int64_t> used;
