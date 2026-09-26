@@ -32,16 +32,23 @@ for graph in road-usa-z mesh24-z; do
   done
 done
 
-bash "$APP/scripts/delta/build_onenode.sh" "$ROOT" acic_contrib_immediate "$REV" production
-ACIC_BUILD_FLAGS=-DACIC_POST_WORK_CONTRIBUTION \
-  bash "$APP/scripts/delta/build_onenode.sh" "$ROOT" acic_contrib_post_work "$REV" production
+if [ ! -e "$ROOT/bin/acic_contrib_immediate" ]; then
+  bash "$APP/scripts/delta/build_onenode.sh" "$ROOT" acic_contrib_immediate "$REV" production
+fi
+if [ ! -e "$ROOT/bin/acic_contrib_post_work" ]; then
+  ACIC_BUILD_FLAGS=-DACIC_POST_WORK_CONTRIBUTION \
+    bash "$APP/scripts/delta/build_onenode.sh" "$ROOT" acic_contrib_post_work "$REV" production
+fi
+grep -q "^revision=$REV kind=production " "$ROOT/bin/acic_contrib_immediate.manifest"
+grep -q "^revision=$REV kind=production " "$ROOT/bin/acic_contrib_post_work.manifest"
+grep -q '^compiler=.* flags= wire=' "$ROOT/bin/acic_contrib_immediate.manifest"
+grep -q ' flags=-DACIC_POST_WORK_CONTRIBUTION wire=' "$ROOT/bin/acic_contrib_post_work.manifest"
 
 BUILD=$(sed -n 's/.* build=//p' "$ROOT/bin/acic_contrib_post_work.manifest")
 export SLURM_MPI_TYPE=cray_shasta PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid
 export LCT_PMI_BACKEND=local
 export SSSP_MAKE_ARGS="CHARMC_SMP=$HOME/charm_reconverse/bin/charmc HTRAM_DIR=$BUILD/htram"
-export SSSP_EXTRA_ARGS="--process-share on --reader-tile auto --slack-control off --process-queue nearest --process-queue-batch 8 --heap-slice 8"
 (cd "$BUILD/src"; bash scripts/verify.sh) > "$ROOT/logs/post-work-unit-$SLURM_JOB_ID.out" 2>&1
-unset LCT_PMI_BACKEND SSSP_MAKE_ARGS SSSP_EXTRA_ARGS
+unset LCT_PMI_BACKEND SSSP_MAKE_ARGS
 
 python3 "$APP/benchmarks/road_contribution_study.py" "$ROOT"
