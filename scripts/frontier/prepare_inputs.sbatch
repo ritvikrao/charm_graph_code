@@ -53,6 +53,10 @@ dimacs() {    # name file vertices [awk weight filter]
 meshz() {     # name vertices seed: Morton-ordered mesh written directly (prepare_graph meshz)
   "$BIN/prepare_graph" meshz 2 "$2" "$3" "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
 }
+gridz() {     # name dim vertices seed max_weight: Morton grid and its .gr, written in parallel (grid_graph)
+  "$BIN/grid_graph" "$2" "$3" "$4" "$5" 6 "$DATA/$1.wsg.tmp" --gr "$DATA/$1.gr.tmp" > "$DATA/$1.build.log" &&
+    head -1 "$DATA/$1.build.log" > "$DATA/$1.meta.tmp" && mv "$DATA/$1.gr.tmp" "$DATA/$1.gr" && touch "$DATA/$1.gr.done"
+}
 snap() {      # name file vertices
   gzip -dc "$RAW/$2" | "$BIN/prepare_graph" snap "$3" 0 1 "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
 }
@@ -62,7 +66,7 @@ prepare_one() {
   case $name in
     mesh20|rmat20|uniform20|mesh22|rmat22|rmat20-s2|uniform20-s2|road-ny|youtube) sources=10 ;;
   esac
-  case $name in road-usa|road-eu|road-na|road-planet) range=any-range ;; esac  # distances exceed binary32; ACIC/GAPBS/Gluon only
+  case $name in road-usa|road-eu|road-na|road-planet|mesh28-w64k-z) range=any-range ;; esac  # distances exceed binary32; ACIC/GAPBS/Gluon only
   if [ ! -s "$base.wsg" ] || [ ! -s "$base.meta" ]; then
     case $name in
       uniform20)    generate "$name" 1 1048576 1 ;;
@@ -78,6 +82,12 @@ prepare_one() {
       # to gen + reorder_graph.py at 2^24 and 2^26, which do not fit past 2^28.
       mesh28-z)     meshz "$name" 268435456 1 ;;
       mesh30-z)     meshz "$name" 1073741824 1 ;;
+      # Weight-range variants of mesh28-z (same topology and ids; weights
+      # uniform over [1, 10] and [1, 65536] instead of [1, 1000]) and the 3-D
+      # grid (1024^3, six neighbours), from grid_graph.
+      mesh28-w10-z)  gridz "$name" 2 268435456 1 10 ;;
+      mesh28-w64k-z) gridz "$name" 2 268435456 1 65536 ;;
+      grid3-30-z)    gridz "$name" 3 1073741824 1 1000 ;;
       rmat24)       generate "$name" 3 16777216 1 ;;
       rmat25)       generate "$name" 3 33554432 1 ;;
       rmat26)       generate "$name" 3 67108864 1 ;;
@@ -125,7 +135,7 @@ galois_one() {
   "$PY" "$APP/benchmarks/to_galois.py" "$DATA/$1.wsg" && touch "$DATA/$1.gr.done" ||
     { echo "CONVERSION FAILED $1"; return 1; }
 }
-export -f generate dimacs snap meshz prepare_one galois_one
+export -f generate dimacs snap meshz gridz prepare_one galois_one
 export CAMPAIGN
 
 printf '%s\n' ${NAMES//,/ } | xargs -P "$PARALLEL" -I{} bash -c 'prepare_one {}'

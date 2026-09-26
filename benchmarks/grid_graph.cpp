@@ -137,6 +137,8 @@ int main(int argc, char **argv) try {
   }
   for (int64_t k = 0; k < chunks; ++k) estart[k + 1] += estart[k];
   if (estart[chunks] != m) throw std::runtime_error("degree sum differs from 2 D (N - N / side)");
+  printf("vertices=%lld directed_edges=%lld (%.1f s)\n", (long long)n, (long long)m, omp_get_wtime() - t0);
+  fflush(stdout);
 
   const int flags = O_WRONLY | O_CREAT | (parts == 1 ? O_TRUNC : 0);
   const int fd = out == "-" ? -1 : open(out.c_str(), flags, 0644);
@@ -225,8 +227,8 @@ int main(int argc, char **argv) try {
   if (fd >= 0 && (fsync(fd) || close(fd))) throw std::runtime_error("close failed");
   if (gfd >= 0 && (fsync(gfd) || close(gfd))) throw std::runtime_error("close failed");
   if (parts > 1)
-    printf("part=%d/%d chunks=[%lld, %lld) max_weight=%lld (%.1f s)\n", part, parts, (long long)k0, (long long)k1,
-           (long long)max_weight.load(), omp_get_wtime() - t0);
+    printf("part=%d/%d chunks=[%lld, %lld) part_edges=%lld max_weight=%lld (%.1f s)\n", part, parts, (long long)k0,
+           (long long)k1, (long long)(estart[k1] - estart[k0]), (long long)max_weight.load(), omp_get_wtime() - t0);
   else {
     int64_t denominator = 1;
     while (denominator < max_weight) denominator *= 2;
