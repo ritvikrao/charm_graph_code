@@ -132,3 +132,27 @@ Gaps and fixes before the next allocation (none submitted):
 - The planet one-node GAPBS and Wasp tuning must be rerun with the fixed
   harness.
 
+
+## Added inputs (2026-09-26, preparation submitted)
+
+The paper focuses on large non-scale-free graphs, at most 64 nodes. Added:
+
+| Input | Size | Built by | Baselines | Jobs |
+|---|---|---|---|---|
+| `terrain30-s-z`: GLO-30, lat [0, 12) × lon [21, 34), seed 6N 27E | 2,021,760,000 vertices (below 2^31, narrow) | `terrain_graph2 --arcsec 1 --narrow` | GAPBS, Wasp (one node), Gluon; RIKEN if distances stay below 2^24 | build 5551477, reference (one-node Dijkstra) 5551486 |
+| `terrain30-m-z`: lat [-6, 18) × lon [12, 40), same seed | 8,654,297,795 vertices | `terrain_graph2 --arcsec 1` | Gluon (`gluon64.patch`) | build 5551478, certified reference at 16 nodes 5551487 |
+| `terrain30-l-z`: lat [-35, 32) × lon [-18, 52), same seed (Africa, Arabia, the Levant) | 34,347,781,457 vertices | `terrain_graph2 --arcsec 1`, six parts | Gluon | parts 5551479–5551484, finalize 5551485, certified reference at 64 nodes 5551488 |
+| `mesh32-z` | 4,294,967,296 vertices, 17.2B edges | `grid_graph 2` (wide) | Gluon | build 5551360, certified reference 5551362 |
+| `grid3-30-z`: 1024^3, six neighbours | 1,073,741,824 vertices, 6.4B edges | `grid_graph 3` | all | 5551359 (prepare_inputs) |
+| `grid3-33-z`: 2048^3 | 8,589,934,592 vertices, 51.5B edges | `grid_graph 3` (wide) | Gluon | build 5551361, certified reference 5551363 |
+| `mesh28-w10-z`, `mesh28-w64k-z`: mesh28-z's topology and ids, weights uniform over [1, 10] and [1, 65536] | as `mesh28-z` | `grid_graph 2` | all (RIKEN not on w64k: distances past 2^24) | 5551359 |
+
+The terrain crops nest around one seed and hold 505M, 541M and 537M vertices
+per node at 4, 16 and 64 nodes (terrain-ae-z: 512M at 16), from component
+counts in job 5551356 (`scripts/frontier/terrain_series_count.sbatch`).
+GLO-30 tiles: `scripts/frontier/fetch_glo30.sh`, 3,230 tiles. `terrain_graph2`
+(7dc7f2b) is byte-identical to `terrain_graph` at 3 arc-seconds and matches the
+independent `benchmarks/check_terrain.py` exactly at 1 arc-second. `grid_graph`
+(517b86b) 2-D output is byte-identical to `prepare_graph meshz`. Both write the
+Galois `.gr` directly. terrain-ae-z's `.gr` is rewritten the same way (5551364)
+after `to_galois.py` ran past the time limit.
