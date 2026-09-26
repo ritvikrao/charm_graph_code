@@ -1695,10 +1695,53 @@ archive: `design/onenode-data/delta-road-gap-20260925.json`. Reproduce the
 192-solve audit with `benchmarks/road_gap_report.py`; the three recorded
 protocols and Slurm scripts are under `benchmarks/` and `scripts/delta/`.
 
+### 23. Delta road-eu-z one-node ACIC/Wasp comparison (2026-09-26)
+
+Job **22442237** completed on one exclusive Delta `cpu-interactive` node,
+**cn099**, with **124/124 digest-checked solves**. The input was reconstructed
+from Geofabrik's checksum-gated 2026-01-01 Europe extract using the same
+largest-component, positive-metre-weight and Morton-coordinate pipeline as the
+Frontier campaign. Preparation jobs 22442048/22442049/22442191/22442205
+produced **95,633,582 vertices and 228,668,852 stored directed arcs**. The
+canonical and reordered graphs have equal distance sums for all six reference
+sources.
+
+The comparison selected parameters using only two training sources. ACIC's
+original shared heap selected width 16384 from 8192/16384/32768/65536; Wasp
+selected 64 threads and delta 1024 from the recorded 32/64/128-thread and
+five-delta screen. Four disjoint held-out sources then received a warmup and
+three timed repetitions for ACIC, a duplicate ACIC control and Wasp. Timings
+exclude graph loading.
+
+| Test source | ACIC (s) | Duplicate ACIC (s) | Wasp (s) | ACIC/Wasp speedup | ACIC rounds | ACIC edge attempts |
+|---:|---:|---:|---:|---:|---:|---:|
+| 3018310 | 1.209409 | 1.199864 | 0.242326 | 0.200× | 1,537 | 370,405,336 |
+| 56930913 | 1.184510 | 1.205945 | 0.229910 | 0.194× | 2,436 | 301,841,688 |
+| 22205459 | 1.163333 | 1.161788 | 0.226067 | 0.194× | 2,193 | 315,721,000 |
+| 23843767 | 1.179455 | 1.172047 | 0.228408 | 0.194× | 2,358 | 309,517,536 |
+
+The geometric-mean ACIC/Wasp speedup is **0.196×**. The duplicate ACIC
+medians are within 1.9% of the primary arm on every source. Thus the larger
+Europe graph does **not** close the one-node gap: original-heap `road-usa-z`
+was 0.202× Wasp in the matched Delta study above, while this roughly four-times
+larger road is 0.196×. Its 1,537–2,436 controller rounds also exceed the
+614–807 road-USA range. This rejects small-input amortization as a sufficient
+explanation and is consistent with the work-availability/coordination limit,
+but it does not isolate size because the two OSM graphs have different
+topology and weight distributions. No solver default changes follow.
+
+This completes the requested road-Europe prerequisite. The next bounded test
+remains the contribution-placement hypothesis in section 15. Raw records and
+the report are under `/work/hdd/mzu/rao1/acic-road-eu-20260925/`; compact audit:
+`design/onenode-data/delta-road-eu-22442237.json`. Reproduce the audit with
+`benchmarks/road_eu_report.py`; the protocol and Slurm scripts are under
+`benchmarks/` and `scripts/delta/`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta road-eu / Wasp, one node | `design/onenode-data/delta-road-eu-22442237.json`; `benchmarks/delta-road-eu-compare-protocol.json`; preparation jobs 22442048/22442049/22442191/22442205 and comparison job 22442237 |
 | Delta one-node road gap attribution | `design/onenode-data/delta-road-gap-20260925.json`; `benchmarks/road_gap_report.py`; gap, feature and trace protocols / jobs 22411020, 22411141, 22411198 |
 | Delta selected road Projections trace | `design/onenode-data/delta-road-projections-22410269.json`; `scripts/delta/road_projections.sbatch` |
 | Delta RMAT25 / Wasp, one node | `design/onenode-data/delta-rmat25-wasp-22401925.json`; `benchmarks/delta-rmat25-wasp-protocol.json` |
