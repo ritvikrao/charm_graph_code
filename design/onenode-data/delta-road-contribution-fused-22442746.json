@@ -1,0 +1,51 @@
+{
+  "schema": "delta-road-contribution-fused-v1",
+  "status": "REJECT",
+  "job": 22442746,
+  "host": "cn111",
+  "campaign": "/work/hdd/mzu/rao1/acic-road-contribution-fused-20260926",
+  "solver_revision": "5a1cde385d9f9765004768d7f3443d7e9e82cdaa",
+  "protocol_sha256": "ba15328263cba50f136c1bdfc373abc1770f6b16c6959b99f440543f6f76ed1d",
+  "validated_solves": 60,
+  "verification": "18 standard configurations, 3 diagnostic configurations, 28 progress fixtures",
+  "layout": {
+    "nodes": 1,
+    "processes": 16,
+    "workers": 112,
+    "scheduler": "old"
+  },
+  "binary_sha256": {
+    "immediate": "d6a8d6c5db8d84036effeaa1cd4d633ede2bcc619307b7101a6441a1f076ff49",
+    "fused_post_work": "71f0a7c3c718e6e744b0e48ad0c16bf60bee9d587c5ac60962f36bdd2449ee89"
+  },
+  "graphs": {
+    "road-usa-z": {
+      "source_role": "tune",
+      "sources": 2,
+      "timed_repetitions": 5,
+      "geomean_speedup": 0.9882051908492059,
+      "geomean_round_ratio": 0.9153026088587417,
+      "geomean_edge_attempt_ratio": 0.9872585584020909,
+      "duplicate_timing_floor": 1.0311897763103515,
+      "per_source": [
+        {"source": 5620086, "speedup": 0.9784859500001948, "round_ratio": 0.9383116647735558, "edge_attempt_ratio": 0.9858207625270209},
+        {"source": 1294456, "speedup": 0.9980209723206767, "round_ratio": 0.8928577755513689, "edge_attempt_ratio": 0.9886984512678685}
+      ]
+    },
+    "mesh24-z": {
+      "source_role": "tune",
+      "sources": 2,
+      "timed_repetitions": 3,
+      "geomean_speedup": 0.997939257802867,
+      "geomean_round_ratio": 0.8813746737930401,
+      "geomean_edge_attempt_ratio": 0.9952016339146067,
+      "duplicate_timing_floor": 1.0295130190708073
+    }
+  },
+  "gates": {
+    "road_geomean_speedup_at_least_1_05": false,
+    "road_faster_than_both_on_both_sources": false,
+    "road_work_growth_at_most_1_10": true,
+    "mesh_within_regression_limit": true
+  }
+}

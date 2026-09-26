@@ -932,19 +932,11 @@ have neither. The first observation and final termination round are excluded.
 Threshold-change counts alone do not measure wasted rounds or necessary
 algorithmic steps.
 
-The next concrete hypothesis is **contribution placement**. On the ordinary
-controller path, `current_thresholds()` queues hold release and `process_heap()`,
-then calls `contribute_histogram()` synchronously before those queued actions
-execute. Its snapshot therefore excludes the work those callbacks will do
-under the new thresholds. Test whether contributing after one bounded local
-work turn yields fewer global rounds and lower time. This is a hypothesis,
-not proof that delayed contributions will help: extra wait or changed ordering
-may outweigh fresher snapshots. Preserve width 131072, slice 8, batch 8,
-16 × 7, `+old-scheduler`, one contribution per PE per epoch (including idle
-PEs), and the stable-count termination rule. Do not wait for full local/global
-quiescence or combine this with coalescing. The proposed screen is not
-implemented or queued. No jobs remain in the queue, and none were submitted
-during this review.
+The contribution-placement hypothesis described here has now been tested in
+both queued and fused forms (§24). Both reduce controller rounds and edge work,
+but neither improves road time. The held-out queued screen is 0.995× and the
+tuning-only fused follow-up is 0.988× relative to duplicate-immediate
+baselines. Contribution placement is rejected; no solver default changes.
 
 ### 16. Delta mesh28-z: the one-node gap to Wasp (2026-09-25)
 
@@ -1730,17 +1722,72 @@ explanation and is consistent with the work-availability/coordination limit,
 but it does not isolate size because the two OSM graphs have different
 topology and weight distributions. No solver default changes follow.
 
-This completes the requested road-Europe prerequisite. The next bounded test
-remains the contribution-placement hypothesis in section 15. Raw records and
-the report are under `/work/hdd/mzu/rao1/acic-road-eu-20260925/`; compact audit:
+This completes the requested road-Europe prerequisite. The contribution-
+placement follow-up is complete in section 24. Raw records and the report are
+under `/work/hdd/mzu/rao1/acic-road-eu-20260925/`; compact audit:
 `design/onenode-data/delta-road-eu-22442237.json`. Reproduce the audit with
 `benchmarks/road_eu_report.py`; the protocol and Slurm scripts are under
 `benchmarks/` and `scripts/delta/`.
+
+### 24. Delta road contribution placement (2026-09-26)
+
+Two compile-time, opt-in implementations tested the section 15 hypothesis
+without changing the default path. Both preserve the reduction controller's
+one contribution per PE per epoch and stable-count termination. They keep
+width 131072, slice 8, batch 8, 16 processes × 7 workers and
+`+old-scheduler`; neither combines with heap coalescing or a round delay. Both
+binaries passed 18 standard verification configurations, three diagnostic
+configurations and 28 progress fixtures before timing.
+
+The first implementation queues a normal-priority contribution behind the
+existing hold-release and bounded `process_heap()` entries. Job **22442601**
+completed on cn099 with **96/96 digest-checked solves**: four held-out road
+sources × two immediate copies and the candidate, each with a warmup and five
+timed repetitions; plus two held-out mesh controls with three repetitions.
+Relative to the geometric mean of the duplicate-immediate medians:
+
+| Graph | Candidate time speedup | Controller-round ratio | Edge-attempt ratio | Duplicate timing floor |
+|---|---:|---:|---:|---:|
+| `road-usa-z` | **0.995×** | **0.879** | **0.985** | 1.020 |
+| `mesh24-z` | **1.012×** | **0.862** | **0.995** | 1.005 |
+
+The road candidate is faster than both immediate copies on only one of four
+sources and fails the predeclared 1.10× geometric-mean time gate. It does pass
+the work and mesh-regression gates. Thus a fresher snapshot measurably reduces
+rounds and redundant work, but the extra queued entry offsets that benefit.
+
+The tuning-only follow-up fuses the bounded heap turn and contribution into a
+single normal-priority entry, restoring the original one-entry dispatch count.
+Job **22442746** completed on cn111 with **60/60 digest-checked solves** on the
+two designated road and two mesh training sources:
+
+| Graph | Fused time speedup | Controller-round ratio | Edge-attempt ratio | Duplicate timing floor |
+|---|---:|---:|---:|---:|
+| `road-usa-z` | **0.988×** | **0.915** | **0.987** | 1.031 |
+| `mesh24-z` | **0.998×** | **0.881** | **0.995** | 1.030 |
+
+Fusion is faster than both road baseline copies on zero of two sources and
+fails its recorded 1.05× exploratory gate. This rules out the extra callback
+as a sufficient explanation for the first result. Cutting these controller
+rounds by 8–14% and edge work by about 1–1.5% is not enough to shorten the
+critical path; controller-round count alone is not a useful road optimization
+target at this layout. Contribution placement is rejected without further
+tuning or independent confirmation. The opt-in builds remain reproducible,
+but the default remains immediate contribution.
+
+Raw campaigns are
+`/work/hdd/mzu/rao1/acic-road-contribution-20260926/` and
+`/work/hdd/mzu/rao1/acic-road-contribution-fused-20260926/`; compact audits:
+`design/onenode-data/delta-road-contribution-22442601.json` and
+`design/onenode-data/delta-road-contribution-fused-22442746.json`. Setup jobs
+22442497, 22442513 and 22442557 failed before timing because of harness/staging
+checks and produced no measurement data. No jobs remain queued.
 
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta road contribution placement | `design/onenode-data/delta-road-contribution-22442601.json`, `delta-road-contribution-fused-22442746.json`; `benchmarks/delta-road-contribution{,-fused}-protocol.json`; jobs 22442601 and 22442746 |
 | Delta road-eu / Wasp, one node | `design/onenode-data/delta-road-eu-22442237.json`; `benchmarks/delta-road-eu-compare-protocol.json`; preparation jobs 22442048/22442049/22442191/22442205 and comparison job 22442237 |
 | Delta one-node road gap attribution | `design/onenode-data/delta-road-gap-20260925.json`; `benchmarks/road_gap_report.py`; gap, feature and trace protocols / jobs 22411020, 22411141, 22411198 |
 | Delta selected road Projections trace | `design/onenode-data/delta-road-projections-22410269.json`; `scripts/delta/road_projections.sbatch` |
@@ -1782,7 +1829,10 @@ and paths are consolidated in [configurations.md](configurations.md).
    At 16 Frontier nodes each step of the cumulative ablation is faster than the
    previous one; the candidate's speedup over the local-queue arm is 3.2–3.3×.
 3. On road, a representable global ordering window approaches minimal edge
-   work, after which controller round cost is the dominant measured limit.
+   work, after which narrow ready work and repeated coordination are the
+   supported limits. Reducing round count 8–14% through fresher contributions
+   does not improve time, so round count alone is not a causal optimization
+   target.
 4. Runtime scheduling materially changes asynchronous SSSP work; registered
    scheduling causes a reproduced regression on road (a speedup of about
    0.69–0.77× relative to `+old-scheduler`).

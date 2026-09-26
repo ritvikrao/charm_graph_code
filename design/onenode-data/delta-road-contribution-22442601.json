@@ -1,0 +1,53 @@
+{
+  "schema": "delta-road-contribution-v1",
+  "status": "REJECT",
+  "job": 22442601,
+  "host": "cn099",
+  "campaign": "/work/hdd/mzu/rao1/acic-road-contribution-20260926",
+  "solver_revision": "b66887037505b090c7a899955648dc8457fcdc55",
+  "protocol_sha256": "2dc37104f64897bc760c1dbfd1aa724afdb783d1192f1251a91f572e5c23fd2f",
+  "validated_solves": 96,
+  "verification": "18 standard configurations, 3 diagnostic configurations, 28 progress fixtures",
+  "layout": {
+    "nodes": 1,
+    "processes": 16,
+    "workers": 112,
+    "scheduler": "old"
+  },
+  "binary_sha256": {
+    "immediate": "3fb3d5a5c8005268bef19b5fc4393295fc6341e01d4098e41a21a2da1aa3fbee",
+    "post_work": "a199bd8e4872ec69b7e2f9b6c49737db67f7a88fae380c641e005aa687a96515"
+  },
+  "graphs": {
+    "road-usa-z": {
+      "source_role": "test",
+      "sources": 4,
+      "timed_repetitions": 5,
+      "geomean_speedup": 0.9946177375763926,
+      "geomean_round_ratio": 0.878732524329304,
+      "geomean_edge_attempt_ratio": 0.9851409796936115,
+      "duplicate_timing_floor": 1.0200208677741944,
+      "per_source": [
+        {"source": 8718204, "speedup": 0.9850970423153943, "round_ratio": 0.8811908182781345, "edge_attempt_ratio": 0.9730823092153341},
+        {"source": 22613654, "speedup": 0.9939269160744013, "round_ratio": 0.8659978648104737, "edge_attempt_ratio": 0.9852282561213292},
+        {"source": 10159848, "speedup": 1.0013590286633915, "round_ratio": 0.9088069429333215, "edge_attempt_ratio": 0.9961010045559849},
+        {"source": 3073839, "speedup": 0.9981631098574483, "round_ratio": 0.8597424760477443, "edge_attempt_ratio": 0.9862879486930097}
+      ]
+    },
+    "mesh24-z": {
+      "source_role": "test",
+      "sources": 2,
+      "timed_repetitions": 3,
+      "geomean_speedup": 1.0124376003014166,
+      "geomean_round_ratio": 0.8623088650593693,
+      "geomean_edge_attempt_ratio": 0.9949287215376003,
+      "duplicate_timing_floor": 1.0054339862257609
+    }
+  },
+  "gates": {
+    "road_geomean_speedup_at_least_1_10": false,
+    "road_faster_than_both_on_three_sources": false,
+    "road_work_growth_at_most_1_10": true,
+    "mesh_within_regression_limit": true
+  }
+}
