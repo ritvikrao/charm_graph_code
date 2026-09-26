@@ -122,7 +122,7 @@ class Campaign:
         # its own per-node total; the record keeps the allocation's budget.
         workers = config.get('workers', self.args.workers)
         per_graph_rule = None
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': self.args.gluon_binary}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': getattr(self.args, 'gluon_binary', 'gluon_sssp')}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:

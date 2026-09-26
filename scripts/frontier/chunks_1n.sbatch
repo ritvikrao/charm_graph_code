@@ -48,7 +48,7 @@ for cell in ${CELLS//,/ }; do
     expect="h1=$h1 h2=$h2 reachable=$reachable distance_sum=$sum"
     for rep in $(seq 1 "$WASP_REPS"); do
       w=$(srun -N 1 -n 1 --ntasks-per-node 1 -c 56 --cpu-bind=cores --unbuffered --kill-on-bad-exit=1 \
-          "$ROOT/bin/wasp_sssp" "$ROOT/graphs/$graph.wsg" "$source" "$delta" 2>&1 | grep -m1 '^BENCH') || true
+          "$ROOT/bin/wasp_sssp" "$ROOT/graphs/$graph.wsg" "$source" "$delta" < /dev/null 2>&1 | grep -m1 '^BENCH') || true
       got=$(grep -o 'h1=[0-9]* h2=[0-9]* reachable=[0-9]* distance_sum=[0-9]*' <<< "$w" || true)
       printf '%s\t%s\t%s\t%s\t%s\n' "$graph" "$source" "$rep" \
         "$(grep -o 'solve_seconds=[0-9.]*' <<< "$w" | cut -d= -f2)" \
