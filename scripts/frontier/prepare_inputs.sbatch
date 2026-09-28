@@ -55,7 +55,7 @@ meshz() {     # name vertices seed: Morton-ordered mesh written directly (prepar
 }
 gridz() {     # name dim vertices seed max_weight: Morton grid and its .gr, written in parallel (grid_graph)
   "$BIN/grid_graph" "$2" "$3" "$4" "$5" 6 "$DATA/$1.wsg.tmp" --gr "$DATA/$1.gr.tmp" > "$DATA/$1.build.log" &&
-    head -1 "$DATA/$1.build.log" > "$DATA/$1.meta.tmp" && mv "$DATA/$1.gr.tmp" "$DATA/$1.gr" && touch "$DATA/$1.gr.done"
+    grep -m1 "^vertices=.* arcs=" "$DATA/$1.build.log" > "$DATA/$1.meta.tmp" && mv "$DATA/$1.gr.tmp" "$DATA/$1.gr" && touch "$DATA/$1.gr.done"
 }
 snap() {      # name file vertices
   gzip -dc "$RAW/$2" | "$BIN/prepare_graph" snap "$3" 0 1 "$DATA/$1.wsg.tmp" > "$DATA/$1.meta.tmp"
