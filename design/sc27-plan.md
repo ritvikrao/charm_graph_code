@@ -1,6 +1,7 @@
 # ACIC forward plan
 
-*Decision plan from 2026-09-23. Earlier schedules remain in Git history. Read
+*Decision plan from 2026-09-23; the IPDPS 2027 submission plan (2026-09-28)
+supersedes its schedule. Earlier schedules remain in Git history. Read
 [current-state.md](current-state.md) and [configurations.md](configurations.md)
 before acting on this plan.*
 
@@ -22,6 +23,186 @@ same-input performance win.
 The next work should close the current causal chain, freeze SSSP and write.
 Do not start BFS, PageRank, a generic payload refactor or a broad parameter
 sweep during the IPDPS decision window.
+
+## IPDPS 2027 submission plan (2026-09-28)
+
+*This section supersedes the September 23 schedule below ("Work through
+September 26" and "September 27–October 8 if the gate passes"). The user chose
+IPDPS on 2026-09-28; SC27 remains the fallback, or the venue for a version
+that goes beyond SSSP.*
+
+### Focus
+
+Exact weighted SSSP that scales on non-scale-free graphs with varied degree
+and weight ranges: the graph classes Graph500's Kronecker SSSP kernel does not
+exercise. The input matrix spans:
+- **Average degree:** about 2.5 (roads), 4 (2-D meshes), 6 (3-D grids), 8 (terrain).
+- **Weights:** uniform [1, 10], [1, 1000] and [1, 65,536]; OSM travel times; Tobler walking times on terrain.
+
+Two results need an explanation, not a win:
+- **One node, against GAPBS and Wasp.** Present it COST-style: the node count
+  at which ACIC passes the best one-node code on each input, plus the honest
+  one-node gap. Past one node's memory, weak scaling and the distributed
+  baselines carry the argument.
+- **Scale-free graphs, against RIKEN.** This is the regime boundary. One
+  figure plots ACIC's speedup over RIKEN and Gluon against hop diameter
+  (max distance / mean edge weight). Low-diameter RMAT sits where RIKEN, which
+  is co-designed for Graph500, wins (0.29–0.90×). Meshes, grids, terrain and
+  roads sit where ACIC's lead reaches 100–1000×.
+
+### Venue facts ([CFP](https://www.ipdps.org/ipdps2027/2027-call-for-papers.html))
+
+**Dates:**
+| Item | Date |
+|---|---|
+| 500-word abstract | Oct 1, 2026 AOE |
+| Paper | Oct 8 AOE (firm) |
+| Early rejects | Nov 30 |
+| Rebuttal | Nov 30–Dec 3 |
+| First-round decisions (accept, revise, reject) | Dec 18 |
+| Revision with cover letter | Jan 18, 2027 |
+| Final decisions | Feb 2 |
+
+**Rules:**
+- Ten pages, figures included; references unlimited.
+- No appendix at submission; a reproducibility appendix is required after acceptance.
+- Double-anonymous.
+- Review criteria named in the CFP: motivation, the difference from prior work,
+  key insights, methodology, and **limitations of the approach**.
+- Inaccurate references are grounds for rejection: verify every citation
+  against the published paper.
+- Any AI-generated text is disclosed in the acknowledgements.
+
+**Tracks:** primary **Algorithms**, secondary **Programming Models, Compilers,
+and Runtime Systems**.
+- Algorithms names graph algorithms explicitly, and its committee holds most of
+  the conference's distributed-graph and SSSP reviewers.
+- The runtime track fits the co-scheduling evidence (heap slices restore
+  message interleaving; scheduler order, #258). As primary, though, it would
+  demand a general runtime contribution, which the paper does not make.
+- Applications expects innovations that come from a specific application
+  domain. Measurements would recast a new algorithm as a benchmarking study.
+
+### Expected reviewers ([PC](https://www.ipdps.org/ipdps2027/2027-program-committee.html))
+
+Assignments are not public. The areas below are recalled from the members'
+publications; verify each citation before using it.
+
+| Member (track) | Likely check | Response |
+|---|---|---|
+| Roger Pearce (Algorithms), HavoqGT's author | HavoqGT run fairly: layout, delegates, store, ingest | Record exact settings; report ingest separately and outside the solve time; disclose `benchmarks/havoqgt.patch` (shutdown path and zero-delegate allocation only); run it on RMAT too (O2), with the upstream delegate threshold and one set to the rank count. |
+| Fabio Checconi (Algorithms), co-author of Chakaravarthy et al., IPDPS 2014 (distributed SSSP at scale on RMAT) | Graph500/RMAT framing | Cite and discuss that paper. State "not covered by Graph500" precisely: its SSSP kernel runs only on Kronecker graphs. |
+| George Slota, Ariful Azad, Kathrin Hanauer (Algorithms) | Partitioning and vertex order; experimental rigor | The ordering pair (O1). At least four held-out sources per ACIC point in the final matrix, with spread shown. |
+| Grey Ballard (co-chair), Azad, Sayan Ghosh (Algorithms) | Why ACIC wins: work and communication, not only time | Work-efficiency figure (edges relaxed per graph edge) and wire bytes per edge, from counters in the final build (D2). |
+| Sanjukta Bhowmick (co-chair); Arindam Khanda (Applications) | Dynamic SSSP updates | One line of related work; out of scope. |
+| Joseph Schuchart, Jonas Posner, Claudia Fohry, Hans Vandierendonck (Runtime) | Which runtime lesson carries beyond SSSP | One paragraph and one figure on runtime/application co-scheduling. |
+| Jesun Firoz (Measurements) | Probably not assigned; his runtime scheduling policies for distributed asynchronous SSSP (IPDPS 2018) and the Distributed Control line (Kanewala, Zalewski, Lumsdaine) are the closest prior work | Cite and set apart from ACIC, with Madduri et al., DIMACS 2006 (delta-stepping at scale). |
+
+**Conflicts:** no Urbana faculty are on the committee. Nikhil Jain (ML track)
+is a PPL alumnus; declare a conflict only for recent co-authorship.
+
+**Framing for the Algorithms track:** present ACIC as an algorithm, with
+pseudocode and a correctness and termination argument (monotone frontier,
+collective emptiness). Its parts are the histogram-derived admission
+threshold, bounded heap slices and process-shared priority queues; avoid
+presenting it as runtime tuning.
+
+**Early rejects:** the abstract and page 1 carry the regime and the headline
+speedups.
+
+### Experiments by machine
+
+One-node experimentation runs on **Delta** and scaling on **Frontier**
+(user, 2026-09-28). Figures that set one-node points against Frontier
+scaling use one-node runs on Frontier (the debug queue). Delta binaries do
+not run on Frontier: the frozen source revision is rebuilt there.
+
+#### Delta, one node, can start now
+
+| # | Experiment | Why | Needed by |
+|---|---|---|---|
+| D1 | Chunk queue on the families it has not seen: 3-D grid (`grid3-30-z`, 1.07B vertices, 6.4B edges) and a terrain crop; re-confirm the mesh and road choices. Output: one flag set per family (chunk queue or heap). | It feeds F4 and the frozen build. The chunk queue is the largest known one-node gain (2.3–2.5× on `mesh28-z`, Delta and Frontier). | Oct 1 |
+| D2 | Counter build: edges relaxed per graph edge and wire bytes per edge, printed on every solve. Overhead ≤ 2% against the uncounted binary on `mesh28-z` and `road-usa-z`. | Ballard, Azad and Ghosh will ask why ACIC wins (work efficiency and traffic figure). | Oct 2 (freeze) |
+| D3 | Bucket-width screen on `mesh28-w10-z`: widths ¼×–4× the ln V rule; rounds, edge work and time. | Nominates one or two widths for F5. The 32→64-node plateau is a multi-node effect, so Delta can only rule widths out. | Oct 1 |
+| D4 | One-node mechanism ablation on `mesh28-z` and the terrain crop. | Supplementary to F10; also a fallback if F10 does not run. | Oct 3 |
+| D5 | Optional: ordering pair at one node (`mesh26` against `mesh26-z`). | Separates on-node locality from communication in O1. | Oct 3 |
+| D6 | Freeze candidate: the Delta-validated source revision with the D1 flags. | Frontier rebuilds from it (F-freeze). | Oct 2 |
+
+**Delta inputs:**
+- `grid3-30-z` is regenerated with the existing generator or transferred (about 50 GB).
+- `terrain30-s-z` (16.2B edges) needed a 512 GB Frontier node, so it will
+  likely not fit a Delta node. Cut a GLO-30 crop of about 0.5B vertices
+  instead, using the terrain pipeline's `REGION`.
+
+#### Frontier, scaling (4/16/32/64 nodes, never more than 64)
+
+| # | Experiment | Status |
+|---|---|---|
+| F1 | Phase A: Gemini and HavoqGT on the series, 4/16/32/64 nodes | Queued: 5560447–5560462 |
+| O1 | Ordering pair: `mesh26` and `road-usa` in generator/DIMACS order against their Morton (`-z`) forms, ACIC and Gluon, 16 nodes, four held-out sources (the same physical sources in both orders) | Submitted: ACIC 5561485, Gluon 5561486 |
+| O2 | HavoqGT (delegate threshold 2^20 and 896) and Gemini on `rmat25` and `rmat26`, 16 nodes, four held-out sources | Submitted: conversion 5561481 (debug), Gemini 5561482, HavoqGT 5561483 and 5561484 |
+| F4 | Chunk queue at 16 and 64 nodes on `mesh28-z`, `mesh32-z` and `terrain30-m-z` | Proposed; after D1 |
+| F5 | Bucket-width probe on `mesh28-w10-z` at 32 and 64 nodes | Optional; after D3 |
+| F6 | RIKEN on the series inputs with max distance below 2^24 (`mesh32-z`, `terrain30-s-z`, both 3-D grids, `mesh28-z`, `mesh28-w10-z`), 16 and 64 nodes, capped launches | Proposed |
+| F7 | Gluon delta check: three deltas, one source of `terrain30-s-z` at 64 nodes | Proposed |
+| F-freeze | Build and validate the frozen binary (debug-queue smoke) | Oct 2 |
+| F8 | Final ACIC matrix with the frozen build: terrain, meshes, grids, roads (including 32 nodes) at 4/16/32/64, and scale-free at 16/64; four or more sources with D2 counters | Oct 3–5 |
+| F9 | One-node Frontier points: ACIC at one node on the inputs that fit, GAPBS and Wasp on `road-planet-z` | Oct 3–5 (debug) |
+| F10 | Ablation at scale: mechanisms off one at a time on `terrain30-m-z` or `mesh32-z`, 16 and 64 nodes, including a plain asynchronous arm | Oct 3–5 |
+
+**Dropped:**
+- Phase B (lower bounds on the large inputs).
+- Further `terrain-ae-z` runs: the GLO-30 series supersedes them, and its 8- and 16-node rows stay supplementary.
+- New input families.
+
+**Limitations section**, a named review criterion rather than work to remove:
+- Roads beyond 16 nodes.
+- The `mesh28-w10-z` plateau, unless F5 fixes it.
+- The one-node gap.
+- Scale-free graphs against RIKEN.
+- CPU-only scope.
+
+#### Writing and anonymity (no machine)
+
+- The abstract and track registration go in by Oct 1 AOE.
+- Pick a title distinct from the IA³@SC24 paper. Cite that paper in the third
+  person with an explicit statement of what is new. If the overlap with a
+  workshop paper is in doubt, ask pc2027@ipdps.org.
+- Make the public repository private or anonymized before Oct 8; it holds
+  `design/acic_2024paper.pdf`.
+- Related work: Chakaravarthy et al.; Firoz et al.; Distributed Control;
+  Madduri et al.; HavoqGT; Gemini; Gluon/Gluon-Async; Δ-stepping; GAPBS; Wasp.
+  Verify every entry.
+
+### Timeline
+
+| Dates | Delta | Frontier | Writing |
+|---|---|---|---|
+| Sep 28–30 | D1, D2, D3 | F1, O1, O2 running; F6, F7, F4 on approval | Abstract draft by Sep 30 |
+| Oct 1 AOE | D1/D3 decisions | — | Abstract and tracks registered |
+| Oct 2 | D6 freeze | F-freeze | Methods, algorithm |
+| Oct 3–5 | D4, D5 | F8, F9, F10 in one batch | Evaluation from arriving data |
+| Oct 5–8 | — | Reruns of failed cells only | Full draft, audit, submit |
+
+### Reviewer-driven jobs submitted 2026-09-28
+
+Predictions are recorded in `benchmarks/frontier-order-{mesh,road}-16n-variants.json`.
+All jobs have a 1–1.5 h limit.
+- **O1, ACIC** (`gluon_compare.sbatch`, `SKIP_GLUON=1`,
+  `VARIANTS_PREFIX=frontier-order`), job 5561485. One arm, frozen =
+  `acic_scale64b`. Mesh flags as the series; road adds `--bucket-width 131072`.
+  Four test sources, one warmup and three repetitions.
+- **O1, Gluon** (`series_gluon.sbatch`), job 5561486. Gluon-Async, 8 ranks,
+  oec. Delta 64 on meshes and 524288 on roads, as its latest searches selected
+  on the `-z` inputs at 16 nodes (job 5541370; road selections vary between
+  jobs: 32768 to 8388608). Four sources, 600 s cap per launch.
+- **O2** (`series_baseline.sbatch`):
+  - `rmat25` and `rmat26` converted to `.gemini32` in job 5561481.
+  - Gemini: job 5561482, one rank per node × 56 threads.
+  - HavoqGT: 56 ranks per node, ingested into `/dev/shm`. Job 5561483 uses the
+    upstream delegate threshold (2^20); job 5561484 uses
+    `HAVOQGT_DELEGATE=896`, the rank count.
+  - Four sources and a 600 s cap per launch.
 
 ## Paper decision
 
@@ -145,6 +326,8 @@ winning graph class; no demonstrated live-adaptation gain; compact-wire scale
 limits; Frontier RMAT instability.
 
 ## September 27–October 8 if the gate passes
+
+*Superseded by the IPDPS 2027 submission plan (2026-09-28) above.*
 
 | Date | Deliverable |
 |---|---|

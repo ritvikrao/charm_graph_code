@@ -1,0 +1,27 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_scale64b",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--hub-hints",
+      "auto"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-28 before submission. Ordering-sensitivity pair (design/sc27-plan.md, IPDPS reviewer-driven additions): the same graph in its generator/DIMACS vertex order and in Morton order (the -z inputs; the reference distance sums show the same physical held-out sources), 16 nodes, 8 x 7, one arm frozen = acic_scale64b, four held-out sources, one warmup and three repetitions, batch launches. Gluon-Async runs in a separate job pinned to 8 ranks, oec, and the delta its search selected on the -z input at 16 nodes. Speedup = Gluon time / ACIC time per source; ordering cost = unordered time / Morton time. Predictions: every solve returns the reference digest; mesh26 (row-major, about 5% of edges cut at 896 PEs against 0.5% for mesh26-z) takes 0.8-2.5x mesh26-z's ACIC time; Gluon's ordering cost is smaller than ACIC's; ACIC's speedup over Gluon on mesh26 stays above 5x."
+  }
+]

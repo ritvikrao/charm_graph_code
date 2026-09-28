@@ -8,7 +8,8 @@
 #    (scripts/frontier/convert_gemini.sbatch).
 #  ENGINE=havoqgt: havoqgt_sssp, 56 single-threaded ranks per node; each
 #    graph is ingested into node-local /dev/shm for this layout first, and
-#    removed after.
+#    removed after. HAVOQGT_DELEGATE sets the ingest's delegate threshold
+#    (havoqgt_ingest -d; default the upstream 2^20).
 #
 # ITEMS is GRAPH[:SOURCES[:TIMEOUT]],... in order (cheapest first: each
 # graph's rows are written as it finishes). TIMEOUT caps one launch (run.py
@@ -29,12 +30,13 @@ ROOT=${1:?campaign}
 SOURCES=${SOURCES:-2}
 REPS=${REPS:-1}
 TIMEOUT=${TIMEOUT:-700}
+DELEGATE=${HAVOQGT_DELEGATE:-}
 APP=${ACIC_BENCH_APP:-$HOME/charm_graph_code}
 PY=${ACIC_PYTHON:-$(dirname "$ROOT")/venv/bin/python}
 NN=$SLURM_NNODES
 SHM=/dev/shm/$USER-havoqgt-$SLURM_JOB_ID
-printf 'job=%s hosts=%s engine=%s items=%s sources=%s reps=%s timeout=%s\n' \
-  "$SLURM_JOB_ID" "$SLURM_JOB_NODELIST" "$ENGINE" "$ITEMS" "$SOURCES" "$REPS" "$TIMEOUT"
+printf 'job=%s hosts=%s engine=%s items=%s sources=%s reps=%s timeout=%s delegate=%s\n' \
+  "$SLURM_JOB_ID" "$SLURM_JOB_NODELIST" "$ENGINE" "$ITEMS" "$SOURCES" "$REPS" "$TIMEOUT" "${DELEGATE:-default}"
 module swap PrgEnv-cray PrgEnv-gnu/8.6.0 >/dev/null 2>&1
 module load gcc-native/13.2 cray-mpich/8.1.31 boost/1.85.0 >/dev/null 2>&1
 module unload cray-libsci darshan-runtime >/dev/null 2>&1 || true
@@ -58,7 +60,7 @@ for item in ${ITEMS//,/ }; do
       clear_shm
       start=$SECONDS
       srun -N "$NN" -n $((NN * 56)) --ntasks-per-node 56 -c 1 --cpu-bind=cores --unbuffered --kill-on-bad-exit=1 \
-        --time=40 "$ROOT/bin/havoqgt_ingest" -O -o "$SHM/$graph" "$ROOT/graphs/$graph.wsg" \
+        --time=40 "$ROOT/bin/havoqgt_ingest" -O ${DELEGATE:+-d "$DELEGATE"} -o "$SHM/$graph" "$ROOT/graphs/$graph.wsg" \
         > "$ROOT/logs/series-havoqgt-ingest-$SLURM_JOB_ID-$graph.out" 2>&1
       rc=$?
       grep -E '^HAVOQGT_INGEST' "$ROOT/logs/series-havoqgt-ingest-$SLURM_JOB_ID-$graph.out"

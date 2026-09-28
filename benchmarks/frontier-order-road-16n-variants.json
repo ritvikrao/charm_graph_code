@@ -1,0 +1,29 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_scale64b",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--hub-hints",
+      "auto",
+      "--bucket-width",
+      "131072"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-28 before submission. Ordering-sensitivity pair (design/sc27-plan.md, IPDPS reviewer-driven additions): the same graph in its generator/DIMACS vertex order and in Morton order (the -z inputs; the reference distance sums show the same physical held-out sources), 16 nodes, 8 x 7, one arm frozen = acic_scale64b, four held-out sources, one warmup and three repetitions, batch launches. Gluon-Async runs in a separate job pinned to 8 ranks, oec, and the delta its search selected on the -z input at 16 nodes. Speedup = Gluon time / ACIC time per source; ordering cost = unordered time / Morton time. Road flags add the road study's --bucket-width 131072. Predictions: every solve returns the reference digest; road-usa (DIMACS order) takes 1.0-2.5x road-usa-z's ACIC time; ACIC's speedup over Gluon on road-usa stays above 2x."
+  }
+]
