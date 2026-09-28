@@ -8,6 +8,10 @@ control and work-cost arms are left out), distributed baselines from
 logs/external-<N>n-56w-<job>.jsonl (phase 'external'), one-node GAPBS and Wasp
 from logs/external-1n-*-<job>.jsonl. Only valid solves count, except RIKEN on
 the OSM roads, which is inexact (run.py --riken-tolerance) and is marked.
+A baseline launch stopped at its cap (outcome hang) counts as a lower bound:
+its solve took at least the launch time less LOAD_ALLOWANCE seconds (Gluon's
+graph load was 2-42 s on every finished series launch, 687 GB grid3-33-z
+included), shown as "> T" and, for speedups, "≥ S×".
 
 Time: per held-out source, the median over repetitions and allocations; the
 table gives the range over sources. Speedup = baseline time / ACIC time per
@@ -36,6 +40,8 @@ W64 = 'ACIC production (acic_w64m)'  # 88aa0c3, WIRE=compact64 (ids past 2^31)
 TLS64 = 'ACIC TLS (acic_tls_w64m)'   # 88aa0c3, WIRE=compact64, initial-exec TLS runtime
 HEAP69 = 'ACIC TLS, heap queue (acic_heap69)'          # 69adfc1, initial-exec TLS runtime
 CHUNKS = 'ACIC TLS, chunk queue, slice 64 (acic_c256)'  # 69adfc1, ACIC_PROCESS_CHUNKS band 256
+SCALE = 'ACIC TLS (acic_scale64b)'  # a1970e4 (pulled HEAD + binary-search reader), compact64, TLS runtime
+LOAD_ALLOWANCE = 300
 # job -> {variant label: implementation}; the layout is part of the name when
 # it is not 8 processes x 7 workers per node.
 ACIC_JOBS = {
@@ -54,14 +60,21 @@ for j in ['5546135', '5546136', '5546137']:  # road-planet-z
 for j in ['5546130', '5546131']:  # terrain-ae-z
     ACIC_JOBS[j] = {'w64': W64, 'tls64': TLS64}
 ACIC_JOBS['5548095'] = {'heap': HEAP69, 'c256_s64': CHUNKS}  # one-node mesh28-z queue A/B
+for j in ['5558200', '5558201', '5558202', '5558203', '5558204', '5558205']:  # scaling series 4/16/32/64
+    ACIC_JOBS[j] = {'frozen': SCALE}
 EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900', '5539985',
                  '5541240', '5541195', '5541196', '5541369', '5541370', '5541371', '5541428', '5541429',
                  '5541663', '5541664', '5541665', '5541667', '5541713', '5541714', '5541715', '5541716', '5541717',
-                 '5546135', '5546136', '5546137']
+                 '5546135', '5546136', '5546137',
+                 # scaling series, Gluon-Async pinned (series_gluon.sbatch)
+                 '5558207', '5558208', '5558209', '5558210', '5558211', '5558212', '5558213', '5558214', '5558382']
 ONE_NODE_JOBS = ['5529591', '5538465', '5538410', '5541358', '5541661',
-                 '5536541', '5538411', '5541359', '5541662']
+                 '5536541', '5538411', '5541359', '5541662',
+                 '5558223', '5558224', '5558225', '5558226']  # scaling series: GAPBS, Wasp
 DATASETS = ['mesh24-z', 'mesh26-z', 'mesh28-z', 'mesh30-z', 'road-usa-z', 'road-na-z', 'road-eu-z',
             'road-planet-z', 'terrain-ae-z',
+            'mesh28-w10-z', 'mesh28-w64k-z', 'mesh32-z', 'grid3-30-z', 'grid3-33-z',
+            'terrain30-s-z', 'terrain30-m-z', 'terrain30-l-z',
             'orkut', 'uniform25', 'rmat25', 'rmat26', 'rmat27']
 BASELINES = ['GAPBS', 'Wasp', 'Gluon', 'RIKEN']
 
@@ -98,15 +111,24 @@ base = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))  # (graph, no
 gluon_modes = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(list))))
 inexact = defaultdict(list)
 settings = defaultdict(set)
+capped = defaultdict(dict)  # (graph, nodes, baseline) -> source -> lower bound on the solve (s)
+capped_jobs = defaultdict(set)
 for job in EXTERNAL_JOBS + ONE_NODE_JOBS:
     for p in glob.glob(str(L / f'external-*n-*w-{job}.jsonl')):
         nodes = int(re.search(r'external-(\d+)n', p)[1])
         for r in lines(p):
-            if r['phase'] != 'external' or not r['valid']:
+            if r['phase'] != 'external':
                 continue
             c, g, s = r['config'], r['graph'], str(r['source'])
             engine = c['engine']
             name = {'gap': 'GAPBS', 'wasp': 'Wasp', 'riken': 'RIKEN', 'gluon': 'Gluon'}[engine]
+            if not r['valid']:
+                if r.get('outcome') == 'hang':
+                    bound = r['launch_wall_seconds'] - LOAD_ALLOWANCE
+                    capped[g, nodes, name][s] = max(bound, capped[g, nodes, name].get(s, 0))
+                    capped_jobs[g, nodes, name].add(job)
+                    settings[g, nodes, name].add(c.get('chosen', c['name']))
+                continue
             if engine == 'gluon':
                 gluon_modes[g, nodes][job][c['name']][s].append(r['seconds'])
             else:
@@ -183,8 +205,12 @@ for g in DATASETS:
     for (gg, nodes, b), jobs in base.items():
         if gg == g:
             rows.append((nodes, 1 + BASELINES.index(b), b, jobs))
+    for (gg, nodes, b), caps in capped.items():
+        if gg == g and (gg, nodes, b) not in base:
+            rows.append((nodes, 1 + BASELINES.index(b), b, {}))
     for nodes, _, impl, jobs in sorted(rows, key=lambda r: (r[0], r[1], r[2])):
         t = per_source(jobs)
+        caps = {s: v for s, v in capped.get((g, nodes, impl), {}).items() if s not in t}
         label = impl
         if impl in BASELINES:
             chosen = sorted(settings[g, nodes, impl])
@@ -192,8 +218,13 @@ for g in DATASETS:
                 label = 'Gluon (' + ', '.join(sorted({c.split('-')[1].capitalize() for c in chosen})) + ')'
             if impl == 'RIKEN' and inexact.get((g, nodes)):
                 label = 'RIKEN, inexact'
-        out.append(f'| {nodes} | {label} | {rng(list(t.values()))} | {len(t)} | {jobs_text(jobs)} |')
-        record.setdefault(g, []).append(dict(nodes=nodes, implementation=impl, seconds=t, jobs=sorted(jobs)))
+        text = rng(list(t.values())) if t else ''
+        if caps:
+            text = (text + '; ' if text else '') + f'> {num(min(caps.values()))} (capped)'
+            label += ', capped' if not t else ''
+        out.append(f'| {nodes} | {label} | {text} | {len(t) + len(caps)} | {jobs_text(set(jobs) | capped_jobs.get((g, nodes, impl), set()))} |')
+        record.setdefault(g, []).append(dict(nodes=nodes, implementation=impl, seconds=t, jobs=sorted(jobs),
+                                             lower_bounds=caps))
     out.append('')
     # Speedups of each ACIC build at each node count over every baseline.
     table = []
@@ -203,11 +234,18 @@ for g in DATASETS:
         cells = []
         for b in BASELINES:
             bnodes = 1 if b in ('GAPBS', 'Wasp') else nodes
-            if (g, bnodes, b) not in base:
+            caps = capped.get((g, bnodes, b), {})
+            if (g, bnodes, b) not in base and not caps:
                 cells.append('—')
                 continue
-            ratios, paired = speedup(jobs, base[g, bnodes, b])
-            cells.append(rng(ratios, '×', ratio) if ratios else '—')
+            ratios, paired = speedup(jobs, base[g, bnodes, b]) if (g, bnodes, b) in base else ([], False)
+            a = per_source(jobs)
+            valid_sources = per_source(base[g, bnodes, b]) if (g, bnodes, b) in base else {}
+            bounds = [v / a[s] for s, v in caps.items() if s in a and s not in valid_sources]
+            cell = rng(ratios, '×', ratio) if ratios else ''
+            if bounds:
+                cell = (cell + '; ' if cell else '') + f'≥ {ratio(min(bounds))}×'
+            cells.append(cell or '—')
         if any(c != '—' for c in cells):
             table.append(f'| {nodes} | {impl} | ' + ' | '.join(cells) + ' |')
     if table:

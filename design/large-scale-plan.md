@@ -217,3 +217,50 @@ node; `scripts/frontier/series_baseline.sbatch` via run.py
 `--external-no-search`. Inputs: `convert_gemini.sbatch` 5560446. Jobs:
 Gemini 5560447–5560454, HavoqGT 5560455–5560462 (small, sz per node count).
 A capped launch gives a lower bound on ACIC's speedup.
+
+## Results, scaling series (complete 2026-09-28)
+
+Tables: design/current-state.md, § Results by dataset (`mesh28-z`, `mesh32-z`,
+the weight-range variants, the 3-D grids, the GLO-30 terrain series). All 32
+ACIC cells have four held-out sources, one warmup and three repetitions, and
+every counted solve returned the reference digest. Two cells lost a launch on
+the first attempt and reran the arm alone in the same job:
+- `grid3-33-z`@32: a network error (CXI service teardown).
+- `terrain30-m-z`@64: a `PROGRESS_STALL` that recovered with the right answer
+  in 22.4 s against about 10 s; the only stall in the series.
+
+| Input | 4 nodes (s) | 16 (s) | 32 (s) | 64 (s) | Gluon speedup range |
+|---|---:|---:|---:|---:|---:|
+| `terrain30-s-z` | 17.3–18.1 | 5.85–6.18 | 3.49–3.90 | 2.25–2.62 | 129–228× |
+| `terrain30-m-z` | — | 25.6–29.1 | 15.4–17.9 | 9.69–11.8 | ≥ 104–171× (capped) |
+| `terrain30-l-z` | — | — | 66.6–72.1 | 43.3–45.7 | ≥ 119× (capped) |
+| `mesh32-z` | 27.0–30.0 | 9.08–10.3 | 5.65–6.30 | 3.61–4.14 | ≥ 93–167× (capped); 202× |
+| `grid3-33-z` | — | 16.0–17.4 | 8.49–9.16 | 4.66–5.16 | 9.9–25.8× |
+| `grid3-30-z` | 6.90–7.28 | 2.15–2.22 | 1.21–1.28 | 0.707–0.767 | 7.7–18.7× |
+| `mesh28-z` | 1.67–1.74 | 0.599–0.696 | 0.412–0.482 | 0.327–0.408 | 72–112× |
+| `mesh28-w10-z` | 1.95–2.01 | 0.792–0.864 | 0.636–0.701 | 0.619–0.668 | 37–90× |
+| `mesh28-w64k-z` | 1.67–1.79 | 0.602–0.704 | 0.405–0.471 | 0.321–0.403 | 75–116× |
+
+One node: GAPBS and Wasp beat ACIC@4 on `terrain30-s-z` (0.72–0.95×); ACIC
+passes them at 16 nodes (2.2–2.8×) and reaches 5.6–7.0× at 64.
+
+Against the recorded predictions (`frontier-series-mesh-<N>n-variants.json`):
+- Every solve returns the reference digest: met.
+- `terrain30-m-z`@16 22–40 s: met (25.6–29.1 s).
+- Weak scaling along the terrain series 1.5–3× per step: met at the low edge
+  (1.4–1.8×).
+- Strong scaling on inputs of 2B+ vertices:
+  - 4 → 16 nodes 1.8–3.0×: slightly above (`terrain30-s-z` 2.83–3.08×,
+    `mesh32-z` 2.88–3.09×).
+  - 16 → 32 nodes 1.3–1.9×: met (1.54–1.94×).
+  - 32 → 64 nodes 1.2–1.8×: met (1.47–1.84×).
+- `mesh32-z`@64 2–6 s: met (3.61–4.14 s).
+- Speedup over Gluon-Async 30–200× wherever Gluon finishes: met on the 2-D
+  meshes (37–116×). Above the range on `terrain30-s-z` (129–228×). Missed on
+  the 3-D grids (7.7–26×), whose low diameter suits Gluon's rounds.
+- `mesh28-w10-z` within 0.7–1.3× of `mesh28-z`: met at 4 and 16 nodes, missed
+  at 32 (1.46–1.54×) and 64 (1.64–1.89×), where w10 stops scaling.
+- `mesh28-z` time / `mesh28-w64k-z` time 0.4–1.0: met (0.97–1.03; no cost).
+
+Open: Gemini and HavoqGT phase A (submitted); why narrow weights stop ACIC's
+scaling; terrain-ae-z Gluon and ACIC at 32/64 nodes.
