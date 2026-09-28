@@ -110,7 +110,7 @@ class Campaign:
         for path in (self.root/'bin').iterdir():
             if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'acic_ipdps', 'acic_ipdps_wide', 'acic_ipdps2', 'acic_ipdps2_wide', 'riken_sssp',
                              'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp', 'gluon_sssp64', 'wasp_sssp',
-                             'gemini_sssp', 'gemini_sssp64']:
+                             'gemini_sssp', 'gemini_sssp64', 'havoqgt_sssp']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -123,7 +123,7 @@ class Campaign:
         # its own per-node total; the record keeps the allocation's budget.
         workers = config.get('workers', self.args.workers)
         per_graph_rule = None
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': getattr(self.args, 'gluon_binary', 'gluon_sssp'), 'gemini': config.get('binary', 'gemini_sssp')}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': getattr(self.args, 'gluon_binary', 'gluon_sssp'), 'gemini': config.get('binary', 'gemini_sssp'), 'havoqgt': 'havoqgt_sssp'}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -187,6 +187,15 @@ class Campaign:
             suffix = '.gemini64' if config.get('binary', 'gemini_sssp').endswith('64') else '.gemini32'
             vertices = re.search(r'\bvertices=(\d+)', (self.root/'graphs'/(graph+'.meta')).read_text())[1]
             args = [str(binary), str(path.with_suffix(suffix)), vertices, str(source)]
+        elif engine == 'havoqgt':
+            # HavoqGT (benchmarks/havoqgt.patch): one single-threaded MPI rank
+            # per core, solving on a store that scripts/frontier/
+            # series_baseline.sbatch ingested for exactly this layout
+            # (--havoqgt-store DIR holds DIR/GRAPH).
+            ranks = config.get('rpn', 56)
+            launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
+                      '--ntasks-per-node', str(ranks), '-c', '1', '--cpu-bind=cores']
+            args = [str(binary), '-i', str(Path(self.args.havoqgt_store) / graph), '-s', str(source)]
         else:
             ranks = config.get('rpn', 1)
             threads = config.get('threads', workers // ranks)
@@ -1256,6 +1265,9 @@ class Campaign:
             return dict(engine='gemini', name=f'gemini-r{rpn}', rpn=rpn, threads=stride(rpn), cpus=stride(rpn),
                         binary=self.args.gemini_binary)
         arms['gemini'] = ([gemini(r) for r in layouts(self.args.gemini_layouts)], None)
+        # HavoqGT: one layout (a rank per core); its store is ingested for it.
+        if self.args.havoqgt_store:
+            arms['havoqgt'] = ([dict(engine='havoqgt', name='havoqgt-r56', rpn=56, threads=1, cpus=1)], None)
         if self.nodes == 1:
             def gap(threads, delta):
                 return dict(engine='gap', name=f'gap-t{threads}-d{delta}', threads=threads, cpus=threads, delta=delta)
@@ -1535,6 +1547,8 @@ if __name__ == '__main__':
                         help='Gemini ranks per node tried (each rank takes 56/rpn cores on Frontier)')
     parser.add_argument('--gemini-binary', default='gemini_sssp',
                         help='gemini_sssp64 for graphs of 2^32 or more vertices (input NAME.gemini64)')
+    parser.add_argument('--havoqgt-store',
+                        help='directory holding the HavoqGT store DIR/GRAPH, ingested for 56 ranks per node')
     parser.add_argument('--gluon-binary', default='gluon_sssp',
                         help='gluon_sssp64 (benchmarks/gluon64.patch) for graphs past 2^32 vertices; oec only')
     parser.add_argument('--riken-tolerance', type=float, default=0.0,
