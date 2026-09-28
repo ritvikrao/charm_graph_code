@@ -2,8 +2,8 @@
 # Galois .gr (version 2) of an existing GLO-90 terrain graph, written straight
 # from the tiles by terrain_graph2 --gr with no .wsg (to_galois.py on the
 # 1.1 TB .wsg ran past the 2-hour limit, job 5546090). terrain_graph2's .gr is
-# byte-identical to to_galois.py's on the Alps test; here a million random
-# offsets and edges are also checked against the existing .wsg.
+# byte-identical to to_galois.py's on the Alps test; here 128,000 offsets
+# and edges (2000 random windows) are also checked against the existing .wsg.
 #
 #   sbatch scripts/frontier/terrain_gr.sbatch CAMPAIGN [NAME] (REGION, SEED as prepare_terrain.sbatch)
 #SBATCH --account=csc710
@@ -38,9 +38,12 @@ gend = np.memmap(gr, '<u8', 'r', 32, (n,))
 gdst = np.memmap(gr, '<u8', 'r', 32 + 8 * n, (m,))
 gw = np.memmap(gr, '<i4', 'r', 32 + 8 * n + 8 * m, (m,))
 rng = np.random.default_rng(20260926)
-i = np.sort(rng.integers(0, n, 1000000)); e = np.sort(rng.integers(0, m, 1000000))
-ok = (np.array_equal(gend[i], off[i + 1]) and gend[n - 1] == m and np.array_equal(gdst[e], rec['v'][e])
-      and np.array_equal(gw[e], rec['w'][e]))
+# 2000 windows of 64 entries each: a million scattered entries is a million
+# Lustre page faults per array and ran past the 2-hour limit (job 5551364).
+iw = np.sort(rng.integers(0, n - 64, 2000)); ew = np.sort(rng.integers(0, m - 64, 2000))
+ok = gend[n - 1] == m and gend[0] == off[1]
+for a in iw: ok &= np.array_equal(gend[a:a + 64], off[a + 1:a + 65])
+for a in ew: ok &= np.array_equal(gdst[a:a + 64], rec['v'][a:a + 64]) and np.array_equal(gw[a:a + 64], rec['w'][a:a + 64])
 import os
 ok = ok and os.path.getsize(gr) == 32 + 8 * n + 12 * m
 print('GR SPOT CHECK', 'PASS' if ok else 'FAIL', f'n={n} m={m}')
