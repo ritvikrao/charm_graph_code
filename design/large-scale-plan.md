@@ -198,3 +198,22 @@ grid3-30-z 14.3 s (60.7 s with 29f8d6a), mesh28-w64k-z 15.7 s. The series
 jobs now use acic_scale64b and wait on 5558304; the terrain30-l-z reference is
 5558305 (5558177 cancelled), and its Gluon job is 5558382 (5558215 was
 cancelled with it).
+
+## Gemini and HavoqGT, phase A (2026-09-28, submitted)
+
+Builds (d3ec098, b73110f): Gemini 170e7d3 + `benchmarks/gemini.patch` (uint32
+weights, uint64 distances, sources list, solve-only timer, digest, NUMA fix,
+64-bit ids with `-DGEMINI_VERTEX64`); HavoqGT master 2e8b2a8 +
+`benchmarks/havoqgt.patch` (Metall v0.29, uint32 weights, exact source, digest;
+an MPI_Abort no longer hangs in MPI_Finalize). Smoke 5558543 and 5560036:
+every digest correct on road-ny, mesh20 and mesh24-z at 1 and 2 nodes, and on
+the 4.4e9-id strided mesh20 (gemini_sssp64, HavoqGT). mesh24-z per solve:
+Gemini 18–41 s (1–2 nodes), HavoqGT 39–73 s (1–2 nodes).
+
+Phase A: mesh28-z, mesh28-w10-z, mesh28-w64k-z, grid3-30-z (2 held-out
+sources, launch cap 700 s) and terrain30-s-z (2 sources, cap 1800 s) at 4, 16,
+32 and 64 nodes; Gemini 1 rank x 56 threads per node, HavoqGT 56 ranks per
+node; `scripts/frontier/series_baseline.sbatch` via run.py
+`--external-no-search`. Inputs: `convert_gemini.sbatch` 5560446. Jobs:
+Gemini 5560447–5560454, HavoqGT 5560455–5560462 (small, sz per node count).
+A capped launch gives a lower bound on ACIC's speedup.
