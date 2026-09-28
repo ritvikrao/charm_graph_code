@@ -293,5 +293,6 @@ int main(int argc, char **argv) {
     if (!backup.empty()) distributed_db::transfer(output, backup);
     comm_world().barrier();
   }
+  MPI_Finalize();  // ygm::detail::init_final no longer does (abort-path hang)
   return 0;
 }

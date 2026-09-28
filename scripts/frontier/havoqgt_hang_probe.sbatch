@@ -42,10 +42,10 @@ stacks() {  # label binary-name
       echo "== $(hostname) pid $p"; gdb -p "$p" -batch -ex "thread apply all bt 25" 2>/dev/null | grep -E "^#|^Thread" | head -60
     done' > "$LOG/$1.stacks" 2>&1
 }
-run_case() {  # label rpn binary args...
+run_case() {  # label rpn binary args...   (NODES=1 for a one-node step)
   local label=$1 rpn=$2 name=$3; shift 3
-  local out=$LOG/$label.out start=$SECONDS
-  srun -N 2 -n $((2 * rpn)) --ntasks-per-node "$rpn" -c $((56 / rpn)) --cpu-bind=cores --unbuffered \
+  local out=$LOG/$label.out start=$SECONDS nodes=${NODES:-2}
+  srun -N $nodes -n $((nodes * rpn)) --ntasks-per-node "$rpn" -c $((56 / rpn)) --cpu-bind=cores --unbuffered \
     --time=5 "$BIN/$name" "$@" > "$out" 2>&1 &
   local pid=$!
   while kill -0 $pid 2>/dev/null && [ $((SECONDS - start)) -lt "$WAIT" ]; do sleep 2; done
@@ -67,6 +67,16 @@ check() {  # label
   [ "$got" = "$WANT" ] && echo "PASS $1 $(grep -m1 "^BENCH source=$SRC " "$LOG/$1.out" | grep -oE 'solve_seconds=[0-9.]+')" || echo "FAIL $1 got=[$got] want=[$WANT]"
 }
 
+# LOOPS=K replays the smoke job's order K times before the other cases: a
+# one-node ingest and solve inside the two-node allocation, then two nodes.
+for k in $(seq 1 "${LOOPS:-0}"); do
+  NODES=1 run_case loop$k-ingest-1x56 56 havoqgt_ingest -O -o "$SHM/g1" "$WSG" &&
+    NODES=1 run_case loop$k-sssp-1x56 56 havoqgt_sssp -i "$SHM/g1" -s "$SRC" && check loop$k-sssp-1x56
+  srun -N 2 --ntasks-per-node=1 --overlap rm -rf "$SHM"
+  run_case loop$k-ingest-2x56 56 havoqgt_ingest -O -o "$SHM/g2" "$WSG" &&
+    run_case loop$k-sssp-2x56 56 havoqgt_sssp -i "$SHM/g2" -s "$SRC" && check loop$k-sssp-2x56
+  srun -N 2 --ntasks-per-node=1 --overlap rm -rf "$SHM"
+done
 run_case ingest-2x56-shm 56 havoqgt_ingest -O -o "$SHM/g" "$WSG" &&
   run_case sssp-2x56-shm 56 havoqgt_sssp -i "$SHM/g" -s "$SRC" && check sssp-2x56-shm
 srun -N 2 --ntasks-per-node=1 --overlap rm -rf "$SHM"

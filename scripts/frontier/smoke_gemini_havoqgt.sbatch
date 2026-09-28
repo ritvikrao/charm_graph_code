@@ -28,7 +28,7 @@
 #SBATCH --account=csc710
 #SBATCH --partition=batch
 #SBATCH --nodes=2
-#SBATCH --time=01:00:00
+#SBATCH --time=01:30:00
 #SBATCH --job-name=acic-gemini-havoqgt
 set -uo pipefail
 ulimit -c 0
@@ -49,13 +49,20 @@ export PMI_MAX_KVS_ENTRIES=100000 FI_CXI_RX_MATCH_MODE=hybrid NO_AFFINITY=1
 export OMP_PROC_BIND=close OMP_PLACES=cores
 export MPICH_MAX_THREAD_SAFETY=multiple MPICH_OFI_NIC_POLICY=ROUND-ROBIN
 NN=$SLURM_NNODES
+# One-node steps in a two-node allocation are pinned to the first node: the
+# HavoqGT store lives in that node's /dev/shm, and Slurm otherwise places the
+# next one-node step on either node (job 5559910: the solve ran on the node
+# without the store, and Metall's abort then hung in MPI_Finalize).
+FIRST=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -1)
+STEP=${STEP_MINUTES:-8}
 fail=0
 echo "job=$SLURM_JOB_ID hosts=$SLURM_JOB_NODELIST log=$LOG"
 sha256sum "$BIN"/{gemini_sssp,gemini_sssp64,wsg_to_gemini,havoqgt_sssp,havoqgt_ingest}
 ldd "$BIN/gemini_sssp" "$BIN/havoqgt_sssp" | grep -E 'mpi|fabric|boost|numa|sci' | sort -u
 srun -N 1 -n 1 --overlap bash -c 'numactl -H | head -3; grep Cpus_allowed_list /proc/self/status; df -h /dev/shm | tail -1; cat /proc/sys/vm/overcommit_memory'
 
-cleanup() { srun -N "$NN" --ntasks-per-node=1 --overlap rm -rf "$SHM" >/dev/null 2>&1; }
+clear_shm() { srun -N "$NN" --ntasks-per-node=1 --overlap rm -rf "$SHM" >/dev/null 2>&1; }
+cleanup() { clear_shm; }
 trap cleanup EXIT
 
 want() {  # graph source -> "h1=.. h2=.. reachable=.. distance_sum=.."
@@ -84,13 +91,14 @@ verify() {  # label graph rc outfile sources...
 }
 launch() {  # outfile nodes ranks_per_node cpus_per_rank minutes command...
   local out=$1 nodes=$2 rpn=$3 cpus=$4 minutes=$5; shift 5
-  srun -N "$nodes" -n $((nodes * rpn)) --ntasks-per-node "$rpn" -c "$cpus" --cpu-bind=cores \
+  local pin=(); [ "$nodes" = 1 ] && pin=(-w "$FIRST")
+  srun -N "$nodes" "${pin[@]}" -n $((nodes * rpn)) --ntasks-per-node "$rpn" -c "$cpus" --cpu-bind=cores \
     --unbuffered --kill-on-bad-exit=1 --time="$minutes" "$@" > "$out" 2>&1
 }
 gemini() {  # label graph input vertices nodes rpn cpus binary sources...
   local label=$1 graph=$2 input=$3 n=$4 nodes=$5 rpn=$6 cpus=$7 bin=$8; shift 8
   local out=$LOG/$label-$graph.out
-  ( export OMP_NUM_THREADS=$cpus; launch "$out" "$nodes" "$rpn" "$cpus" 20 "$BIN/$bin" "$input" "$n" "$@" )
+  ( export OMP_NUM_THREADS=$cpus; launch "$out" "$nodes" "$rpn" "$cpus" "$STEP" "$BIN/$bin" "$input" "$n" "$@" )
   local rc=$?
   grep -m1 '^GEMINI load' "$out" | sed "s/^/  $label: /"
   verify "$label" "$graph" $rc "$out" "$@"
@@ -98,7 +106,8 @@ gemini() {  # label graph input vertices nodes rpn cpus binary sources...
 havoqgt() {  # label graph wsg nodes sources...
   local label=$1 graph=$2 wsg=$3 nodes=$4; shift 4
   local store=$SHM/$graph out=$LOG/$label-$graph.out
-  launch "$LOG/$label-$graph.ingest" "$nodes" 56 1 20 "$BIN/havoqgt_ingest" -O -o "$store" "$wsg"
+  clear_shm
+  launch "$LOG/$label-$graph.ingest" "$nodes" 56 1 "$STEP" "$BIN/havoqgt_ingest" -O -o "$store" "$wsg"
   local rc=$?
   grep -E '^HAVOQGT_INGEST|Number of Delegates' "$LOG/$label-$graph.ingest" | sed "s/^/  $label: /"
   srun -N "$nodes" --ntasks-per-node=1 --overlap du -sh "$SHM" 2>/dev/null | sed "s/^/  $label store: /"
@@ -107,11 +116,11 @@ havoqgt() {  # label graph wsg nodes sources...
   else
     local args=() s
     for s in "$@"; do args+=(-s "$s"); done
-    launch "$out" "$nodes" 56 1 20 "$BIN/havoqgt_sssp" -i "$store" "${args[@]}"
+    launch "$out" "$nodes" 56 1 "$STEP" "$BIN/havoqgt_sssp" -i "$store" "${args[@]}"
     rc=$?
     verify "$label" "$graph" $rc "$out" "$@"
   fi
-  srun -N "$nodes" --ntasks-per-node=1 --overlap rm -rf "$SHM"
+  clear_shm
 }
 
 for graph in ${GRAPHS//,/ }; do
@@ -121,17 +130,30 @@ for graph in ${GRAPHS//,/ }; do
   input=$TMP/$graph.gemini32
   [ -s "$input" ] && [ -s "$input.info" ] || OMP_NUM_THREADS=56 "$BIN/wsg_to_gemini" --ids 32 "$DATA/$graph.wsg" "$input"
   echo "--- $graph n=$n sources ${sources[*]}"
+  if [ -z "${SKIP_GEMINI:-}" ]; then
   gemini gemini-1Nx1x56 "$graph" "$input" "$n" 1 1 56 gemini_sssp "${sources[@]}"
   gemini gemini-1Nx4x14 "$graph" "$input" "$n" 1 4 14 gemini_sssp "${sources[@]}"
   if [ "$NN" -ge 2 ]; then
     gemini gemini-2Nx1x56 "$graph" "$input" "$n" 2 1 56 gemini_sssp "${sources[@]}"
     gemini gemini-2Nx8x7 "$graph" "$input" "$n" 2 8 7 gemini_sssp "${sources[@]}"
   fi
+  fi
   havoqgt havoqgt-1Nx56 "$graph" "$DATA/$graph.wsg" 1 "${sources[@]}"
   [ "$NN" -ge 2 ] && havoqgt havoqgt-2Nx56 "$graph" "$DATA/$graph.wsg" 2 "${sources[@]}"
 done
 
+# The abort path must end the step, not hang (the old HavoqGT hung in
+# MPI_Finalize after Metall's MPI_Abort): a solve on a missing store, 2 x 56.
+if [ "$NN" -ge 2 ]; then
+  start=$SECONDS
+  launch "$LOG/havoqgt-abort-check.out" 2 56 1 3 "$BIN/havoqgt_sssp" -i "$SHM/missing" -s 0
+  rc=$? took=$((SECONDS - start))
+  if [ $rc -ne 0 ] && [ $took -lt 120 ]; then echo "PASS havoqgt abort exits (rc=$rc in ${took}s)"
+  else echo "FAIL havoqgt abort (rc=$rc in ${took}s)"; fail=1; fi
+fi
+
 if [ "$STRIDED" = 1 ] && [ "$NN" -ge 2 ]; then
+  STEP=${STRIDED_STEP_MINUTES:-25}
   wsg=$CAMPAIGN/test64/mesh20-s4200.wsg
   input=$TMP/mesh20-s4200.gemini64
   echo "--- strided (64-bit ids) $wsg"

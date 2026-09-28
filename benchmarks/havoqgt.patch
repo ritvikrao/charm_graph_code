@@ -18,6 +18,30 @@ index 86b12da..e5b152c 100644
  
        // Currently, m_delegate_info holds the count of high degree edges
        // assigned to this node for each vertex.
+diff --git a/include/ygm/impl/mpi.ipp b/include/ygm/impl/mpi.ipp
+index 127f3e9..a68e1ed 100644
+--- a/include/ygm/impl/mpi.ipp
++++ b/include/ygm/impl/mpi.ipp
+@@ -227,13 +227,12 @@ class init_final {
+       MPI_Init(argc, argv);
+     }
+   }
+-  ~init_final() {
+-    int is_finalized;
+-    MPI_Finalized(&is_finalized);
+-    if (!is_finalized) {
+-      MPI_Finalize();
+-    }
+-  }
++  // Mains call MPI_Finalize themselves before returning. Reaching this
++  // destructor unfinalized means exit() from inside MPI_Abort (Cray PMI2_Abort
++  // calls exit), where MPI_Finalize waits in a barrier for ranks that already
++  // left: a Metall partition-count error hung until the step limit (ACIC jobs
++  // 5558543, 5559910). Skip it so the abort ends the step.
++  ~init_final() {}
+ };
+ }
+ 
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
 index 2d88b92..77d1db8 100644
 --- a/src/CMakeLists.txt
@@ -41,7 +65,7 @@ index 2d88b92..77d1db8 100644
 +  include_link_stdcppfs(havoqgt_ingest)
 +endif()
 diff --git a/src/ingest_edge_list.cpp b/src/ingest_edge_list.cpp
-index 79a4355..c147dea 100644
+index 79a4355..c9f8301 100644
 --- a/src/ingest_edge_list.cpp
 +++ b/src/ingest_edge_list.cpp
 @@ -28,7 +28,8 @@ using namespace havoqgt;
@@ -54,8 +78,15 @@ index 79a4355..c147dea 100644
  typedef distributed_db::allocator<edge_data_type> edge_data_allocator_type;
  
  void usage() {
+@@ -221,5 +222,6 @@ int main(int argc, char** argv) {
+     }
+     comm_world().barrier();
+   } //END Main MPI
++  MPI_Finalize();  // ygm::detail::init_final no longer does (abort-path hang)
+   return 0;
+ }
 diff --git a/src/run_sssp.cpp b/src/run_sssp.cpp
-index 6d02297..316e0f9 100644
+index 6d02297..617cd70 100644
 --- a/src/run_sssp.cpp
 +++ b/src/run_sssp.cpp
 @@ -17,26 +17,39 @@
@@ -278,7 +309,7 @@ index 6d02297..316e0f9 100644
  
        MPI_Barrier(MPI_COMM_WORLD);
        double time_start = MPI_Wtime();
-@@ -178,41 +213,60 @@ int main(int argc, char** argv) {
+@@ -178,43 +213,63 @@ int main(int argc, char** argv) {
                                             *edge_data_ptr, source);
        MPI_Barrier(MPI_COMM_WORLD);
        double time_end = MPI_Wtime();
@@ -364,3 +395,6 @@ index 6d02297..316e0f9 100644
    }    // END Main MPI
    ;
  
++  MPI_Finalize();  // ygm::detail::init_final no longer does (abort-path hang)
+   return 0;
+ }
