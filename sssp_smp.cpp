@@ -6,6 +6,7 @@
 #include "live_slack.h"
 #include "round_profile.h"
 #include "graphlib/tile_layout.h"
+#include "graphlib/edge_partition.h"
 #ifdef PAPI
 #include "acic_prof.h"
 #endif
@@ -1808,63 +1809,53 @@ public:
             << " edges, " << (header.weighted ? "weighted" : "unweighted")
             << endl;
 #endif
-      // Partition on equal edge counts rather than equal vertex counts. The
-      // offsets array is the whole cost of knowing this, and it has to be read
-      // anyway. A real graph's degree distribution makes equal vertex ranges a
-      // bad split; this is the one place the information is free.
-      std::vector<int64_t> offsets;
-      gapbs_read_offsets(file_name, header, 0, V, offsets);
+      // Partition on equal edge counts rather than equal vertex counts. A real
+      // graph's degree distribution makes equal vertex ranges a bad split. The
+      // boundaries are found by binary search over offsets read from the file
+      // on demand (graphlib/edge_partition.h): holding the whole array, plus a
+      // tiled copy, was 550 GB on PE 0 for terrain30-l-z (job 5551488).
       reader_tile_owners = process_share_active() ? CkNumNodes() : N;
       if (reader_tile_size == -1)
         reader_tile_size = num_global_edges < 8L * V
             ? std::max(1L, V / (64L * reader_tile_owners)) : 0;
-      if (reader_tile_size > 0) {
-        TileLayout layout(V, reader_tile_size, reader_tile_owners);
-        std::vector<int64_t> tiled((size_t)V + 1, 0);
-        for (long v = 0; v < V; ++v) {
-          const long original = layout.original(v);
-          tiled[(size_t)v + 1] = tiled[(size_t)v] +
-              offsets[(size_t)original + 1] - offsets[(size_t)original];
-        }
-        offsets.swap(tiled);
-        ckout << "Reader tiles: vertices=" << reader_tile_size
-              << " owners=" << reader_tile_owners << endl;
-      }
-      // At least one, so an edgeless graph still spreads its vertices instead
-      // of handing every one of them to the last PE.
-      auto partition_region = [&](int first_pe, int last_pe, long begin, long end) {
-        const long pes = last_pe - first_pe;
-        const long region_edges = offsets[(size_t)end] - offsets[(size_t)begin];
-        const long per_pe = std::max(1L, (region_edges + pes - 1) / pes);
-        long vertex = begin;
-        for (int i = first_pe; i < last_pe; ++i) {
-          partition_index[i] = vertex;
-          const long target = (long)offsets[(size_t)vertex] + per_pe;
-          while (vertex < end && (long)offsets[(size_t)vertex] < target &&
-                 end - vertex > last_pe - i - 1)
-            ++vertex;
-        }
-        partition_index[last_pe] = end;
-      };
-      if (reader_tile_size > 0) {
-        TileLayout layout(V, reader_tile_size, reader_tile_owners);
-        for (int owner = 0; owner < reader_tile_owners; ++owner) {
-          const int first = process_share_active() ? CkNodeFirst(owner) : owner;
-          const int size = process_share_active() ? CkNodeSize(owner) : 1;
-          partition_region(first, first + size, layout.owner_begin(owner), layout.owner_end(owner));
-        }
-      } else {
-        partition_region(0, N, 0, V);
-      }
       {
+        FileOffsets offsets(file_name, header);
+        if (reader_tile_size > 0) {
+          TileLayout layout(V, reader_tile_size, reader_tile_owners);
+          TiledOffsets<FileOffsets> tiled(offsets, layout, V, reader_tile_size,
+                                          reader_tile_owners);
+          ckout << "Reader tiles: vertices=" << reader_tile_size
+                << " owners=" << reader_tile_owners << endl;
+          for (int owner = 0; owner < reader_tile_owners; ++owner) {
+            const int first = process_share_active() ? CkNodeFirst(owner) : owner;
+            const int size = process_share_active() ? CkNodeSize(owner) : 1;
+            partition_by_edges(tiled, first, first + size, layout.owner_begin(owner),
+                               layout.owner_end(owner), partition_index);
+          }
+        } else {
+          partition_by_edges(offsets, 0, N, 0, V, partition_index);
+        }
+      }
+      // The degree CV only feeds lazy_active, which needs an average degree of
+      // at least 8 before it looks at it, so below that it is not computed: the
+      // pass over all V+1 offsets is the one O(V) read left on PE 0. Above it
+      // the offsets are streamed in 128 MB chunks, in file order (the CV does
+      // not depend on vertex order).
+      if (num_global_edges >= 8L * V) {
         double sum = 0.0, sum_sq = 0.0;
         long with_edges = 0;
-        for (long v = 0; v < V; v++) {
-          const double d = (double)(offsets[(size_t)v + 1] - offsets[(size_t)v]);
-          if (d > 0) {
-            sum += d;
-            sum_sq += d * d;
-            with_edges++;
+        const long chunk = 1L << 24;
+        std::vector<int64_t> offsets;
+        for (long first = 0; first < V; first += chunk) {
+          const long last = std::min(V, first + chunk);
+          gapbs_read_offsets(file_name, header, first, last, offsets);
+          for (long i = 0; i < last - first; i++) {
+            const double d = (double)(offsets[(size_t)i + 1] - offsets[(size_t)i]);
+            if (d > 0) {
+              sum += d;
+              sum_sq += d * d;
+              with_edges++;
+            }
           }
         }
         if (with_edges > 0) {
@@ -1872,11 +1863,13 @@ public:
           degree_cv = std::sqrt(std::max(0.0, sum_sq / with_edges - mean * mean)) / mean;
         }
         ckout << "Degree CV: " << degree_cv << endl;
+      } else {
+        ckout << "Degree CV: not computed (average degree below 8)" << endl;
       }
       graph_spec.num_vertices = V;
       graph_spec.num_edges = num_global_edges;
-      // Everything above is PE 0 reading the header and the offsets array to
-      // decide the partition. The edge rows are read by each PE inside
+      // Everything above is PE 0 reading the header and the offsets it needs
+      // to decide the partition. The edge rows are read by each PE inside
       // load_gapbs_graph, so this split is index vs graph, not read vs build.
       index_time = CkWallTimer() - start_time;
       arr.load_gapbs_graph(file_name, partition_index, N + 1);
