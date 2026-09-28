@@ -32,6 +32,41 @@ neither prints the harness `BENCH` digest, and ds-rho cannot take a fixed
 source. Each needs a small adapter, like `benchmarks/gap_driver.cpp`, before
 it can join a timed, held-out-source comparison.
 
+## Gemini and HavoqGT
+
+`scripts/frontier/build_gemini_havoqgt.sh` builds both into `campaign/bin/`
+and appends provenance to `campaign/bin/baselines-manifest.txt`;
+`scripts/frontier/smoke_gemini_havoqgt.sbatch CAMPAIGN` checks every digest
+on road-ny, mesh20 and mesh24-z (one and two nodes) and the 4.4e9-id strided
+mesh20 from `gluon64_test.sbatch`.
+
+- **Gemini** (GeminiGraph `170e7d3` + `benchmarks/gemini.patch`):
+  `gemini_sssp FILE VERTICES SOURCE [SOURCE ...]`, one BENCH line per source.
+  Weights are uint32 and distances uint64 (upstream uses float for both,
+  exact only below 2^24). Input: `wsg_to_gemini in.wsg out` writes packed
+  `{src, dst, uint32 weight}` records, 12 bytes per directed edge with 32-bit
+  ids, 20 with `--ids 64` (for `gemini_sssp64`), every directed edge of the
+  `.wsg` once (both directions of an undirected graph, which is what upstream
+  sssp's `load_directed` wants), plus `out.info`, which `gemini_sssp` checks.
+  Needs `MPICH_MAX_THREAD_SAFETY=multiple` (it aborts otherwise). Its "sockets"
+  are the NUMA domains in the rank's cpuset (Frontier compute nodes are NPS4:
+  4 domains of 14 usable cores), threads per socket from `OMP_NUM_THREADS /
+  sockets` (or `GEMINI_THREADS_PER_SOCKET`). Gemini's design is one process
+  per node (1 x 56: 4 sockets x 14); every rank holds several |V|-sized arrays
+  (global degree array, per-socket adjacency indexes, bitmaps), so more ranks
+  per node multiply that memory. Asserts stay enabled (some have side
+  effects).
+- **HavoqGT** (master `2e8b2a8` + `benchmarks/havoqgt.patch`, Metall v0.29
+  headers): MPI only, one rank per core. `havoqgt_ingest -o STORE graph.wsg`
+  reads the `.wsg` directly into a Metall store (per-rank directories under
+  STORE; about 12 bytes per directed edge plus 25-40 per vertex; 380 MB for
+  rmat20's 31.4M edges). The store is partitioned for the ingest's rank count
+  and layout; run `havoqgt_sssp -i STORE -s SOURCE [-s ...]` with the same.
+  Node-local `/dev/shm` is fastest but is cleared at job end; keep a copy on
+  Lustre and stage it with `havoqgt_sssp -b LUSTRE_STORE -i /dev/shm/...`.
+  `havoqgt_ingest_edge_list` is upstream's text ingest (uint32 weights) for
+  cross-checks, fed by `wsg_to_gemini --text PARTS`.
+
 ## Differences from Delta that the harness must absorb
 
 - **Cores:** a Frontier node has eight 8-core L3 regions; Slurm reserves the

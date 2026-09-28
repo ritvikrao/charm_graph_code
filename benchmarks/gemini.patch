@@ -1,0 +1,611 @@
+diff --git a/core/graph.hpp b/core/graph.hpp
+index 9b105fc..55c592f 100644
+--- a/core/graph.hpp
++++ b/core/graph.hpp
+@@ -24,6 +24,7 @@ Copyright (c) 2015-2016 Xiaowei Zhu, Tsinghua University
+ #include <fcntl.h>
+ #include <malloc.h>
+ #include <sys/mman.h>
++#include <sched.h>
+ #include <numa.h>
+ #include <omp.h>
+ 
+@@ -32,6 +33,7 @@ Copyright (c) 2015-2016 Xiaowei Zhu, Tsinghua University
+ #include <thread>
+ #include <mutex>
+ #include <functional>
++#include <algorithm>
+ 
+ #include "core/atomic.hpp"
+ #include "core/bitmap.hpp"
+@@ -67,10 +69,10 @@ struct MessageBuffer {
+     count = 0;
+     data = NULL;
+   }
+-  void init (int socket_id) {
++  void init (int numa_node) {
+     capacity = 4096;
+     count = 0;
+-    data = (char*)numa_alloc_onnode(capacity, socket_id);
++    data = (char*)numa_alloc_onnode(capacity, numa_node);
+   }
+   void resize(size_t new_capacity) {
+     if (new_capacity > capacity) {
+@@ -140,11 +142,80 @@ public:
+   MessageBuffer *** send_buffer; // MessageBuffer* [partitions] [sockets]; numa-aware
+   MessageBuffer *** recv_buffer; // MessageBuffer* [partitions] [sockets]; numa-aware
+ 
+-  Graph() {
+-    threads = numa_num_configured_cpus();
+-    sockets = numa_num_configured_nodes();
+-    threads_per_socket = threads / sockets;
++  // ACIC: upstream takes every configured CPU and NUMA node of the machine
++  // (numa_num_configured_cpus/nodes) and binds thread t to NUMA node
++  // t / threads_per_socket. Under Slurm a rank owns only part of a node, so
++  // that oversubscribes it and asserts in numa_run_on_node for nodes outside
++  // its cpuset. Here a "socket" is a NUMA node that holds at least one CPU the
++  // rank may run on, socket_nodes maps socket index -> NUMA node id, and each
++  // thread is bound to its socket's allowed CPUs (upstream binds it to the
++  // whole node). The allowed set is the union of the OpenMP places if any
++  // are defined (libgomp may already have pinned the initial thread) and the
++  // process affinity mask otherwise. Threads per socket:
++  // GEMINI_THREADS_PER_SOCKET, else OMP_NUM_THREADS / sockets, else the
++  // smallest per-socket CPU count.
++  std::vector<int> socket_nodes;
++  std::vector<std::vector<int>> socket_cpus;
++
++  int socket_node(int s_i) const {
++    return socket_nodes[s_i];
++  }
+ 
++  void discover_topology() {
++    assert( numa_available() != -1 );
++    std::vector<int> allowed;
++    int places = omp_get_num_places();
++    if (places > 0) {
++      for (int p=0;p<places;p++) {
++        std::vector<int> ids(omp_get_place_num_procs(p));
++        omp_get_place_proc_ids(p, ids.data());
++        allowed.insert(allowed.end(), ids.begin(), ids.end());
++      }
++    } else {
++      cpu_set_t mask;
++      CPU_ZERO(&mask);
++      int rc = sched_getaffinity(0, sizeof(mask), &mask);
++      assert(rc==0);
++      for (int c=0;c<CPU_SETSIZE;c++) {
++        if (CPU_ISSET(c, &mask)) allowed.push_back(c);
++      }
++    }
++    std::sort(allowed.begin(), allowed.end());
++    allowed.erase(std::unique(allowed.begin(), allowed.end()), allowed.end());
++    std::vector<std::vector<int>> by_node(numa_max_node()+1);
++    for (int c : allowed) {
++      int node = numa_node_of_cpu(c);
++      assert(node >= 0 && node < (int)by_node.size());
++      by_node[node].push_back(c);
++    }
++    for (size_t n=0;n<by_node.size();n++) {
++      if (!by_node[n].empty()) {
++        socket_nodes.push_back((int)n);
++        socket_cpus.push_back(by_node[n]);
++      }
++    }
++    sockets = socket_nodes.size();
++    assert(sockets > 0);
++    size_t fewest = socket_cpus[0].size();
++    for (auto & cpus : socket_cpus) fewest = std::min(fewest, cpus.size());
++    threads_per_socket = (int)fewest;
++    const char * env_tps = getenv("GEMINI_THREADS_PER_SOCKET");
++    const char * env_omp = getenv("OMP_NUM_THREADS");
++    if (env_tps != nullptr && atoi(env_tps) > 0) {
++      threads_per_socket = atoi(env_tps);
++    } else if (env_omp != nullptr && atoi(env_omp) > 0) {
++      int total = atoi(env_omp);
++      if (total % sockets != 0) {
++        fprintf(stderr, "gemini: OMP_NUM_THREADS=%d is not a multiple of the %d NUMA nodes this rank may run on\n", total, sockets);
++        abort();
++      }
++      threads_per_socket = total / sockets;
++    }
++    threads = sockets * threads_per_socket;
++  }
++
++  Graph() {
++    discover_topology();
+     init();
+   }
+ 
+@@ -164,14 +235,12 @@ public:
+     assert( numa_available() != -1 );
+     assert( sizeof(unsigned long) == 8 ); // assume unsigned long is 64-bit
+ 
+-    char nodestring[sockets*2+1];
+-    nodestring[0] = '0';
+-    for (int s_i=1;s_i<sockets;s_i++) {
+-      nodestring[s_i*2-1] = ',';
+-      nodestring[s_i*2] = '0'+s_i;
++    struct bitmask * nodemask = numa_allocate_nodemask();
++    for (int s_i=0;s_i<sockets;s_i++) {
++      numa_bitmask_setbit(nodemask, socket_node(s_i));
+     }
+-    struct bitmask * nodemask = numa_parse_nodestring(nodestring);
+     numa_set_interleave_mask(nodemask);
++    numa_free_nodemask(nodemask);
+ 
+     omp_set_dynamic(0);
+     omp_set_num_threads(threads);
+@@ -179,14 +248,18 @@ public:
+     local_send_buffer_limit = 16;
+     local_send_buffer = new MessageBuffer * [threads];
+     for (int t_i=0;t_i<threads;t_i++) {
+-      thread_state[t_i] = (ThreadState*)numa_alloc_onnode( sizeof(ThreadState), get_socket_id(t_i));
+-      local_send_buffer[t_i] = (MessageBuffer*)numa_alloc_onnode( sizeof(MessageBuffer), get_socket_id(t_i));
+-      local_send_buffer[t_i]->init(get_socket_id(t_i));
++      thread_state[t_i] = (ThreadState*)numa_alloc_onnode( sizeof(ThreadState), socket_node(get_socket_id(t_i)));
++      local_send_buffer[t_i] = (MessageBuffer*)numa_alloc_onnode( sizeof(MessageBuffer), socket_node(get_socket_id(t_i)));
++      local_send_buffer[t_i]->init(socket_node(get_socket_id(t_i)));
+     }
+     #pragma omp parallel for
+     for (int t_i=0;t_i<threads;t_i++) {
+       int s_i = get_socket_id(t_i);
+-      assert(numa_run_on_node(s_i)==0);
++      cpu_set_t mask;
++      CPU_ZERO(&mask);
++      for (int c : socket_cpus[s_i]) CPU_SET(c, &mask);
++      int rc = sched_setaffinity(0, sizeof(mask), &mask);
++      assert(rc==0);
+       #ifdef PRINT_DEBUG_MESSAGES
+       // printf("thread-%d bound to socket-%d\n", t_i, s_i);
+       #endif
+@@ -204,10 +277,10 @@ public:
+       send_buffer[i] = new MessageBuffer * [sockets];
+       recv_buffer[i] = new MessageBuffer * [sockets];
+       for (int s_i=0;s_i<sockets;s_i++) {
+-        send_buffer[i][s_i] = (MessageBuffer*)numa_alloc_onnode( sizeof(MessageBuffer), s_i);
+-        send_buffer[i][s_i]->init(s_i);
+-        recv_buffer[i][s_i] = (MessageBuffer*)numa_alloc_onnode( sizeof(MessageBuffer), s_i);
+-        recv_buffer[i][s_i]->init(s_i);
++        send_buffer[i][s_i] = (MessageBuffer*)numa_alloc_onnode( sizeof(MessageBuffer), socket_node(s_i));
++        send_buffer[i][s_i]->init(socket_node(s_i));
++        recv_buffer[i][s_i] = (MessageBuffer*)numa_alloc_onnode( sizeof(MessageBuffer), socket_node(s_i));
++        recv_buffer[i][s_i]->init(socket_node(s_i));
+       }
+     }
+ 
+@@ -231,14 +304,14 @@ public:
+     char * array = (char *)mmap(NULL, sizeof(T) * vertices, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+     assert(array!=NULL);
+     for (int s_i=0;s_i<sockets;s_i++) {
+-      numa_tonode_memory(array + sizeof(T) * local_partition_offset[s_i], sizeof(T) * (local_partition_offset[s_i+1] - local_partition_offset[s_i]), s_i);
++      numa_tonode_memory(array + sizeof(T) * local_partition_offset[s_i], sizeof(T) * (local_partition_offset[s_i+1] - local_partition_offset[s_i]), socket_node(s_i));
+     }
+     return (T*)array;
+   }
+ 
+   // deallocate a vertex array
+   template<typename T>
+-  T * dealloc_vertex_array(T * array) {
++  void dealloc_vertex_array(T * array) {
+     numa_free(array, sizeof(T) * vertices);
+   }
+ 
+@@ -323,6 +396,16 @@ public:
+     }
+   }
+ 
++  // ACIC: MPI_Allreduce takes an int count; |V| may exceed INT_MAX.
++  template<typename T>
++  void allreduce_sum_in_place(T * array, size_t count, MPI_Datatype dt) {
++    const size_t chunk = size_t(1) << 28;
++    for (size_t begin=0;begin<count;begin+=chunk) {
++      size_t n = std::min(chunk, count - begin);
++      MPI_Allreduce(MPI_IN_PLACE, array + begin, (int)n, dt, MPI_SUM, MPI_COMM_WORLD);
++    }
++  }
++
+   // allocate a vertex subset
+   VertexSubset * alloc_vertex_subset() {
+     return new VertexSubset(vertices);
+@@ -398,7 +481,7 @@ public:
+         __sync_fetch_and_add(&out_degree[dst], 1);
+       }
+     }
+-    MPI_Allreduce(MPI_IN_PLACE, out_degree, vertices, vid_t, MPI_SUM, MPI_COMM_WORLD);
++    allreduce_sum_in_place(out_degree, vertices, vid_t);
+ 
+     // locality-aware chunking
+     partition_offset = new VertexId [partitions + 1];
+@@ -509,7 +592,7 @@ public:
+     for (int s_i=0;s_i<sockets;s_i++) {
+       outgoing_adj_bitmap[s_i] = new Bitmap (vertices);
+       outgoing_adj_bitmap[s_i]->clear();
+-      outgoing_adj_index[s_i] = (EdgeId*)numa_alloc_onnode(sizeof(EdgeId) * (vertices+1), s_i);
++      outgoing_adj_index[s_i] = (EdgeId*)numa_alloc_onnode(sizeof(EdgeId) * (vertices+1), socket_node(s_i));
+     }
+     {
+       std::thread recv_thread_dst([&](){
+@@ -612,7 +695,7 @@ public:
+           compressed_outgoing_adj_vertices[s_i] += 1;
+         }
+       }
+-      compressed_outgoing_adj_index[s_i] = (CompressedAdjIndexUnit*)numa_alloc_onnode( sizeof(CompressedAdjIndexUnit) * (compressed_outgoing_adj_vertices[s_i] + 1) , s_i );
++      compressed_outgoing_adj_index[s_i] = (CompressedAdjIndexUnit*)numa_alloc_onnode( sizeof(CompressedAdjIndexUnit) * (compressed_outgoing_adj_vertices[s_i] + 1) , socket_node(s_i));
+       compressed_outgoing_adj_index[s_i][0].index = 0;
+       EdgeId last_e_i = 0;
+       compressed_outgoing_adj_vertices[s_i] = 0;
+@@ -633,7 +716,7 @@ public:
+       #ifdef PRINT_DEBUG_MESSAGES
+       printf("part(%d) E_%d has %lu symmetric edges\n", partition_id, s_i, outgoing_edges[s_i]);
+       #endif
+-      outgoing_adj_list[s_i] = (AdjUnit<EdgeData>*)numa_alloc_onnode(unit_size * outgoing_edges[s_i], s_i);
++      outgoing_adj_list[s_i] = (AdjUnit<EdgeData>*)numa_alloc_onnode(unit_size * outgoing_edges[s_i], socket_node(s_i));
+     }
+     {
+       std::thread recv_thread_dst([&](){
+@@ -819,7 +902,7 @@ public:
+         __sync_fetch_and_add(&out_degree[src], 1);
+       }
+     }
+-    MPI_Allreduce(MPI_IN_PLACE, out_degree, vertices, vid_t, MPI_SUM, MPI_COMM_WORLD);
++    allreduce_sum_in_place(out_degree, vertices, vid_t);
+ 
+     // locality-aware chunking
+     partition_offset = new VertexId [partitions + 1];
+@@ -931,7 +1014,7 @@ public:
+     for (int s_i=0;s_i<sockets;s_i++) {
+       outgoing_adj_bitmap[s_i] = new Bitmap (vertices);
+       outgoing_adj_bitmap[s_i]->clear();
+-      outgoing_adj_index[s_i] = (EdgeId*)numa_alloc_onnode(sizeof(EdgeId) * (vertices+1), s_i);
++      outgoing_adj_index[s_i] = (EdgeId*)numa_alloc_onnode(sizeof(EdgeId) * (vertices+1), socket_node(s_i));
+     }
+     {
+       std::thread recv_thread_dst([&](){
+@@ -1019,7 +1102,7 @@ public:
+           compressed_outgoing_adj_vertices[s_i] += 1;
+         }
+       }
+-      compressed_outgoing_adj_index[s_i] = (CompressedAdjIndexUnit*)numa_alloc_onnode( sizeof(CompressedAdjIndexUnit) * (compressed_outgoing_adj_vertices[s_i] + 1) , s_i );
++      compressed_outgoing_adj_index[s_i] = (CompressedAdjIndexUnit*)numa_alloc_onnode( sizeof(CompressedAdjIndexUnit) * (compressed_outgoing_adj_vertices[s_i] + 1) , socket_node(s_i));
+       compressed_outgoing_adj_index[s_i][0].index = 0;
+       EdgeId last_e_i = 0;
+       compressed_outgoing_adj_vertices[s_i] = 0;
+@@ -1040,7 +1123,7 @@ public:
+       #ifdef PRINT_DEBUG_MESSAGES
+       printf("part(%d) E_%d has %lu sparse mode edges\n", partition_id, s_i, outgoing_edges[s_i]);
+       #endif
+-      outgoing_adj_list[s_i] = (AdjUnit<EdgeData>*)numa_alloc_onnode(unit_size * outgoing_edges[s_i], s_i);
++      outgoing_adj_list[s_i] = (AdjUnit<EdgeData>*)numa_alloc_onnode(unit_size * outgoing_edges[s_i], socket_node(s_i));
+     }
+     {
+       std::thread recv_thread_dst([&](){
+@@ -1129,7 +1212,7 @@ public:
+     for (int s_i=0;s_i<sockets;s_i++) {
+       incoming_adj_bitmap[s_i] = new Bitmap (vertices);
+       incoming_adj_bitmap[s_i]->clear();
+-      incoming_adj_index[s_i] = (EdgeId*)numa_alloc_onnode(sizeof(EdgeId) * (vertices+1), s_i);
++      incoming_adj_index[s_i] = (EdgeId*)numa_alloc_onnode(sizeof(EdgeId) * (vertices+1), socket_node(s_i));
+     }
+     {
+       std::thread recv_thread_src([&](){
+@@ -1216,7 +1299,7 @@ public:
+           compressed_incoming_adj_vertices[s_i] += 1;
+         }
+       }
+-      compressed_incoming_adj_index[s_i] = (CompressedAdjIndexUnit*)numa_alloc_onnode( sizeof(CompressedAdjIndexUnit) * (compressed_incoming_adj_vertices[s_i] + 1) , s_i );
++      compressed_incoming_adj_index[s_i] = (CompressedAdjIndexUnit*)numa_alloc_onnode( sizeof(CompressedAdjIndexUnit) * (compressed_incoming_adj_vertices[s_i] + 1) , socket_node(s_i));
+       compressed_incoming_adj_index[s_i][0].index = 0;
+       EdgeId last_e_i = 0;
+       compressed_incoming_adj_vertices[s_i] = 0;
+@@ -1237,7 +1320,7 @@ public:
+       #ifdef PRINT_DEBUG_MESSAGES
+       printf("part(%d) E_%d has %lu dense mode edges\n", partition_id, s_i, incoming_edges[s_i]);
+       #endif
+-      incoming_adj_list[s_i] = (AdjUnit<EdgeData>*)numa_alloc_onnode(unit_size * incoming_edges[s_i], s_i);
++      incoming_adj_list[s_i] = (AdjUnit<EdgeData>*)numa_alloc_onnode(unit_size * incoming_edges[s_i], socket_node(s_i));
+     }
+     {
+       std::thread recv_thread_src([&](){
+@@ -1500,6 +1583,9 @@ public:
+       local_send_buffer[t_i]->count = 0;
+     }
+     R reducer = 0;
++    MPI_Datatype msg_t;
++    MPI_Type_contiguous(sizeof(MsgUnit<M>), MPI_CHAR, &msg_t);
++    MPI_Type_commit(&msg_t);
+     EdgeId active_edges = process_vertices<EdgeId>(
+       [&](VertexId vtx){
+         return (EdgeId)out_degree[vtx];
+@@ -1562,7 +1648,7 @@ public:
+         for (int step=1;step<partitions;step++) {
+           int i = (partition_id - step + partitions) % partitions;
+           for (int s_i=0;s_i<sockets;s_i++) {
+-            MPI_Send(send_buffer[partition_id][s_i]->data, sizeof(MsgUnit<M>) * send_buffer[partition_id][s_i]->count, MPI_CHAR, i, PassMessage, MPI_COMM_WORLD);
++            MPI_Send(send_buffer[partition_id][s_i]->data, send_buffer[partition_id][s_i]->count, msg_t, i, PassMessage, MPI_COMM_WORLD);
+           }
+         }
+       });
+@@ -1572,9 +1658,8 @@ public:
+           for (int s_i=0;s_i<sockets;s_i++) {
+             MPI_Status recv_status;
+             MPI_Probe(i, PassMessage, MPI_COMM_WORLD, &recv_status);
+-            MPI_Get_count(&recv_status, MPI_CHAR, &recv_buffer[i][s_i]->count);
+-            MPI_Recv(recv_buffer[i][s_i]->data, recv_buffer[i][s_i]->count, MPI_CHAR, i, PassMessage, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+-            recv_buffer[i][s_i]->count /= sizeof(MsgUnit<M>);
++            MPI_Get_count(&recv_status, msg_t, &recv_buffer[i][s_i]->count);
++            MPI_Recv(recv_buffer[i][s_i]->data, recv_buffer[i][s_i]->count, msg_t, i, PassMessage, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+           }
+           recv_queue[recv_queue_size] = i;
+           recv_queue_mutex.lock();
+@@ -1714,7 +1799,7 @@ public:
+           }
+           int i = send_queue[step];
+           for (int s_i=0;s_i<sockets;s_i++) {
+-            MPI_Send(send_buffer[i][s_i]->data, sizeof(MsgUnit<M>) * send_buffer[i][s_i]->count, MPI_CHAR, i, PassMessage, MPI_COMM_WORLD);
++            MPI_Send(send_buffer[i][s_i]->data, send_buffer[i][s_i]->count, msg_t, i, PassMessage, MPI_COMM_WORLD);
+           }
+         }
+       });
+@@ -1726,9 +1811,8 @@ public:
+             for (int s_i=0;s_i<sockets;s_i++) {
+               MPI_Status recv_status;
+               MPI_Probe(i, PassMessage, MPI_COMM_WORLD, &recv_status);
+-              MPI_Get_count(&recv_status, MPI_CHAR, &recv_buffer[i][s_i]->count);
+-              MPI_Recv(recv_buffer[i][s_i]->data, recv_buffer[i][s_i]->count, MPI_CHAR, i, PassMessage, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+-              recv_buffer[i][s_i]->count /= sizeof(MsgUnit<M>);
++              MPI_Get_count(&recv_status, msg_t, &recv_buffer[i][s_i]->count);
++              MPI_Recv(recv_buffer[i][s_i]->data, recv_buffer[i][s_i]->count, msg_t, i, PassMessage, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+             }
+           }, i);
+         }
+@@ -1854,6 +1938,7 @@ public:
+       delete [] recv_queue;
+     }
+ 
++    MPI_Type_free(&msg_t);
+     R global_reducer;
+     MPI_Datatype dt = get_mpi_data_type<R>();
+     MPI_Allreduce(&reducer, &global_reducer, 1, dt, MPI_SUM, MPI_COMM_WORLD);
+diff --git a/core/mpi.hpp b/core/mpi.hpp
+index 4498631..82fce81 100644
+--- a/core/mpi.hpp
++++ b/core/mpi.hpp
+@@ -55,6 +55,15 @@ public:
+     MPI_Init_thread(argc, argv, MPI_THREAD_MULTIPLE, &provided);
+     MPI_Comm_rank(MPI_COMM_WORLD, &partition_id);
+     MPI_Comm_size(MPI_COMM_WORLD, &partitions);
++    // ACIC: the graph loader and process_edges call MPI from helper threads
++    // concurrently with the main thread. Cray MPICH grants only
++    // MPI_THREAD_SERIALIZED unless MPICH_MAX_THREAD_SAFETY=multiple.
++    if (provided < MPI_THREAD_MULTIPLE) {
++      if (partition_id==0) {
++        fprintf(stderr, "gemini: MPI provided thread level %d < MPI_THREAD_MULTIPLE; set MPICH_MAX_THREAD_SAFETY=multiple\n", provided);
++      }
++      MPI_Abort(MPI_COMM_WORLD, 1);
++    }
+     #ifdef PRINT_DEBUG_MESSAGES
+     if (partition_id==0) {
+       printf("thread support level provided by MPI: ");
+diff --git a/core/type.hpp b/core/type.hpp
+index 717e0be..3a72485 100644
+--- a/core/type.hpp
++++ b/core/type.hpp
+@@ -21,7 +21,13 @@ Copyright (c) 2015-2016 Xiaowei Zhu, Tsinghua University
+ 
+ struct Empty { };
+ 
++// ACIC: -DGEMINI_VERTEX64 widens vertex ids to 64 bits (graphs past 2^32 - 1
++// vertices). The edge-list file then stores 8-byte endpoints.
++#ifdef GEMINI_VERTEX64
++typedef uint64_t VertexId;
++#else
+ typedef uint32_t VertexId;
++#endif
+ typedef uint64_t EdgeId;
+ 
+ template <typename EdgeData>
+diff --git a/toolkits/sssp.cpp b/toolkits/sssp.cpp
+index d5e6121..121df92 100644
+--- a/toolkits/sssp.cpp
++++ b/toolkits/sssp.cpp
+@@ -17,37 +17,55 @@ Copyright (c) 2014-2015 Xiaowei Zhu, Tsinghua University
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
+-#include "core/graph.hpp"
++#include <limits>
++#include <string>
++#include <vector>
+ 
+-typedef float Weight;
++#include "core/graph.hpp"
++// ACIC harness checksum (charm_graph_code/benchmarks/common.h): the BENCH line
++// every baseline prints.
++#include "common.h"
++
++// ACIC: exact integer SSSP. Upstream uses float for both edge weights and
++// distances, which is exact only below 2^24. Weights are uint32 (the .wsg
++// stores positive int32) and distances/messages uint64. INF leaves headroom
++// so INF + weight cannot wrap in the dense-mode pull, which adds a weight to
++// the distance of every in-neighbour, reached or not.
++typedef uint32_t Weight;
++typedef uint64_t Distance;
++const Distance INF = Distance(1) << 62;
+ 
+ void compute(Graph<Weight> * graph, VertexId root) {
++  // ACIC: the timed region is upstream's exec_time (vertex-array setup and
++  // the relaxation loop), entered together and reported as the slowest rank.
++  MPI_Barrier(MPI_COMM_WORLD);
+   double exec_time = 0;
+   exec_time -= get_time();
+ 
+-  Weight * distance = graph->alloc_vertex_array<Weight>();
++  Distance * distance = graph->alloc_vertex_array<Distance>();
+   VertexSubset * active_in = graph->alloc_vertex_subset();
+   VertexSubset * active_out = graph->alloc_vertex_subset();
+   active_in->clear();
+   active_in->set_bit(root);
+-  graph->fill_vertex_array(distance, (Weight)1e9);
+-  distance[root] = (Weight)0;
++  graph->fill_vertex_array(distance, INF);
++  distance[root] = (Distance)0;
+   VertexId active_vertices = 1;
+-  
++  int rounds = 0;
++
+   for (int i_i=0;active_vertices>0;i_i++) {
+-    if (graph->partition_id==0) {
+-      printf("active(%d)>=%u\n", i_i, active_vertices);
+-    }
++    // ACIC: upstream prints the active count here each round, inside the
++    // timed loop; only the round count is kept.
++    rounds += 1;
+     active_out->clear();
+-    active_vertices = graph->process_edges<VertexId,Weight>(
++    active_vertices = graph->process_edges<VertexId,Distance>(
+       [&](VertexId src){
+         graph->emit(src, distance[src]);
+       },
+-      [&](VertexId src, Weight msg, VertexAdjList<Weight> outgoing_adj){
++      [&](VertexId src, Distance msg, VertexAdjList<Weight> outgoing_adj){
+         VertexId activated = 0;
+         for (AdjUnit<Weight> * ptr=outgoing_adj.begin;ptr!=outgoing_adj.end;ptr++) {
+           VertexId dst = ptr->neighbour;
+-          Weight relax_dist = msg + ptr->edge_data;
++          Distance relax_dist = msg + ptr->edge_data;
+           if (relax_dist < distance[dst]) {
+             if (write_min(&distance[dst], relax_dist)) {
+               active_out->set_bit(dst);
+@@ -58,19 +76,19 @@ void compute(Graph<Weight> * graph, VertexId root) {
+         return activated;
+       },
+       [&](VertexId dst, VertexAdjList<Weight> incoming_adj) {
+-        Weight msg = 1e9;
++        Distance msg = INF;
+         for (AdjUnit<Weight> * ptr=incoming_adj.begin;ptr!=incoming_adj.end;ptr++) {
+           VertexId src = ptr->neighbour;
+           // if (active_in->get_bit(src)) {
+-            Weight relax_dist = distance[src] + ptr->edge_data;
++            Distance relax_dist = distance[src] + ptr->edge_data;
+             if (relax_dist < msg) {
+               msg = relax_dist;
+             }
+           // }
+         }
+-        if (msg < 1e9) graph->emit(dst, msg);
++        if (msg < INF) graph->emit(dst, msg);
+       },
+-      [&](VertexId dst, Weight msg) {
++      [&](VertexId dst, Distance msg) {
+         if (msg < distance[dst]) {
+           write_min(&distance[dst], msg);
+           active_out->set_bit(dst);
+@@ -84,19 +102,27 @@ void compute(Graph<Weight> * graph, VertexId root) {
+   }
+ 
+   exec_time += get_time();
+-  if (graph->partition_id==0) {
+-    printf("exec_time=%lf(s)\n", exec_time);
++  double max_exec_time = 0;
++  MPI_Allreduce(&exec_time, &max_exec_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
++
++  // ACIC: checksum over every vertex, each counted once by its owner, then
++  // summed (mod 2^64, as the digest is defined) on rank 0.
++  bench::Digest local;
++  for (VertexId v_i=graph->partition_offset[graph->partition_id];v_i<graph->partition_offset[graph->partition_id+1];v_i++) {
++    local.add(v_i, distance[v_i] >= INF ? bench::inf : (int64_t)distance[v_i]);
+   }
+-
+-  graph->gather_vertex_array(distance, 0);
++  unsigned long local_sums[4] = {local.h1, local.h2, local.reachable, local.distance_sum};
++  unsigned long global_sums[4] = {0, 0, 0, 0};
++  MPI_Reduce(local_sums, global_sums, 4, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+   if (graph->partition_id==0) {
+-    VertexId max_v_i = root;
+-    for (VertexId v_i=0;v_i<graph->vertices;v_i++) {
+-      if (distance[v_i] < 1e9 && distance[v_i] > distance[max_v_i]) {
+-        max_v_i = v_i;
+-      }
+-    }
+-    printf("distance[%u]=%f\n", max_v_i, distance[max_v_i]);
++    bench::Digest global;
++    global.h1 = global_sums[0];
++    global.h2 = global_sums[1];
++    global.reachable = global_sums[2];
++    global.distance_sum = global_sums[3];
++    printf("GEMINI source=%llu rounds=%d rank0_exec_seconds=%.9f\n", (unsigned long long)root, rounds, exec_time);
++    bench::print((int64_t)root, max_exec_time, global);
++    fflush(stdout);
+   }
+ 
+   graph->dealloc_vertex_array(distance);
+@@ -107,18 +133,64 @@ void compute(Graph<Weight> * graph, VertexId root) {
+ int main(int argc, char ** argv) {
+   MPI_Instance mpi(&argc, &argv);
+ 
++  // ACIC: sssp [file] [vertices] [root ...]; upstream takes one root and
++  // repeats the solve six times.
+   if (argc<4) {
+-    printf("sssp [file] [vertices] [root]\n");
++    printf("sssp [file] [vertices] [root ...]\n");
+     exit(-1);
+   }
++  int rank = 0;
++  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
++  const std::string path = argv[1];
++  const unsigned long long n = strtoull(argv[2], nullptr, 10);
++  const size_t record = 2 * sizeof(VertexId) + sizeof(Weight);
++  if (n == 0 || n > (unsigned long long)std::numeric_limits<VertexId>::max()) {
++    if (rank==0) fprintf(stderr, "gemini_sssp: %llu vertices do not fit %zu-byte vertex ids\n", n, sizeof(VertexId));
++    MPI_Abort(MPI_COMM_WORLD, 2);
++  }
++  if (!file_exists(path) || file_size(path) % record != 0) {
++    if (rank==0) fprintf(stderr, "gemini_sssp: %s is missing or not a whole number of %zu-byte (src, dst, uint32 weight) records\n", path.c_str(), record);
++    MPI_Abort(MPI_COMM_WORLD, 2);
++  }
++  {
++    // wsg_to_gemini writes <file>.info; when present it must agree.
++    FILE * info = fopen((path + ".info").c_str(), "r");
++    if (info != nullptr) {
++      unsigned long long info_n = 0, info_bytes = 0;
++      char line[256];
++      while (fgets(line, sizeof(line), info)) {
++        sscanf(line, "vertices=%llu", &info_n);
++        sscanf(line, "id_bytes=%llu", &info_bytes);
++      }
++      fclose(info);
++      if (info_n != n || info_bytes != sizeof(VertexId)) {
++        if (rank==0) fprintf(stderr, "gemini_sssp: %s.info says vertices=%llu id_bytes=%llu, but this run has %llu vertices and a %zu-byte-id build\n", path.c_str(), info_n, info_bytes, n, sizeof(VertexId));
++        MPI_Abort(MPI_COMM_WORLD, 2);
++      }
++    }
++  }
++  std::vector<VertexId> roots;
++  for (int a=3;a<argc;a++) {
++    unsigned long long r = strtoull(argv[a], nullptr, 10);
++    if (r >= n) {
++      if (rank==0) fprintf(stderr, "gemini_sssp: source %llu is not below %llu\n", r, n);
++      MPI_Abort(MPI_COMM_WORLD, 2);
++    }
++    roots.push_back((VertexId)r);
++  }
+ 
+   Graph<Weight> * graph;
+   graph = new Graph<Weight>();
+-  graph->load_directed(argv[1], std::atoi(argv[2]));
+-  VertexId root = std::atoi(argv[3]);
++  double load_time = -MPI_Wtime();
++  graph->load_directed(path, (VertexId)n);
++  load_time += MPI_Wtime();
++  if (rank==0) {
++    printf("GEMINI load_seconds=%.3f vertices=%llu edges=%llu partitions=%d sockets=%d threads=%d id_bytes=%zu\n",
++      load_time, n, (unsigned long long)graph->edges, graph->partitions, graph->sockets, graph->threads, sizeof(VertexId));
++    fflush(stdout);
++  }
+ 
+-  compute(graph, root);
+-  for (int run=0;run<5;run++) {
++  for (VertexId root : roots) {
+     compute(graph, root);
+   }
+ 

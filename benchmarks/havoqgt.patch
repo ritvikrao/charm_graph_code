@@ -1,0 +1,366 @@
+diff --git a/include/havoqgt/impl/delegate_partitioned_graph.ipp b/include/havoqgt/impl/delegate_partitioned_graph.ipp
+index 86b12da..e5b152c 100644
+--- a/include/havoqgt/impl/delegate_partitioned_graph.ipp
++++ b/include/havoqgt/impl/delegate_partitioned_graph.ipp
+@@ -676,9 +676,13 @@ void delegate_partitioned_graph<Allocator>::initialize_edge_storage(
+       using vertex_locator_allocator =
+           other_allocator<Allocator, vertex_locator>;
+       vertex_locator_allocator vl_allocator(allocator);
+-      { m_delegate_targets = vl_allocator.allocate(m_delegate_targets_size); }
++      // ACIC: at least one element. Metall >= v0.29 (the first release that
++      // builds with Boost >= 1.85) returns nullptr for a zero-byte request
++      // and its stl_allocator throws bad_alloc -- a graph without delegates
++      // (or a rank without low-degree edges) has size 0 here. Never freed.
++      { m_delegate_targets = vl_allocator.allocate(std::max<uint64_t>(1, m_delegate_targets_size)); }
+ 
+-      { m_owned_targets = vl_allocator.allocate(m_owned_targets_size); }
++      { m_owned_targets = vl_allocator.allocate(std::max<uint64_t>(1, m_owned_targets_size)); }
+ 
+       // Currently, m_delegate_info holds the count of high degree edges
+       // assigned to this node for each vertex.
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 2d88b92..77d1db8 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -42,4 +42,15 @@ install(TARGETS run_shm_cc DESTINATION bin)
+ if ((DEFINED HDF5_FOUND) AND (HDF5_FOUND))
+   add_exe( ingest_hdf5_edge_list )
+   include_link_hdf5( ingest_hdf5_edge_list )
+-endif()
+\ No newline at end of file
++endif()
++# ACIC: the harness digest (charm_graph_code/benchmarks/common.h) for
++# run_sssp, and havoqgt_ingest (charm_graph_code/benchmarks), which builds the
++# same graph store from a GAPBS .wsg directly.
++if (ACIC_BENCH_INCLUDE)
++  target_include_directories(run_sssp PRIVATE "${ACIC_BENCH_INCLUDE}")
++  add_executable(havoqgt_ingest "${ACIC_BENCH_INCLUDE}/havoqgt_ingest.cpp")
++  include_link_mpi(havoqgt_ingest)
++  include_link_boost(havoqgt_ingest)
++  include_link_threads(havoqgt_ingest)
++  include_link_stdcppfs(havoqgt_ingest)
++endif()
+diff --git a/src/ingest_edge_list.cpp b/src/ingest_edge_list.cpp
+index 79a4355..c147dea 100644
+--- a/src/ingest_edge_list.cpp
++++ b/src/ingest_edge_list.cpp
+@@ -28,7 +28,8 @@ using namespace havoqgt;
+ 
+ typedef delegate_partitioned_graph<distributed_db::allocator<>> graph_type;
+ 
+-typedef double                                    edge_data_type;
++// ACIC: uint32 weights, the type patched run_sssp reads (upstream: double).
++typedef uint32_t                                  edge_data_type;
+ typedef distributed_db::allocator<edge_data_type> edge_data_allocator_type;
+ 
+ void usage() {
+diff --git a/src/run_sssp.cpp b/src/run_sssp.cpp
+index 6d02297..316e0f9 100644
+--- a/src/run_sssp.cpp
++++ b/src/run_sssp.cpp
+@@ -17,26 +17,39 @@
+ #include <algorithm>
+ #include <deque>
+ #include <functional>
++#include <limits>
+ #include <string>
+ #include <utility>
++#include <vector>
++
++// ACIC harness checksum (charm_graph_code/benchmarks/common.h).
++#include "common.h"
+ 
+ using namespace havoqgt;
+ 
+-typedef double edge_data_type;
++// ACIC: exact integer SSSP. Upstream stores double weights and distances;
++// here weights are uint32 (as written by havoqgt_ingest and the patched
++// ingest_edge_list; the .wsg stores positive int32) and distances uint64.
++typedef uint32_t edge_data_type;
++typedef uint64_t path_data_type;
+ 
+ void usage() {
+   if (comm_world().rank() == 0) {
+-    std::cerr << "Usage: -i <string> -s <int>\n"
++    std::cerr << "Usage: -i <string> -s <int> [-s <int> ...] [-n <int>]\n"
+               << " -i <string>   - input graph base filename (required)\n"
+               << " -b <string>   - backup graph base filename.  If set, "
+                  "\"input\" graph will be deleted if it exists\n"
+-              << " -s <int>      - Source vertex of BFS (Default is 0)\n"
++              << " -s <int>      - Source vertex; repeat for several (Default is 0)\n"
++              << " -n <int>      - Vertex count, for a store without the "
++                 "acic_vertices record (upstream ingest_edge_list)\n"
+               << " -h            - print help and exit\n\n";
+   }
+ }
+ 
+ void parse_cmd_line(int argc, char** argv, std::string& input_filename,
+-                    std::string& backup_filename, uint64_t& source_vertex) {
++                    std::string& backup_filename,
++                    std::vector<uint64_t>& source_vertices,
++                    uint64_t& vertex_count) {
+   if (comm_world().rank() == 0) {
+     std::cout << "CMD line:";
+     for (int i = 0; i < argc; ++i) {
+@@ -46,17 +59,21 @@ void parse_cmd_line(int argc, char** argv, std::string& input_filename,
+   }
+ 
+   bool found_input_filename = false;
+-  source_vertex = 0;
++  source_vertices.clear();
++  vertex_count = 0;
+ 
+-  char c;
++  int  c;
+   bool prn_help = false;
+-  while ((c = getopt(argc, argv, "i:s:b:h ")) != -1) {
++  while ((c = getopt(argc, argv, "i:s:b:n:h ")) != -1) {
+     switch (c) {
+       case 'h':
+         prn_help = true;
+         break;
+       case 's':
+-        source_vertex = atoll(optarg);
++        source_vertices.push_back(strtoull(optarg, nullptr, 10));
++        break;
++      case 'n':
++        vertex_count = strtoull(optarg, nullptr, 10);
+         break;
+       case 'i':
+         found_input_filename = true;
+@@ -75,6 +92,7 @@ void parse_cmd_line(int argc, char** argv, std::string& input_filename,
+     usage();
+     exit(-1);
+   }
++  if (source_vertices.empty()) source_vertices.push_back(0);
+ }
+ 
+ int main(int argc, char** argv) {
+@@ -94,21 +112,58 @@ int main(int argc, char** argv) {
+     }
+     MPI_Barrier(MPI_COMM_WORLD);
+ 
+-    std::string graph_input;
+-    std::string backup_filename;
+-    uint64_t    source_vertex = 0;
++    std::string           graph_input;
++    std::string           backup_filename;
++    std::vector<uint64_t> source_vertices;
++    uint64_t              vertex_count = 0;
+ 
+-    parse_cmd_line(argc, argv, graph_input, backup_filename, source_vertex);
++    parse_cmd_line(argc, argv, graph_input, backup_filename, source_vertices,
++                   vertex_count);
+ 
+     MPI_Barrier(MPI_COMM_WORLD);
+     if (backup_filename.size() > 0) {
+       distributed_db::transfer(backup_filename.c_str(), graph_input.c_str());
+     }
+ 
++    double load_time = MPI_Wtime();
+     distributed_db ddb(havoqgt::db_open_read_only(), graph_input.c_str());
+ 
+     auto graph = ddb.get_manager()->find<graph_type>("graph_obj").first;
+-    assert(graph != nullptr);
++    if (graph == nullptr) {
++      std::cerr << "ERROR, no graph_obj in " << graph_input << std::endl;
++      MPI_Abort(MPI_COMM_WORLD, 2);
++    }
++
++    // ACIC: havoqgt_ingest records the vertex count (isolated vertices
++    // included) and the weight width; a store from upstream ingest_edge_list
++    // has neither and needs -n.
++    {
++      auto n_qry = ddb.get_manager()->find<uint64_t>("acic_vertices");
++      auto w_qry = ddb.get_manager()->find<uint64_t>("acic_weight_bytes");
++      if (n_qry.first != nullptr) {
++        if (vertex_count != 0 && vertex_count != *n_qry.first) {
++          if (mpi_rank == 0)
++            std::cerr << "ERROR, -n " << vertex_count << " but the store holds "
++                      << *n_qry.first << " vertices" << std::endl;
++          MPI_Abort(MPI_COMM_WORLD, 2);
++        }
++        vertex_count = *n_qry.first;
++      }
++      if (w_qry.first != nullptr && *w_qry.first != sizeof(edge_data_type)) {
++        if (mpi_rank == 0)
++          std::cerr << "ERROR, the store holds " << *w_qry.first
++                    << "-byte weights; this build reads "
++                    << sizeof(edge_data_type) << std::endl;
++        MPI_Abort(MPI_COMM_WORLD, 2);
++      }
++      if (vertex_count == 0) vertex_count = graph->max_global_vertex_id() + 1;
++      if (vertex_count < graph->max_global_vertex_id() + 1) {
++        if (mpi_rank == 0)
++          std::cerr << "ERROR, " << vertex_count << " vertices but the graph "
++                    << "has id " << graph->max_global_vertex_id() << std::endl;
++        MPI_Abort(MPI_COMM_WORLD, 2);
++      }
++    }
+ 
+     typedef distributed_db::allocator<edge_data_type> edge_data_allocator;
+     auto edge_data_qry = ddb.get_manager()->find<graph_type::edge_data<edge_data_type, edge_data_allocator>>("graph_edge_data_obj");
+@@ -121,56 +176,36 @@ int main(int argc, char** argv) {
+     auto edge_data_ptr = edge_data_qry.first;
+ 
+     MPI_Barrier(MPI_COMM_WORLD);
++    load_time = MPI_Wtime() - load_time;
+     if (mpi_rank == 0) {
+       std::cout << "Graph Loaded Ready." << std::endl;
++      std::cout << "HAVOQGT load_seconds=" << load_time
++                << " vertices=" << vertex_count
++                << " max_vertex_id=" << graph->max_global_vertex_id()
++                << " ranks=" << mpi_size << std::endl;
+     }
+ 
+     MPI_Barrier(MPI_COMM_WORLD);
+ 
+     // SSSP Experiment
+-    {
+-      graph_type::vertex_data<edge_data_type, std::allocator<edge_data_type>>
+-          sssp_path_data(*graph);
+-
+-      MPI_Barrier(MPI_COMM_WORLD);
+-      if (mpi_rank == 0) {
+-        std::cout << "SSSP data allocated.  Starting SSSP from vertex "
+-                  << source_vertex << std::endl;
+-      }
+-
+-      //  Run SSSP experiments
+-      double                     time(0);
+-      int                        count(0);
+-      uint64_t                   isource = source_vertex;
+-      graph_type::vertex_locator source = graph->label_to_locator(isource);
+-      uint64_t                   global_degree(0);
+-      do {
+-        uint64_t local_degree = 0;
+-        source = graph->label_to_locator(isource);
+-        if (source.is_delegate()) {
+-          break;
+-        }
+-        if (uint32_t(mpi_rank) == source.owner()) {
+-          local_degree = graph->degree(source);
+-        }
+-        global_degree = mpi_all_reduce(local_degree, std::greater<uint64_t>(),
+-                                       MPI_COMM_WORLD);
+-        if (global_degree == 0) ++isource;
+-      } while (global_degree == 0);
+-      if (uint32_t(mpi_rank) == source.owner()) {
+-        if (isource != source_vertex) {
+-          std::cout << "Vertex " << source_vertex
+-                    << " has a degree of 0.   New source vertex = " << isource
+-                    << std::endl;
+-        } else {
+-          std::cout << "Starting vertex = " << isource << std::endl;
+-        }
+-        // std::cout << "delegate? = " << source.is_delegate() << std::endl;
+-        // std::cout << "local_id = " << source.local_id() << std::endl;
+-        std::cout << "degree = " << graph->degree(source) << std::endl;
++    // ACIC: one solve per -s source, run from that exact vertex (upstream
++    // advances to the next vertex of nonzero degree). Timed as upstream:
++    // barrier to barrier around single_source_shortest_path.
++    const path_data_type unreached = std::numeric_limits<path_data_type>::max();
++    for (const uint64_t source_vertex : source_vertices) {
++      if (source_vertex > graph->max_global_vertex_id()) {
++        if (mpi_rank == 0)
++          std::cerr << "ERROR, source " << source_vertex
++                    << " is past the largest vertex id in the graph, "
++                    << graph->max_global_vertex_id() << std::endl;
++        MPI_Abort(MPI_COMM_WORLD, 2);
+       }
++      graph_type::vertex_data<path_data_type, std::allocator<path_data_type>>
++          sssp_path_data(*graph);
+ 
+-      sssp_path_data.reset(std::numeric_limits<edge_data_type>::max());
++      graph_type::vertex_locator source =
++          graph->label_to_locator(source_vertex);
++      sssp_path_data.reset(unreached);
+ 
+       MPI_Barrier(MPI_COMM_WORLD);
+       double time_start = MPI_Wtime();
+@@ -178,41 +213,60 @@ int main(int argc, char** argv) {
+                                            *edge_data_ptr, source);
+       MPI_Barrier(MPI_COMM_WORLD);
+       double time_end = MPI_Wtime();
++      const double elapsed = mpi_all_reduce(
++          time_end - time_start, std::greater<double>(), MPI_COMM_WORLD);
+ 
+-      uint64_t local_visited_count = 0;
+-      double   local_max_distance = 0.0f;
+-      // process low degree verts
++      // Checksum over every vertex once: low-degree vertices at their owner
++      // (the vertex iterator skips delegates), delegates at their controller.
++      bench::Digest local;
++      uint64_t      local_count = 0;
++      uint64_t      local_max   = 0;
++      auto          add         = [&](uint64_t label, path_data_type d) {
++        local.add(label, d == unreached ? bench::inf : int64_t(d));
++        if (d != unreached) local_max = std::max<uint64_t>(local_max, d);
++        ++local_count;
++      };
+       for (auto vitr = graph->vertices_begin(); vitr != graph->vertices_end();
+            ++vitr) {
+-        if (sssp_path_data[*vitr] !=
+-            std::numeric_limits<edge_data_type>::max()) {
+-          ++local_visited_count;
+-          local_max_distance =
+-              std::max(local_max_distance, sssp_path_data[*vitr]);
+-        }
++        add(graph->locator_to_label(*vitr), sssp_path_data[*vitr]);
+       }
+-      // process high-degree controllers
+       for (auto citr = graph->controller_begin();
+            citr != graph->controller_end(); ++citr) {
+-        if (sssp_path_data[*citr] !=
+-            std::numeric_limits<edge_data_type>::max()) {
+-          ++local_visited_count;
+-          local_max_distance =
+-              std::max(local_max_distance, sssp_path_data[*citr]);
++        add(graph->locator_to_label(*citr), sssp_path_data[*citr]);
++      }
++      // Vertices past the largest id any edge names (a store built by
++      // upstream ingest_edge_list plus -n) are isolated and unreached.
++      if (mpi_rank == 0) {
++        for (uint64_t v = graph->max_global_vertex_id() + 1; v < vertex_count;
++             ++v) {
++          add(v, unreached);
+         }
+       }
+-
+-      uint64_t global_count_visited = mpi_all_reduce(
+-          local_visited_count, std::plus<uint64_t>(), MPI_COMM_WORLD);
+-      uint64_t global_max_distance = mpi_all_reduce(
+-          local_max_distance, std::greater<double>(), MPI_COMM_WORLD);
++      bench::Digest global;
++      global.h1 = mpi_all_reduce(local.h1, std::plus<uint64_t>(), MPI_COMM_WORLD);
++      global.h2 = mpi_all_reduce(local.h2, std::plus<uint64_t>(), MPI_COMM_WORLD);
++      global.reachable = mpi_all_reduce(local.reachable, std::plus<uint64_t>(),
++                                        MPI_COMM_WORLD);
++      global.distance_sum = mpi_all_reduce(
++          local.distance_sum, std::plus<uint64_t>(), MPI_COMM_WORLD);
++      const uint64_t counted =
++          mpi_all_reduce(local_count, std::plus<uint64_t>(), MPI_COMM_WORLD);
++      const uint64_t max_distance =
++          mpi_all_reduce(local_max, std::greater<uint64_t>(), MPI_COMM_WORLD);
+       if (mpi_rank == 0) {
+-        std::cout << "Total vertices reached/visited = " << global_count_visited
+-                  << std::endl;
+-        std::cout << "Max distance = " << global_max_distance << std::endl;
+-        std::cout << "Elapsed time = " << time_end - time_start << std::endl;
++        std::cout << "HAVOQGT source=" << source_vertex
++                  << " counted_vertices=" << counted
++                  << " max_distance=" << max_distance << std::endl;
++        if (counted != vertex_count) {
++          std::cerr << "ERROR, the digest covered " << counted
++                    << " vertices, not " << vertex_count << std::endl;
++        } else {
++          bench::print(int64_t(source_vertex), elapsed, global);
++        }
++        std::cout << std::flush;
+       }
+-    }  // End BFS Test
++      if (counted != vertex_count) MPI_Abort(MPI_COMM_WORLD, 3);
++    }  // End SSSP Test
+   }    // END Main MPI
+   ;
+ 
