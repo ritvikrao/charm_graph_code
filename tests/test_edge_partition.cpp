@@ -5,6 +5,7 @@
 #include "graphlib/edge_partition.h"
 #include <cassert>
 #include <cstdio>
+#include <memory>
 #include <random>
 
 // The old code: the whole (tiled) offsets array in memory, and a linear scan.
@@ -67,31 +68,35 @@ static void write_gapbs(const char *path, const std::vector<int64_t> &off) {
 }
 
 // One layout: the old and new partitions must agree PE for PE.
+struct FileSpec { std::string path; GapbsHeader header; int64_t block; };
+
 static void check(const std::vector<int64_t> &off, long V, long tile, int owners,
-                  int per_owner, const FileOffsets *file) {
+                  int per_owner, const FileSpec *file) {
   const int N = owners * per_owner;
   std::vector<long> want((size_t)N + 1, -1), got((size_t)N + 1, -2), got_file((size_t)N + 1, -3);
   if (tile == 0) {
     old_partition(off, 0, N, 0, V, want.data());
     partition_by_edges(Memory{off}, 0, N, 0, V, got.data());
-    if (file) partition_by_edges(*file, 0, N, 0, V, got_file.data());
+    if (file) partition_by_edges(FileOffsets(file->path, file->header, file->block), 0, N, 0, V, got_file.data());
   } else {
     TileLayout layout(V, tile, owners);
     const std::vector<int64_t> tiled = old_tiled(off, layout, V);
-    Memory mem{off};
-    TiledOffsets<Memory> lazy(mem, layout, V, tile, owners);
+    auto mem = [&]() { return std::unique_ptr<Memory>(new Memory{off}); };
+    TileTable table(V, tile, owners, 3, mem);
+    Memory m{off};
+    TiledOffsets<Memory> lazy(m, layout, table);
     for (long v = 0; v <= V; ++v) assert(lazy(v) == tiled[(size_t)v]);
+    std::vector<int> owner_pe((size_t)owners + 1);
+    for (int o = 0; o <= owners; ++o) owner_pe[(size_t)o] = o * per_owner;
     for (int o = 0; o < owners; ++o) {
       const int first = o * per_owner;
       old_partition(tiled, first, first + per_owner, layout.owner_begin(o), layout.owner_end(o), want.data());
-      partition_by_edges(lazy, first, first + per_owner, layout.owner_begin(o), layout.owner_end(o), got.data());
     }
+    partition_tiled(layout, table, owner_pe, 3, mem, got.data());
     if (file) {
-      TiledOffsets<FileOffsets> ftiled(*file, layout, V, tile, owners);
-      for (int o = 0; o < owners; ++o) {
-        const int first = o * per_owner;
-        partition_by_edges(ftiled, first, first + per_owner, layout.owner_begin(o), layout.owner_end(o), got_file.data());
-      }
+      auto make = [&]() { return std::unique_ptr<FileOffsets>(new FileOffsets(file->path, file->header, file->block)); };
+      TileTable ftable(V, tile, owners, 4, make);
+      partition_tiled(layout, ftable, owner_pe, 4, make, got_file.data());
     }
   }
   assert(want == got);
@@ -123,15 +128,18 @@ int main(int argc, char **argv) {
     write_gapbs(path, off);
     GapbsHeader h = gapbs_read_header(path);
     assert(h.num_nodes == V && !h.wide);
-    FileOffsets file(path, h);
-    for (long v = 0; v <= V; v += 1 + V / 997) assert(file(v) == off[(size_t)v]);
-    assert(file(V) == off.back());
-    for (int owners : {1, 3, 8})
-      for (int per_owner : {1, 7})
-        for (long tile : {0L, 1L, 64L, std::max(1L, V / (64L * owners))}) {
-          check(off, V, tile, owners, per_owner, &file);
-          ++cases;
-        }
+    for (int64_t block : {8192L, 7L, 1L << 20}) {
+      FileOffsets probe(path, h, block);
+      for (long v = 0; v <= V; v += 1 + V / 997) assert(probe(v) == off[(size_t)v]);
+      assert(probe(V) == off.back() && probe(0) == 0);
+      const FileSpec file{file_path, h, block};
+      for (int owners : {1, 3, 8})
+        for (int per_owner : {1, 7})
+          for (long tile : {0L, 1L, 64L, std::max(1L, V / (64L * owners))}) {
+            check(off, V, tile, owners, per_owner, &file);
+            ++cases;
+          }
+    }
   }
   std::remove(path);
   std::printf("edge partition: %ld layouts match the linear scan\n", cases);

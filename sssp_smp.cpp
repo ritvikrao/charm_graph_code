@@ -1819,21 +1819,24 @@ public:
         reader_tile_size = num_global_edges < 8L * V
             ? std::max(1L, V / (64L * reader_tile_owners)) : 0;
       {
-        FileOffsets offsets(file_name, header);
+        // Random probes in the tiled layout read small blocks on up to 64
+        // threads (owners are independent); the untiled scan is sequential and
+        // moves forward, so it reads 8 MB blocks.
+        const int threads = 64;
+        const int64_t block = reader_tile_size > 0 ? 8192 : 1 << 20;
+        auto make = [&]() { return std::unique_ptr<FileOffsets>(new FileOffsets(file_name, header, block)); };
         if (reader_tile_size > 0) {
           TileLayout layout(V, reader_tile_size, reader_tile_owners);
-          TiledOffsets<FileOffsets> tiled(offsets, layout, V, reader_tile_size,
-                                          reader_tile_owners);
+          TileTable table(V, reader_tile_size, reader_tile_owners, threads, make);
           ckout << "Reader tiles: vertices=" << reader_tile_size
                 << " owners=" << reader_tile_owners << endl;
-          for (int owner = 0; owner < reader_tile_owners; ++owner) {
-            const int first = process_share_active() ? CkNodeFirst(owner) : owner;
-            const int size = process_share_active() ? CkNodeSize(owner) : 1;
-            partition_by_edges(tiled, first, first + size, layout.owner_begin(owner),
-                               layout.owner_end(owner), partition_index);
-          }
+          std::vector<int> owner_pe((size_t)reader_tile_owners + 1);
+          for (int owner = 0; owner < reader_tile_owners; ++owner)
+            owner_pe[(size_t)owner] = process_share_active() ? CkNodeFirst(owner) : owner;
+          owner_pe.back() = N;
+          partition_tiled(layout, table, owner_pe, threads, make, partition_index);
         } else {
-          partition_by_edges(offsets, 0, N, 0, V, partition_index);
+          partition_by_edges(*make(), 0, N, 0, V, partition_index);
         }
       }
       // The degree CV only feeds lazy_active, which needs an average degree of
