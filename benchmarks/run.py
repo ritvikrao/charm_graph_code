@@ -109,7 +109,8 @@ class Campaign:
         self.binary_hashes = {}
         for path in (self.root/'bin').iterdir():
             if path.name in ['acic', 'acic_quiet', 'acic_progress', 'acic_shm', 'acic_width', 'acic_comm', 'acic_ipdps', 'acic_ipdps_wide', 'acic_ipdps2', 'acic_ipdps2_wide', 'riken_sssp',
-                             'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp', 'gluon_sssp64', 'wasp_sssp']:
+                             'riken_sssp_mpit', 'mpi_share.so', 'gap_sssp', 'gluon_sssp', 'gluon_sssp64', 'wasp_sssp',
+                             'gemini_sssp', 'gemini_sssp64']:
                 digest = hashlib.sha256()
                 with path.open('rb') as f:
                     for chunk in iter(lambda: f.read(1048576), b''):
@@ -122,7 +123,7 @@ class Campaign:
         # its own per-node total; the record keeps the allocation's budget.
         workers = config.get('workers', self.args.workers)
         per_graph_rule = None
-        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': getattr(self.args, 'gluon_binary', 'gluon_sssp')}[engine]
+        binary = self.root / 'bin' / {'acic': 'acic', 'acic-quiet': 'acic_quiet', 'acic-progress': 'acic_progress', 'acic-shm': 'acic_shm', 'acic-width': 'acic_width', 'acic-comm': 'acic_comm', 'acic-ipdps': self.args.ablation_binary, 'acic-ipdps-wide': self.args.ablation_binary + '_wide', 'acic-ipdps-prev': 'acic_ipdps', 'riken': 'riken_sssp', 'riken-mpit': 'riken_sssp_mpit', 'gap': 'gap_sssp', 'wasp': 'wasp_sssp', 'gluon': getattr(self.args, 'gluon_binary', 'gluon_sssp'), 'gemini': config.get('binary', 'gemini_sssp')}[engine]
         path = self.root / 'graphs' / (graph + '.wsg')
         env = dict(self.env)
         if 'presolve_seconds' in config:
@@ -172,6 +173,20 @@ class Campaign:
                     '-exec='+config['model'], '-startNode='+str(source), '-t='+str(threads),
                     '-runs=1', '-maxIterations=2147483647', '-delta='+str(config['delta']),
                     '-partition='+config['partition']]
+        elif engine == 'gemini':
+            # Gemini (benchmarks/gemini.patch): OpenMP inside each rank, which
+            # calls MPI from helper threads (MPI_THREAD_MULTIPLE). Its input is
+            # wsg_to_gemini's edge list beside the .wsg: .gemini32, or .gemini64
+            # for the 64-bit-id build.
+            ranks = config.get('rpn', 1)
+            threads = config.get('threads', workers // ranks)
+            env.update(OMP_NUM_THREADS=str(threads), MPICH_MAX_THREAD_SAFETY='multiple')
+            launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
+                      '--ntasks-per-node', str(ranks), '-c', str(config.get('cpus', threads)),
+                      '--cpu-bind=cores']
+            suffix = '.gemini64' if config.get('binary', 'gemini_sssp').endswith('64') else '.gemini32'
+            vertices = re.search(r'\bvertices=(\d+)', (self.root/'graphs'/(graph+'.meta')).read_text())[1]
+            args = [str(binary), str(path.with_suffix(suffix)), vertices, str(source)]
         else:
             ranks = config.get('rpn', 1)
             threads = config.get('threads', workers // ranks)
@@ -1235,6 +1250,12 @@ class Campaign:
                 [gluon(model, r, p, layout_delta)
                  for r in layouts(self.args.gluon_layouts) for p in partitions],
                 lambda layout, model=model: [gluon(model, layout['rpn'], layout['partition'], d) for d in gluon_deltas])
+        # Gemini has no parameter to tune (round-synchronous, no delta); only
+        # its ranks per node, each rank's threads spanning its cores.
+        def gemini(rpn):
+            return dict(engine='gemini', name=f'gemini-r{rpn}', rpn=rpn, threads=stride(rpn), cpus=stride(rpn),
+                        binary=self.args.gemini_binary)
+        arms['gemini'] = ([gemini(r) for r in layouts(self.args.gemini_layouts)], None)
         if self.nodes == 1:
             def gap(threads, delta):
                 return dict(engine='gap', name=f'gap-t{threads}-d{delta}', threads=threads, cpus=threads, delta=delta)
@@ -1510,6 +1531,10 @@ if __name__ == '__main__':
     parser.add_argument('--delta-divisors', default='64,16,4,1')
     parser.add_argument('--external-no-search', action='store_true',
                         help='external mode: run each arm\'s pinned settings (first layout candidate) on the held-out sources with no warmup or search')
+    parser.add_argument('--gemini-layouts', default='1,8',
+                        help='Gemini ranks per node tried (each rank takes 56/rpn cores on Frontier)')
+    parser.add_argument('--gemini-binary', default='gemini_sssp',
+                        help='gemini_sssp64 for graphs of 2^32 or more vertices (input NAME.gemini64)')
     parser.add_argument('--gluon-binary', default='gluon_sssp',
                         help='gluon_sssp64 (benchmarks/gluon64.patch) for graphs past 2^32 vertices; oec only')
     parser.add_argument('--riken-tolerance', type=float, default=0.0,
