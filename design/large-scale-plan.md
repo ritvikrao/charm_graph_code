@@ -184,6 +184,17 @@ synthetic variants had no `riken_denominator` (run.py needs it); rewritten.
 |---|---|
 | 5558200 / 5558201 / 5558202 / 5558203 | ACIC, 4 / 16 / 32 / 64 nodes: terrain30-s-z, terrain30-m-z (16+), mesh32-z, grid3-33-z (16+), mesh28-z, mesh28-w10-z, mesh28-w64k-z, grid3-30-z (`frontier-series-mesh-<N>n-variants.json`, predictions recorded) |
 | 5558204 / 5558205 | ACIC terrain30-l-z, 32 / 64 nodes |
-| 5558207–5558215 | Gluon-Async pinned (`series_gluon.sbatch`: 8 ranks, oec, Δ 64 on [1, 1000] weights, 1 on w10, 4096 on w64k, 128 on terrain), 1–2 held-out sources, one repetition, capped launches; terrain30-l-z at 64 nodes only |
+| 5558207–5558214, 64n-l resubmitted (see below) | Gluon-Async pinned (`series_gluon.sbatch`: 8 ranks, oec, Δ 64 on [1, 1000] weights, 1 on w10, 4096 on w64k, 128 on terrain), 1–2 held-out sources, one repetition, capped launches; terrain30-l-z at 64 nodes only |
 | 5558223 / 5558224 | GAPBS / Wasp one node (56 threads, Δ tuned): mesh28-z, mesh28-w10-z, mesh28-w64k-z, grid3-30-z |
 | 5558225 / 5558226 | GAPBS / Wasp one node on terrain30-s-z (Δ 512–32768, two repetitions) |
+
+Revision before any series job ran: 29f8d6a's on-demand probes were
+latency-bound (about 20 ms per uncached Lustre read, one at a time), so
+mesh28-z indexed in 26.9 s against 3.1–4.3 s before (5558176). a1970e4
+gallops from the previous boundary before bisecting and runs a tiled layout's
+owners and tile starts on up to 64 threads (acic_scale64b). Checked on one
+node (5558304): same five references match; index time mesh28-z 3.96 s,
+grid3-30-z 14.3 s (60.7 s with 29f8d6a), mesh28-w64k-z 15.7 s. The series
+jobs now use acic_scale64b and wait on 5558304; the terrain30-l-z reference is
+5558305 (5558177 cancelled), and its Gluon job is 5558382 (5558215 was
+cancelled with it).
