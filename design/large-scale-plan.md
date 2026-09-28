@@ -156,3 +156,34 @@ independent `benchmarks/check_terrain.py` exactly at 1 arc-second. `grid_graph`
 (517b86b) 2-D output is byte-identical to `prepare_graph meshz`. Both write the
 Galois `.gr` directly. terrain-ae-z's `.gr` is rewritten the same way (5551364)
 after `to_galois.py` ran past the time limit.
+
+## Scaling series (2026-09-28, submitted)
+
+Node counts 4, 16, 32 and 64 (32 added at the user's request), never more
+than 64. Preparation results: every build matched its builder counts and
+sources; references certified (mesh32-z, grid3-33-z, terrain30-m-z at 16
+nodes) or one-node Dijkstra (mesh28-w10-z, mesh28-w64k-z, grid3-30-z). Three
+failures, fixed:
+- terrain-ae-z `.gr` (5551364): the file was complete in 19 min; the
+  million-entry spot check timed out. A windowed check (128,000 offsets and
+  edges) passed on the login node and the file was installed (dd653b6).
+- terrain30-s-z reference (5551486): `sbatch --wrap` ran /bin/sh, which has no
+  `<(...)`. Resubmitted as `scripts/frontier/reference_gap.sbatch` (5558144).
+- terrain30-l-z reference at 64 nodes (5551488): PE 0 held the whole offsets
+  array and a tiled copy, 2 x 275 GB, OOM. The reader now finds each PE
+  boundary by binary search over offsets read on demand
+  (`graphlib/edge_partition.h`, 29f8d6a); identical boundaries on 1128
+  layouts (`tests/test_edge_partition.cpp`). Built as `acic_scale64`
+  (29f8d6a, TLS runtime, compact64), checked against five existing references
+  on one node (5558176), then the l-z reference at 64 nodes (5558177).
+
+Also fixed: `gridz()` wrote the build log's first line as `.meta`, so the three
+synthetic variants had no `riken_denominator` (run.py needs it); rewritten.
+
+| Jobs | What |
+|---|---|
+| 5558200 / 5558201 / 5558202 / 5558203 | ACIC, 4 / 16 / 32 / 64 nodes: terrain30-s-z, terrain30-m-z (16+), mesh32-z, grid3-33-z (16+), mesh28-z, mesh28-w10-z, mesh28-w64k-z, grid3-30-z (`frontier-series-mesh-<N>n-variants.json`, predictions recorded) |
+| 5558204 / 5558205 | ACIC terrain30-l-z, 32 / 64 nodes |
+| 5558207–5558215 | Gluon-Async pinned (`series_gluon.sbatch`: 8 ranks, oec, Δ 64 on [1, 1000] weights, 1 on w10, 4096 on w64k, 128 on terrain), 1–2 held-out sources, one repetition, capped launches; terrain30-l-z at 64 nodes only |
+| 5558223 / 5558224 | GAPBS / Wasp one node (56 threads, Δ tuned): mesh28-z, mesh28-w10-z, mesh28-w64k-z, grid3-30-z |
+| 5558225 / 5558226 | GAPBS / Wasp one node on terrain30-s-z (Δ 512–32768, two repetitions) |
