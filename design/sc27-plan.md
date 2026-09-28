@@ -134,6 +134,25 @@ not run on Frontier: the frozen source revision is rebuilt there.
   likely not fit a Delta node. Cut a GLO-30 crop of about 0.5B vertices
   instead, using the terrain pipeline's `REGION`.
 
+#### Delta execution (started 2026-09-28)
+
+Campaign `/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928`. Jobs use
+`--account=rfp-delta-cpu` (priority 3377 against 1322 on mzu, 2026-09-28) and
+`cpu-interactive` where they fit an hour. That QOS allows two queued jobs and
+one running job per user, so timing jobs run one at a time and input builds go
+to `cpu`. Driver: `scripts/delta/ipdps_ab.sbatch` (`onenode_ab.py --batch`,
+16 × 7, four held-out sources per launch, rotated arms, every solve
+digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.json`.
+
+| Item | What was built | Jobs | State |
+|---|---|---|---|
+| Inputs | `grid3-30-z`, `mesh28-w10-z` (`scripts/delta/ipdps_prepare.sbatch`, `grid_graph`); `terrain30-c-z` = GLO-30 lat [3, 9) × lon [24, 31), seed 6N 27E, 42 tiles, nested in `terrain30-s-z` (`scripts/delta/fetch_terrain_crop.sh`; rasterio's GDAL 3.9.3, since Delta has no GDAL module); `mesh28-z`, `road-usa-z`, `mesh26`, `mesh26-z` linked from earlier Delta campaigns | generate 22526088, references 22526352, terrain 22526351 | queued |
+| D2 | `WORK_EFFICIENCY` line on every solve (edge attempts and htram wire bytes per stored edge; commit 34137dd). Overhead arms against uncounted 929a830 builds | mesh28-z 22526239, road-usa-z 22526240 | queued |
+| D1 | heap / band-256 / band-65536 chunk arms (`acic_heap`, `acic_c256`, `acic_c65536`) on grid3-30-z and terrain30-c-z; mesh28-z and road-usa-z re-confirmed in the D2 jobs | after inputs | pending |
+| D3 | `mesh28-w10-z`, heap slice 8, widths ¼×–4× ln V (19.41) | after inputs | pending |
+| D4 | One mechanism off at a time (slice, batch, nearest, sharing, histogram admission) plus chunks; `--admission all` added as the plain asynchronous arm (also needed by F10) | — | variants written |
+| D5 | `mesh26` against `mesh26-z`, heap and band 256 | — | variants written |
+
 #### Frontier, scaling (4/16/32/64 nodes, never more than 64)
 
 | # | Experiment | Status |

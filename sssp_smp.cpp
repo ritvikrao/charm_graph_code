@@ -938,6 +938,13 @@ private:
   // heavy buffering can legitimately hold both counters still for a few
   // rounds.
   long stall_rescue_rounds = 32;
+  // --admission histogram|all. all is the plain asynchronous arm of the
+  // mechanism ablation (plan items D4 and F10): every round admits every
+  // bucket, so the histogram still reduces and termination is still the
+  // collective emptiness test, but no percentile ever holds work back. The
+  // local queues keep their priority order and the heap slice its bound, so
+  // this removes exactly one mechanism: the histogram-derived threshold.
+  bool admission_all = false;
   int stall_reports = 0;
   // Rounds whose reduced window held no live update while work was still
   // outstanding, i.e. the frontier had moved past the window's right edge and
@@ -1245,6 +1252,21 @@ public:
           return;
         }
         stall_rescue_rounds = std::stol(m->argv[++i]);
+      } else if (arg == "--admission") {
+        const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
+        if (value == "histogram")
+          admission_all = false;
+        else if (value == "all") {
+          admission_all = true;
+          // Until the first reduction too. Two below the top, because every
+          // PE starts its htram threshold two buckets above its heap's.
+          initial_threshold = HISTO_BUCKET_COUNT - 3;
+        }
+        else {
+          ckout << "--admission needs histogram or all" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg.rfind("--coarsen-clamped", 0) == 0) {
         std::string value;
         if (arg.rfind("--coarsen-clamped=", 0) == 0)
@@ -1563,7 +1585,7 @@ public:
             << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
-            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--process-queue-batch 1..64] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|T] [--diag <prefix>]" << endl
+            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--process-queue-batch 1..64] [--admission histogram|all] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|T] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -2469,6 +2491,11 @@ public:
       heap_threshold = HISTO_BUCKET_COUNT - 1;
     if (tram_threshold >= HISTO_BUCKET_COUNT)
       tram_threshold = HISTO_BUCKET_COUNT - 1;
+    if (admission_all) {
+      heap_threshold = HISTO_BUCKET_COUNT - 1;
+      tram_threshold = HISTO_BUCKET_COUNT - 1;
+      bfs_threshold = HISTO_BUCKET_COUNT - 1;
+    }
     // Nothing live inside the window. Whatever is left is above the window's
     // right edge, where the controller can neither see it nor aim a threshold
     // at it, so the only move guaranteed to make progress is to admit
@@ -2857,6 +2884,8 @@ public:
     // rescuing?" is answerable from the summary of any run rather than only
     // from a log that happens to contain the STALL_RESCUE line.
     ckout << "Stall rescues: " << stall_rescues << endl;
+    ckout << "Admission: " << (admission_all ? "all (plain asynchronous)" : "histogram")
+          << endl;
     // 7.6g. Nonzero means some PE was handed an update by a creator a
     // coarsening ahead of it, at the one index the merge skips. With
     // --skew-defer off each one strands a count at floor(2047 / scale).

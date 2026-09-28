@@ -6,6 +6,10 @@
 #   grid3-30-z     1024^3 Morton 3-D grid, six neighbours, weights [1, 1000]  (D1)
 #   mesh28-w10-z   mesh28-z's topology and ids, weights [1, 10]               (D3)
 #   mesh28-w64k-z  the same with weights [1, 65536]                           (D3, optional)
+#   terrain30-c-z  GLO-30 crop, lat [3, 9) x lon [24, 31), seed 6N 27E: nested
+#                  in terrain30-s-z, 42 tiles, one node's share of the Frontier
+#                  weak-scaling series (505-541M vertices)                     (D1)
+#                  Tiles first: scripts/delta/fetch_terrain_crop.sh CAMPAIGN
 #
 # Graphs already built by an earlier Delta campaign (mesh28-z, road-usa-z) are
 # linked in by scripts/delta/ipdps_link_inputs.sh rather than regenerated.
@@ -43,6 +47,11 @@ gridz() {     # name dim vertices seed max_weight
     > "$DATA/$1.build.log" 2> "$DATA/$1.build.err" &&
     grep -m1 '^vertices=.* arcs=' "$DATA/$1.build.log" > "$DATA/$1.meta.tmp"
 }
+terrainz() {  # name lat0 lat1 lon0 lon1 seed_lat seed_lon
+  /usr/bin/time -v "$BIN/terrain_graph2" "$CAMPAIGN/raw/dem/glo30/f32" "$2" "$3" "$4" "$5" "$6" "$7" 6 \
+    "$DATA/$1.wsg.tmp" --arcsec 1 --narrow > "$DATA/$1.build.log" 2> "$DATA/$1.build.err" &&
+    grep -m1 '^vertices=.* arcs=' "$DATA/$1.build.log" > "$DATA/$1.meta.tmp"
+}
 prepare_one() {
   local name=$1 base=$DATA/$1
   if [ "$STEP" != reference ] && { [ ! -s "$base.wsg" ] || [ ! -s "$base.meta" ]; }; then
@@ -50,6 +59,7 @@ prepare_one() {
       grid3-30-z)    gridz "$name" 3 1073741824 1 1000 ;;
       mesh28-w10-z)  gridz "$name" 2 268435456 1 10 ;;
       mesh28-w64k-z) gridz "$name" 2 268435456 1 65536 ;;
+      terrain30-c-z) terrainz "$name" 3 9 24 31 6 27 ;;
       *) echo "UNKNOWN $name"; return 1 ;;
     esac || { tail -5 "$base.build.err"; echo "PREPARE FAILED $name"; return 1; }
     mv "$base.wsg.tmp" "$base.wsg" && mv "$base.meta.tmp" "$base.meta"
@@ -58,9 +68,11 @@ prepare_one() {
   fi
   # Six sources: two tuning and four held out, drawn exactly as every other
   # campaign draws them. mesh28-w64k-z's distances exceed binary32, so its
-  # reference drops the RIKEN range guard.
+  # reference drops the RIKEN range guard (RIKEN runs on Frontier only).
   local range=
-  case $name in mesh28-w64k-z) range=any-range ;; esac
+  # Terrain walking times are not bounded by 2^24 either (7M+ deciseconds
+  # across the crop).
+  case $name in mesh28-w64k-z|terrain30-c-z) range=any-range ;; esac
   if [ "$STEP" != generate ] && [ ! -s "$base.reference.txt" ]; then
     /usr/bin/time -v "$BIN/reference_gap" "$base.wsg" 6 $range \
       > "$base.reference.tmp" 2> "$base.reference.log" &&
@@ -71,7 +83,8 @@ prepare_one() {
   fi
   echo "PREPARED $name $(date -Is)"
 }
-export -f gridz prepare_one
+export CAMPAIGN
+export -f gridz terrainz prepare_one
 
 printf '%s\n' ${NAMES//,/ } | xargs -P "$PARALLEL" -I{} bash -c 'prepare_one {}'
 
