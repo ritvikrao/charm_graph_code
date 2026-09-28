@@ -642,6 +642,13 @@ enum {
   STAT_TOKENS_STALE,  // ... and dropped because their vertex had moved
   STAT_HINT_FILTERED, // updates dropped by --hub-hints
   STAT_HINTS_PUBLISHED, // hub distances published by --hub-hints
+  // Edge relaxations attempted: every edge generate_updates() reads, summed
+  // over PEs. Divided by |E| it is the work-efficiency figure -- how many
+  // times the run touches each graph edge, against the one time a sequential
+  // Dijkstra does. Production counts it because a speedup claim that cannot
+  // say whether it came from doing less work or from doing the same work
+  // faster answers neither reviewer.
+  STAT_EDGE_ATTEMPTS,
   STAT_INSTRUCTIONS,  // PAPI builds only
   STAT_BATCH_ITEMS,   // ACIC_DIAG builds only, from here down
   STAT_BATCH_ABSORBABLE,
@@ -971,6 +978,9 @@ private:
   std::vector<long> sources;
   std::string source_spec, base_diag_prefix;
   std::vector<unsigned long long> previous_tram_stats;
+  // Carried from done() to done_tram_stats(), which is where both halves of
+  // the per-solve efficiency line are known at once.
+  long solve_edges = 0, solve_edge_attempts = 0;
   double tram_percentile = 0.01;
   double heap_percentile = 0.01;
 #ifdef PRINT_HISTO
@@ -2774,6 +2784,12 @@ public:
     if (setup_time >= 0.0 && compute_time >= 0.0)
       stats_time = total_time - setup_time - compute_time;
     ckout << "Actual edges: " << msg_stats[STAT_EDGES] << endl;
+    // Work efficiency: a sequential Dijkstra reads each stored directed edge
+    // once, so this ratio is how much more edge work the parallel run does.
+    solve_edges = msg_stats[STAT_EDGES];
+    solve_edge_attempts = msg_stats[STAT_EDGE_ATTEMPTS];
+    ckout << "Edge attempts: " << solve_edge_attempts << ", per graph edge: "
+          << solve_edge_attempts * 1.0 / std::max(1L, solve_edges) << endl;
     // Three non-overlapping phases that add up to Total time. Anything that
     // compares cold starts has to say which of these it is comparing; a
     // number that silently folds setup into solve is not a measurement.
@@ -2973,6 +2989,18 @@ public:
     ckout << "TRAM node messages: " << values[3]
           << ", bytes allocated: " << values[4] << endl;
     ckout << "TRAM stale-destination flushes: " << values[5] << endl;
+    // The two per-edge figures a reviewer asks for when a speedup is claimed:
+    // how much edge work the run did and how many bytes it put on the wire to
+    // do it, both against the graph's own stored directed edge count. Printed
+    // for every solve, in every build, so no figure needs an instrumented run.
+    ckout << "WORK_EFFICIENCY edges=" << solve_edges
+          << " edge_attempts=" << solve_edge_attempts
+          << " attempts_per_edge="
+          << solve_edge_attempts * 1.0 / std::max(1L, solve_edges)
+          << " wire_bytes=" << values[1] << " wire_bytes_per_edge="
+          << values[1] * 1.0 / std::max(1L, solve_edges)
+          << " node_bytes=" << values[4] << " node_bytes_per_edge="
+          << values[4] * 1.0 / std::max(1L, solve_edges) << endl;
     if (n > 8)
       ckout << "TRAM idle flushes: " << values[8] << endl;
     if (n > 7 && values[7])
@@ -3403,6 +3431,7 @@ private:
   // --send-filter-bits, per regime under --send-filter auto.
   bool send_filter_on = false;
   long send_filtered = 0;
+  long edge_attempts = 0;  // edges read by generate_updates(), STAT_EDGE_ATTEMPTS
   long updates_processed_locally = 0; // number of update messages received
   long *partition_index;   // defines boundaries of indices for each pe
   long wasted_updates = 0; // number of updates that don't have the final answer
@@ -3979,6 +4008,7 @@ public:
     updates_created_locally = updates_processed_locally = processed_at_contribution = 0;
     wasted_updates = rejected_updates = absorbed_updates = folded_updates = 0;
     send_filtered = tokens_created = tokens_stale = clamped_created_locally = 0;
+    edge_attempts = 0;
     hint_filtered = hints_published = 0;
     deferred_peak = deferred_total = skew_top_arrivals = bfs_created = bfs_processed = 0;
     updates_noted = bfs_noted = distance_changes = updates_in_tram = 0;
@@ -4591,7 +4621,10 @@ public:
   void send_relaxations(const Edge *adjacency, long first, long last,
                         cost source_distance, bool bfs) {
     const long degree = last;
-    if (!bfs) COST_ADD(EDGE_ATTEMPTS, last - first);
+    if (!bfs) {
+      edge_attempts += last - first;
+      COST_ADD(EDGE_ATTEMPTS, last - first);
+    }
 #ifdef ACIC_DIAG
     const double heavy_cut = 1.0 / bucket_multiplier;
 #endif
@@ -5429,6 +5462,7 @@ public:
     msg_stats[STAT_TOKENS_STALE] = tokens_stale;
     msg_stats[STAT_HINT_FILTERED] = hint_filtered;
     msg_stats[STAT_HINTS_PUBLISHED] = hints_published;
+    msg_stats[STAT_EDGE_ATTEMPTS] = edge_attempts;
 #ifdef PAPI
     msg_stats[STAT_INSTRUCTIONS] = instructions;
 #endif

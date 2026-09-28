@@ -126,6 +126,16 @@ def main():
                         row = dict(variant=variant['label'], graph=graph, source=source,
                                    source_index=source_index, rep=rep, seconds=seconds, valid=True,
                                    nodes=vn, rpn=rpn, workers=variant['workers'])
+                        # Rounds and the per-solve efficiency line (edge attempts
+                        # and wire bytes per graph edge). Binaries built before
+                        # the line existed simply omit those fields.
+                        rounds = re.search(r'^Number of reductions: (\d+)', output, re.M)
+                        if rounds:
+                            row['rounds'] = int(rounds[1])
+                        efficiency = re.search(r'^WORK_EFFICIENCY (.*)$', output, re.M)
+                        if efficiency:
+                            row['efficiency'] = {k: float(v) for k, v in
+                                                 (f.split('=') for f in efficiency[1].split())}
                         stream.write(json.dumps(row) + '\n')
                         if rep >= 0:
                             records.append(row)
