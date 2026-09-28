@@ -25,6 +25,8 @@ def main():
     ap.add_argument('--launch-timeout', type=int, default=60,
                     help='wall-clock cap per tuning launch, including startup and graph loading')
     ap.add_argument('--selection-job', help='reuse a frozen selection in a second allocation')
+    ap.add_argument('--deltas', help='explicit delta candidates (comma list) instead of the denominator grid; '
+                    'for graphs whose read makes each launch minutes long')
     ap.add_argument('--engine', choices=['gap', 'wasp'], default='gap',
                     help='single-node shared-memory baseline: GAPBS or Wasp (same .wsg, timer and digest)')
     args = ap.parse_args()
@@ -57,6 +59,8 @@ def main():
             denominator = int(re.search(r'\briken_denominator=(\d+)', meta)[1])
             deltas = sorted({max(1, denominator // d) for d in [256, 64, 16, 4, 1]}
                             | {4 * denominator, 16 * denominator})
+            if args.deltas:
+                deltas = sorted({int(d) for d in args.deltas.split(',')})
             candidates = [dict(engine=args.engine, name=f'{args.engine}-t{t}-d{d}',
                                threads=t, cpus=t, delta=d, launch_timeout_seconds=args.launch_timeout)
                           for t in threads for d in deltas]
