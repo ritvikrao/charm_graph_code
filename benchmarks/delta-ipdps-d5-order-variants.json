@@ -1,7 +1,7 @@
 [
   {
     "label": "heap_native",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "graph": "mesh26",
     "flags": [
       "--process-share",
@@ -22,11 +22,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "heap_z",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "graph": "mesh26-z",
     "flags": [
       "--process-share",
@@ -47,11 +47,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "c256_native",
-    "binary": "acic_c256",
+    "binary": "acic_frz_c256",
     "graph": "mesh26",
     "flags": [
       "--process-share",
@@ -72,11 +72,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "c256_z",
-    "binary": "acic_c256",
+    "binary": "acic_frz_c256",
     "graph": "mesh26-z",
     "flags": [
       "--process-share",
@@ -97,11 +97,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "heap_z_control",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "graph": "mesh26-z",
     "flags": [
       "--process-share",
@@ -122,6 +122,6 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7, +old-scheduler, binaries acic_heap/acic_c256 (34137dd, D2 counters), four held-out sources paired across orders by reference distance sum and maximum, one warmup, rotated arms. D5 (optional): the ordering pair at one node, separating on-node locality from communication in O1 (Frontier 16 nodes). Speedup = native-order time / Morton-order time per source. Predictions: heap mesh26 -> mesh26-z 1.2-3x (row-major blocks give each process a strip, Morton a square: fewer cross-process edges and better cache reuse); c256_s64 gains at least as much as the heap; wire_bytes_per_edge falls on mesh26-z; heap_z_control within 0.95-1.05x of heap_z. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   }
 ]

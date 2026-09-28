@@ -1,7 +1,7 @@
 [
   {
     "label": "rule",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "flags": [
       "--process-share",
       "auto",
@@ -21,11 +21,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "w0p25x",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "flags": [
       "--process-share",
       "auto",
@@ -47,11 +47,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "w0p5x",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "flags": [
       "--process-share",
       "auto",
@@ -73,11 +73,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "w1x",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "flags": [
       "--process-share",
       "auto",
@@ -99,11 +99,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "w2x",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "flags": [
       "--process-share",
       "auto",
@@ -125,11 +125,11 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   },
   {
     "label": "w4x",
-    "binary": "acic_heap",
+    "binary": "acic_frz_heap",
     "flags": [
       "--process-share",
       "auto",
@@ -151,6 +151,6 @@
     ],
     "rpn": 16,
     "workers": 112,
-    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here."
+    "prediction": "Recorded 2026-09-28 before submission. Delta one node, 16 x 7 (112 workers), +old-scheduler; binaries built 2026-09-28 by scripts/delta/build_onenode.sh into /work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/bin (counted = 929a830 plus the D2 WORK_EFFICIENCY counter; nocount = 929a830); four held-out sources per launch (--batch), one warmup, rotated arm order. Speedup = heap time / arm time per source (median of timed reps). D3: mesh28-w10-z, heap slice 8 (the Frontier series' mesh profile), widths 1/4x-4x the ln V rule (ln 2^28 = 19.4081; the rule resolves to this width on a .wsg input, so 'rule' passes no width flag and 'w1x' passes it explicitly). Predictions: w1x within 0.97-1.03x of rule (same width); rounds fall monotonically with width; attempts_per_edge rises monotonically with width; the fastest width is within 1/2x-2x; w4x at least 1.1x slower than the fastest (edge work) and w1/4x at least 1.1x slower (rounds). One node cannot reproduce the 32->64-node plateau, so a width is only ruled out for F5 if it is more than 1.25x slower than the rule here. Binaries revised before submission to the D6 freeze candidate (601697e; --admission defaults off)."
   }
 ]
