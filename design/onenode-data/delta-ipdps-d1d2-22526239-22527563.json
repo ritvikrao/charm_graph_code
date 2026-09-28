@@ -1,0 +1,292 @@
+{
+  "campaign": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928",
+  "layout": "1 Delta node, 16 x 7, +old-scheduler, onenode_ab.py --batch, 4 held-out sources, 1 warmup + 5 timed reps, rotated arms",
+  "binaries": {
+    "counted": "34137dd (acic_heap, acic_c256, acic_c65536)",
+    "nocount": "929a830 (acic_*_nocount)"
+  },
+  "jobs": {
+    "22526239": {
+      "graph": "mesh28-z",
+      "variants_file": "benchmarks/delta-ipdps-d2-mesh28-variants.json",
+      "variants_sha256": "e4884752c41896499dbff7900d40f62590975fe5a00324765c5b54b0d258f3cb",
+      "solves": 120,
+      "timed": 100,
+      "all_digests_valid": true,
+      "arms": {
+        "heap": {
+          "median_seconds_by_source": [
+            3.898776,
+            3.507874,
+            3.620251,
+            3.418874
+          ],
+          "speedup_over_heap_by_source": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "median_rounds": 1169.5,
+          "attempts_per_edge_range": [
+            1.447378,
+            1.616693
+          ],
+          "wire_bytes_per_edge_range": [
+            0.044197,
+            0.046987
+          ],
+          "node_bytes_per_edge_range": [
+            0.096391,
+            0.103343
+          ]
+        },
+        "heap_nocount": {
+          "median_seconds_by_source": [
+            3.871753,
+            3.524585,
+            3.617509,
+            3.397326
+          ],
+          "speedup_over_heap_by_source": [
+            1.006979525811693,
+            0.9952587325883757,
+            1.0007579801460065,
+            1.0063426353549823
+          ],
+          "median_rounds": 1159.0
+        },
+        "c256_s64": {
+          "median_seconds_by_source": [
+            1.639448,
+            1.383074,
+            1.415154,
+            1.365405
+          ],
+          "speedup_over_heap_by_source": [
+            2.3781028736501555,
+            2.536288007727714,
+            2.558202852834391,
+            2.503926673770786
+          ],
+          "median_rounds": 656.5,
+          "attempts_per_edge_range": [
+            1.564931,
+            1.782561
+          ],
+          "wire_bytes_per_edge_range": [
+            0.036381,
+            0.041188
+          ],
+          "node_bytes_per_edge_range": [
+            0.076073,
+            0.086788
+          ]
+        },
+        "c256_s64_nocount": {
+          "median_seconds_by_source": [
+            1.647718,
+            1.370309,
+            1.394772,
+            1.34712
+          ],
+          "speedup_over_heap_by_source": [
+            2.366167026153747,
+            2.5599145886073873,
+            2.595586232014982,
+            2.5379134746718925
+          ],
+          "median_rounds": 618.0
+        },
+        "c65536_s64": {
+          "median_seconds_by_source": [
+            24.646036,
+            22.772518,
+            23.025207,
+            22.429457
+          ],
+          "speedup_over_heap_by_source": [
+            0.1581907938461179,
+            0.15403979480881297,
+            0.1572299002567056,
+            0.15242785413842164
+          ],
+          "median_rounds": 1506.5,
+          "attempts_per_edge_range": [
+            40.005282,
+            44.343125
+          ],
+          "wire_bytes_per_edge_range": [
+            0.507161,
+            0.558375
+          ],
+          "node_bytes_per_edge_range": [
+            1.019087,
+            1.128669
+          ]
+        }
+      },
+      "counter_overhead": {
+        "heap": {
+          "counted_over_nocount_by_source": [
+            1.006979525811693,
+            0.9952587325883757,
+            1.0007579801460065,
+            1.0063426353549823
+          ],
+          "geomean": 1.0023234543733832
+        },
+        "c256_s64": {
+          "counted_over_nocount_by_source": [
+            0.9949809372720332,
+            1.0093154171796288,
+            1.0146131410725194,
+            1.0135734010333155
+          ],
+          "geomean": 1.0080900745670907
+        }
+      }
+    },
+    "22527563": {
+      "graph": "road-usa-z",
+      "variants_file": "benchmarks/delta-ipdps-d2-road-variants.json",
+      "variants_sha256": "16f9055e5675b6048e08a3e8b444e65d85bd63a36793f175051c20288089b5e5",
+      "solves": 120,
+      "timed": 100,
+      "all_digests_valid": true,
+      "arms": {
+        "heap": {
+          "median_seconds_by_source": [
+            0.529712,
+            0.444136,
+            0.402318,
+            0.353696
+          ],
+          "speedup_over_heap_by_source": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "median_rounds": 749.5,
+          "attempts_per_edge_range": [
+            1.515214,
+            1.640423
+          ],
+          "wire_bytes_per_edge_range": [
+            0.150726,
+            0.167093
+          ],
+          "node_bytes_per_edge_range": [
+            0.392815,
+            0.436519
+          ]
+        },
+        "heap_nocount": {
+          "median_seconds_by_source": [
+            0.529392,
+            0.442326,
+            0.394378,
+            0.342781
+          ],
+          "speedup_over_heap_by_source": [
+            1.0006044670112129,
+            1.0040920045396382,
+            1.0201329688775742,
+            1.0318424883526216
+          ],
+          "median_rounds": 694.5
+        },
+        "c65536_s64": {
+          "median_seconds_by_source": [
+            0.407681,
+            0.38599,
+            0.353369,
+            0.334869
+          ],
+          "speedup_over_heap_by_source": [
+            1.299329622915956,
+            1.150641208321459,
+            1.1385209228879727,
+            1.0562219853136599
+          ],
+          "median_rounds": 1420.0,
+          "attempts_per_edge_range": [
+            2.475288,
+            2.907362
+          ],
+          "wire_bytes_per_edge_range": [
+            0.152026,
+            0.174219
+          ],
+          "node_bytes_per_edge_range": [
+            0.364332,
+            0.406455
+          ]
+        },
+        "c65536_s64_nocount": {
+          "median_seconds_by_source": [
+            0.409791,
+            0.380538,
+            0.361015,
+            0.328043
+          ],
+          "speedup_over_heap_by_source": [
+            1.2926394186304724,
+            1.1671265418959473,
+            1.1144079885877318,
+            1.078200114009444
+          ],
+          "median_rounds": 1339.0
+        },
+        "c256_s64": {
+          "median_seconds_by_source": [
+            0.653631,
+            0.568924,
+            0.434,
+            0.431369
+          ],
+          "speedup_over_heap_by_source": [
+            0.8104144387276613,
+            0.7806596311633891,
+            0.927,
+            0.8199383822203264
+          ],
+          "median_rounds": 2247.0,
+          "attempts_per_edge_range": [
+            1.534205,
+            1.773376
+          ],
+          "wire_bytes_per_edge_range": [
+            0.122574,
+            0.138359
+          ],
+          "node_bytes_per_edge_range": [
+            0.290514,
+            0.325966
+          ]
+        }
+      },
+      "counter_overhead": {
+        "heap": {
+          "counted_over_nocount_by_source": [
+            1.0006044670112129,
+            1.0040920045396382,
+            1.0201329688775742,
+            1.0318424883526216
+          ],
+          "geomean": 1.0140900794124328
+        },
+        "c65536_s64": {
+          "counted_over_nocount_by_source": [
+            0.9948510338196788,
+            1.014327084285932,
+            0.9788208246194757,
+            1.0208082476992346
+          ],
+          "geomean": 1.0020649277680662
+        }
+      }
+    }
+  }
+}

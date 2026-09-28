@@ -2192,10 +2192,67 @@ Frontier's 56-core node. The chunk queue stays opt-in and mesh-only (§18).
 Its effect on multi-node meshes is unmeasured. Record:
 `design/onenode-data/frontier-mesh28-chunks-5548095.json`.
 
+### 26. Delta IPDPS one-node checks: D1 re-confirmation and D2 counters (2026-09-28)
+
+Plan items D1 and D2 (`design/sc27-plan.md`, "Delta, one node"). One Delta
+node, 16 × 7, `+old-scheduler`, `onenode_ab.py --batch`: four held-out
+sources per launch, one warmup and five timed repetitions, arms rotated.
+Counted binaries are 34137dd, which prints `WORK_EFFICIENCY` (edge attempts
+and htram wire bytes per stored edge) on every solve; the uncounted controls
+are 929a830. Predictions are recorded in
+`benchmarks/delta-ipdps-d2-{mesh28,road}-variants.json`. All 240 solves
+match the reference digests.
+
+Speedup over the heap (heap slice 8), per source, medians of five:
+
+| Graph | Band 256, slice 64 | Band 65536, slice 64 | Prior |
+|---|---:|---:|---|
+| `mesh28-z` (22526239) | **2.38–2.56×** | 0.152–0.158× (6.3–6.6× slower; 40–44 attempts per edge) | band 256 2.53–2.55× (§17) |
+| `road-usa-z` (22527563) | 0.78–0.93× | **1.06–1.30×** | band 65536 1.12–1.29×, band 256 0.72–0.84× (§§18–19) |
+
+Both one-node choices hold on the current source: band 256 for the mesh and
+band 65536 for road, each losing on the other family. The band is a
+per-family build choice, so D1's new families need their own measurement.
+Two recorded predictions missed. Road band 65536 on its fourth source came
+in at 1.056×, against a predicted floor of 1.1×. Attempts per edge ran above
+the predicted ranges: 1.45–1.62 on the mesh heap and 1.57–1.78 with band 256.
+
+**D2 counter overhead** (counted time / uncounted time, per-source medians):
+
+| Graph, profile | Per source | Geometric mean |
+|---|---|---:|
+| `mesh28-z`, heap | 0.995–1.007 | 1.002 |
+| `mesh28-z`, band 256 | 0.995–1.015 | 1.008 |
+| `road-usa-z`, heap | 1.001–1.032 | 1.014 |
+| `road-usa-z`, band 65536 | 0.979–1.021 | 1.002 |
+
+The ≤ 2% budget holds in geometric mean for every pair. One road heap source
+reads 3.2%, but road solves take 0.37–0.43 s and the per-source standard
+error of the ratio there is 1.5–1.8%, so that is within two standard errors.
+The added code is one add per expansion. One counted mesh launch
+(band 256, repetition 2) ran three of its four sources about 1.3× slow
+(1.82–1.85 s against about 1.4 s). That is a launch-level disturbance, not a
+per-solve cost, and the medians are robust to it.
+
+**Work and traffic** (ranges over timed solves):
+
+| Graph, arm | Attempts per edge | Wire bytes per edge | Node-message bytes per edge |
+|---|---:|---:|---:|
+| `mesh28-z`, heap | 1.45–1.62 | 0.044–0.047 | 0.10 |
+| `mesh28-z`, band 256 | 1.57–1.78 | 0.036–0.041 | 0.08 |
+| `road-usa-z`, heap | 1.52–1.64 | 0.151–0.167 | 0.41 |
+| `road-usa-z`, band 65536 | 2.48–2.91 | 0.152–0.174 | 0.38 |
+
+On one node, wire volume is a small fraction of a byte per edge, because
+process sharing keeps most updates inside their process. Band 65536 buys road
+time with about 1.7× the heap's edge work, as §19 found. Record:
+`design/onenode-data/delta-ipdps-d1d2-22526239-22527563.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D1 re-confirmation and D2 counters | `design/onenode-data/delta-ipdps-d1d2-22526239-22527563.json`; `benchmarks/delta-ipdps-d2-{mesh28,road}-variants.json` (predictions); `scripts/delta/ipdps_ab.sbatch`; jobs 22526239, 22527563; campaign `/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928` |
 | Frontier mesh28-z one-node queue replication | `design/onenode-data/frontier-mesh28-chunks-5548095.json` (audit, 96 + 32 solves); `benchmarks/frontier-1n-chunks-mesh-variants.json` (predictions, 3f6133b); `scripts/frontier/chunks_1n.sbatch`; profile job 5546915 (`scripts/frontier/profile_1n.sbatch`; traces under `campaign/profile/mesh28-z-1n-5546915/`) |
 | Frontier `road-planet-z` and `terrain-ae-z` | jobs 5546135/5546136/5546137 (planet, ACIC + Gluon-Async) and 5546130/5546131 (terrain, ACIC); `benchmarks/frontier-large-road-*-variants.json`, `benchmarks/frontier-terrain-terrain-*-variants.json`; certified terrain reference 5546087; rows in `design/onenode-data/results-by-dataset.json` |
 | Delta road contribution placement | `design/onenode-data/delta-road-contribution-22442601.json`, `delta-road-contribution-fused-22442746.json`; `benchmarks/delta-road-contribution{,-fused}-protocol.json`; jobs 22442601 and 22442746 |

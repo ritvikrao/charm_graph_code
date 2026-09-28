@@ -146,12 +146,13 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 
 | Item | What was built | Jobs | State |
 |---|---|---|---|
-| Inputs | `grid3-30-z`, `mesh28-w10-z` (`scripts/delta/ipdps_prepare.sbatch`, `grid_graph`); `terrain30-c-z` = GLO-30 lat [3, 9) × lon [24, 31), seed 6N 27E, 42 tiles, nested in `terrain30-s-z` (`scripts/delta/fetch_terrain_crop.sh`; rasterio's GDAL 3.9.3, since Delta has no GDAL module); `mesh28-z`, `road-usa-z`, `mesh26`, `mesh26-z` linked from earlier Delta campaigns | generate 22526088, references 22526352, terrain 22526351 | queued |
-| D2 | `WORK_EFFICIENCY` line on every solve (edge attempts and htram wire bytes per stored edge; commit 34137dd). Overhead arms against uncounted 929a830 builds | mesh28-z 22526239, road-usa-z 22526240 | queued |
-| D1 | heap / band-256 / band-65536 chunk arms (`acic_heap`, `acic_c256`, `acic_c65536`) on grid3-30-z and terrain30-c-z; mesh28-z and road-usa-z re-confirmed in the D2 jobs | after inputs | pending |
-| D3 | `mesh28-w10-z`, heap slice 8, widths ¼×–4× ln V (19.41) | after inputs | pending |
-| D4 | One mechanism off at a time (slice, batch, nearest, sharing, histogram admission) plus chunks; `--admission all` added as the plain asynchronous arm (also needed by F10) | — | variants written |
-| D5 | `mesh26` against `mesh26-z`, heap and band 256 | — | variants written |
+| Inputs | `grid3-30-z`, `mesh28-w10-z` (`scripts/delta/ipdps_prepare.sbatch`, `grid_graph`; 1:02 and 0:17 to generate; references 21:15 and 2:05, 110 GB peak); `terrain30-c-z` = GLO-30 lat [3, 9) × lon [24, 31), seed 6N 27E, 42 tiles, nested in `terrain30-s-z` (`scripts/delta/fetch_terrain_crop.sh`; rasterio's GDAL 3.9.3, since Delta has no GDAL module); `mesh28-z`, `road-usa-z`, `mesh26`, `mesh26-z` linked from earlier Delta campaigns | 22526088, 22527562 (done); terrain 22528231 | grid/mesh done; terrain queued |
+| D2 | `WORK_EFFICIENCY` on every solve (34137dd). Overhead against 929a830: geometric mean 1.002–1.014 on the mesh and road profiles | 22526239, 22527563 | **done, kept** (current-state §26) |
+| D1 | Mesh and road re-confirmed: band 256 on the mesh 2.38–2.56×, band 65536 on road 1.06–1.30×, each losing on the other family. New families: heap / band 256 / heap control (band 65536 dropped: mesh-scale weights) | re-confirm 22526239, 22527563; grid3-30-z 22528376; terrain after inputs | re-confirmed; new families running |
+| D3 | `mesh28-w10-z`, heap slice 8, widths ¼×–4× ln V (19.41) | feeder | queued next |
+| D4 | One mechanism off at a time (slice, batch, nearest, sharing, histogram admission) plus chunks; `--admission all` (601697e) is the plain asynchronous arm, also needed by F10 | feeder | variants committed |
+| D5 | `mesh26` against `mesh26-z`, heap and band 256 | feeder | variants committed |
+| D6 | Freeze candidate 601697e (D2 counters, `--admission`, defaults unchanged); Delta binaries `acic_frz_{heap,c256,c65536}`. D1, D3, D4 and D5 run on it | — | candidate built; flags per family await D1 |
 
 #### Frontier, scaling (4/16/32/64 nodes, never more than 64)
 
