@@ -117,7 +117,7 @@ and does not claim it as a source of speedup.
 **Vertex order (O1, 2026-09-29):**
 - The mesh and road results assume a locality-preserving order (Morton here).
 - Row-major `mesh26` is 107–183× slower for ACIC at 16 nodes, and Gluon wins
-  there (current-state §31).
+  there (current-state §33).
 - The paper states the assumption and gives every code the same order.
 - O1b tests whether reader tiling causes most of the loss. If it does, the
   fix (tiling only for locality-preserving inputs) is a rule change for the
@@ -175,10 +175,10 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 
 | # | Experiment | Status |
 |---|---|---|
-| F1 | Phase A: Gemini and HavoqGT on the series, 4/16/32/64 nodes | **Done** (5560447–5560462): ACIC is faster everywhere, 17–24× over HavoqGT on terrain and ≥ 245× over Gemini on the 2-D meshes (current-state §31) |
-| O1 | Ordering pair: `mesh26` and `road-usa` in generator/DIMACS order against their Morton (`-z`) forms, ACIC and Gluon, 16 nodes, four held-out sources (the same physical sources) | **Done** (5561485, 5561486). Order cost to ACIC: 107–183× on `mesh26`, where Gluon wins (ACIC 0.23–0.36×); 20–28× on `road-usa`, where ACIC is still 38–61× faster (§31) |
-| O1b | Reader tiling off against auto on `mesh26`, `mesh26-z`, `road-usa` and `road-usa-z`, 16 nodes, `acic_scale64b` as O1 | **Done** (5565472): tiling causes the `mesh26` loss (off: 61–131× faster, order cost about 1.7×), but tiling wins 1.7–4.4× everywhere else. A locality-based tiling rule is a candidate change (current-state §32) |
-| O2 | HavoqGT (delegate threshold 2^20 and 896) and Gemini on `rmat25` and `rmat26`, 16 nodes | **Done** (5561482–5561484). ACIC 1.35–2.59× over Gemini and 4.3–12× over HavoqGT. The upstream threshold makes no delegates; with 896, every solve hung (§31) |
+| F1 | Phase A: Gemini and HavoqGT on the series, 4/16/32/64 nodes | **Done** (5560447–5560462): ACIC is faster everywhere, 17–24× over HavoqGT on terrain and ≥ 245× over Gemini on the 2-D meshes (current-state §33) |
+| O1 | Ordering pair: `mesh26` and `road-usa` in generator/DIMACS order against their Morton (`-z`) forms, ACIC and Gluon, 16 nodes, four held-out sources (the same physical sources) | **Done** (5561485, 5561486). Order cost to ACIC: 107–183× on `mesh26`, where Gluon wins (ACIC 0.23–0.36×); 20–28× on `road-usa`, where ACIC is still 38–61× faster (§33) |
+| O1b | Reader tiling off against auto on `mesh26`, `mesh26-z`, `road-usa` and `road-usa-z`, 16 nodes, `acic_scale64b` as O1 | **Done** (5565472): tiling causes the `mesh26` loss (off: 61–131× faster, order cost about 1.7×), but tiling wins 1.7–4.4× everywhere else. A locality-based tiling rule is a candidate change (current-state §34) |
+| O2 | HavoqGT (delegate threshold 2^20 and 896) and Gemini on `rmat25` and `rmat26`, 16 nodes | **Done** (5561482–5561484). ACIC 1.35–2.59× over Gemini and 4.3–12× over HavoqGT. The upstream threshold makes no delegates; with 896, every solve hung (§33) |
 | O2b | HavoqGT delegate probe: `rmat20`, 2 nodes, thresholds 2^20/65536/4096/896, gdb stacks on a hang | **Done** (5565473): all correct; 6,196 delegates make it 2.4× faster (0.71 s against 1.68 s) |
 | O2c | The same thresholds (65536/16384/4096/896) on `rmat25` at 16 nodes, where 896 hung | **Done** (5566201): 4096 (15,276 delegates) is fastest at 1.38 s; 896 deadlocks in HavoqGT's collectives |
 | O2d | HavoqGT at threshold 4096 on `rmat25`/`rmat26`, 16 nodes, four held-out sources: the RMAT row the paper uses | **Done** (5566503): `rmat25` 1.21–1.46 s; `rmat26` (83,682 delegates) hung. O2e (5566974): `rmat26` at 16384 (9,109 delegates) correct but no faster (1.91–2.26 s). The paper uses HavoqGT's best completing setting: ACIC 5.95–9.32× (`rmat25`), 4.29–7.78× (`rmat26`) |

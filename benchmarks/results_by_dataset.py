@@ -80,7 +80,7 @@ EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900
                  '5566503', '5566974']
 # HavoqGT runs with delegates are their own rows. Their hung launches
 # (rmat26 at threshold 4096: a deadlock in HavoqGT's collectives past about
-# 15k-84k delegates, current-state section 32) are not lower bounds on a solve.
+# 15k-84k delegates, current-state section 34) are not lower bounds on a solve.
 DELEGATE_JOBS = {'5566503': 'HavoqGT, delegates 4096', '5566974': 'HavoqGT, delegates 16384'}
 ONE_NODE_JOBS = ['5529591', '5538465', '5538410', '5541358', '5541661',
                  '5536541', '5538411', '5541359', '5541662',
