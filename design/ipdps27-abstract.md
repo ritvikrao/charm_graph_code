@@ -1,9 +1,7 @@
 # IPDPS 2027 abstract (draft, 2026-09-29)
 
-Submission limit: 500 words, due 2026-10-01 AOE. Numbers are from the current
-evidence (current-state §33–§35). The F8 final matrix (freeze candidate
-601697e) replaces them before the paper deadline; the abstract's ranges are
-rounded so small shifts do not change it.
+Submission limit: 500 words, due 2026-10-01 AOE. Numbers are from the F8 final
+matrix on the freeze binaries (601697e, heap rows; current-state §33–§36).
 
 **Title (working):** Scaling Single-Source Shortest Paths Beyond Graph500:
 Adaptive Asynchronous SSSP on Meshes, Terrain and Road Networks
@@ -17,8 +15,8 @@ that need distributed memory look nothing like this. Simulation meshes, 3-D
 grids, terrain models and road networks have low, uniform degree, a diameter
 in the thousands to millions, and physically derived edge weights. We show
 that on these graphs the Graph500-style distributed codes do not scale: one
-Frontier node running a shared-memory SSSP code is often faster than 64 nodes
-running a distributed one.
+Frontier node running shared-memory SSSP often beats 64 nodes running a
+distributed code.
 
 We present ACIC, an asynchronous distributed SSSP algorithm. Shared-memory
 asynchronous codes such as Wasp rely on atomic updates to shared distances and
@@ -43,23 +41,23 @@ billion vertices and 275 billion edges. Baselines are tuned on training
 sources and measured on held-out ones; every result is checked against a
 reference.
 
-On these graphs ACIC is 8–240× faster than Gluon and one to three orders of
+On these graphs ACIC is 8–250× faster than Gluon and one to three orders of
 magnitude faster than the RIKEN code, HavoqGT and Gemini. It is also the only
 distributed code here that beats a tuned single node: at 64 nodes it is
-5.0–14.5× faster than GAPBS and 2.3–7.9× faster than Wasp on large meshes,
-grids and terrain. On the Kronecker graphs Graph500 uses, the RIKEN code
-remains faster. The two classes of graph need different designs, and a
-benchmark that measures only one misses the other.
+5.6–14.5× faster than GAPBS and 2.9–7.8× faster than Wasp on the largest
+meshes, grids and terrain, and up to 24× and 14× with a chunked queue. On the
+Kronecker graphs Graph500 uses, the RIKEN code remains faster. A benchmark
+that measures only one class of graph misses the other.
 
-An ablation at 16 and 64 nodes attributes the speedup: shared queues 5–15×,
+An ablation at 16 and 64 nodes attributes the speedup: shared queues 5–14×,
 nearest-bucket removal 2.2–3.7×, batching 1.5–1.6×, tiled placement 1.7–4.4×,
-and a chunked queue a further 2× on meshes and terrain. A dynamic admission
-threshold admits all work in 89–99% of rounds and gives nothing. Recent work
-shows that synthetic uniform weights misrepresent shared-memory SSSP; we
-extend that finding to distributed memory, across weight ranges from [1, 10]
-to [1, 65,536] and natural road and terrain weights. Limits: ACIC needs a
-locality-preserving vertex order, and its bucket width costs up to 2× on
-narrow weight ranges.
+and a chunked queue up to 2.3× more on most meshes, grids and terrain. A
+dynamic admission threshold admits all work in 89–99% of rounds and gives
+nothing. Recent work shows that synthetic uniform weights misrepresent shared-
+memory SSSP; we extend that finding to distributed memory, across weight
+ranges from [1, 10] to [1, 65,536] and natural road and terrain weights.
+Limits: ACIC needs a locality-preserving vertex order, and its bucket width
+costs up to 2× on narrow weight ranges.
 
 ---
 

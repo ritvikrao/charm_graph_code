@@ -63,6 +63,11 @@ ACIC_JOBS['5548095'] = {'heap': HEAP69, 'c256_s64': CHUNKS}  # one-node mesh28-z
 for j in ['5558200', '5558201', '5558202', '5558203', '5558204', '5558205']:  # scaling series 4/16/32/64
     ACIC_JOBS[j] = {'frozen': SCALE}
 ACIC_JOBS['5561485'] = {'frozen': SCALE}  # ordering pair (O1): mesh26, road-usa and their -z forms
+FRZ_HEAP, FRZ_CHUNKS = 'ACIC freeze, heap (acic_frz_heap)', 'ACIC freeze, chunks (acic_frz_c256)'
+for j in ['5568653', '5568963', '5568974',  # F8 final matrix (freeze 601697e): one node (debug queue)
+          '5568629', '5568630', '5568631', '5568632', '5568633', '5568634', '5568635', '5568636',  # 4/16/32/64
+          '5568637', '5568638', '5568639', '5568641']:  # terrain30-l-z 32/64; scale-free 16/64
+    ACIC_JOBS[j] = {'frozen': FRZ_HEAP, 'c256_s64': FRZ_CHUNKS}
 EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900', '5539985',
                  '5541240', '5541195', '5541196', '5541369', '5541370', '5541371', '5541428', '5541429',
                  '5541663', '5541664', '5541665', '5541667', '5541713', '5541714', '5541715', '5541716', '5541717',
@@ -81,7 +86,9 @@ EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900
                  # F6: RIKEN pinned (8 ranks per node, delta about twice the mean weight) on
                  # grid3-30-z, mesh28-w10-z and terrain30-s-z (series_riken.sbatch). terrain30-s-z at
                  # 16 nodes aborts in RIKEN's allocator (a 32-bit size overflow) and has no row.
-                 '5565469', '5565470']
+                 '5565469', '5565470',
+                 # O1c: native order for the other baselines at 16 nodes (RIKEN, Gemini, HavoqGT)
+                 '5568646', '5568648', '5568649']
 # HavoqGT runs with delegates are their own rows. Their hung launches
 # (rmat26 at threshold 4096: a deadlock in HavoqGT's collectives past about
 # 15k-84k delegates, current-state section 34) are not lower bounds on a solve.

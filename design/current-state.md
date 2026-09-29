@@ -93,6 +93,16 @@ ln V bucket width, which is round-bound there: a 16× width is 1.96–2.21×
 faster at 64 nodes and scales again from 32 to 64 (§35). The frozen rule is
 unchanged.
 
+**Final matrix (F8, §36).** The freeze binaries reproduce the scaling series
+within 4% on 1,560 digest-valid solves at 1–64 nodes. The chunk queue is a
+further 1.5–2.3× on the large meshes, `grid3-30-z` and terrain. It is 0.38–0.87×
+on `mesh28-w64k-z` and gains nothing on small meshes at scale, so the headline
+uses the heap. The width check finds ln V / 8 winning or tying on every
+rule-width input (1.46–1.69× on `mesh28-w10-z`, 1.06–1.18× on `grid3-30-z`).
+Every distributed baseline has now run in both vertex orders on `mesh26` and
+`road-usa`. At each code's best order ACIC is 32–72× faster than Gluon and
+213–416× faster than RIKEN, Gemini and HavoqGT.
+
 **Mechanisms at scale (F10, §35).** At 16 and 64 nodes the speedup comes
 from process-shared queues (removing them costs 4.8–15×), the nearest-bucket
 queue (2.2–3.7×), batched removal (1.5–1.6×) and, on meshes and terrain, the
@@ -104,7 +114,8 @@ slower. Heap slices are worth nothing on these large inputs (removing them is
 
 **Not yet measured.** Gluon on `terrain-ae-z` (its `.gr` now exists) and ACIC
 on it at 32 and 64 nodes; RIKEN on `terrain30-s-z` at 16 nodes (it aborts on a
-32-bit size overflow at 128 ranks, §35).
+32-bit size overflow at 128 ranks, §35; 56 ranks per node not yet tried,
+§36).
 
 ## Implementations
 
@@ -147,29 +158,49 @@ more than Gluon's graph load in any finished series launch (2–42 s).
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 1 | ACIC production | 0.391–0.428 | 4 | 5538412, 5538413 |
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.165–0.179 | 4 | 5568653 |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.322–0.344 | 4 | 5568653 |
 | 1 | GAPBS | 0.074–0.080 | 4 | 5538410 |
 | 1 | Wasp | 0.068–0.081 | 4 | 5538411 |
 | 2 | ACIC production | 0.239–0.251 | 4 | 5538412, 5538413 |
 | 4 | ACIC production | 0.143–0.159 | 4 | 5538412, 5538413, 5541369 |
 | 4 | ACIC TLS (acic_tls) | 0.115–0.128 | 4 | 5541369 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 0.073–0.087 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.115–0.126 | 4 | 5568629 |
 | 4 | Gluon (Async) | 3.54–9.28 | 4 | 5541369 |
 | 4 | RIKEN | 7.82–11.1 | 4 | 5541369 |
 | 8 | ACIC production | 0.092–0.112 | 4 | 5538412, 5538413 |
 | 16 | ACIC production | 0.073–0.094 | 4 | 5538412, 5538413, 5541196, 5541240 |
 | 16 | ACIC TLS (acic_hint2_tls) | 0.059–0.076 | 4 | 5541196, 5541240 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 0.053–0.074 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.061–0.075 | 4 | 5568631 |
 | 16 | Gluon (Async) | 3.13–4.29 | 4 | 5541196, 5541240 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 0.048–0.070 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.053–0.072 | 4 | 5568633 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 0.059–0.107 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.083–0.108 | 4 | 5568635 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
 | 1 | ACIC production | 0.18–0.20× | 0.16–0.20× | — | — |
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.43–0.47× | 0.39–0.47× | — | — |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.22–0.25× | 0.20–0.25× | — | — |
 | 2 | ACIC production | 0.31–0.33× | 0.28–0.33× | — | — |
 | 4 | ACIC production | 0.49–0.52× | 0.43–0.51× | 22.7–58.2× | 54.4–71.2× |
 | 4 | ACIC TLS (acic_tls) | 0.61–0.64× | 0.53–0.64× | 27.8–72.7× | 67.7–87.4× |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 0.92–1.02× | 0.78–1.00× | 40.8–115× | 107–128× |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.62–0.64× | 0.54–0.64× | 28.0–73.6× | 67.9–88.1× |
 | 8 | ACIC production | 0.72–0.80× | 0.61–0.78× | — | — |
 | 16 | ACIC production | 0.85–1.02× | 0.72–0.99× | 42.9–47.8× | — |
 | 16 | ACIC TLS (acic_hint2_tls) | 1.06–1.25× | 0.90–1.22× | 52.0–59.2× | — |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 1.09–1.40× | 0.92–1.36× | 58.0–61.5× | — |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 1.07–1.22× | 0.91–1.19× | 51.6–59.3× | — |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 1.14–1.54× | 0.97–1.50× | — | — |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 1.11–1.39× | 0.94–1.36× | — | — |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 0.75–1.26× | 0.63–1.23× | — | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.75–0.89× | 0.63–0.87× | — | — |
 
 The quarter-size mesh does not cross one-node GAPBS or Wasp on the median
 with the production build; the TLS build reaches 1.06–1.25× over GAPBS at 16
@@ -187,48 +218,73 @@ Generator (row-major) order, the same graph and physical sources as
 |---:|---|---:|---:|---|
 | 16 | ACIC TLS (acic_scale64b) | 19.4–40.5 | 4 | 5561485 |
 | 16 | Gluon (Async) | 7.00–9.49 | 4 | 5561486 |
+| 16 | RIKEN | 53.9–68.2 | 2 | 5568646 |
+| 16 | Gemini | 80.2–84.4 | 2 | 5568648 |
+| 16 | HavoqGT | 51.4–62.5 | 2 | 5568649 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 16 | ACIC TLS (acic_scale64b) | — | — | 0.23–0.36× | — |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 16 | ACIC TLS (acic_scale64b) | — | — | 0.23–0.36× | 1.68–2.04× | 1.98–3.19× | 1.54–1.94× |
 
 #### `mesh26-z` (67.1M vertices, 268.4M edges)
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 1 | ACIC production | 1.63–1.78 | 4 | 5536321, 5536322 |
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.618–0.676 | 4 | 5568653 |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 1.30–1.41 | 4 | 5568653 |
 | 1 | GAPBS | 0.316–0.352 | 4 | 5529591, 5538465 |
 | 1 | Wasp | 0.262–0.293 | 4 | 5536541 |
 | 2 | ACIC production | 0.958–1.05 | 4 | 5536321, 5536322 |
 | 4 | ACIC production | 0.554–0.604 | 4 | 5536321, 5536322 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 0.244–0.272 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.444–0.489 | 4 | 5568629 |
 | 8 | ACIC production | 0.332–0.384 | 4 | 5534022, 5534023, 5536321, 5536322 |
 | 16 | ACIC production | 0.223–0.277 | 4 | 5534022, 5534023, 5536321, 5536322, 5541196, 5541240, 5541370 |
 | 16 | ACIC TLS (acic_hint2_tls) | 0.181–0.224 | 4 | 5541196, 5541240 |
 | 16 | ACIC TLS (acic_scale64b) | 0.181–0.222 | 4 | 5561485 |
 | 16 | ACIC TLS (acic_tls) | 0.181–0.223 | 4 | 5541370 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 0.136–0.179 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.181–0.227 | 4 | 5568631 |
 | 16 | Gluon (Async) | 12.3–15.9 | 4 | 5541196, 5541240, 5541370, 5561486 |
-| 16 | RIKEN | 18.9–52.1 | 4 | 5536476, 5541370 |
+| 16 | RIKEN | 18.9–55.2 | 4 | 5536476, 5541370, 5568646 |
+| 16 | Gemini | 100–129 | 2 | 5568648 |
+| 16 | HavoqGT | 43.1–51.7 | 2 | 5568649 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 0.124–0.168 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.138–0.168 | 4 | 5568633 |
 | 64 | ACIC production | 0.165–0.223 | 4 | 5541660 |
 | 64 | ACIC TLS (acic_tls) | 0.138–0.181 | 4 | 5541660 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 0.140–0.192 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.137–0.177 | 4 | 5568635 |
 | 64 | Gluon (Async) | 8.19–11.4 | 4 | 5541371 |
 | 64 | RIKEN | 8.98–20.2 | 4 | 5541371 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 1 | ACIC production | 0.19–0.20× | 0.15–0.17× | — | — |
-| 2 | ACIC production | 0.33–0.34× | 0.26–0.28× | — | — |
-| 4 | ACIC production | 0.57–0.59× | 0.46–0.49× | — | — |
-| 8 | ACIC production | 0.91–0.95× | 0.70–0.82× | — | — |
-| 16 | ACIC production | 1.25–1.41× | 0.97–1.22× | 49.3–57.3× | 76.2–169× |
-| 16 | ACIC TLS (acic_hint2_tls) | 1.57–1.74× | 1.21–1.50× | 61.1–71.0× | 104–232× |
-| 16 | ACIC TLS (acic_scale64b) | 1.55–1.75× | 1.19–1.51× | 61.7–71.5× | 104–235× |
-| 16 | ACIC TLS (acic_tls) | 1.55–1.74× | 1.20–1.50× | 61.4–71.8× | 94.0–206× |
-| 64 | ACIC production | 1.56–1.91× | 1.23–1.65× | 44.2–51.0× | 54.4–90.4× |
-| 64 | ACIC TLS (acic_tls) | 1.95–2.29× | 1.52–1.98× | 55.4–62.9× | 65.3–113× |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | ACIC production | 0.19–0.20× | 0.15–0.17× | — | — | — | — |
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.50–0.53× | 0.39–0.44× | — | — | — | — |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.24–0.25× | 0.19–0.21× | — | — | — | — |
+| 2 | ACIC production | 0.33–0.34× | 0.26–0.28× | — | — | — | — |
+| 4 | ACIC production | 0.57–0.59× | 0.46–0.49× | — | — | — | — |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 1.28–1.35× | 1.04–1.12× | — | — | — | — |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.71–0.73× | 0.56–0.61× | — | — | — | — |
+| 8 | ACIC production | 0.91–0.95× | 0.70–0.82× | — | — | — | — |
+| 16 | ACIC production | 1.25–1.41× | 0.97–1.22× | 49.3–57.3× | 76.2–169× | 401–467× | 172–186× |
+| 16 | ACIC TLS (acic_hint2_tls) | 1.57–1.74× | 1.21–1.50× | 61.1–71.0× | 104–254× | 493–577× | 212–231× |
+| 16 | ACIC TLS (acic_scale64b) | 1.55–1.75× | 1.19–1.51× | 61.7–71.5× | 104–255× | 495–584× | 213–233× |
+| 16 | ACIC TLS (acic_tls) | 1.55–1.74× | 1.20–1.50× | 61.4–71.8× | 94.0–206× | 497–581× | 213–232× |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 1.94–2.32× | 1.49–2.00× | 77.3–90.3× | 139–329× | 638–723× | 274–288× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 1.55–1.75× | 1.20–1.51× | 62.4–69.8× | 104–258× | 501–570× | 215–227× |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 2.07–2.54× | 1.60–2.20× | — | — | — | — |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 2.04–2.29× | 1.59–1.97× | — | — | — | — |
+| 64 | ACIC production | 1.56–1.91× | 1.23–1.65× | 44.2–51.0× | 54.4–90.4× | — | — |
+| 64 | ACIC TLS (acic_tls) | 1.95–2.29× | 1.52–1.98× | 55.4–62.9× | 65.3–113× | — | — |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 1.77–2.26× | 1.36–1.95× | 55.7–60.9× | 64.4–117× | — | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 1.95–2.31× | 1.50–1.99× | 55.9–64.1× | 65.6–114× | — | — |
 
 The accepted mesh result: at 16 nodes (896 PEs) production has a 1.25–1.41×
 speedup over GAPBS across four allocations, and the same class wins on Anvil
@@ -243,26 +299,36 @@ and 5541370.
 |---:|---|---:|---:|---|
 | 1 | ACIC TLS, chunk queue, slice 64 (acic_c256) | 2.25–2.39 | 4 | 5548095 |
 | 1 | ACIC TLS, heap queue (acic_heap69) | 5.13–5.51 | 4 | 5548095 |
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 2.31–2.46 | 4 | 5568653 |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 5.14–5.53 | 4 | 5568653 |
 | 1 | GAPBS | 1.51–1.57 | 4 | 5541661, 5558223 |
 | 1 | Wasp | 0.905–1.00 | 4 | 5541662, 5558224 |
 | 4 | ACIC TLS (acic_scale64b) | 1.67–1.74 | 4 | 5558200 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 0.796–0.836 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 1.65–1.73 | 4 | 5568629 |
 | 4 | Gluon (Async) | 147–195 | 2 | 5558207 |
 | 4 | Gemini, capped | > 490 (capped) | 2 | 5560447 |
 | 4 | HavoqGT, capped | > 490 (capped) | 2 | 5560455 |
 | 16 | ACIC production | 0.742–0.872 | 4 | 5541663 |
 | 16 | ACIC TLS (acic_scale64b) | 0.599–0.696 | 4 | 5558201 |
 | 16 | ACIC TLS (acic_tls) | 0.595–0.691 | 4 | 5541663 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 0.344–0.422 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.597–0.695 | 4 | 5568631 |
 | 16 | Gluon (Async) | 47.5–61.6 | 3 | 5541663, 5558209 |
 | 16 | RIKEN | 368–489 | 2 | 5541663 |
 | 16 | Gemini, capped | > 490 (capped) | 2 | 5560449 |
 | 16 | HavoqGT | 292–380 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 0.412–0.482 | 4 | 5558202 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 0.273–0.349 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.414–0.484 | 4 | 5568633 |
 | 32 | Gluon (Async) | 33.3–38.7 | 2 | 5558211 |
 | 32 | Gemini, capped | > 490 (capped) | 2 | 5560451 |
 | 32 | HavoqGT | 155–197 | 2 | 5560459 |
 | 64 | ACIC production | 0.397–0.494 | 4 | 5541664 |
 | 64 | ACIC TLS (acic_scale64b) | 0.327–0.408 | 4 | 5558203 |
 | 64 | ACIC TLS (acic_tls) | 0.327–0.409 | 4 | 5541664 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 0.285–0.396 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.330–0.420 | 4 | 5568635 |
 | 64 | Gluon (Async) | 27.1–36.2 | 4 | 5541664, 5558213 |
 | 64 | RIKEN | 101–159 | 4 | 5541664 |
 | 64 | Gemini, capped | > 490 (capped) | 2 | 5560453 |
@@ -274,14 +340,24 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 |---:|---|---:|---:|---:|---:|---:|---:|
 | 1 | ACIC TLS, chunk queue, slice 64 (acic_c256) | 0.63–0.68× | 0.38–0.45× | — | — | — | — |
 | 1 | ACIC TLS, heap queue (acic_heap69) | 0.27–0.30× | 0.16–0.20× | — | — | — | — |
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.61–0.66× | 0.37–0.44× | — | — | — | — |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.27–0.30× | 0.16–0.20× | — | — | — | — |
 | 4 | ACIC TLS (acic_scale64b) | 0.87–0.91× | 0.52–0.60× | 87.2–112× | — | ≥ 282× | ≥ 283× |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 1.81–1.91× | 1.08–1.26× | 181–233× | — | ≥ 587× | ≥ 589× |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.88–0.93× | 0.52–0.61× | 88.0–113× | — | ≥ 284× | ≥ 285× |
 | 16 | ACIC production | 1.74–2.11× | 1.04–1.28× | 61.3–78.1× | 466–625× | ≥ 562× | 373–436× |
 | 16 | ACIC TLS (acic_scale64b) | 2.18–2.62× | 1.30–1.60× | 75.6–98.3× | 587–777× | ≥ 705× | 464–547× |
 | 16 | ACIC TLS (acic_tls) | 2.19–2.64× | 1.31–1.60× | 75.7–97.1× | 580–772× | ≥ 709× | 461–550× |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 3.59–4.56× | 2.14–2.77× | 126–165× | 987–1293× | ≥ 1162× | 772–902× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 2.18–2.63× | 1.30–1.60× | 75.8–97.6× | 583–779× | ≥ 705× | 465–547× |
 | 32 | ACIC TLS (acic_scale64b) | 3.14–3.81× | 1.88–2.36× | 76.1–80.4× | — | ≥ 1019× | 355–408× |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 4.33–5.75× | 2.59–3.49× | 111–113× | — | ≥ 1404× | 525–562× |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 3.13–3.79× | 1.87–2.34× | 76.6–80.1× | — | ≥ 1014× | 358–406× |
 | 64 | ACIC production | 3.06–3.95× | 1.83–2.40× | 59.3–86.3× | 241–322× | ≥ 993× | 208–226× |
 | 64 | ACIC TLS (acic_scale64b) | 3.71–4.79× | 2.22–2.91× | 72.4–105× | 293–390× | ≥ 1201× | 250–273× |
 | 64 | ACIC TLS (acic_tls) | 3.70–4.80× | 2.21–2.92× | 71.6–105× | 292–389× | ≥ 1200× | 255–273× |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 3.82–5.50× | 2.28–3.34× | 74.6–117× | 327–430× | ≥ 1237× | 282–284× |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 3.61–4.75× | 2.15–2.90× | 70.4–105× | 292–381× | ≥ 1168× | 252–266× |
 
 At 16 nodes RIKEN covers two of the four sources and Gluon three (two from
 5541663, one more from the series job 5558209): job 5541663 died on a Lustre
@@ -310,23 +386,43 @@ GAPBS and Wasp (0.87–0.91×, 0.52–0.60×) are the first below 16 nodes.
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 8.91–10.0 | 4 | 5568974 |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 20.1–22.5 | 4 | 5568974 |
 | 1 | GAPBS | 6.24–6.92 | 4 | 5541661 |
 | 1 | Wasp | 3.25–3.37 | 4 | 5541662 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 2.97–3.25 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 6.49–7.10 | 4 | 5568629 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 1.01–1.21 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 2.07–2.43 | 4 | 5568631 |
 | 32 | ACIC production | 1.64–1.98 | 4 | 5541665 |
 | 32 | ACIC TLS (acic_tls) | 1.32–1.57 | 4 | 5541665 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 0.686–0.848 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 1.32–1.57 | 4 | 5568633 |
 | 32 | Gluon (Async) | 141–176 | 4 | 5541665 |
 | 64 | ACIC production | 1.09–1.40 | 4 | 5541667 |
 | 64 | ACIC TLS (acic_tls) | 0.887–1.12 | 4 | 5541667 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 0.545–0.753 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.892–1.13 | 4 | 5568635 |
 | 64 | Gluon (Async) | 87.6–171 | 4 | 5541667 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.67–0.75× | 0.33–0.37× | — | — |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.30–0.33× | 0.15–0.16× | — | — |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 2.00–2.26× | 1.00–1.11× | — | — |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.89–1.03× | 0.46–0.51× | — | — |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 5.72–6.19× | 2.69–3.35× | — | — |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 2.81–3.01× | 1.34–1.63× | — | — |
 | 32 | ACIC production | 3.50–3.80× | 1.65–2.05× | 76.8–107× | — |
 | 32 | ACIC TLS (acic_tls) | 4.40–4.73× | 2.07–2.56× | 95.1–134× | — |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 8.17–9.09× | 3.84–4.92× | 180–257× | — |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 4.40–4.71× | 2.07–2.55× | 95.7–133× | — |
 | 64 | ACIC production | 4.95–5.73× | 2.32–3.10× | 68.2–157× | — |
 | 64 | ACIC TLS (acic_tls) | 6.16–7.04× | 2.90–3.80× | 85.1–192× | — |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 9.19–11.4× | 4.32–6.19× | 131–313× | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 6.13–7.00× | 2.88–3.78× | 84.1–191× | — |
 
 Two repetitions per source. RIKEN has no held-out time: at 32 nodes two
 launches ran past the 1,590 s limit, and at 64 nodes it took 1,024–1,469 s per
@@ -338,12 +434,20 @@ sources, so not a paired speedup). From 32 to 64 nodes ACIC gains 1.4–1.5×.
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 4 | ACIC TLS (acic_scale64b) | 27.0–30.0 | 4 | 5558200 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 11.8–13.5 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 26.6–29.9 | 4 | 5568629 |
 | 4 | Gluon (Async), capped | > 2791 (capped) | 1 | 5558208 |
 | 16 | ACIC TLS (acic_scale64b) | 9.08–10.3 | 4 | 5558201 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 4.19–4.83 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 9.03–10.4 | 4 | 5568631 |
 | 16 | Gluon (Async), capped | > 1590 (capped) | 1 | 5558209 |
 | 32 | ACIC TLS (acic_scale64b) | 5.65–6.30 | 4 | 5558202 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 2.68–2.98 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 5.67–6.22 | 4 | 5568633 |
 | 32 | Gluon (Async), capped | > 990 (capped) | 2 | 5558211 |
 | 64 | ACIC TLS (acic_scale64b) | 3.61–4.14 | 4 | 5558203 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 1.85–2.12 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 3.66–4.13 | 4 | 5568635 |
 | 64 | Gluon (Async) | 819; > 691 (capped) | 2 | 5558213 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
@@ -351,9 +455,17 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
 | 4 | ACIC TLS (acic_scale64b) | — | — | ≥ 93.5× | — |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | — | — | ≥ 209× | — |
+| 4 | ACIC freeze, heap (acic_frz_heap) | — | — | ≥ 94.3× | — |
 | 16 | ACIC TLS (acic_scale64b) | — | — | ≥ 154× | — |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | — | — | ≥ 330× | — |
+| 16 | ACIC freeze, heap (acic_frz_heap) | — | — | ≥ 153× | — |
 | 32 | ACIC TLS (acic_scale64b) | — | — | ≥ 159× | — |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | — | — | ≥ 338× | — |
+| 32 | ACIC freeze, heap (acic_frz_heap) | — | — | ≥ 160× | — |
 | 64 | ACIC TLS (acic_scale64b) | — | — | 202×; ≥ 167× | — |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | — | — | 387×; ≥ 332× | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | — | — | 202×; ≥ 167× | — |
 
 `grid_graph` 2-D Morton grid, 65,536 × 65,536, weights uniform over [1, 1000],
 wide ids (309 GB `.wsg`); references certified by ACIC at 16 nodes (5551362).
@@ -378,22 +490,32 @@ graph and 4× its diameter.
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 3.71–4.81 | 4 | 5568653 |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 4.41–4.73 | 4 | 5568653 |
 | 1 | GAPBS | 1.31–1.37 | 4 | 5558223 |
 | 1 | Wasp | 0.860–0.982 | 4 | 5558224 |
 | 4 | ACIC TLS (acic_scale64b) | 1.95–2.01 | 4 | 5558200 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 1.58–1.93 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 1.98–2.01 | 4 | 5568629 |
 | 4 | Gluon (Async) | 146–180 | 2 | 5558207 |
 | 4 | Gemini | 632; > 492 (capped) | 2 | 5560447 |
 | 4 | HavoqGT | 500–655 | 2 | 5560455 |
 | 16 | ACIC TLS (acic_scale64b) | 0.792–0.864 | 4 | 5558201 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 0.656–0.796 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.787–0.866 | 4 | 5568631 |
 | 16 | Gluon (Async) | 42.6–49.3 | 2 | 5558209 |
 | 16 | RIKEN | 166–289 | 2 | 5565469 |
 | 16 | Gemini, capped | > 490 (capped) | 2 | 5560449 |
 | 16 | HavoqGT | 131–169 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 0.636–0.701 | 4 | 5558202 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 0.545–0.667 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.638–0.706 | 4 | 5568633 |
 | 32 | Gluon (Async) | 29.1–35.4 | 2 | 5558211 |
 | 32 | Gemini, capped | > 490 (capped) | 2 | 5560451 |
 | 32 | HavoqGT | 70.9–88.9 | 2 | 5560459 |
 | 64 | ACIC TLS (acic_scale64b) | 0.619–0.668 | 4 | 5558203 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 0.603–0.702 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.610–0.662 | 4 | 5568635 |
 | 64 | Gluon (Async) | 22.8–27.4 | 2 | 5558213 |
 | 64 | RIKEN | 50.6–80.7 | 2 | 5565470 |
 | 64 | Gemini, capped | > 490 (capped) | 2 | 5560453 |
@@ -403,30 +525,50 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
 |---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.27–0.36× | 0.18–0.26× | — | — | — | — |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.28–0.30× | 0.18–0.22× | — | — | — | — |
 | 4 | ACIC TLS (acic_scale64b) | 0.65–0.69× | 0.43–0.50× | 72.4–89.7× | — | 314×; ≥ 245× | 248–326× |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 0.68–0.86× | 0.45–0.62× | 89.0–93.5× | — | 386×; ≥ 255× | 305–339× |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.65–0.68× | 0.43–0.50× | 72.6–89.9× | — | 315×; ≥ 245× | 249–326× |
 | 16 | ACIC TLS (acic_scale64b) | 1.51–1.73× | 0.99–1.19× | 51.9–57.1× | 202–334× | ≥ 567× | 159–195× |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 1.64–2.08× | 1.08–1.44× | 61.4–62.0× | 239–363× | ≥ 616× | 188–212× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 1.51–1.74× | 0.99–1.20× | 52.1–56.9× | 203–333× | ≥ 566× | 160–195× |
 | 32 | ACIC TLS (acic_scale64b) | 1.86–2.15× | 1.23–1.53× | 45.1–50.5× | — | ≥ 701× | 110–127× |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 1.96–2.51× | 1.29–1.75× | 51.4–53.1× | — | ≥ 737× | 125–133× |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 1.85–2.14× | 1.22–1.51× | 44.8–50.1× | — | ≥ 695× | 109–126× |
 | 64 | ACIC TLS (acic_scale64b) | 1.96–2.21× | 1.29–1.57× | 36.7–41.0× | 81.2–121× | ≥ 734× | 68.6–88.8× |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 1.86–2.27× | 1.22–1.58× | 36.6–39.0× | 81.1–115× | ≥ 699× | 68.5–84.5× |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 1.97–2.24× | 1.30–1.59× | 37.2–41.4× | 82.3–122× | ≥ 740× | 69.6–89.5× |
 
 #### `mesh28-w64k-z` (268.4M vertices, 1,073.7M edges)
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 6.41–8.28 | 4 | 5568653 |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 5.20–5.56 | 4 | 5568653 |
 | 1 | GAPBS | 1.52–1.58 | 4 | 5558223 |
 | 1 | Wasp | 0.894–0.992 | 4 | 5558224 |
 | 4 | ACIC TLS (acic_scale64b) | 1.67–1.79 | 4 | 5558200 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 2.73–3.75 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 1.65–1.77 | 4 | 5568629 |
 | 4 | Gluon (Async) | 166–203 | 2 | 5558207 |
 | 4 | Gemini, capped | > 490 (capped) | 2 | 5560447 |
 | 4 | HavoqGT, capped | > 491 (capped) | 2 | 5560455 |
 | 16 | ACIC TLS (acic_scale64b) | 0.602–0.704 | 4 | 5558201 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 1.24–1.80 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.601–0.693 | 4 | 5568631 |
 | 16 | Gluon (Async) | 49.3–54.5 | 2 | 5558209 |
 | 16 | Gemini, capped | > 490 (capped) | 2 | 5560449 |
 | 16 | HavoqGT | 292–383 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 0.405–0.471 | 4 | 5558202 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 0.918–1.18 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.410–0.462 | 4 | 5568633 |
 | 32 | Gluon (Async) | 36.1–39.2 | 2 | 5558211 |
 | 32 | Gemini, capped | > 490 (capped) | 2 | 5560451 |
 | 32 | HavoqGT | 153–201 | 2 | 5560459 |
 | 64 | ACIC TLS (acic_scale64b) | 0.321–0.403 | 4 | 5558203 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 0.716–1.05 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.324–0.400 | 4 | 5568635 |
 | 64 | Gluon (Async) | 27.4–30.3 | 2 | 5558213 |
 | 64 | Gemini, capped | > 490 (capped) | 2 | 5560453 |
 | 64 | HavoqGT | 88.4–114 | 2 | 5560461 |
@@ -435,10 +577,20 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
 |---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.18–0.25× | 0.11–0.15× | — | — | — | — |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.27–0.29× | 0.16–0.19× | — | — | — | — |
 | 4 | ACIC TLS (acic_scale64b) | 0.87–0.92× | 0.51–0.59× | 99.0–116× | — | ≥ 281× | ≥ 282× |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 0.40–0.58× | 0.24–0.35× | 54.1–59.8× | — | ≥ 131× | ≥ 131× |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.88–0.93× | 0.52–0.60× | 99.3–118× | — | ≥ 285× | ≥ 286× |
 | 16 | ACIC TLS (acic_scale64b) | 2.15–2.62× | 1.27–1.62× | 77.5–79.3× | — | ≥ 697× | 469–545× |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 0.84–1.27× | 0.50–0.76× | 30.3–38.0× | — | ≥ 272× | 213–225× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 2.19–2.62× | 1.29–1.61× | 78.7–79.2× | — | ≥ 708× | 468–553× |
 | 32 | ACIC TLS (acic_scale64b) | 3.22–3.89× | 1.90–2.38× | 83.2–85.0× | — | ≥ 1043× | 360–427× |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 1.28–1.72× | 0.76–1.04× | 33.1–37.6× | — | ≥ 415× | 159–170× |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 3.28–3.85× | 1.93–2.38× | 84.8× | — | ≥ 1062× | 359–435× |
 | 64 | ACIC TLS (acic_scale64b) | 3.76–4.91× | 2.22–2.94× | 75.0–79.7× | — | ≥ 1216× | 257–282× |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 1.45–2.20× | 0.85–1.32× | 28.9–36.5× | — | ≥ 468× | 109–118× |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 3.79–4.86× | 2.23–2.94× | 75.6–79.9× | — | ≥ 1225× | 257–285× |
 
 Wide weights cost ACIC nothing: `mesh28-w64k-z`'s time is 0.97–1.03×
 `mesh28-z`'s at every node count, as for GAPBS, Wasp and Gluon. Narrow weights
@@ -464,22 +616,32 @@ Their diameter is far below a 2-D grid's of the same size (maximum distance
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 15.0–15.6 | 4 | 5568653 |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 27.8–29.2 | 4 | 5568653 |
 | 1 | GAPBS | 8.85–10.3 | 4 | 5558223 |
 | 1 | Wasp | 5.53–5.59 | 4 | 5558224 |
 | 4 | ACIC TLS (acic_scale64b) | 6.90–7.28 | 4 | 5558200 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 3.79–3.99 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 6.76–7.21 | 4 | 5568629 |
 | 4 | Gluon (Async) | 56.0–64.5 | 2 | 5558207 |
 | 4 | Gemini | 409–469 | 2 | 5560447 |
 | 4 | HavoqGT | 486–505 | 2 | 5560455 |
 | 16 | ACIC TLS (acic_scale64b) | 2.15–2.22 | 4 | 5558201 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 1.11–1.18 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 2.14–2.21 | 4 | 5568631 |
 | 16 | Gluon (Async) | 19.6–31.0 | 2 | 5558209 |
 | 16 | RIKEN | 69.9–122 | 2 | 5565469 |
 | 16 | Gemini | 236–294 | 2 | 5560449 |
 | 16 | HavoqGT | 283–290 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 1.21–1.28 | 4 | 5558202 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 0.648–0.694 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 1.21–1.28 | 4 | 5568633 |
 | 32 | Gluon (Async) | 13.2–19.7 | 2 | 5558211 |
 | 32 | Gemini | 235–321 | 2 | 5560451 |
 | 32 | HavoqGT | 151–157 | 2 | 5560459 |
 | 64 | ACIC TLS (acic_scale64b) | 0.707–0.767 | 4 | 5558203 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 0.407–0.440 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.710–0.768 | 4 | 5568635 |
 | 64 | Gluon (Async) | 10.8–13.3 | 2 | 5558213 |
 | 64 | RIKEN | 19.9–30.7 | 2 | 5565470 |
 | 64 | Gemini | 565–622 | 2 | 5560453 |
@@ -489,20 +651,33 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
 |---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.57–0.67× | 0.36–0.37× | — | — | — | — |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.31–0.37× | 0.19–0.20× | — | — | — | — |
 | 4 | ACIC TLS (acic_scale64b) | 1.24–1.42× | 0.76–0.81× | 7.69–9.34× | — | 59.2–64.5× | 69.3–70.4× |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 2.27–2.59× | 1.39–1.47× | 14.0–16.9× | — | 107–118× | 127–128× |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 1.25–1.43× | 0.77–0.83× | 7.76–9.54× | — | 60.5–65.1× | 70.0–71.8× |
 | 16 | ACIC TLS (acic_scale64b) | 4.03–4.67× | 2.50–2.59× | 8.86–14.2× | 31.6–55.5× | 107–133× | 129–131× |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 7.60–9.07× | 4.74–5.03× | 17.2–26.8× | 61.4–105× | 204–259× | 245–255× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 4.05–4.69× | 2.51–2.60× | 8.91–14.2× | 31.8–55.8× | 108–134× | 130–132× |
 | 32 | ACIC TLS (acic_scale64b) | 7.03–8.39× | 4.38–4.62× | 10.7–16.3× | — | 195–261× | 125–128× |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 12.9–15.8× | 8.06–8.61× | 20.2–30.4× | — | 363–491× | 233–241× |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 6.99–8.33× | 4.36–4.62× | 10.7–16.3× | — | 195–259× | 125–127× |
 | 64 | ACIC TLS (acic_scale64b) | 11.7–14.5× | 7.29–7.87× | 15.1–18.7× | 28.0–43.3× | 796–874× | 96.4–101× |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 20.4–24.4× | 12.7–13.7× | 25.5–32.5× | 47.2–75.3× | 1384–1473× | 168–171× |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 11.7–14.5× | 7.28–7.83× | 15.1–18.6× | 27.9–43.0× | 791–872× | 95.7–101× |
 
 #### `grid3-33-z` (8,589.9M vertices, 51,514.4M edges)
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 16 | ACIC TLS (acic_scale64b) | 16.0–17.4 | 4 | 5558201 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 15.8–17.3 | 4 | 5568631 |
 | 16 | Gluon (Async) | 172 | 1 | 5558210 |
 | 32 | ACIC TLS (acic_scale64b) | 8.49–9.16 | 4 | 5558202 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 8.47–9.17 | 4 | 5568633 |
 | 32 | Gluon (Async) | 221–223 | 2 | 5558212 |
 | 64 | ACIC TLS (acic_scale64b) | 4.66–5.16 | 4 | 5558203 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 4.67–5.15 | 4 | 5568635 |
 | 64 | Gluon (Async) | 99.8–103 | 2 | 5558214 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
@@ -510,8 +685,11 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
 | 16 | ACIC TLS (acic_scale64b) | — | — | 9.93× | — |
+| 16 | ACIC freeze, heap (acic_frz_heap) | — | — | 9.97× | — |
 | 32 | ACIC TLS (acic_scale64b) | — | — | 24.4–25.8× | — |
+| 32 | ACIC freeze, heap (acic_frz_heap) | — | — | 24.3–25.8× | — |
 | 64 | ACIC TLS (acic_scale64b) | — | — | 19.3–22.1× | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | — | — | 19.4–22.1× | — |
 
 The low diameter narrows ACIC's lead over Gluon to 7.7–26×, the smallest on any
 non-scale-free input, while ACIC strong-scales best here: `grid3-30-z` 4 → 64
@@ -533,45 +711,59 @@ pair O1 (§33).
 |---:|---|---:|---:|---|
 | 16 | ACIC TLS (acic_scale64b) | 2.35–4.51 | 4 | 5561485 |
 | 16 | Gluon (Async) | 130–173 | 4 | 5561486 |
+| 16 | Gemini | 42.5–64.7 | 2 | 5568648 |
+| 16 | HavoqGT | 38.7–61.4 | 2 | 5568649 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 16 | ACIC TLS (acic_scale64b) | — | — | 38.3–61.1× | — |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 16 | ACIC TLS (acic_scale64b) | — | — | 38.3–61.1× | — | 14.1–14.3× | 12.8–13.6× |
 
 #### `road-usa-z` (23.9M vertices, 57.7M edges)
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.438–0.471 | 4 | 5568963 |
 | 1 | GAPBS | 0.116–0.142 | 4 | 5529591 |
 | 1 | Wasp | 0.067–0.077 | 4 | 5536541 |
 | 4 | ACIC production | 0.214–0.284 | 4 | 5541369 |
 | 4 | ACIC TLS (acic_tls) | 0.177–0.233 | 4 | 5541369 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.174–0.231 | 4 | 5568630 |
 | 4 | Gluon (Async) | 6.27–23.0 | 4 | 5541369 |
 | 8 | ACIC production | 0.162–0.226 | 4 | 5538405, 5538406 |
 | 16 | ACIC production | 0.141–0.196 | 4 | 5538405, 5538406, 5541195, 5541196, 5541370 |
 | 16 | ACIC TLS (acic_hint2_tls) | 0.118–0.165 | 4 | 5541195, 5541196 |
 | 16 | ACIC TLS (acic_scale64b) | 0.118–0.163 | 4 | 5561485 |
 | 16 | ACIC TLS (acic_tls) | 0.118–0.165 | 4 | 5541370 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.118–0.165 | 4 | 5568632 |
 | 16 | Gluon (Async) | 3.92–8.74 | 4 | 5541195, 5541196, 5541370, 5561486 |
+| 16 | Gemini | 29.5–42.4 | 2 | 5568648 |
+| 16 | HavoqGT | 35.7–55.8 | 2 | 5568649 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.110–0.153 | 4 | 5568634 |
 | 64 | ACIC production | 0.113–0.162 | 4 | 5541660 |
 | 64 | ACIC TLS (acic_tls) | 0.100–0.147 | 4 | 5541660 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.100–0.145 | 4 | 5568636 |
 | 64 | Gluon (Async) | 2.59–5.29 | 4 | 5541371 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 4 | ACIC production | 0.50–0.55× | 0.27–0.33× | 27.9–103× | — |
-| 4 | ACIC TLS (acic_tls) | 0.61–0.67× | 0.33–0.40× | 34.0–123× | — |
-| 8 | ACIC production | 0.63–0.73× | 0.34–0.43× | — | — |
-| 16 | ACIC production | 0.72–0.84× | 0.39–0.50× | 26.2–60.0× | — |
-| 16 | ACIC TLS (acic_hint2_tls) | 0.86–1.00× | 0.47–0.59× | 31.2–73.0× | — |
-| 16 | ACIC TLS (acic_scale64b) | 0.87–1.00× | 0.47–0.60× | 31.5–71.3× | — |
-| 16 | ACIC TLS (acic_tls) | 0.86–1.00× | 0.47–0.60× | 31.7–72.1× | — |
-| 64 | ACIC production | 0.88–1.05× | 0.48–0.62× | 21.5–46.5× | — |
-| 64 | ACIC TLS (acic_tls) | 0.97–1.18× | 0.53–0.70× | 24.1–52.4× | — |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.26–0.30× | 0.15–0.16× | — | — | — | — |
+| 4 | ACIC production | 0.50–0.55× | 0.27–0.33× | 27.9–103× | — | — | — |
+| 4 | ACIC TLS (acic_tls) | 0.61–0.67× | 0.33–0.40× | 34.0–123× | — | — | — |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.61–0.68× | 0.33–0.40× | 34.2–125× | — | — | — |
+| 8 | ACIC production | 0.63–0.73× | 0.34–0.43× | — | — | — | — |
+| 16 | ACIC production | 0.72–0.84× | 0.39–0.50× | 26.2–60.0× | — | 201–216× | 244–285× |
+| 16 | ACIC TLS (acic_hint2_tls) | 0.86–1.00× | 0.47–0.59× | 31.2–73.0× | — | 245–256× | 297–338× |
+| 16 | ACIC TLS (acic_scale64b) | 0.87–1.00× | 0.47–0.60× | 31.5–71.3× | — | 241–259× | 292–342× |
+| 16 | ACIC TLS (acic_tls) | 0.86–1.00× | 0.47–0.60× | 31.7–72.1× | — | 245–257× | 297–338× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.86–1.00× | 0.47–0.60× | 31.5–71.8× | — | 242–257× | 294–338× |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.93–1.07× | 0.51–0.64× | — | — | — | — |
+| 64 | ACIC production | 0.88–1.05× | 0.48–0.62× | 21.5–46.5× | — | — | — |
+| 64 | ACIC TLS (acic_tls) | 0.97–1.18× | 0.53–0.70× | 24.1–52.4× | — | — | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.97–1.18× | 0.53–0.70× | 24.0–52.7× | — | — | — |
 
 RIKEN is out of range (distances past 2^24). Training-source cells not in the
 table: at 8 Frontier nodes production had a 0.66–0.69× speedup over GAPBS
@@ -584,17 +776,22 @@ from 16 to 64 nodes: road is bound by round latency (§11).
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, heap (acic_frz_heap) | 1.20–1.27 | 4 | 5568963 |
 | 1 | GAPBS | 0.672–0.685 | 4 | 5541358 |
 | 1 | Wasp | 0.288–0.318 | 4 | 5541359 |
 | 4 | ACIC production | 0.601–0.713 | 4 | 5541426 |
 | 4 | ACIC TLS (acic_tls) | 0.487–0.585 | 4 | 5541426 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.489–0.582 | 4 | 5568630 |
 | 4 | RIKEN, inexact | 143–629 | 4 | 5541713 |
 | 16 | ACIC production | 0.390–0.486 | 4 | 5541428 |
 | 16 | ACIC TLS (acic_tls) | 0.315–0.405 | 4 | 5541428 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.315–0.408 | 4 | 5568632 |
 | 16 | Gluon (Async) | 11.1–30.7 | 4 | 5541428 |
 | 16 | RIKEN, inexact | 51.2–201 | 4 | 5541715 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.287–0.376 | 4 | 5568634 |
 | 64 | ACIC production | 0.335–0.457 | 4 | 5541660 |
 | 64 | ACIC TLS (acic_tls) | 0.279–0.384 | 4 | 5541660 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.280–0.383 | 4 | 5568636 |
 | 64 | Gluon (Async) | 5.52–12.9 | 4 | 5541429 |
 | 64 | RIKEN, inexact | 22.9–86.9 | 4 | 5541717 |
 
@@ -602,12 +799,17 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.54–0.57× | 0.23–0.27× | — | — |
 | 4 | ACIC production | 0.95–1.14× | 0.41–0.53× | — | 238–889× |
 | 4 | ACIC TLS (acic_tls) | 1.15–1.41× | 0.49–0.65× | — | 294–1076× |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 1.16–1.40× | 0.50–0.65× | — | 293–1088× |
 | 16 | ACIC production | 1.38–1.76× | 0.59–0.82× | 22.8–78.8× | 131–414× |
 | 16 | ACIC TLS (acic_tls) | 1.66–2.17× | 0.71–1.01× | 27.4–97.5× | 163–496× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 1.65–2.17× | 0.71–1.01× | 27.2–97.4× | 162–493× |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 1.80–2.39× | 0.77–1.11× | — | — |
 | 64 | ACIC production | 1.49–2.05× | 0.63–0.95× | 12.5–38.4× | 68.3–197× |
 | 64 | ACIC TLS (acic_tls) | 1.77–2.45× | 0.75–1.14× | 15.1–46.1× | 82.0–239× |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 1.78–2.45× | 0.76–1.14× | 14.8–46.0× | 81.8–234× |
 
 RIKEN on `road-na-z` reaches every vertex but its distance sum is high by 3.0e-05–3.7e-05 (relative).
 
@@ -621,17 +823,22 @@ solves, so each source has one or two.
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, heap (acic_frz_heap) | 1.61–1.75 | 4 | 5568963 |
 | 1 | GAPBS | 0.632–0.693 | 4 | 5541358 |
 | 1 | Wasp | 0.357–0.377 | 4 | 5541359 |
 | 4 | ACIC production | 0.711–0.853 | 4 | 5541426 |
 | 4 | ACIC TLS (acic_tls) | 0.590–0.708 | 4 | 5541426 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.587–0.701 | 4 | 5568630 |
 | 4 | RIKEN, inexact | 255–1542 | 2 | 5541714 |
 | 16 | ACIC production | 0.373–0.509 | 4 | 5541428 |
 | 16 | ACIC TLS (acic_tls) | 0.305–0.413 | 4 | 5541428 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.302–0.412 | 4 | 5568632 |
 | 16 | Gluon (Async) | 7.40–41.1 | 4 | 5541428 |
 | 16 | RIKEN, inexact | 87.2–491 | 4 | 5541716 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.271–0.376 | 4 | 5568634 |
 | 64 | ACIC production | 0.317–0.442 | 4 | 5541660 |
 | 64 | ACIC TLS (acic_tls) | 0.265–0.364 | 4 | 5541660 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.262–0.364 | 4 | 5568636 |
 | 64 | Gluon (Async) | 3.64–16.1 | 4 | 5541429 |
 | 64 | RIKEN, inexact | 33.3–196 | 4 | 5541717 |
 
@@ -639,12 +846,17 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.38–0.40× | 0.20–0.23× | — | — |
 | 4 | ACIC production | 0.81–0.89× | 0.42–0.53× | — | 358–1808× |
 | 4 | ACIC TLS (acic_tls) | 0.98–1.07× | 0.50–0.64× | — | 432–2179× |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.99–1.08× | 0.51–0.64× | — | 434–2201× |
 | 16 | ACIC production | 1.36–1.69× | 0.70–1.01× | 14.5–110× | 234–965× |
 | 16 | ACIC TLS (acic_tls) | 1.68–2.07× | 0.86–1.24× | 17.9–135× | 286–1187× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 1.68–2.09× | 0.87–1.25× | 18.0–136× | 289–1193× |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 1.84–2.33× | 0.95–1.39× | — | — |
 | 64 | ACIC production | 1.57–1.99× | 0.81–1.19× | 8.24–50.8× | 105–442× |
 | 64 | ACIC TLS (acic_tls) | 1.90–2.39× | 0.98–1.43× | 10.0–60.9× | 126–537× |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 1.91–2.41× | 0.98–1.44× | 10.0–61.5× | 127–537× |
 
 RIKEN on `road-eu-z` reaches every vertex but its distance sum is high by 4.9e-05–6.4e-05 (relative).
 
@@ -655,28 +867,38 @@ each (up to 1,542 s per solve).
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, heap (acic_frz_heap) | 4.27–4.50 | 4 | 5568963 |
 | 1 | GAPBS | 1.65–1.91 | 4 | 5565476 |
 | 1 | Wasp | 0.867–0.919 | 4 | 5565797 |
 | 4 | ACIC production | 2.15–2.37 | 4 | 5546135 |
 | 4 | ACIC TLS (acic_tls) | 1.78–1.97 | 4 | 5546135 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 1.78–1.93 | 4 | 5568630 |
 | 4 | Gluon (Async) | 253–474 | 4 | 5546135 |
 | 16 | ACIC production | 1.05–1.26 | 4 | 5546136 |
 | 16 | ACIC TLS (acic_tls) | 0.867–1.06 | 4 | 5546136 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.878–1.08 | 4 | 5568632 |
 | 16 | Gluon (Async) | 91.2–165 | 4 | 5546136 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 0.700–0.901 | 4 | 5568634 |
 | 64 | ACIC production | 0.744–0.977 | 4 | 5546137 |
 | 64 | ACIC TLS (acic_tls) | 0.626–0.829 | 4 | 5546137 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.626–0.824 | 4 | 5568636 |
 | 64 | Gluon (Async) | 31.3–60.9 | 4 | 5546137 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.38–0.43× | 0.20–0.21× | — | — |
 | 4 | ACIC production | 0.77–0.81× | 0.39–0.41× | 114–202× | — |
 | 4 | ACIC TLS (acic_tls) | 0.93–0.97× | 0.47–0.50× | 141–244× | — |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.93–0.99× | 0.48–0.50× | 141–246× | — |
 | 16 | ACIC production | 1.48–1.58× | 0.73–0.85× | 78.8–142× | — |
 | 16 | ACIC TLS (acic_tls) | 1.78–1.90× | 0.87–1.02× | 94.8–172× | — |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 1.78–1.88× | 0.85–1.01× | 96.0–170× | — |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 2.12–2.36× | 1.02–1.27× | — | — |
 | 64 | ACIC production | 1.96–2.22× | 0.94–1.19× | 35.9–71.2× | — |
 | 64 | ACIC TLS (acic_tls) | 2.31–2.63× | 1.11–1.42× | 43.5–84.6× | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 2.32–2.64× | 1.12–1.42× | 43.9–84.7× | — |
 
 OSM planet 2025-12-29, RoutingKit car graph, largest component
 (Afro-Eurasia); maximum distance 13.0M–18.0M, so RIKEN is excluded (past
@@ -726,21 +948,31 @@ vertices per node at 4, 16 and 64 nodes.
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 26.5–28.9 | 4 | 5568974 |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 52.3–54.4 | 4 | 5568974 |
 | 1 | GAPBS | 13.0–15.7 | 4 | 5558225 |
 | 1 | Wasp | 14.9–17.1 | 4 | 5558226 |
 | 4 | ACIC TLS (acic_scale64b) | 17.3–18.1 | 4 | 5558200 |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 8.49–8.93 | 4 | 5568629 |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 17.1–18.0 | 4 | 5568629 |
 | 4 | Gluon (Async) | 2223 | 1 | 5558208 |
 | 4 | Gemini | 894–1060 | 2 | 5560448 |
 | 4 | HavoqGT | 314–413 | 2 | 5560456 |
 | 16 | ACIC TLS (acic_scale64b) | 5.85–6.18 | 4 | 5558201 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 2.96–3.18 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 5.86–6.17 | 4 | 5568631 |
 | 16 | Gluon (Async) | 900–1380 | 2 | 5558209 |
 | 16 | Gemini | 969–1221 | 2 | 5560450 |
 | 16 | HavoqGT | 104–132 | 2 | 5560458 |
 | 32 | ACIC TLS (acic_scale64b) | 3.49–3.90 | 4 | 5558202 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 1.79–2.04 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 3.47–3.91 | 4 | 5568633 |
 | 32 | Gluon (Async) | 663–843 | 2 | 5558211 |
 | 32 | Gemini | 1337–1765 | 2 | 5560452 |
 | 32 | HavoqGT | 64.5–81.9 | 2 | 5560460 |
 | 64 | ACIC TLS (acic_scale64b) | 2.25–2.62 | 4 | 5558203 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 1.22–1.44 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 2.25–2.62 | 4 | 5568635 |
 | 64 | Gluon (Async) | 499–509 | 2 | 5558213 |
 | 64 | RIKEN | 609–611 | 2 | 5565470 |
 | 64 | Gemini, capped | > 1592 (capped) | 2 | 5560454 |
@@ -750,20 +982,36 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
 |---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | ACIC freeze, chunks (acic_frz_c256) | 0.45–0.56× | 0.53–0.61× | — | — | — | — |
+| 1 | ACIC freeze, heap (acic_frz_heap) | 0.24–0.30× | 0.28–0.32× | — | — | — | — |
 | 4 | ACIC TLS (acic_scale64b) | 0.72–0.87× | 0.84–0.95× | 129× | — | 49.7–61.3× | 17.4–23.9× |
+| 4 | ACIC freeze, chunks (acic_frz_c256) | 1.47–1.77× | 1.72–1.92× | 262× | — | 100–125× | 35.2–48.6× |
+| 4 | ACIC freeze, heap (acic_frz_heap) | 0.72–0.88× | 0.85–0.95× | 130× | — | 49.9–61.8× | 17.5–24.1× |
 | 16 | ACIC TLS (acic_scale64b) | 2.22–2.59× | 2.43–2.81× | 148–226× | — | 160–200× | 17.1–21.6× |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 4.38–5.12× | 4.78–5.56× | 292–444× | — | 315–393× | 33.8–42.4× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 2.22–2.61× | 2.42–2.84× | 149–225× | — | 161–199× | 17.2–21.5× |
 | 32 | ACIC TLS (acic_scale64b) | 3.72–4.25× | 3.89–4.62× | 174–228× | — | 361–462× | 17.4–21.5× |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 7.23–8.24× | 7.42–8.95× | 331–441× | — | 700–882× | 33.8–41.0× |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 3.74–4.27× | 3.89–4.64× | 173–229× | — | 363–462× | 17.5–21.4× |
 | 64 | ACIC TLS (acic_scale64b) | 5.62–6.45× | 5.71–7.01× | 196–204× | 235–250× | ≥ 612× | 17.1–20.8× |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 10.2–12.0× | 10.4–13.0× | 355–380× | 426–464× | ≥ 1112× | 31.8–37.7× |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 5.62–6.44× | 5.72–6.99× | 196–204× | 235–249× | ≥ 613× | 17.1–20.8× |
 
 #### `terrain30-m-z` (8,654.3M vertices, 69,233.2M edges)
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 16 | ACIC TLS (acic_scale64b) | 25.6–29.1 | 4 | 5558201 |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | 13.4–15.8 | 4 | 5568631 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 25.7–29.1 | 4 | 5568631 |
 | 16 | Gluon (Async), capped | > 2790 (capped) | 1 | 5558210 |
 | 32 | ACIC TLS (acic_scale64b) | 15.4–17.9 | 4 | 5558202 |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | 8.29–9.98 | 4 | 5568633 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 15.3–17.9 | 4 | 5568633 |
 | 32 | Gluon (Async), capped | > 2790 (capped) | 1 | 5558212 |
 | 64 | ACIC TLS (acic_scale64b) | 9.69–11.8 | 4 | 5558203 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 5.55–6.84 | 4 | 5568635 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 9.76–11.8 | 4 | 5568635 |
 | 64 | Gluon (Async), capped | > 1292 (capped) | 2 | 5558214 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
@@ -771,15 +1019,24 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
 | 16 | ACIC TLS (acic_scale64b) | — | — | ≥ 104× | — |
+| 16 | ACIC freeze, chunks (acic_frz_c256) | — | — | ≥ 195× | — |
+| 16 | ACIC freeze, heap (acic_frz_heap) | — | — | ≥ 104× | — |
 | 32 | ACIC TLS (acic_scale64b) | — | — | ≥ 171× | — |
+| 32 | ACIC freeze, chunks (acic_frz_c256) | — | — | ≥ 307× | — |
+| 32 | ACIC freeze, heap (acic_frz_heap) | — | — | ≥ 170× | — |
 | 64 | ACIC TLS (acic_scale64b) | — | — | ≥ 110× | — |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | — | — | ≥ 189× | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | — | — | ≥ 109× | — |
 
 #### `terrain30-l-z` (34,347.8M vertices, 274,770.9M edges)
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 32 | ACIC TLS (acic_scale64b) | 66.6–72.1 | 4 | 5558204 |
+| 32 | ACIC freeze, heap (acic_frz_heap) | 66.5–72.2 | 4 | 5568637 |
 | 64 | ACIC TLS (acic_scale64b) | 43.3–45.7 | 4 | 5558205 |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | 23.8–25.7 | 4 | 5568638 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 43.6–46.0 | 4 | 5568638 |
 | 64 | Gluon (Async), capped | > 5190 (capped) | 1 | 5558382 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
@@ -787,6 +1044,8 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
 | 64 | ACIC TLS (acic_scale64b) | — | — | ≥ 119× | — |
+| 64 | ACIC freeze, chunks (acic_frz_c256) | — | — | ≥ 218× | — |
+| 64 | ACIC freeze, heap (acic_frz_heap) | — | — | ≥ 119× | — |
 
 GAPBS and Wasp fit `terrain30-s-z` on one node (Δ tuned over 512–32,768, two
 repetitions); Wasp is slower than GAPBS here. ACIC trails both at 4 nodes
@@ -818,8 +1077,10 @@ the series.
 |---:|---|---:|---:|---|
 | 16 | ACIC production | 0.065–0.067 | 4 | 5538390, 5538392, 5539286, 5539985 |
 | 16 | ACIC TLS (acic_hint2_tls) | 0.062 | 4 | 5539286, 5539985 |
+| 16 | ACIC freeze, heap (acic_frz_heap) | 0.061–0.065 | 4 | 5568639 |
 | 16 | Gluon (Async, Sync) | 0.940–1.04 | 4 | 5539286, 5539985 |
 | 16 | RIKEN | 0.029–0.032 | 4 | 5536474, 5536475 |
+| 64 | ACIC freeze, heap (acic_frz_heap) | 0.055–0.082 | 4 | 5568641 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
@@ -827,6 +1088,7 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 |---:|---|---:|---:|---:|---:|
 | 16 | ACIC production | — | — | 14.2–16.2× | 0.46–0.47× |
 | 16 | ACIC TLS (acic_hint2_tls) | — | — | 15.0–16.9× | 0.47–0.51× |
+| 16 | ACIC freeze, heap (acic_frz_heap) | — | — | 14.7–16.9× | 0.46–0.51× |
 
 Gluon relaxes each edge 7.5–12.7 times and spends 78–85% of its time in its
 sync phase. RIKEN is about 2× faster than ACIC.
@@ -837,8 +1099,10 @@ sync phase. RIKEN is about 2× faster than ACIC.
 |---:|---|---:|---:|---|
 | 16 | ACIC production, 4 × 14 | 0.224–0.238 | 4 | 5538389, 5538391, 5539286, 5539985 |
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | 0.210–0.232 | 4 | 5539286, 5539985 |
+| 16 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | 0.259–0.284 | 4 | 5568639 |
 | 16 | Gluon (Async, Sync) | 2.14–2.35 | 4 | 5539286, 5539985 |
 | 16 | RIKEN | 0.181–0.189 | 4 | 5536474, 5536475 |
+| 64 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | 0.381–0.457 | 4 | 5568641 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
@@ -846,6 +1110,7 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 |---:|---|---:|---:|---:|---:|
 | 16 | ACIC production, 4 × 14 | — | — | 8.88–10.8× | 0.77–0.84× |
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 9.09–11.2× | 0.81–0.90× |
+| 16 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | — | — | 7.54–9.05× | 0.66–0.73× |
 
 The closest scale-free graph to RIKEN (0.77–0.90×).
 
@@ -855,11 +1120,13 @@ The closest scale-free graph to RIKEN (0.77–0.90×).
 |---:|---|---:|---:|---|
 | 16 | ACIC production, 4 × 14 | 0.203–0.212 | 4 | 5538389, 5538391, 5539286, 5539985 |
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | 0.157–0.168 | 4 | 5539286, 5539985 |
+| 16 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | 0.163–0.196 | 4 | 5568639 |
 | 16 | Gluon (Async, Sync) | 0.782–0.849 | 4 | 5539286, 5539985 |
 | 16 | RIKEN | 0.062–0.068 | 4 | 5536474, 5536475 |
 | 16 | Gemini | 0.365–0.393 | 4 | 5561482 |
 | 16 | HavoqGT | 1.64–1.90 | 4 | 5561483 |
 | 16 | HavoqGT, delegates 4096 | 1.21–1.46 | 4 | 5566503 |
+| 64 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | 0.142–0.158 | 4 | 5568641 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
@@ -867,6 +1134,7 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 |---:|---|---:|---:|---:|---:|---:|---:|---:|
 | 16 | ACIC production, 4 × 14 | — | — | 3.75–4.16× | 0.29–0.33× | 1.75–1.85× | 8.10–8.93× | 5.95–6.87× |
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 4.58–5.27× | 0.38–0.43× | 2.23–2.51× | 10.3–12.1× | 7.56–9.32× |
+| 16 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | — | — | 3.99–5.07× | 0.32–0.38× | 1.86–2.41× | 8.82–11.6× | 6.62–8.96× |
 
 The hub hints (TLS builds) cut `rmat26`'s updates from 1.81B to 0.68B (§11);
 ACIC stays about 2.2–3× slower than RIKEN on RMAT.
@@ -877,11 +1145,13 @@ ACIC stays about 2.2–3× slower than RIKEN on RMAT.
 |---:|---|---:|---:|---|
 | 16 | ACIC production, 4 × 14 | 0.358–0.386 | 4 | 5538389, 5538391, 5539899, 5539985 |
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | 0.271–0.307 | 4 | 5539899 |
+| 16 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | 0.292–0.331 | 4 | 5568639 |
 | 16 | Gluon (Async, Sync) | 0.966–1.19 | 4 | 5539899, 5539985 |
 | 16 | RIKEN | 0.122–0.124 | 4 | 5536474, 5536475 |
 | 16 | Gemini | 0.519–0.702 | 4 | 5561482 |
 | 16 | HavoqGT | 1.66–2.11 | 4 | 5561483 |
 | 16 | HavoqGT, delegates 16384 | 1.91–2.26 | 4 | 5566974 |
+| 64 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | 0.186–0.210 | 4 | 5568641 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
@@ -889,6 +1159,7 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 |---:|---|---:|---:|---:|---:|---:|---:|---:|
 | 16 | ACIC production, 4 × 14 | — | — | 2.48–3.49× | 0.32–0.35× | 1.35–1.96× | 4.29–5.90× | 4.96–6.31× |
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 3.17–4.44× | 0.40–0.46× | 1.69–2.59× | 5.40–7.78× | 6.24–8.33× |
+| 16 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | — | — | 3.06–4.02× | 0.37–0.42× | 1.65–2.38× | 5.25–7.14× | 5.93–7.64× |
 
 The TLS row is allocation A only (5539899). Source 27797227 stalled twice,
 in both builds, answering correctly after 0.2–1.8 s (§13); allocation B reran
@@ -900,8 +1171,10 @@ production alone after the stall.
 |---:|---|---:|---:|---|
 | 16 | ACIC production, 4 × 14 | 0.714–0.810 | 4 | 5538389, 5538391, 5539900, 5539985 |
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | 0.557–0.576 | 4 | 5539900, 5539985 |
+| 16 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | 0.567–0.614 | 4 | 5568639 |
 | 16 | Gluon (Async, Sync) | 1.27–1.46 | 4 | 5539900, 5539985 |
 | 16 | RIKEN | 0.230–0.242 | 4 | 5536474, 5536475 |
+| 64 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | 0.291–0.328 | 4 | 5568641 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
@@ -909,6 +1182,7 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 |---:|---|---:|---:|---:|---:|
 | 16 | ACIC production, 4 × 14 | — | — | 1.47–2.08× | 0.29–0.33× |
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 2.22–2.70× | 0.40–0.43× |
+| 16 | ACIC freeze, heap (acic_frz_heap), 4 × 14 | — | — | 2.22–2.58× | 0.38–0.42× |
 
 Gluon's cost grows more slowly with RMAT scale than ACIC's, so ACIC's
 speedup over Gluon falls from about 4× on `rmat25` to about 2× here.
@@ -927,9 +1201,8 @@ speedup over Gluon falls from about 4× on `rmat25` to about 2× here.
 |---|---|---|
 | `terrain-ae-z` | 8.2B vertices, 65.6B edges, 1.11 TB | Gluon (the `.gr` now exists, 5551364) and ACIC at 32 and 64 nodes, not submitted |
 | scaling series | 4–64 nodes | Gemini and HavoqGT phase A done (§33); phase B (64-node lower bounds on the largest inputs) dropped |
-| `mesh26`, `road-usa` | generator/DIMACS order | RIKEN, HavoqGT and Gemini in native order (only Gluon has both orders, §33) |
-| `terrain30-s-z` | 16 nodes | RIKEN aborts at 128 ranks (32-bit size overflow); more ranks per node not tried |
-| `mesh28-w10-z` | 268.4M vertices | the frozen width loses about 2× at 32–64 nodes (§35); a width change is the user's decision |
+| `terrain30-s-z` | 16 nodes | RIKEN aborts at 128 ranks (32-bit size overflow); 56 ranks per node not yet run (14 and 28 are not valid layouts, §36) |
+| `mesh28-w10-z` | 268.4M vertices | the frozen width loses about 2× at 32–64 nodes (§35); ln V / 8 wins or ties everywhere tested (§36); adopting it is the user's decision |
 
 ## Mechanism chain established September 18–23
 
@@ -3118,12 +3391,134 @@ launch each, all digests exact.
   heap slices a small-scale effect; neither is claimed as a source of speedup
   at scale.
 
+### 36. F8 final matrix, width check, F10b and native-order baselines (2026-09-29)
+
+F8 uses the freeze binaries (601697e) with the settings chosen on 2026-09-29.
+The heap with slice 8 runs everywhere; the chunk queue (band 256, slice 64) is
+a second arm on meshes, terrain and `grid3-30-z`. Tiling stays auto and the
+ln V width is kept. Layout 8 × 7 (scale-free 4 × 14, orkut 8 × 7), four
+held-out sources, one warmup and three repetitions. Jobs: one node 5568653,
+5568963 and 5568974 (debug queue); 4/16/32/64 nodes mesh 5568629, 5568631,
+5568633 and 5568635, and road 5568630, 5568632, 5568634 and 5568636;
+`terrain30-l-z` 5568637 and 5568638; scale-free 5568639 and 5568641. **All 1,560
+counted solves are digest-valid.** The rows are in the dataset tables as
+"ACIC freeze, heap" and "ACIC freeze, chunks".
+
+| Input | Heap 1 node (s) | Heap 64 nodes (s) | Heap scaling | Chunks over heap, 16n | Chunks over heap, 64n | Heap / series, 64n |
+|---|---:|---:|---:|---:|---:|---:|
+| `mesh24-z` | 0.32–0.34 | 0.08–0.11 | 3.0–3.9× (1→64) | 1.02–1.15× | 1.00–1.41× | — |
+| `mesh26-z` | 1.30–1.41 | 0.14–0.18 | 7.9–9.6× (1→64) | 1.24–1.33× | 0.91–1.02× | — |
+| `mesh28-z` | 5.14–5.53 | 0.33–0.42 | 13.2–16.6× (1→64) | 1.65–1.73× | 1.06–1.16× | 0.99–1.03 |
+| `mesh28-w10-z` | 4.41–4.73 | 0.61–0.66 | 7.1–7.7× (1→64) | 1.09–1.20× | 0.94–1.01× | 0.99 |
+| `mesh28-w64k-z` | 5.20–5.56 | 0.32–0.40 | 13.8–17.1× (1→64) | **0.38–0.48×** | **0.38–0.46×** | 0.99–1.01 |
+| `mesh30-z` | 20.1–22.5 | 0.89–1.13 | 19.3–23.0× (1→64) | 2.00–2.07× | 1.50–1.64× | — |
+| `mesh32-z` | — | 3.66–4.13 | 6.9–7.5× (4→64) | 2.13–2.16× | 1.92–1.99× | 1.00–1.04 |
+| `grid3-30-z` | 27.8–29.2 | 0.71–0.77 | 38.0–39.9× (1→64) | 1.87–1.93× | 1.69–1.75× | 1.00–1.01 |
+| `grid3-33-z` | — | 4.67–5.15 | 3.2–3.6× (16→64) | — | — | 1.00–1.01 |
+| `terrain30-s-z` | 52.3–54.4 | 2.25–2.62 | 20.0–24.2× (1→64) | 1.94–1.98× | 1.81–1.86× | 1.00 |
+| `terrain30-m-z` | — | 9.76–11.83 | 2.5–2.7× (16→64) | 1.84–1.92× | 1.72–1.79× | 1.00–1.01 |
+| `terrain30-l-z` | — | 43.6–46.0 | 1.5–1.6× (32→64) | — | 1.79–1.85× | — |
+| `road-usa-z` | 0.44–0.47 | 0.10–0.15 | 3.2–4.5× (1→64) | — | — | — |
+| `road-na-z` | 1.20–1.27 | 0.28–0.38 | 3.3–4.3× (1→64) | — | — | — |
+| `road-eu-z` | 1.61–1.75 | 0.26–0.36 | 4.8–6.4× (1→64) | — | — | — |
+| `road-planet-z` | 4.27–4.50 | 0.63–0.82 | 5.5–6.9× (1→64) | — | — | — |
+| `rmat25` / `rmat26` / `rmat27` | — | 0.14–0.16 / 0.19–0.21 / 0.29–0.33 | 1.1–1.3× / 1.4–1.7× / 1.8–2.0× (16→64) | — | — | — |
+| `orkut` / `uniform25` | — | 0.06–0.08 / 0.38–0.46 | 0.8–1.1× / **0.62–0.68×** (16→64) | — | — | — |
+
+- **The freeze heap reproduces the scaling series** (acic_scale64b) within 4%
+  at 64 nodes on every shared input, as predicted (0.85–1.15×).
+- **Chunks win 1.5–2.3× on the large meshes, `grid3-30-z` and terrain at every
+  node count.** With chunks, ACIC at 64 nodes is 20–24× faster than GAPBS and
+  13–14× faster than Wasp on `grid3-30-z`, 10–12× and 10–13× on
+  `terrain30-s-z`, and 9–11× and 4.3–6.2× on `mesh30-z` (dataset tables).
+- **Chunks lose on `mesh28-w64k-z` (0.38–0.87× at every node count).** The
+  256-unit band is far below that input's weights (up to 65,536). On the small
+  meshes at 32–64 nodes (`mesh24-z`, `mesh26-z`, and `mesh28-z` at 64 nodes)
+  chunks gain nothing. They also gain little on `mesh28-w10-z`.
+  So the chunk queue is not a family-wide setting. The paper's headline uses
+  the heap (one configuration everywhere) and reports chunks as a separate
+  result with these limits.
+- **No chunk solve stalled in F8** (48 input and node-count cells, 576 chunk
+  solves). The one failure, `terrain30-l-z` at 32 nodes, was the heap arm
+  exceeding the 6-minute step limit (four 67–72 s solves plus the load). The
+  heap was rerun alone. The chunk arm's completed repetitions there (35–39 s)
+  are diagnostic only, about 1.9×.
+- **Strong-scaling limits:**
+  - `mesh24-z` is slower at 64 nodes than at 32 (0.08–0.11 s against
+    0.05–0.07 s).
+  - `road-usa-z` is flat from 16 nodes.
+  - `uniform25` is 1.5× slower at 64 nodes than at 16; `orkut` is flat.
+  - RMAT gains 1.1–2.0× from 16 to 64 nodes; RIKEN at 16 nodes is still
+    faster (ACIC 0.32–0.42×).
+- Predictions (`frontier-f8-*-variants.json`):
+  - **Met:** every digest; heap within 0.85–1.15× of the series; chunks
+    1.5–2.2× on `mesh30-z`, `mesh32-z` and terrain; less at 64 nodes than at 16
+    on the 2^28 meshes; at most one failed check per job; roads at 32 nodes
+    between 16 and 64.
+  - **Missed:** chunks 1.0–1.8× on the 2^28 meshes (0.38–0.48× on
+    `mesh28-w64k-z`); scale-free 64 nodes 1.0–1.6× faster than 16 (`rmat27`
+    1.8–2.0×, `uniform25` 0.62–0.68×).
+
+**Width check (5568640 at 16 nodes, 5568642 at 64 nodes).** Heap, slice 8.
+Speedup over the ln V rule, per source:
+
+| Input | ⅛× | 4× | 16× |
+|---|---:|---:|---:|
+| `mesh28-w10-z`, 16n / 64n | **1.46–1.50× / 1.55–1.69×** | 1.16–1.32× / 1.78–2.06× | 1.19–1.23× / 1.98–2.28× |
+| `grid3-30-z`, 16n / 64n | **1.06–1.09× / 1.12–1.18×** | 0.68–0.72× / 0.55–0.57× | 0.66–0.71× / 0.53–0.56× |
+| `mesh28-z`, 16n / 64n | 1.00–1.01× / 1.00–1.03× | 0.99–1.00× / 0.93–0.95× | 0.89–0.94× / 0.81–0.84× |
+| `mesh28-w64k-z`, `mesh32-z`, `terrain30-s-z` | 0.99–1.01× | 0.97–1.00× | 0.92–1.02× |
+
+- **⅛× (ln V / 8) wins or ties on every input at both node counts.** It is
+  the only multiple that does: 4× and 16× lose up to 1.9× on `grid3-30-z`. By
+  the rule recorded before submission, a change to ln V / 8 is justified for
+  the rule-width inputs.
+- Not tested: roads, which use a fixed 131072; scale-free graphs; and the
+  interaction with the chunk queue.
+- Predictions: met for `mesh28-w10-z` (4× 1.3–2.0×) and for 16× at 0.6–1.1× of
+  the rule elsewhere. Missed: "the rule is within 10% of the best width"
+  (`grid3-30-z` ⅛× 1.06–1.18×; `mesh28-w10-z`); `mesh28-w64k-z` does not
+  gain from wider widths (0.98–1.01×).
+
+**F10b, `terrain30-m-z` at 64 nodes (5568643), 15-minute step limit.** Three
+sources, two repetitions, all 54 solves valid. The candidate's speedup over
+each arm: no sharing **9.1–14×**, local queue 3.4–3.6×, batch 1 1.47–1.49×,
+no slice 0.98–1.00×, plain asynchronous 1.00×, chunks 0.56–0.58× (chunks
+1.72–1.79× faster). The engaged threshold is **1.79–1.89×** slower, and the
+same width without admission is 1.01×. The threshold is at the top bucket in
+96.8–99.2% of the candidate's rounds (plain asynchronous 100%); engaged, it
+is never at the top bucket and needs 22.6K–27.2K rounds against 3.5K–4.2K. This
+completes the F10 table in §35 and matches it.
+
+**O1c, native order for every baseline (16 nodes; RIKEN 5568646, Gemini
+5568648, HavoqGT 5568649).** Two held-out sources, the same physical vertices
+in both orders.
+
+| Baseline | Order cost on `mesh26` (native / Morton) | Order cost on `road-usa` | Best order | ACIC's speedup at each code's best order, `mesh26` / `road-usa` |
+|---|---:|---:|---|---:|
+| Gluon (O1) | 0.56–0.69× | 15–39× | native (mesh), Morton (road) | 37–43× / 32–72× |
+| RIKEN | 1.04–1.23× | — (distances past 2^24) | Morton | 251–256× / — |
+| Gemini | **0.62–0.84×** | 1.44–1.53× | native (mesh), Morton (road) | 362–416× / 241–259× |
+| HavoqGT | 1.19–1.21× | 1.08–1.10× | Morton | 213–233× / 292–342× |
+
+- ACIC is at its best order (Morton), from O1 (5561485). With the F8 chunk
+  arm on `mesh26-z` the mesh speedups are 48–537×.
+- **"Each code at its best order" is now measured for all four distributed
+  baselines** on these two inputs. ACIC stays 32× or more faster than Gluon
+  and 213× or more faster than the others.
+
+**F6b, RIKEN on `terrain30-s-z` at 16 nodes (5568644, 5568645): not run.**
+The harness allows 1, 2, 4, 8 or 56 ranks per node on Frontier (whole 7-core
+regions), so 14 and 28 were rejected before launch. 56 ranks per node (896
+ranks, one thread each) would avoid the overflow; it has not been submitted.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
 | D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |
 | Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
+| F8 final matrix, width check, F10b, O1c (§36) | F8 5568629–5568641, one node 5568653/5568963/5568974 (`ACIC_JOBS` labels FRZ_HEAP/FRZ_CHUNKS in results_by_dataset.py; `benchmarks/frontier-f8-*-variants.json`); width check 5568640/5568642 (`frontier-wcheck-*`); F10b 5568643; O1c 5568646/5568648/5568649 (`EXTERNAL_JOBS`); F6b 5568644/5568645 rejected at launch |
 | Frontier F batch, 64 nodes, ablation and RIKEN (§35) | F4/F5 64n 5565465; F10 5565467 (16n), 5565468 (64n; `terrain30-m-z` warmup-only in `AB-terrain30-m-z-64n-5565468.failed`); F6 RIKEN 5565469, 5565470 (`EXTERNAL_JOBS`); F9 rows in `ONE_NODE_JOBS`; audits `logs/onenode-audit-55654{65,67,68}-*.json`; predictions in `benchmarks/frontier-{f4,f10}-*-variants.json` |
 | Frontier F batch, first results | O2d 5566503, O2e 5566974 (HavoqGT delegate rows, `DELEGATE_JOBS` in results_by_dataset.py); C1 5566199, C2 5566200, O2c 5566201; F4 16n 5565464, F5 32n 5565466, F7 5565471, F9 5565476/5565797, O1b 5565472, O2b 5565473; `benchmarks/frontier-{f4,f10,o1b}-*-variants.json` (predictions); freeze binaries `campaign/bin/acic_frz_*` with manifests (601697e) |
 | Frontier Gemini/HavoqGT (phase A, O2) and ordering pair (O1) | Gemini 5560447–5560454, 5561482 (conversions 5560446, 5561481); HavoqGT 5560455–5560462, 5561483, 5561484 (threshold 896); ACIC 5561485 (`benchmarks/frontier-order-{mesh,road}-16n-variants.json`, predictions recorded), Gluon 5561486; `scripts/frontier/series_baseline.sbatch`, `series_gluon.sbatch`, `gluon_compare.sbatch`; rows in `design/onenode-data/results-by-dataset.json` |
