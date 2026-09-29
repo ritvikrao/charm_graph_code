@@ -136,6 +136,14 @@ def main():
                         if efficiency:
                             row['efficiency'] = {k: float(v) for k, v in
                                                  (f.split('=') for f in efficiency[1].split())}
+                        # Instrumented builds (work-cost): the PE-time split
+                        # and the work counters, recorded as printed.
+                        for tag, key in [('COMM_SHARE', 'comm_share'), ('WORK_COST', 'work_cost'),
+                                         ('WORK_CLOCK', 'work_clock')]:
+                            line = re.search(rf'^{tag} (.*)$', output, re.M)
+                            if line:
+                                row[key] = {k: float(v) for k, v in
+                                            (f.split('=') for f in line[1].split() if '=' in f)}
                         stream.write(json.dumps(row) + '\n')
                         if rep >= 0:
                             records.append(row)
