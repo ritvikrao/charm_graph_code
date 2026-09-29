@@ -45,19 +45,19 @@ On these graphs ACIC is 8–250× faster than Gluon and one to three orders of
 magnitude faster than the RIKEN code, HavoqGT and Gemini. It is also the only
 distributed code here that beats a tuned single node: at 64 nodes it is
 5.6–14.5× faster than GAPBS and 2.9–7.8× faster than Wasp on the largest
-meshes, grids and terrain, and up to 24× and 14× with a chunked queue. On the
-Kronecker graphs Graph500 uses, the RIKEN code remains faster. A benchmark
-that measures only one class of graph misses the other.
+meshes, grids and terrain, and up to 24× and 14× with a chunked queue. On
+Graph500's Kronecker graphs the RIKEN code remains faster. A benchmark that
+measures only one class of graph misses the other.
 
 An ablation at 16 and 64 nodes attributes the speedup: shared queues 5–14×,
 nearest-bucket removal 2.2–3.7×, batching 1.5–1.6×, tiled placement 1.7–4.4×,
 and a chunked queue up to 2.3× more on most meshes, grids and terrain. A
 dynamic admission threshold admits all work in 89–99% of rounds and gives
-nothing. Recent work shows that synthetic uniform weights misrepresent shared-
-memory SSSP; we extend that finding to distributed memory, across weight
-ranges from [1, 10] to [1, 65,536] and natural road and terrain weights.
-Limits: ACIC needs a locality-preserving vertex order, and its bucket width
-costs up to 2× on narrow weight ranges.
+nothing. Recent work shows synthetic uniform weights misrepresent
+shared-memory SSSP; we extend this to distributed memory, across weights from
+[1, 10] to [1, 65,536] and natural road and terrain weights. Limits: ACIC
+needs a locality-preserving vertex order, and its bucket width costs up to 2×
+on narrow weight ranges.
 
 ---
 
