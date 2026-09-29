@@ -2284,10 +2284,11 @@ The rule width is the slowest measured. At that width the solve is
 Dijkstra-exact in work (1.002 attempts per edge) and round-bound: 26.8K rounds
 in about 3.2 s, roughly 120 µs per round.
 - **Wider widths** cut rounds at no work cost.
-- **Narrower widths** cut rounds too, but by a different route. At ¼× the
-  2048 buckets span 9.9K of the 41–54K distance range, so most of the frontier
-  sits in the overflow bucket, outside threshold control (no coarsening fired).
-  The work rises to 1.33 attempts per edge.
+- **Narrower widths** cut rounds too, but at a work cost. At ¼× the 2048
+  buckets span 9.9K of the 41–54K distance range, and no coarsening fired.
+  Rounds fall to 9.1K, while edge work rises to 1.33 attempts per edge. Only
+  13.5% of its rounds admit every bucket, against 2.2% at the rule width, so
+  the gain is not simply the threshold switching off.
 
 Most predictions missed:
 - **Rounds** are not monotone in width.
@@ -2298,8 +2299,8 @@ Most predictions missed:
 For F5 no width is ruled out, since every width is at least as fast as the rule.
 The measurement nominates the wide direction (4× and beyond: fewer rounds, flat
 work) as the clean candidate for the 32→64-node plateau, whose round cost
-grows with node count. ¼× is the second candidate; its gain depends on the
-overflow path. D3b (8×, 16×, ⅛×) brackets both sides. Records:
+grows with node count. ¼× is the second candidate; it pays for its gain in
+edge work. D3b (8×, 16×, ⅛×) brackets both sides. Records:
 `design/onenode-data/delta-ipdps-d1-grid3-22528376.json`,
 `design/onenode-data/delta-ipdps-d3-width-22528693.json`.
 
@@ -2323,14 +2324,28 @@ and three repetitions; all 128 solves are digest-valid. Predictions are in
 | band-256 chunks, slice 64 | 0.38–0.43× (2.30–2.61× faster) | 1.56–1.79 | 660 | 0.04 | 2.2–2.8× faster: met |
 | control | 0.99–1.00× | 1.46–1.62 | 1,165 | 0.04 | 0.95–1.05×: met |
 
-**The histogram threshold is inert here.** The candidate spent 1,145 of 1,148
-rounds with the frontier outside the reduced window ("Rounds with the frontier
-outside the window"). With thresholds at 2047, it admits everything, so it is
-the plain asynchronous arm in effect. The cause is the width: the ln V rule
+**The histogram threshold is inert here.** In the candidate, 99.9% of rounds
+(1,292 of 1,293 on source 0) set the heap threshold to 2047, the top bucket,
+so every bucket is admitted. In 1,145 of 1,148 rounds on another launch the
+reduced window was empty ("Rounds with the frontier outside the window"). The
+candidate is therefore the plain asynchronous arm in effect. Rounds with
+threshold 2047 are the better measure. The window counter misses the case
+where the window holds only the overflow bucket; the terrain crop reports 0
+empty windows but a threshold of 2047 in 87% of rounds (22529053). The cause is the width: the ln V rule
 gives 19.4, so the 2048 buckets span 39.7K against distances of 2.4–3.8M.
-- **Other graphs:** grid3-30-z leaves the window in 18% of heap rounds
-  (22528376). mesh28-w10-z at the rule width (22528693) and road at width
-  131072 (22527563) stay inside it.
+- **Other graphs** (share of rounds with threshold 2047):
+
+  | Input | Share |
+  |---|---:|
+  | mesh28-z, chunks | 80% |
+  | terrain crop, heap | 87% |
+  | grid3-30-z | 18% heap, 14% chunks |
+  | mesh28-w10-z, rule width | 2.2% |
+  | mesh28-w10-z, ¼× | 13.5% |
+  | road-usa-z | 0.2% |
+
+  The controller is engaged on road and on the w10 mesh, partly engaged on
+  the 3-D grid, and off on the w1000 mesh and on terrain.
 - **Frontier:** mesh26-z's distances (1.4–1.9M) are equally far past its
   ln V window, and the Frontier series passes no width. So the multi-node
   mesh results probably also ran with an inert threshold. That is unverified
