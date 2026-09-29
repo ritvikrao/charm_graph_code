@@ -2934,6 +2934,15 @@ Without delegates the solve takes 1.6–1.9 s (5561483).
   must say so.
 - Expected effect: HavoqGT 1.2–1.4× faster than the no-delegate rows.
 
+**O2d (5566503), threshold 4096 at 16 nodes:**
+- `rmat25` (15,276 delegates): 1.21–1.46 s on the four held-out sources, 1.2–1.35×
+  faster than without delegates.
+- `rmat26` (83,682 delegates): every solve hung (capped at 300 s).
+- So HavoqGT at 896 ranks deadlocks once the delegate count passes a point
+  between about 15k and 84k.
+- O2e (5566974) runs `rmat26` at threshold 16384 for a delegate count near
+  the one that works.
+
 **C1 and C2, chunk stall probes at 16 nodes (5566199, 5566200).** Each launch
 solves four sources in sequence, with ACIC's 300 s solve timeout and an
 8-minute step limit.
