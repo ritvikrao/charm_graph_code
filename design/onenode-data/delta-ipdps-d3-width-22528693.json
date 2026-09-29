@@ -1,0 +1,208 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-mesh28-w10-z-1n-22528693",
+    "graph": "mesh28-w10-z",
+    "hosts": "cn106",
+    "binaries": {
+      "rule": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "w0p25x": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "w0p5x": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "w1x": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "w2x": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "w4x": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      }
+    },
+    "solves": 96,
+    "timed": 72,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "rule",
+    "arms": {
+      "rule": {
+        "graph": "mesh28-w10-z",
+        "median_seconds_by_source": [
+          3.680614,
+          3.274281,
+          3.197995,
+          3.178279
+        ],
+        "median_rounds": 26824.5,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          1.001633,
+          1.073153
+        ],
+        "wire_bytes_per_edge_range": [
+          0.034012,
+          0.03737
+        ],
+        "node_bytes_per_edge_range": [
+          0.103752,
+          0.114645
+        ]
+      },
+      "w0p25x": {
+        "graph": "mesh28-w10-z",
+        "median_seconds_by_source": [
+          2.946518,
+          2.608418,
+          2.676906,
+          2.507412
+        ],
+        "median_rounds": 9121.5,
+        "speedup_over_base_by_source": [
+          1.2491401715516415,
+          1.2552746530655747,
+          1.1946609257105032,
+          1.2675535572135732
+        ],
+        "attempts_per_edge_range": [
+          1.275502,
+          1.442618
+        ],
+        "wire_bytes_per_edge_range": [
+          0.037671,
+          0.041053
+        ],
+        "node_bytes_per_edge_range": [
+          0.088655,
+          0.093466
+        ]
+      },
+      "w0p5x": {
+        "graph": "mesh28-w10-z",
+        "median_seconds_by_source": [
+          3.153282,
+          2.928679,
+          2.954729,
+          2.793629
+        ],
+        "median_rounds": 16637.5,
+        "speedup_over_base_by_source": [
+          1.1672327435351484,
+          1.1180061044586997,
+          1.0823310699559927,
+          1.1376882900342171
+        ],
+        "attempts_per_edge_range": [
+          1.162456,
+          1.360659
+        ],
+        "wire_bytes_per_edge_range": [
+          0.037559,
+          0.03917
+        ],
+        "node_bytes_per_edge_range": [
+          0.093745,
+          0.105684
+        ]
+      },
+      "w1x": {
+        "graph": "mesh28-w10-z",
+        "median_seconds_by_source": [
+          3.70025,
+          3.276108,
+          3.222242,
+          3.127806
+        ],
+        "median_rounds": 26984.0,
+        "speedup_over_base_by_source": [
+          0.9946933315316532,
+          0.9994423260771624,
+          0.9924751151527416,
+          1.0161368703813471
+        ],
+        "attempts_per_edge_range": [
+          1.002019,
+          1.074068
+        ],
+        "wire_bytes_per_edge_range": [
+          0.034732,
+          0.037057
+        ],
+        "node_bytes_per_edge_range": [
+          0.10662,
+          0.113941
+        ]
+      },
+      "w2x": {
+        "graph": "mesh28-w10-z",
+        "median_seconds_by_source": [
+          3.618113,
+          3.158158,
+          3.115201,
+          2.900558
+        ],
+        "median_rounds": 19948.5,
+        "speedup_over_base_by_source": [
+          1.0172744742908804,
+          1.0367692180061923,
+          1.026577418278949,
+          1.0957474389410589
+        ],
+        "attempts_per_edge_range": [
+          1.004462,
+          1.008487
+        ],
+        "wire_bytes_per_edge_range": [
+          0.034919,
+          0.036791
+        ],
+        "node_bytes_per_edge_range": [
+          0.104853,
+          0.111942
+        ]
+      },
+      "w4x": {
+        "graph": "mesh28-w10-z",
+        "median_seconds_by_source": [
+          3.563886,
+          3.085773,
+          3.000185,
+          2.886348
+        ],
+        "median_rounds": 14587.5,
+        "speedup_over_base_by_source": [
+          1.032753011740555,
+          1.061089393160158,
+          1.0659326008229493,
+          1.101141996737746
+        ],
+        "attempts_per_edge_range": [
+          1.011832,
+          1.016163
+        ],
+        "wire_bytes_per_edge_range": [
+          0.035558,
+          0.037451
+        ],
+        "node_bytes_per_edge_range": [
+          0.104393,
+          0.110652
+        ]
+      }
+    }
+  }
+]

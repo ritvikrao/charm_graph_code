@@ -2248,10 +2248,66 @@ process sharing keeps most updates inside their process. Band 65536 buys road
 time with about 1.7× the heap's edge work, as §19 found. Record:
 `design/onenode-data/delta-ipdps-d1d2-22526239-22527563.json`.
 
+### 27. Delta IPDPS one-node: the chunk queue on 3-D grids (D1) and the bucket-width screen (D3), 2026-09-28
+
+Same layout as §26. Binaries are the D6 freeze candidate `acic_frz_heap` and
+`acic_frz_c256` (601697e). One warmup and three timed repetitions per arm.
+
+**D1, `grid3-30-z`** (job 22528376; 48 of 48 solves digest-valid):
+
+| Arm | Time per solve (s) | Speedup over heap | Rounds | Attempts per edge | Wire bytes per edge |
+|---|---:|---:|---:|---:|---:|
+| heap, slice 8 | 13.2–14.1 | 1.00× | 6,640 | 1.19–1.28 | 0.13–0.14 |
+| chunks band 256, slice 64 | 7.36–7.79 | **1.79–1.81×** | 3,641 | 1.38–1.53 | 0.14–0.16 |
+| heap control | 13.3–14.1 | 0.985–0.997× | 6,613 | 1.19–1.28 | 0.13–0.15 |
+
+The 3-D grid takes the mesh's choice. Band 256 beats the heap on every source,
+by far more than the 1.5% control spread, and meets its predicted 1.5–2.5×.
+It trades 15–20% more edge work for 45% fewer rounds. The one-node reference
+points are on Frontier, not Delta (GAPBS 8.85–10.3 s, Wasp 5.53–5.59 s,
+56 threads; §3-D grids), so this row is not a same-node baseline comparison.
+
+**D3, `mesh28-w10-z`, heap slice 8** (job 22528693; 96 of 96 valid). The
+widths are multiples of ln V = 19.41, which is also what the rule resolves to
+on this `.wsg`:
+
+| Width | Speedup over the rule | Rounds | Attempts per edge |
+|---|---:|---:|---:|
+| ¼× (4.85) | **1.20–1.27×** | 9,122 | 1.33 |
+| ½× (9.70) | 1.08–1.17× | 16,638 | 1.23 |
+| rule (19.41) | 1.00× | 26,824 | 1.00 |
+| 1× explicit | 0.99–1.02× | 26,984 | 1.00 |
+| 2× (38.8) | 1.02–1.10× | 19,948 | 1.01 |
+| 4× (77.6) | 1.03–1.10× | 14,588 | 1.01 |
+
+The rule width is the slowest measured. At that width the solve is
+Dijkstra-exact in work (1.002 attempts per edge) and round-bound: 26.8K rounds
+in about 3.2 s, roughly 120 µs per round.
+- **Wider widths** cut rounds at no work cost.
+- **Narrower widths** cut rounds too, but by a different route. At ¼× the
+  2048 buckets span 9.9K of the 41–54K distance range, so most of the frontier
+  sits in the overflow bucket, outside threshold control (no coarsening fired).
+  The work rises to 1.33 attempts per edge.
+
+Most predictions missed:
+- **Rounds** are not monotone in width.
+- **Edge work** rises as the width narrows, not as it widens.
+- **The fastest width** lies outside ½×–2×.
+- **Met:** 1× matches the rule, and 4× is at least 1.1× slower than the fastest width.
+
+For F5 no width is ruled out, since every width is at least as fast as the rule.
+The measurement nominates the wide direction (4× and beyond: fewer rounds, flat
+work) as the clean candidate for the 32→64-node plateau, whose round cost
+grows with node count. ¼× is the second candidate; its gain depends on the
+overflow path. D3b (8×, 16×, ⅛×) brackets both sides. Records:
+`design/onenode-data/delta-ipdps-d1-grid3-22528376.json`,
+`design/onenode-data/delta-ipdps-d3-width-22528693.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D1 grid3-30-z and D3 width screen | `design/onenode-data/delta-ipdps-d1-grid3-22528376.json`, `design/onenode-data/delta-ipdps-d3-width-22528693.json` (`benchmarks/ipdps_ab_summary.py`); `benchmarks/delta-ipdps-d1-variants.json`, `benchmarks/delta-ipdps-d3-width-variants.json` (predictions); jobs 22528376, 22528693 |
 | Delta IPDPS D1 re-confirmation and D2 counters | `design/onenode-data/delta-ipdps-d1d2-22526239-22527563.json`; `benchmarks/delta-ipdps-d2-{mesh28,road}-variants.json` (predictions); `scripts/delta/ipdps_ab.sbatch`; jobs 22526239, 22527563; campaign `/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928` |
 | Frontier mesh28-z one-node queue replication | `design/onenode-data/frontier-mesh28-chunks-5548095.json` (audit, 96 + 32 solves); `benchmarks/frontier-1n-chunks-mesh-variants.json` (predictions, 3f6133b); `scripts/frontier/chunks_1n.sbatch`; profile job 5546915 (`scripts/frontier/profile_1n.sbatch`; traces under `campaign/profile/mesh28-z-1n-5546915/`) |
 | Frontier `road-planet-z` and `terrain-ae-z` | jobs 5546135/5546136/5546137 (planet, ACIC + Gluon-Async) and 5546130/5546131 (terrain, ACIC); `benchmarks/frontier-large-road-*-variants.json`, `benchmarks/frontier-terrain-terrain-*-variants.json`; certified terrain reference 5546087; rows in `design/onenode-data/results-by-dataset.json` |

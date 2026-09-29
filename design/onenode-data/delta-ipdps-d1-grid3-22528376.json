@@ -1,0 +1,112 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-grid3-30-z-1n-22528376",
+    "graph": "grid3-30-z",
+    "hosts": "cn106",
+    "binaries": {
+      "heap": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "c256_s64": {
+        "binary": "acic_frz_c256",
+        "sha256": "a8950f57d9c1de6316dfb17ca099b598f2ce88233d9e47e413c08c514959c3fa"
+      },
+      "heap_control": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      }
+    },
+    "solves": 48,
+    "timed": 36,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "heap",
+    "arms": {
+      "heap": {
+        "graph": "grid3-30-z",
+        "median_seconds_by_source": [
+          13.165722,
+          13.810294,
+          14.050631,
+          13.492662
+        ],
+        "median_rounds": 6639.5,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          1.189793,
+          1.275126
+        ],
+        "wire_bytes_per_edge_range": [
+          0.132674,
+          0.144467
+        ],
+        "node_bytes_per_edge_range": [
+          0.27143,
+          0.294894
+        ]
+      },
+      "c256_s64": {
+        "graph": "grid3-30-z",
+        "median_seconds_by_source": [
+          7.356975,
+          7.717112,
+          7.793867,
+          7.436692
+        ],
+        "median_rounds": 3640.5,
+        "speedup_over_base_by_source": [
+          1.789556441336283,
+          1.7895676517329282,
+          1.802780442622385,
+          1.8143365356532177
+        ],
+        "attempts_per_edge_range": [
+          1.381418,
+          1.528359
+        ],
+        "wire_bytes_per_edge_range": [
+          0.144176,
+          0.16262
+        ],
+        "node_bytes_per_edge_range": [
+          0.291281,
+          0.328558
+        ]
+      },
+      "heap_control": {
+        "graph": "grid3-30-z",
+        "median_seconds_by_source": [
+          13.254756,
+          13.852749,
+          14.113579,
+          13.696865
+        ],
+        "median_rounds": 6613.0,
+        "speedup_over_base_by_source": [
+          0.9932828639018327,
+          0.9969352653397533,
+          0.9955398981363975,
+          0.9850912599342987
+        ],
+        "attempts_per_edge_range": [
+          1.188849,
+          1.277541
+        ],
+        "wire_bytes_per_edge_range": [
+          0.132605,
+          0.145047
+        ],
+        "node_bytes_per_edge_range": [
+          0.271303,
+          0.295913
+        ]
+      }
+    }
+  }
+]
