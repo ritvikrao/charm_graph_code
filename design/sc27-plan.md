@@ -50,6 +50,168 @@ Two results need an explanation, not a win:
   is co-designed for Graph500, wins (0.29–0.90×). Meshes, grids, terrain and
   roads sit where ACIC's lead reaches 100–1000×.
 
+### Paper framing (2026-09-29)
+
+The user's three goals, and how the evidence supports each. The abstract draft
+is `design/ipdps27-abstract.md`.
+
+**Thesis.** Distributed SSSP has been designed and ranked on one graph class,
+Graph500's Kronecker graphs with uniform weights. On the graphs that
+simulation, geoscience and routing actually distribute (low degree, high
+diameter, physically derived weights), those codes do not scale, and a single
+node beats them. Asynchronous, message-driven SSSP with adaptive fine-grained
+scheduling and aggregation fills that gap. A message-driven runtime is the
+natural place to build it.
+
+#### Pillar 1: an unmet need beyond Graph500
+
+- **Claim.** Graph500-style distributed codes lose to a tuned single node on
+  meshes, grids, terrain and roads. ACIC is the only distributed code in the
+  study that beats one, and it keeps scaling to 64 nodes.
+- **Evidence we have.**
+  - Wasp on one node is faster than Gluon, RIKEN, HavoqGT and Gemini at 64
+    nodes on the meshes, grids and terrain. For example, on `grid3-30-z` Wasp
+    takes about 5.5 s, against Gluon's 11–14 s and RIKEN's 20–31 s at 64 nodes.
+  - ACIC is 8–240× faster than Gluon and 17–2,200× faster than RIKEN, HavoqGT
+    and Gemini on these inputs (dataset tables).
+  - At 64 nodes ACIC is 5.0–14.5× faster than GAPBS and 2.3–7.9× faster than
+    Wasp on large meshes, grids and terrain. This is the COST argument, the
+    GAP suite's own rule for distributed frameworks.
+  - The inputs reach 34B vertices and 275B edges, past any one node.
+- **The regime boundary is part of the claim.** On RMAT and `uniform25`, RIKEN
+  wins (ACIC 0.29–0.90×). The figure plots speedup against hop diameter:
+  Graph500 measures one end of the axis. Say "graphs with spatial locality and
+  high diameter", not "non-scale-free".
+- **Pending:** F8 (final matrix); native-order Gemini, HavoqGT and RIKEN, so
+  that "each code at its best order" is measured.
+- **Weak points:**
+  - The vertex-order assumption (O1: 107–183× on row-major `mesh26` with tiling
+    auto).
+  - On roads ACIC only ties or modestly beats Wasp (`road-usa-z`: Wasp wins at
+    every node count; `road-planet-z` at 64 nodes 1.11–1.42×).
+  - The paper says both plainly.
+
+#### Pillar 2: adaptive fine-grained techniques, and why a message-driven runtime
+
+- **Claim.** For fine-grained, irregular work like SSSP, the speedup comes from
+  scheduling and communication structure that adapts to the input and to load:
+  - shared queues within a process;
+  - nearest-bucket batched removal;
+  - message aggregation whose flush cadence responds to starvation and
+    idleness.
+  These are components a message-driven runtime already has (SMP-mode node
+  sharing, TRAM/htram aggregation, scheduler idle hooks, quiescence
+  detection), so the application-level policy stays small.
+- **Evidence we have:**
+  - F10 at 16 and 64 nodes (§35), from the candidate's speedup over each
+    arm with one mechanism removed: process sharing 5–15×, nearest queue
+    2.2–3.7×, batching 1.5–1.6×.
+  - The chunk queue adds about 2× on meshes and terrain.
+  - The `auto` modes (process sharing, reader tiling, hub hints) choose per
+    input.
+  - Aggregation policies, measured on one and two nodes with older code
+    (code comments in `sssp_smp.cpp`):
+    - adaptive flush cadence: 3.6× (mesh, one node) and 3.8× (two nodes);
+    - starvation-gated idle flush: 1.09× (mesh) and 1.12× (RMAT);
+    - idle-flush interval `auto`: about 2× on `road-usa` at two nodes.
+- **Gaps:**
+  - None of the aggregation policies has been measured at scale, or on the
+    freeze candidate. **F11 below closes this, and it is the most important
+    missing experiment for this pillar.**
+  - "Easier in Charm++ than MPI" is an argument. HavoqGT is asynchronous and
+    aggregates messages in MPI, and its author (Pearce) is on the Algorithms
+    PC, so the argument must not claim MPI cannot do it.
+- **Defensible form of the argument.**
+  - HavoqGT's gap is its one-rank-per-core design: it has no shared queues
+    within a process. F10 shows that sharing is worth 5–15× on these graphs.
+    Sharing needs threads that share queues inside a process, plus a scheduler
+    that interleaves them with communication. Charm++'s SMP mode provides
+    both. In MPI + threads the application builds them itself.
+  - Gluon is bulk-synchronous, so thousands of rounds on high-diameter graphs
+    cost it directly.
+  - Back this with a concrete implementation comparison: the lines of code
+    and runtime components each ACIC mechanism uses, against the equivalent
+    code in HavoqGT (mailbox, termination detection) and Gluon (sync
+    substrate). No allocation is needed; it can be done now.
+- **What we must not claim.**
+  - The histogram admission threshold is inert at every scale (F10: top
+    bucket in 89–99% of rounds), and slower when engaged.
+  - The buffer-size acceptance policy made no changes in the F10 logs.
+  - So "adaptive" means asynchronous execution plus the adaptive aggregation
+    and input-driven modes above, not the admission controller. Gate A's rule
+    (stop calling it adaptive unless a live policy wins) applies to the
+    admission and width rules, not to the aggregation policies, once F11
+    measures them.
+
+#### Pillar 3: the "Mind the Gap" recommendations
+
+The source is D'Antonio, Mai and Vandierendonck, "Mind the Gap: The Disconnect
+Between Synthetic and Natural Edge Weights in Parallel Single-Source Shortest
+Path", arXiv:2607.26821 (v2, 2026-09-01). Their study is shared-memory only:
+GAPBS, GBBS, Δ*-stepping, ρ-stepping, Wasp, MultiQueue and Bellman-Ford on
+17 graphs, 8 of them roads. They find that uniform synthetic weights change the
+tuned Δ by orders of magnitude and can reverse the ranking of algorithms, and
+that asynchronous codes (Wasp, MultiQueue) are the most robust. Their three
+recommendations, and our response to each:
+
+1. **Users: tune threshold parameters on the target graph's own weight
+   distribution.**
+   - We do this for every baseline: GAPBS, Wasp and Gluon Δ searches on
+     training sources, RIKEN's delta ratio per graph, and F7's Gluon delta
+     check.
+   - ACIC is not exempt. Its bucket width is a rule (ln V; a fixed 131072 on
+     roads), and F5 shows the rule costing about 2× on the [1, 10] mesh. The
+     width check (5568640, 5568642) tells whether one multiple works across
+     inputs. If it does, adopt it; if not, report the sensitivity next to the
+     baselines'.
+2. **Performance analysts: evaluate on natural weights, or on synthetic
+   weights that mirror them (log-normal bodies).**
+   - Roads (DIMACS distance, OSM travel time) and terrain (Tobler walking time
+     on Copernicus DEM) are natural weights; the meshes span uniform [1, 10],
+     [1, 1000] and [1, 65,536].
+   - We extend their finding to distributed memory and to topology: Graph500's
+     gap is both the uniform weights and the Kronecker structure.
+   - Cheap addition (F12): characterize our natural weight distributions with
+     their method. If the bodies are log-normal as theirs are, add one
+     log-normal-weighted mesh (`mesh28-ln-z`, fitted to the road weights) to
+     the matrix.
+3. **Algorithm designers: decouple efficiency from parameter choice; asynchrony
+   is more robust; move toward parameter-free or dynamic thresholds.**
+   - ACIC is asynchronous at distributed scale, which supports their
+     robustness finding: [1, 65,536] weights cost ACIC nothing.
+   - Our negative result sharpens their advice. A dynamic, histogram-derived
+     admission threshold (the ρ-stepping idea) is inert under asynchrony and
+     slower when forced on. What carries the performance is scheduling
+     structure (shared queues, nearest-bucket batching) and adaptive
+     aggregation.
+   - The remaining parameter, the bucket width, is exactly where the
+     sensitivity they warn about still shows.
+
+#### Contributions, as the introduction would list them
+
+1. A characterization showing that Graph500-style distributed SSSP codes
+   (RIKEN, HavoqGT, Gemini, Gluon) lose to a tuned single node on graphs with
+   spatial locality: meshes, 3-D grids, terrain and roads up to 275B edges.
+2. ACIC: asynchronous SSSP with shared queues within a process,
+   nearest-bucket batched removal, a chunked queue, and adaptive aggregation
+   on a message-driven runtime. It has a correctness and termination argument,
+   the Algorithms-track requirement.
+3. An evaluation at up to 64 Frontier nodes: 8–240× over Gluon, one to three
+   orders of magnitude over RIKEN, HavoqGT and Gemini, and the first
+   distributed code in the study to beat tuned GAPBS and Wasp. The regime
+   boundary against RIKEN on Kronecker graphs is included.
+4. An ablation at scale that attributes the speedup to scheduling and
+   aggregation structure rather than dynamic thresholds, extending "Mind the
+   Gap" from shared to distributed memory.
+
+#### What to pursue next (none submitted; each needs the user's go-ahead)
+
+| # | Experiment | Why | Cost |
+|---|---|---|---|
+| F11 | Aggregation ablation at 16 and 64 nodes on the freeze heap: default (adaptive flush, starved idle flush, interval auto) against `--flush-policy fixed`, `--idle-flush off`, `--idle-flush on`, `--idle-flush-interval 0`, and a small fixed `--bufsize`. Inputs `mesh32-z`, `terrain30-s-z`, `road-planet-z`, `rmat26` | Pillar 2 has no evidence at scale for aggregation | 2 jobs, about 1 h each |
+| F12 | Weight-distribution characterization of road and terrain inputs (log-normal and power-law fits, as "Mind the Gap" does); optionally generate and reference `mesh28-ln-z`, then ACIC, Gluon, GAPBS and Wasp on it | Pillar 3 recommendation 2 | Characterization on a login or debug node; the mesh adds 3–4 short jobs |
+| I1 | Implementation comparison: lines of code and runtime components for sharing, aggregation, flushing and termination in ACIC against HavoqGT and Gluon | Pillar 2 "easier in a message-driven runtime", in a form Pearce will accept | No allocation |
+
 ### Venue facts ([CFP](https://www.ipdps.org/ipdps2027/2027-call-for-papers.html))
 
 **Dates:**
@@ -190,7 +352,11 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 | F5 | `mesh28-w10-z` widths at 32 and 64 nodes: the ln V rule, 16× (310.5) and ⅛× (2.43), the D3b nominations. Run directly: each solve takes under a second | **Done.** 32n (5565466): 16× 1.75–1.84×, ⅛× 1.53–1.57×; 64n (5565465): 16× **1.96–2.21×**, ⅛× 1.55–1.68× faster than the rule, and 16× scales again from 32 to 64 (about 1.2×). The ln V width is round-bound on this input at scale. Changing the frozen rule is a decision for F8 (§35) |
 | F6 | RIKEN, pinned at 8 ranks per node and delta ≈ 2× the mean edge weight (the ratio its mesh searches chose). Only narrow inputs (the driver reads at most 2^31 − 1 vertices) whose distances stay below 2^24: `terrain30-s-z` (d 2048/65536), `grid3-30-z` (1024/1024), `mesh28-w10-z` (16/16). `mesh32-z`, `grid3-33-z` and the larger terrain crops are wide; `mesh28-w64k-z` exceeds 2^24 | **Done** (5565469, 5565470), exact digests. ACIC's speedup: `grid3-30-z` 31.6–55.5× (16n) and 28.0–43.3× (64n); `mesh28-w10-z` 202–334× and 81.2–121×; `terrain30-s-z` 235–250× at 64n. At 16n RIKEN aborts on `terrain30-s-z` (32-bit size overflow at 128 ranks) |
 | F7 | Gluon delta check on `terrain30-s-z` at 64 nodes: deltas 32, 512 and 2048 on one source, against the series' 128 (499–509 s) | **Done** (5565471): 32/512/2048 took 577–636 s against 128's 499–509 s; Gluon was not mistuned |
-| F8 | Final ACIC matrix with the freeze binaries, flags per family chosen by F4: terrain, meshes, grids, roads (including 32 nodes) at 4/16/32/64, and scale-free at 16/64; four or more sources, D2 counters on every solve | Ready once the user decides: (1) chunks per family (proposed: mesh and terrain only); (2) reader-tiling rule (O1b); (3) the bucket width (F5). Not submitted |
+| F8 | Final ACIC matrix with the freeze binaries, flags per family chosen by F4: terrain, meshes, grids, roads (including 32 nodes) at 4/16/32/64, and scale-free at 16/64; four or more sources, D2 counters on every solve | **Submitted 2026-09-29** (user: "submit all these experiments"). Freeze binaries unchanged: tiling auto and the ln V width kept (O1b, F5 as limitations until the width check decides). Frozen = heap/slice 8 on every family, plus a chunk arm (band 256, slice 64) on meshes, terrain and `grid3-30-z`; `grid3-33-z` and roads heap only; scale-free 4 × 14 (orkut 8 × 7). Mesh 4/16/32/64n 5568629/5568631/5568633/5568635; road 5568630/5568632/5568634/5568636; `terrain30-l-z` 32/64n 5568637/5568638; scale-free 16/64n 5568639/5568641; one node (debug, chained): mesh, road, then `mesh30-z`/`terrain30-s-z` (`frontier-f8-*-variants.json`) |
+| W | Width check for the F8 width decision: the ln V rule, ⅛×, 4× and 16× on `mesh28-z`, `mesh28-w10-z`, `mesh28-w64k-z`, `grid3-30-z`, `mesh32-z`, `terrain30-s-z` | Submitted 16n 5568640, 64n 5568642 (`frontier-wcheck-*-variants.json`) |
+| F10b | F10 `terrain30-m-z` at 64 nodes again, 15-minute step limit | Submitted 5568643 |
+| F6b | RIKEN `terrain30-s-z` at 16 nodes with 14 and 28 ranks per node (the 8-rank layout overflows) | Submitted 5568644 (14), 5568645 (28) |
+| O1c | Native order for the other baselines at 16 nodes: RIKEN on `mesh26`/`mesh26-z`; Gemini and HavoqGT on `mesh26`, `mesh26-z`, `road-usa`, `road-usa-z` | Submitted RIKEN 5568646; Gemini conversion 5568647, then Gemini 5568648; HavoqGT 5568649 |
 | F9 | One-node Frontier points: GAPBS then Wasp on `road-planet-z`, chained after O2b; the debug queue takes one job at a time. ACIC at one node goes with F8 | GAPBS **done** 1.64–1.92 s (5565476), Wasp **done** 0.86–0.92 s (5565797); ACIC with F8 |
 | F10 | Ablation at scale, the Delta D4/D4b arm set: candidate, no slice, batch 1, local queue, no sharing, plain async (`--admission all`), chunks, and the threshold engaged by `--bucket-width-rule weight`, with and without admission. `mesh32-z` and `terrain30-s-z` at 16 nodes, `mesh32-z` and `terrain30-m-z` at 64; three sources, one warmup, two repetitions. **It checks whether the histogram threshold acts at scale** (round counts in every log) | **Done** (5565467, 5565468; the 64n `terrain30-m-z` cell has warmup solves only). Candidate over the arm: no sharing 4.8–15×, local queue 2.2–3.7×, batch 1 1.5–1.6×, no slice 0.91–1.00×, plain async 0.97–1.00×, chunks about 0.5×. **The threshold is inert at scale too** (top bucket in 89–99% of rounds); engaged, it is 1.08–1.67× slower (§35) |
 
