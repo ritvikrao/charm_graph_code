@@ -2325,6 +2325,37 @@ Terrain adopts band 256, which met its predicted 1.3–2.5×.
 Each band loses on the other family. Record:
 `design/onenode-data/delta-ipdps-d1-terrain-22529053.json`.
 
+**D3b, bracketing both sides** (job 22533655; 112 of 112 valid; predictions
+in `benchmarks/delta-ipdps-d3b-width-variants.json`, recorded after D3):
+
+| Width | Speedup over the rule | Rounds | Attempts per edge | Rounds with threshold 2047 |
+|---|---:|---:|---:|---:|
+| ⅛× (2.43) | **1.29–1.38×** | 3,795 | 1.31–1.50 | 41.5% |
+| ¼× | 1.24–1.32× (D3: 1.20–1.27×) | 7,970 | 1.28–1.47 | 12.5% |
+| rule | 1.00× | 24,753 | 1.00–1.07 | 2.3% |
+| 4× | 1.04–1.15× (D3: 1.03–1.10×) | 13,212 | 1.01–1.02 | 0% |
+| 8× (155.3) | 1.07–1.18× | 9,445 | 1.02–1.03 | 0% |
+| 16× (310.5) | **1.08–1.20×** | 7,203 | 1.05–1.06 | 0% |
+| rule control | 0.99–1.01× | 23,869 | 1.00–1.07 | — |
+
+Both sides replicate D3 and keep improving to the edge of the bracket:
+- **Wide side:** rounds fall with width while work stays within 6% of
+  Dijkstra's.
+- **Narrow side:** rounds fall much faster, but the work grows and a rising
+  share of rounds admit every bucket.
+
+Predictions: 8× and 16× keep cutting rounds; the wide side's best falls in
+1.05–1.25×; work stays below 1.1 through 16×; and the control holds (met).
+⅛× was predicted no faster than ¼× and is faster (missed).
+
+**F5 nominations** (32 and 64 nodes on `mesh28-w10-z`):
+- **16× (310.5):** the clean candidate, with the fewest rounds at
+  near-Dijkstra work. It is not saturated here, so F5 may bracket above it.
+- **⅛× (2.43):** the fastest on one node, bought with 30–50% more edge work,
+  which grows with node count (§8).
+
+Record: `design/onenode-data/delta-ipdps-d3b-width-22533655.json`.
+
 ### 28. Delta IPDPS one-node mechanism ablation on mesh28-z (D4), 2026-09-28
 
 One mechanism is changed at a time from the Frontier candidate: nearest
@@ -2487,6 +2518,7 @@ Record: `design/onenode-data/delta-ipdps-d5-order-22530871.json`.
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D3b width bracket | `design/onenode-data/delta-ipdps-d3b-width-22533655.json`; `benchmarks/delta-ipdps-d3b-width-variants.json` (predictions); job 22533655 |
 | Delta IPDPS D5 ordering pair | `design/onenode-data/delta-ipdps-d5-order-22530871.json`; `benchmarks/delta-ipdps-d5-order-variants.json` (predictions); job 22530871 |
 | Delta IPDPS D4 mechanism ablation, terrain crop | `design/onenode-data/delta-ipdps-d4-terrain-22529683.json`; job 22529683 (REPS=2) |
 | Delta IPDPS D4b, threshold engaged | `design/onenode-data/delta-ipdps-d4b-engaged-22529681.json`; `benchmarks/delta-ipdps-d4b-engaged-variants.json` (predictions); job 22529681 |
