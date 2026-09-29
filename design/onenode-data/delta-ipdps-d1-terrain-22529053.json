@@ -1,0 +1,112 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-terrain30-c-z-1n-22529053",
+    "graph": "terrain30-c-z",
+    "hosts": "cn137",
+    "binaries": {
+      "heap": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "c256_s64": {
+        "binary": "acic_frz_c256",
+        "sha256": "a8950f57d9c1de6316dfb17ca099b598f2ce88233d9e47e413c08c514959c3fa"
+      },
+      "heap_control": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      }
+    },
+    "solves": 48,
+    "timed": 36,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "heap",
+    "arms": {
+      "heap": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          8.934272,
+          8.561096,
+          8.913986,
+          9.286552
+        ],
+        "median_rounds": 1678.0,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          1.613508,
+          1.693658
+        ],
+        "wire_bytes_per_edge_range": [
+          0.045348,
+          0.051247
+        ],
+        "node_bytes_per_edge_range": [
+          0.094354,
+          0.107329
+        ]
+      },
+      "c256_s64": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          3.871695,
+          3.686688,
+          3.800645,
+          3.975763
+        ],
+        "median_rounds": 823.5,
+        "speedup_over_base_by_source": [
+          2.3075867288099916,
+          2.322164501037245,
+          2.34538769077354,
+          2.3357911424800726
+        ],
+        "attempts_per_edge_range": [
+          1.813833,
+          1.923824
+        ],
+        "wire_bytes_per_edge_range": [
+          0.034027,
+          0.036693
+        ],
+        "node_bytes_per_edge_range": [
+          0.069842,
+          0.07564
+        ]
+      },
+      "heap_control": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          9.007997,
+          8.622645,
+          8.884165,
+          9.222767
+        ],
+        "median_rounds": 1608.0,
+        "speedup_over_base_by_source": [
+          0.9918156056224264,
+          0.9928619350558905,
+          1.0033566463477435,
+          1.0069160372369812
+        ],
+        "attempts_per_edge_range": [
+          1.602199,
+          1.707858
+        ],
+        "wire_bytes_per_edge_range": [
+          0.044686,
+          0.051409
+        ],
+        "node_bytes_per_edge_range": [
+          0.092959,
+          0.107642
+        ]
+      }
+    }
+  }
+]

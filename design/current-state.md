@@ -2304,6 +2304,27 @@ edge work. D3b (8×, 16×, ⅛×) brackets both sides. Records:
 `design/onenode-data/delta-ipdps-d1-grid3-22528376.json`,
 `design/onenode-data/delta-ipdps-d3-width-22528693.json`.
 
+**D1, `terrain30-c-z`** (GLO-30 crop, 544.3M vertices, 4.35B arcs; job
+22529053; 48 of 48 valid):
+
+| Arm | Time per solve (s) | Speedup over heap | Rounds | Attempts per edge | Wire bytes per edge |
+|---|---:|---:|---:|---:|---:|
+| heap, slice 8 | 8.56–9.29 | 1.00× | 1,678 | 1.61–1.69 | 0.045–0.051 |
+| chunks band 256, slice 64 | 3.69–3.98 | **2.31–2.35×** | 824 | 1.81–1.92 | 0.034–0.037 |
+| heap control | 8.62–9.22 | 0.992–1.007× | 1,608 | 1.60–1.71 | 0.045–0.051 |
+
+Terrain adopts band 256, which met its predicted 1.3–2.5×.
+
+**D1 outcome, one flag set per family (one node):**
+
+| Family | Profile | Speedup over the heap |
+|---|---|---:|
+| mesh, 3-D grid, terrain | band-256 chunks, heap slice 64 | 2.38–2.56×, 1.79–1.81×, 2.31–2.35× |
+| road | band-65536 chunks, heap slice 64, width 131072 | 1.06–1.30× |
+
+Each band loses on the other family. Record:
+`design/onenode-data/delta-ipdps-d1-terrain-22529053.json`.
+
 ### 28. Delta IPDPS one-node mechanism ablation on mesh28-z (D4), 2026-09-28
 
 One mechanism is changed at a time from the Frontier candidate: nearest
@@ -2367,6 +2388,7 @@ with the weight-rule width, where the window covers the distances. Record:
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D1 terrain crop | `design/onenode-data/delta-ipdps-d1-terrain-22529053.json`; job 22529053; inputs `scripts/delta/fetch_terrain_crop.sh`, `scripts/delta/ipdps_prepare.sbatch` (build 22528231) |
 | Delta IPDPS D4 mechanism ablation, mesh28-z | `design/onenode-data/delta-ipdps-d4-mesh28-22528885.json`; `benchmarks/delta-ipdps-d4-ablation-variants.json` (predictions); job 22528885 |
 | Delta IPDPS D1 grid3-30-z and D3 width screen | `design/onenode-data/delta-ipdps-d1-grid3-22528376.json`, `design/onenode-data/delta-ipdps-d3-width-22528693.json` (`benchmarks/ipdps_ab_summary.py`); `benchmarks/delta-ipdps-d1-variants.json`, `benchmarks/delta-ipdps-d3-width-variants.json` (predictions); jobs 22528376, 22528693 |
 | Delta IPDPS D1 re-confirmation and D2 counters | `design/onenode-data/delta-ipdps-d1d2-22526239-22527563.json`; `benchmarks/delta-ipdps-d2-{mesh28,road}-variants.json` (predictions); `scripts/delta/ipdps_ab.sbatch`; jobs 22526239, 22527563; campaign `/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928` |

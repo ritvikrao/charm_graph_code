@@ -121,12 +121,12 @@ not run on Frontier: the frozen source revision is rebuilt there.
 
 | # | Experiment | Why | Needed by |
 |---|---|---|---|
-| D1 | Chunk queue on the families it has not seen: 3-D grid (`grid3-30-z`, 1.07B vertices, 6.4B edges) and a terrain crop; re-confirm the mesh and road choices. Output: one flag set per family (chunk queue or heap). | It feeds F4 and the frozen build. The chunk queue is the largest known one-node gain (2.3–2.5× on `mesh28-z`, Delta and Frontier). | Oct 1 |
+| D1 | **Done.** One-node flag sets: band-256 chunks with slice 64 for mesh (2.38–2.56×), 3-D grid (1.79–1.81×) and terrain (2.31–2.35×); band-65536 chunks with slice 64 for road (1.06–1.30×). Each band loses on the other family (current-state §27) | 22526239, 22527563, 22528376, 22529053 | **done** |
 | D2 | Counter build: edges relaxed per graph edge and wire bytes per edge, printed on every solve. Overhead ≤ 2% against the uncounted binary on `mesh28-z` and `road-usa-z`. | Ballard, Azad and Ghosh will ask why ACIC wins (work efficiency and traffic figure). | Oct 2 (freeze) |
 | D3 | `mesh28-w10-z`, heap slice 8, widths ¼×–4× ln V (19.41). **The rule is the slowest width and round-bound (26.8K rounds)**: ¼× 1.20–1.27× (overflow-driven, 1.33 attempts per edge), 4× 1.03–1.10× (flat work). Nothing ruled out; nominate the wide side for F5 (current-state §27). D3b brackets 8×, 16× and ⅛× | 22528693; D3b via feeder | done; D3b queued |
 | D4 | One mechanism off at a time, plus chunks. **mesh28-z (22528885), relative to the candidate's time:** sharing off 2.85–4.12×, local queue 1.88–2.37×, batch 1 1.44–1.47×, no slice 0.89–0.93×, plain async 0.98–1.00×, chunks 0.38–0.43×. **The histogram threshold is inert at the ln V width** (1,145 of 1,148 rounds outside the window); this needs a decision on the paper's framing, and F10 must show whether it holds at scale (current-state §28). D4b re-runs admission with the weight-rule width | 22528885; terrain and D4b via feeder | mesh done; terrain and D4b queued |
 | D5 | Optional: ordering pair at one node (`mesh26` against `mesh26-z`). | Separates on-node locality from communication in O1. | Oct 3 |
-| D6 | Freeze candidate: the Delta-validated source revision with the D1 flags. | Frontier rebuilds from it (F-freeze). | Oct 2 |
+| D6 | Freeze candidate 601697e (D2 counters, `--admission`, defaults unchanged); Delta binaries `acic_frz_{heap,c256,c65536}`, used by D1, D3, D4 and D5. Flags per family from D1: build `-DACIC_PROCESS_CHUNKS -DACIC_CHUNK_DISTANCE_WIDTH=256` for mesh, grid and terrain and `=65536` for road, with `--heap-slice 64`; F4 tests whether the chunk queue holds at 16 and 64 nodes before the frozen matrix uses it | — | ready for F-freeze |
 
 **Delta inputs:**
 - `grid3-30-z` is regenerated with the existing generator or transferred (about 50 GB).
