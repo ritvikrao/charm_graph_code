@@ -2913,9 +2913,45 @@ solves correctly. Delegates make HavoqGT faster:
 | 896 | 6,196 | 0.71 |
 
 So the hang at 16 nodes on `rmat25` (5561484, 245,506 delegates) is not
-delegates as such. O2c repeats the thresholds on `rmat25` at 16 nodes. The
-RMAT comparison without delegates may overstate ACIC's margin over HavoqGT by
-up to about 2.4× until O2c answers.
+delegates as such.
+
+**O2c, HavoqGT delegates on `rmat25`, 16 nodes (5566201).**
+
+| Threshold | Delegates | Solve (s) |
+|---|---:|---:|
+| 65536 | 326 | 1.99 |
+| 16384 | 2,626 | 1.54 |
+| 4096 | 15,276 | 1.38 |
+| 896 | 245,506 | hung |
+
+Without delegates the solve takes 1.6–1.9 s (5561483).
+- **The 896 hang is HavoqGT's.** gdb shows 46 of the sampled ranks in
+  `mpi_all_reduce` in `main` while others wait in a shared-memory broadcast:
+  mismatched collectives. Our patch does not touch that path.
+- The fair HavoqGT RMAT row uses threshold 4096, the fastest that completes:
+  O2d (5566503) on `rmat25` and `rmat26` with four held-out sources.
+- The threshold was chosen on one held-out source of `rmat25`, and the paper
+  must say so.
+- Expected effect: HavoqGT 1.2–1.4× faster than the no-delegate rows.
+
+**C1 and C2, chunk stall probes at 16 nodes (5566199, 5566200).** Each launch
+solves four sources in sequence, with ACIC's 300 s solve timeout and an
+8-minute step limit.
+- **`road-planet-z`, band 65536:**
+  - Every solve that finished returned the reference digest: 5 of 12,
+    taking 6.7–121 s.
+  - The rest timed out and printed partial results, which the probe counts
+    as "wrong", or were killed by the step limit.
+  - The heap arm solved all 12 in 0.87–1.08 s.
+  - So the road chunk queue at 16 nodes is correct but erratically, very
+    slow, 6–100× or worse. It is not wrong.
+- **`grid3-30-z`, band 256:** all 8 solves are correct, taking 1.12–1.19 s
+  against the heap's 2.17–2.23 s (**1.9×**).
+- The `grid3-33-z` failure in F4 is therefore not the grid family as such.
+  It appeared at 8.6B vertices, 67M per process.
+- **Decision for F8:** the chunk queue is safe for mesh, terrain and
+  `grid3-30-z`-sized grids at 16 nodes. It is not safe for roads, or for
+  `grid3-33-z` until the cause is known; those keep the heap.
 
 ## Evidence and provenance
 
@@ -2924,6 +2960,7 @@ up to about 2.4× until O2c answers.
 | D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |
 | Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
 | Frontier F batch, first results | F4 16n 5565464, F5 32n 5565466, F7 5565471, F9 5565476/5565797, O1b 5565472, O2b 5565473; `benchmarks/frontier-{f4,f10,o1b}-*-variants.json` (predictions); freeze binaries `campaign/bin/acic_frz_*` with manifests (601697e) |
+| Frontier F batch, first results | C1 5566199, C2 5566200, O2c 5566201; F4 16n 5565464, F5 32n 5565466, F7 5565471, F9 5565476/5565797, O1b 5565472, O2b 5565473; `benchmarks/frontier-{f4,f10,o1b}-*-variants.json` (predictions); freeze binaries `campaign/bin/acic_frz_*` with manifests (601697e) |
 | Frontier Gemini/HavoqGT (phase A, O2) and ordering pair (O1) | Gemini 5560447–5560454, 5561482 (conversions 5560446, 5561481); HavoqGT 5560455–5560462, 5561483, 5561484 (threshold 896); ACIC 5561485 (`benchmarks/frontier-order-{mesh,road}-16n-variants.json`, predictions recorded), Gluon 5561486; `scripts/frontier/series_baseline.sbatch`, `series_gluon.sbatch`, `gluon_compare.sbatch`; rows in `design/onenode-data/results-by-dataset.json` |
 | Delta IPDPS D3b width bracket | `design/onenode-data/delta-ipdps-d3b-width-22533655.json`; `benchmarks/delta-ipdps-d3b-width-variants.json` (predictions); job 22533655 |
 | Delta IPDPS D5 ordering pair | `design/onenode-data/delta-ipdps-d5-order-22530871.json`; `benchmarks/delta-ipdps-d5-order-variants.json` (predictions); job 22530871 |
