@@ -2281,8 +2281,13 @@ on this `.wsg`:
 | 4× (77.6) | 1.03–1.10× | 14,588 | 1.01 |
 
 The rule width is the slowest measured. At that width the solve is
-Dijkstra-exact in work (1.002 attempts per edge) and round-bound: 26.8K rounds
-in about 3.2 s, roughly 120 µs per round.
+Dijkstra-exact in work (1.002 attempts per edge), with 26.8K rounds in about
+3.2 s. That is solve time over rounds, not the cost of a round. Fitting time
+against rounds over the arms of D3 and D3b whose work stays within 7% of
+Dijkstra's (4× to 16× and the rule, 21–27 solves per source) gives a
+marginal 14–23 µs per round (R² 0.59–0.86). That is well below the 80–90 µs
+unloaded one-node collective cycle measured earlier (§15), because rounds
+overlap with work.
 - **Wider widths** cut rounds at no work cost.
 - **Narrower widths** cut rounds too, but at a work cost. At ¼× the 2048
   buckets span 9.9K of the 41–54K distance range, and no coarsening fired.
