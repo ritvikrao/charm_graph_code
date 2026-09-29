@@ -2449,10 +2449,45 @@ Predictions:
 
 Record: `design/onenode-data/delta-ipdps-d4b-engaged-22529681.json`.
 
+### 30. Delta IPDPS one-node ordering pair, mesh26 against mesh26-z (D5), 2026-09-28
+
+Same layout and binaries as §28. The four held-out sources are paired across
+the two orders by reference distance sum and maximum. Job 22530871 ran one
+warmup and three repetitions; all 80 solves are digest-valid. Predictions are
+in `benchmarks/delta-ipdps-d5-order-variants.json`. Speedup is native-order
+time over Morton time, per source.
+
+| Arm | mesh26 (generator order) | mesh26-z (Morton) | Speedup from Morton order |
+|---|---|---|---:|
+| heap, slice 8 | 2.63–3.97 s; 5.2–8.0 attempts per edge; 2.6–4.0 wire and 5.2–7.9 node bytes per edge | 0.88–1.26 s; 1.43–1.64; 0.08 and 0.17–0.19 | **2.96–4.21×** |
+| chunks band 256, slice 64 | 1.85–2.83 s; 9.9–15.9; 4.6–7.2 and 9.2–14.4 | 0.40–0.56 s; 1.71–1.94; 0.07–0.08 and 0.15–0.17 | **4.12–7.11×** |
+| heap control (Morton) | — | 0.98–1.01× of heap | — |
+
+On one node the ordering effect is mostly work and inter-process traffic, not
+cache locality:
+- **Traffic:** in generator order each of the 16 processes owns a strip of
+  rows, and wire and node-message volume is about 40× Morton's.
+- **Work:** edge attempts per edge are 4–8× higher, because updates crossing
+  processes arrive late and trigger re-relaxation.
+- **Chunks:** the chunk queue helps in both orders but more in Morton order
+  (1.82–2.36× over the heap against 1.32–1.42×).
+
+O1 on Frontier (16 nodes) can therefore attribute part of its ordering effect
+to work growth within one node. The one-node baseline for that
+decomposition is this table.
+
+Predictions:
+- **Met:** band 256 gained at least as much as the heap; wire bytes fell;
+  the control held.
+- **Missed:** the heap's gain exceeded the predicted 1.2–3×.
+
+Record: `design/onenode-data/delta-ipdps-d5-order-22530871.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D5 ordering pair | `design/onenode-data/delta-ipdps-d5-order-22530871.json`; `benchmarks/delta-ipdps-d5-order-variants.json` (predictions); job 22530871 |
 | Delta IPDPS D4 mechanism ablation, terrain crop | `design/onenode-data/delta-ipdps-d4-terrain-22529683.json`; job 22529683 (REPS=2) |
 | Delta IPDPS D4b, threshold engaged | `design/onenode-data/delta-ipdps-d4b-engaged-22529681.json`; `benchmarks/delta-ipdps-d4b-engaged-variants.json` (predictions); job 22529681 |
 | Delta IPDPS D1 terrain crop | `design/onenode-data/delta-ipdps-d1-terrain-22529053.json`; job 22529053; inputs `scripts/delta/fetch_terrain_crop.sh`, `scripts/delta/ipdps_prepare.sbatch` (build 22528231) |
