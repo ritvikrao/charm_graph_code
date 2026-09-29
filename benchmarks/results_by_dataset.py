@@ -75,7 +75,13 @@ EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900
                  *[str(j) for j in range(5560447, 5560463)],
                  # O2: Gemini and HavoqGT (upstream delegate threshold) on RMAT, 16 nodes. HavoqGT
                  # with threshold 896 (5561484) is left out: every launch hit its cap.
-                 '5561482', '5561483']
+                 '5561482', '5561483',
+                 # O2d/O2e: HavoqGT with delegates (threshold 4096; 16384 on rmat26)
+                 '5566503', '5566974']
+# HavoqGT runs with delegates are their own rows. Their hung launches
+# (rmat26 at threshold 4096: a deadlock in HavoqGT's collectives past about
+# 15k-84k delegates, current-state section 32) are not lower bounds on a solve.
+DELEGATE_JOBS = {'5566503': 'HavoqGT, delegates 4096', '5566974': 'HavoqGT, delegates 16384'}
 ONE_NODE_JOBS = ['5529591', '5538465', '5538410', '5541358', '5541661',
                  '5536541', '5538411', '5541359', '5541662',
                  '5558223', '5558224', '5558225', '5558226']  # scaling series: GAPBS, Wasp
@@ -84,7 +90,7 @@ DATASETS = ['mesh24-z', 'mesh26', 'mesh26-z', 'mesh28-z', 'mesh30-z', 'road-usa'
             'mesh28-w10-z', 'mesh28-w64k-z', 'mesh32-z', 'grid3-30-z', 'grid3-33-z',
             'terrain30-s-z', 'terrain30-m-z', 'terrain30-l-z',
             'orkut', 'uniform25', 'rmat25', 'rmat26', 'rmat27']
-BASELINES = ['GAPBS', 'Wasp', 'Gluon', 'RIKEN', 'Gemini', 'HavoqGT']
+BASELINES = ['GAPBS', 'Wasp', 'Gluon', 'RIKEN', 'Gemini', 'HavoqGT', *DELEGATE_JOBS.values()]
 
 
 def lines(path):
@@ -131,6 +137,10 @@ for job in EXTERNAL_JOBS + ONE_NODE_JOBS:
             engine = c['engine']
             name = {'gap': 'GAPBS', 'wasp': 'Wasp', 'riken': 'RIKEN', 'gluon': 'Gluon',
                     'gemini': 'Gemini', 'havoqgt': 'HavoqGT'}[engine]
+            if engine == 'havoqgt' and job in DELEGATE_JOBS:
+                name = DELEGATE_JOBS[job]
+                if not r['valid']:
+                    continue
             if not r['valid']:
                 if r.get('outcome') == 'hang':
                     bound = r['launch_wall_seconds'] - LOAD_ALLOWANCE

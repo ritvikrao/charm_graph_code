@@ -24,7 +24,8 @@ on every input and node count measured (§31): 17–24× over HavoqGT on
 2-D meshes and 96–131× on `grid3-30-z`; Gemini finishes only on
 `grid3-30-z` and `terrain30-s-z` (50–874×) and hits its cap on the 2-D
 meshes (≥ 245–1216×). On RMAT at 16 nodes (older ACIC builds) it is
-1.35–2.59× faster than Gemini and 4.3–12× faster than HavoqGT.
+1.35–2.59× faster than Gemini and 4.3–9.3× faster than HavoqGT at its best
+completing delegate threshold (§32).
 
 **Vertex order (2026-09-29).** The mesh and road wins assume a
 locality-preserving vertex order. On `mesh26` in generator (row-major) order,
@@ -167,9 +168,6 @@ edge rise from 1.30 at one node to 3.3 at 16. `mesh24-z` at 4 nodes is the
 first point of the mesh weak-scaling series (about 4.2M vertices per node).
 
 #### `mesh26` (67.1M vertices, 268.4M edges)
-
-Generator (row-major) order, the same graph and physical sources as
-`mesh26-z`; ordering pair O1 (§31).
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
@@ -510,9 +508,6 @@ the same job, and every counted solve is from that rerun.
 
 #### `road-usa` (23.9M vertices, 57.7M edges)
 
-DIMACS order, the same graph and physical sources as `road-usa-z`; ordering
-pair O1 (§31).
-
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 16 | ACIC TLS (acic_scale64b) | 2.35–4.51 | 4 | 5561485 |
@@ -595,6 +590,8 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 RIKEN on `road-na-z` reaches every vertex but its distance sum is high by 3.0e-05–3.7e-05 (relative).
 
+RIKEN on `road-na-z` reaches every vertex but its distance sum is high by 3.0e-05–3.7e-05 (relative).
+
 No Gluon at 4 nodes: the first attempt (5541426) was cancelled after its
 ACIC arms, because 60–85 s Gluon solves left no time for the search, and its
 rerun (5541712) failed at submission (missing `VARIANTS_PREFIX`). RIKEN ran in
@@ -629,6 +626,8 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | 16 | ACIC TLS (acic_tls) | 1.68–2.07× | 0.86–1.24× | 17.9–135× | 286–1187× |
 | 64 | ACIC production | 1.57–1.99× | 0.81–1.19× | 8.24–50.8× | 105–442× |
 | 64 | ACIC TLS (acic_tls) | 1.90–2.39× | 0.98–1.43× | 10.0–60.9× | 126–537× |
+
+RIKEN on `road-eu-z` reaches every vertex but its distance sum is high by 4.9e-05–6.4e-05 (relative).
 
 RIKEN on `road-eu-z` reaches every vertex but its distance sum is high by 4.9e-05–6.4e-05 (relative).
 
@@ -840,13 +839,14 @@ The closest scale-free graph to RIKEN (0.77–0.90×).
 | 16 | RIKEN | 0.062–0.068 | 4 | 5536474, 5536475 |
 | 16 | Gemini | 0.365–0.393 | 4 | 5561482 |
 | 16 | HavoqGT | 1.64–1.90 | 4 | 5561483 |
+| 16 | HavoqGT, delegates 4096 | 1.21–1.46 | 4 | 5566503 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
-|---:|---|---:|---:|---:|---:|---:|---:|
-| 16 | ACIC production, 4 × 14 | — | — | 3.75–4.16× | 0.29–0.33× | 1.75–1.85× | 8.10–8.93× |
-| 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 4.58–5.27× | 0.38–0.43× | 2.23–2.51× | 10.3–12.1× |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT | over HavoqGT, delegates 4096 |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 16 | ACIC production, 4 × 14 | — | — | 3.75–4.16× | 0.29–0.33× | 1.75–1.85× | 8.10–8.93× | 5.95–6.87× |
+| 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 4.58–5.27× | 0.38–0.43× | 2.23–2.51× | 10.3–12.1× | 7.56–9.32× |
 
 The hub hints (TLS builds) cut `rmat26`'s updates from 1.81B to 0.68B (§11);
 ACIC stays about 2.2–3× slower than RIKEN on RMAT.
@@ -861,13 +861,14 @@ ACIC stays about 2.2–3× slower than RIKEN on RMAT.
 | 16 | RIKEN | 0.122–0.124 | 4 | 5536474, 5536475 |
 | 16 | Gemini | 0.519–0.702 | 4 | 5561482 |
 | 16 | HavoqGT | 1.66–2.11 | 4 | 5561483 |
+| 16 | HavoqGT, delegates 16384 | 1.91–2.26 | 4 | 5566974 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
-|---:|---|---:|---:|---:|---:|---:|---:|
-| 16 | ACIC production, 4 × 14 | — | — | 2.48–3.49× | 0.32–0.35× | 1.35–1.96× | 4.29–5.90× |
-| 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 3.17–4.44× | 0.40–0.46× | 1.69–2.59× | 5.40–7.78× |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT | over HavoqGT, delegates 16384 |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 16 | ACIC production, 4 × 14 | — | — | 2.48–3.49× | 0.32–0.35× | 1.35–1.96× | 4.29–5.90× | 4.96–6.31× |
+| 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 3.17–4.44× | 0.40–0.46× | 1.69–2.59× | 5.40–7.78× | 6.24–8.33× |
 
 The TLS row is allocation A only (5539899). Source 27797227 stalled twice,
 in both builds, answering correctly after 0.2–1.8 s (§13); allocation B reran
@@ -2940,8 +2941,11 @@ Without delegates the solve takes 1.6–1.9 s (5561483).
 - `rmat26` (83,682 delegates): every solve hung (capped at 300 s).
 - So HavoqGT at 896 ranks deadlocks once the delegate count passes a point
   between about 15k and 84k.
-- O2e (5566974) runs `rmat26` at threshold 16384 for a delegate count near
-  the one that works.
+- O2e (5566974) ran `rmat26` at threshold 16384: 9,109 delegates, correct,
+  1.91–2.26 s. That is no faster than without delegates (1.66–2.11 s).
+- HavoqGT's best completing setting is therefore threshold 4096 on `rmat25`
+  (ACIC 5.95–9.32× faster) and no delegates on `rmat26` (ACIC 4.29–7.78×).
+- The dataset tables show every HavoqGT setting as its own row.
 
 **C1 and C2, chunk stall probes at 16 nodes (5566199, 5566200).** Each launch
 solves four sources in sequence, with ACIC's 300 s solve timeout and an
@@ -2970,6 +2974,7 @@ solves four sources in sequence, with ACIC's 300 s solve timeout and an
 | Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
 | Frontier F batch, first results | F4 16n 5565464, F5 32n 5565466, F7 5565471, F9 5565476/5565797, O1b 5565472, O2b 5565473; `benchmarks/frontier-{f4,f10,o1b}-*-variants.json` (predictions); freeze binaries `campaign/bin/acic_frz_*` with manifests (601697e) |
 | Frontier F batch, first results | C1 5566199, C2 5566200, O2c 5566201; F4 16n 5565464, F5 32n 5565466, F7 5565471, F9 5565476/5565797, O1b 5565472, O2b 5565473; `benchmarks/frontier-{f4,f10,o1b}-*-variants.json` (predictions); freeze binaries `campaign/bin/acic_frz_*` with manifests (601697e) |
+| Frontier F batch, first results | O2d 5566503, O2e 5566974 (HavoqGT delegate rows, `DELEGATE_JOBS` in results_by_dataset.py); C1 5566199, C2 5566200, O2c 5566201; F4 16n 5565464, F5 32n 5565466, F7 5565471, F9 5565476/5565797, O1b 5565472, O2b 5565473; `benchmarks/frontier-{f4,f10,o1b}-*-variants.json` (predictions); freeze binaries `campaign/bin/acic_frz_*` with manifests (601697e) |
 | Frontier Gemini/HavoqGT (phase A, O2) and ordering pair (O1) | Gemini 5560447–5560454, 5561482 (conversions 5560446, 5561481); HavoqGT 5560455–5560462, 5561483, 5561484 (threshold 896); ACIC 5561485 (`benchmarks/frontier-order-{mesh,road}-16n-variants.json`, predictions recorded), Gluon 5561486; `scripts/frontier/series_baseline.sbatch`, `series_gluon.sbatch`, `gluon_compare.sbatch`; rows in `design/onenode-data/results-by-dataset.json` |
 | Delta IPDPS D3b width bracket | `design/onenode-data/delta-ipdps-d3b-width-22533655.json`; `benchmarks/delta-ipdps-d3b-width-variants.json` (predictions); job 22533655 |
 | Delta IPDPS D5 ordering pair | `design/onenode-data/delta-ipdps-d5-order-22530871.json`; `benchmarks/delta-ipdps-d5-order-variants.json` (predictions); job 22530871 |
@@ -3068,7 +3073,8 @@ and paths are consolidated in [configurations.md](configurations.md).
     input and node count measured: 17–24× over HavoqGT on `terrain30-s-z`,
     69–545× on the 2-D meshes, 96–131× on `grid3-30-z`, at least 245× over
     Gemini on the 2-D meshes; on RMAT 25/26 at 16 nodes 1.35–2.59× over Gemini
-    and 4.3–12× over HavoqGT.
+    and 4.3–9.3× over HavoqGT at its best completing delegate threshold
+    (4096 on `rmat25`, none on `rmat26`; §32).
 
 ## Claims not supported
 
@@ -3089,8 +3095,8 @@ and paths are consolidated in [configurations.md](configurations.md).
 - Multi-node behavior of the one-node chunk queue.
 - ACIC is robust to vertex order: in generator order `mesh26` is 107–183×
   slower than `mesh26-z` at 16 nodes and loses to Gluon (§31).
-- Any comparison with HavoqGT using vertex delegates: the upstream threshold
-  (2^20) makes no delegates on `rmat25`, and threshold 896 hung (§31).
+- HavoqGT with more than about 15k–84k delegates at 896 ranks: it deadlocks
+  (§32). The RMAT comparison uses the fastest threshold that completes.
 - The current candidate is regression-free on RMAT. The Frontier frozen-binary
   gate returned NO-GO by its recorded rule (`rmat26`, `rmat27`, 2.5–5% on
   single sources, §10).
