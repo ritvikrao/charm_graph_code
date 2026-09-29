@@ -2835,12 +2835,95 @@ Morton order.
 - The Limitations section carries this unless O1b shows the loss is the
   tiling rule's.
 
+### 32. Frontier F batch, first results (2026-09-29)
+
+These runs use the freeze candidate 601697e, built on Frontier as
+`acic_frz_heap`, `acic_frz_c256` and `acic_frz_c65536` (TLS runtime,
+compact64). O1b uses `acic_scale64b`, as O1 did. Layout 8 × 7, four held-out
+sources, one warmup and three repetitions, and every counted solve is
+digest-valid. Speedups are per source, so each range is over sources.
+
+**F4, chunk queue at 16 nodes (5565464).**
+
+| Input | Heap, slice 8 (s) | Chunks, slice 64 (s) | Speedup |
+|---|---:|---:|---:|
+| `mesh28-z` | 0.60–0.71 | 0.35–0.43 | **1.65–1.73×** |
+| `mesh32-z` | 9.11–10.44 | 4.24–4.92 | **2.12–2.15×** |
+| `terrain30-m-z` | 26.0–29.4 | 13.5–15.9 | **1.85–1.93×** |
+| `grid3-33-z` | 16.0–17.6 | failed: the first solve was still running at the 6-minute step limit | — |
+| `road-planet-z` | 0.88–1.07 | failed: sources 0–1 correct, source 2 did not converge in 300 s | — |
+
+- On `mesh28-z` and `mesh32-z` the chunks rows use band 256; on
+  `road-planet-z` band 65536. Both failed arms were stopped and the heap arm
+  rerun alone (`AB-*-16n-5565464.failed`).
+- The one-node gain mostly survives at 16 nodes on meshes and terrain, with
+  8–34% more edge work.
+- On `grid3-33-z` and `road-planet-z` the chunk queue makes progress very
+  slowly or not at all; the heap never did this on either input.
+- Stall probes C1 (`road-planet-z`) and C2 (`grid3-30-z`) count how often it
+  happens.
+
+**F5, `mesh28-w10-z` at 32 nodes (5565466).**
+- The ln V rule (19.41): 0.64–0.71 s.
+- 16× (310.5): 0.35–0.40 s, **1.75–1.84×**.
+- ⅛× (2.43): 0.41–0.46 s, **1.53–1.57×**.
+- Both widths do about twice the edge work (2.0–2.2 attempts per edge, against
+  1.02 with the rule) and still win, so the rule's width is round-bound at
+  scale as it is on one node (D3). 64 nodes follow in 5565465.
+
+**F7, Gluon delta check (5565471).** One source of `terrain30-s-z` at 64
+nodes. Delta 32: 636 s; 512: 577 s; 2048: 589 s. The series' 128 took 499–509
+s, the fastest of the four, so the Gluon terrain rows were not mistuned.
+
+**F9, one-node `road-planet-z` (5565476, 5565797).** Training sources chose 56
+threads and delta 8192 for both codes. On the four held-out sources:
+- GAPBS: 1.64–1.92 s.
+- Wasp: 0.86–0.92 s.
+- The heap freeze candidate at 16 nodes: 0.88–1.07 s (F4), about even with
+  Wasp.
+
+**O1b, reader tiling off (5565472).**
+
+| Input | Tiling auto (s) | Tiling off (s) | Speedup from tiling off |
+|---|---:|---:|---:|
+| `mesh26` (row-major) | 21.2–49.5 | 0.31–0.40 | **61–131×** |
+| `mesh26-z` | 0.18–0.22 | 0.71–0.98 | 0.23–0.29× |
+| `road-usa` (DIMACS) | 2.34–4.48 | 6.64–10.6 | 0.35–0.47× |
+| `road-usa-z` | 0.12–0.17 | 0.20–0.30 | 0.51–0.60× |
+
+- **On row-major `mesh26`, tiling causes the loss.** With tiling off, attempts
+  per edge fall from 298 to 2.0. The order cost against `mesh26-z` falls from
+  107–183× to about 1.7×, and ACIC is about 20–27× faster than Gluon there
+  (7.0–9.5 s).
+- **On every other input, tiling is worth 1.7–4.4×,** including DIMACS-ordered
+  `road-usa`.
+- So `--reader-tile auto` is right except where a tile is a 1-D row segment of
+  a row-major grid (tile 8192 = the grid width). A tiling rule based on
+  locality, for example the fraction of edges inside their tile, would choose
+  correctly in all four cases. That is a rule change, not yet made.
+
+**O2b, HavoqGT delegates on `rmat20`, 2 nodes (5565473).** Every threshold
+solves correctly. Delegates make HavoqGT faster:
+
+| Threshold | Delegates | Solve (s) |
+|---|---:|---:|
+| 2^20 | 0 | 1.68 |
+| 65536 | 0 | 1.63 |
+| 4096 | 211 | 1.36 |
+| 896 | 6,196 | 0.71 |
+
+So the hang at 16 nodes on `rmat25` (5561484, 245,506 delegates) is not
+delegates as such. O2c repeats the thresholds on `rmat25` at 16 nodes. The
+RMAT comparison without delegates may overstate ACIC's margin over HavoqGT by
+up to about 2.4× until O2c answers.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
 | D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |
 | Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
+| Frontier F batch, first results | F4 16n 5565464, F5 32n 5565466, F7 5565471, F9 5565476/5565797, O1b 5565472, O2b 5565473; `benchmarks/frontier-{f4,f10,o1b}-*-variants.json` (predictions); freeze binaries `campaign/bin/acic_frz_*` with manifests (601697e) |
 | Frontier Gemini/HavoqGT (phase A, O2) and ordering pair (O1) | Gemini 5560447–5560454, 5561482 (conversions 5560446, 5561481); HavoqGT 5560455–5560462, 5561483, 5561484 (threshold 896); ACIC 5561485 (`benchmarks/frontier-order-{mesh,road}-16n-variants.json`, predictions recorded), Gluon 5561486; `scripts/frontier/series_baseline.sbatch`, `series_gluon.sbatch`, `gluon_compare.sbatch`; rows in `design/onenode-data/results-by-dataset.json` |
 | Delta IPDPS D3b width bracket | `design/onenode-data/delta-ipdps-d3b-width-22533655.json`; `benchmarks/delta-ipdps-d3b-width-variants.json` (predictions); job 22533655 |
 | Delta IPDPS D5 ordering pair | `design/onenode-data/delta-ipdps-d5-order-22530871.json`; `benchmarks/delta-ipdps-d5-order-variants.json` (predictions); job 22530871 |
