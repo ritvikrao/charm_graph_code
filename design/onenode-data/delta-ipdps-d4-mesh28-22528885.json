@@ -1,0 +1,272 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-mesh28-z-1n-22528885",
+    "graph": "mesh28-z",
+    "hosts": "cn137",
+    "binaries": {
+      "candidate": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "no_slice": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "no_batch": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "local_queue": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "no_share": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "plain_async": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "chunks": {
+        "binary": "acic_frz_c256",
+        "sha256": "a8950f57d9c1de6316dfb17ca099b598f2ce88233d9e47e413c08c514959c3fa"
+      },
+      "control": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      }
+    },
+    "solves": 128,
+    "timed": 96,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "candidate",
+    "arms": {
+      "candidate": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.955837,
+          3.543453,
+          3.625022,
+          3.437491
+        ],
+        "median_rounds": 1151.0,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          1.4483,
+          1.619664
+        ],
+        "wire_bytes_per_edge_range": [
+          0.043867,
+          0.048469
+        ],
+        "node_bytes_per_edge_range": [
+          0.096644,
+          0.107011
+        ]
+      },
+      "no_slice": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.690186,
+          3.214252,
+          3.236741,
+          3.109487
+        ],
+        "median_rounds": 405.5,
+        "speedup_over_base_by_source": [
+          1.0719885122321746,
+          1.1024191631521112,
+          1.1199604787655237,
+          1.105484924040525
+        ],
+        "attempts_per_edge_range": [
+          1.444083,
+          1.640757
+        ],
+        "wire_bytes_per_edge_range": [
+          0.03705,
+          0.041377
+        ],
+        "node_bytes_per_edge_range": [
+          0.077002,
+          0.086388
+        ]
+      },
+      "no_batch": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          5.714735,
+          5.128337,
+          5.316658,
+          5.000921
+        ],
+        "median_rounds": 1270.5,
+        "speedup_over_base_by_source": [
+          0.6922170494344881,
+          0.6909555670775925,
+          0.6818234311855305,
+          0.6873715861538305
+        ],
+        "attempts_per_edge_range": [
+          1.413145,
+          1.571054
+        ],
+        "wire_bytes_per_edge_range": [
+          0.041756,
+          0.04614
+        ],
+        "node_bytes_per_edge_range": [
+          0.092846,
+          0.102712
+        ]
+      },
+      "local_queue": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          9.385864,
+          7.78648,
+          6.810273,
+          7.836002
+        ],
+        "median_rounds": 1511.0,
+        "speedup_over_base_by_source": [
+          0.4214675388435204,
+          0.4550776474093557,
+          0.5322873253392338,
+          0.43867918869852257
+        ],
+        "attempts_per_edge_range": [
+          4.81681,
+          6.894551
+        ],
+        "wire_bytes_per_edge_range": [
+          0.0869,
+          0.113066
+        ],
+        "node_bytes_per_edge_range": [
+          0.179688,
+          0.232329
+        ]
+      },
+      "no_share": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          16.311035,
+          12.705602,
+          10.33528,
+          11.703171
+        ],
+        "median_rounds": 2884.0,
+        "speedup_over_base_by_source": [
+          0.2425251984316139,
+          0.27888902863477066,
+          0.35074250528287576,
+          0.29372304309661035
+        ],
+        "attempts_per_edge_range": [
+          14.165515,
+          25.014299
+        ],
+        "wire_bytes_per_edge_range": [
+          113.560947,
+          200.539875
+        ],
+        "node_bytes_per_edge_range": [
+          227.595546,
+          401.930708
+        ]
+      },
+      "plain_async": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.867865,
+          3.524098,
+          3.610855,
+          3.429717
+        ],
+        "median_rounds": 1091.0,
+        "speedup_over_base_by_source": [
+          1.022744330528599,
+          1.0054921855181098,
+          1.0039234474937377,
+          1.0022666593191216
+        ],
+        "attempts_per_edge_range": [
+          1.432328,
+          1.626966
+        ],
+        "wire_bytes_per_edge_range": [
+          0.043985,
+          0.047248
+        ],
+        "node_bytes_per_edge_range": [
+          0.09694,
+          0.103909
+        ]
+      },
+      "chunks": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          1.719695,
+          1.390061,
+          1.390998,
+          1.347087
+        ],
+        "median_rounds": 660.0,
+        "speedup_over_base_by_source": [
+          2.3003131369225356,
+          2.5491348940801877,
+          2.6060583839804226,
+          2.5517958379822536
+        ],
+        "attempts_per_edge_range": [
+          1.562427,
+          1.79115
+        ],
+        "wire_bytes_per_edge_range": [
+          0.037013,
+          0.04073
+        ],
+        "node_bytes_per_edge_range": [
+          0.077568,
+          0.085704
+        ]
+      },
+      "control": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.93346,
+          3.549758,
+          3.62611,
+          3.438782
+        ],
+        "median_rounds": 1165.0,
+        "speedup_over_base_by_source": [
+          1.0056888845952419,
+          0.9982238225817083,
+          0.9996999539451368,
+          0.9996245763761705
+        ],
+        "attempts_per_edge_range": [
+          1.459939,
+          1.621105
+        ],
+        "wire_bytes_per_edge_range": [
+          0.044441,
+          0.047573
+        ],
+        "node_bytes_per_edge_range": [
+          0.097031,
+          0.105198
+        ]
+      }
+    }
+  }
+]

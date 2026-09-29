@@ -2303,10 +2303,56 @@ overflow path. D3b (8×, 16×, ⅛×) brackets both sides. Records:
 `design/onenode-data/delta-ipdps-d1-grid3-22528376.json`,
 `design/onenode-data/delta-ipdps-d3-width-22528693.json`.
 
+### 28. Delta IPDPS one-node mechanism ablation on mesh28-z (D4), 2026-09-28
+
+One mechanism is changed at a time from the Frontier candidate: nearest
+queue, batch 8, heap slice 8, histogram admission, process sharing `auto`.
+Band-256 chunks are added on top as a separate arm. The layout is §26's, and
+the binaries are the freeze candidate (601697e). Job 22528885 ran one warmup
+and three repetitions; all 128 solves are digest-valid. Predictions are in
+`benchmarks/delta-ipdps-d4-ablation-variants.json`.
+
+| Arm | Arm time / candidate time | Attempts per edge | Rounds | Wire bytes per edge | Prediction |
+|---|---:|---:|---:|---:|---|
+| candidate | 1.00× (3.44–3.96 s) | 1.45–1.62 | 1,151 | 0.04 | — |
+| no heap slice (default 100) | **0.89–0.93×** | 1.44–1.64 | 406 | 0.04 | 1.1–2× slower: missed |
+| no batching (batch 1) | 1.44–1.47× | 1.41–1.57 | 1,271 | 0.04 | 1.0–1.3×: missed (larger) |
+| local queue (batch 1) | 1.88–2.37× | 4.8–6.9 | 1,511 | 0.09–0.11 | 1.5–4×, 5–20 attempts: met |
+| process sharing off | 2.85–4.12× | 14.2–25.0 | 2,884 | 114–201 | 1.5–4×: at the edge |
+| plain asynchronous (`--admission all`) | 0.98–1.00× | 1.43–1.63 | 1,091 | 0.04 | ≥ 1.5× slower: missed |
+| band-256 chunks, slice 64 | 0.38–0.43× (2.30–2.61× faster) | 1.56–1.79 | 660 | 0.04 | 2.2–2.8× faster: met |
+| control | 0.99–1.00× | 1.46–1.62 | 1,165 | 0.04 | 0.95–1.05×: met |
+
+**The histogram threshold is inert here.** The candidate spent 1,145 of 1,148
+rounds with the frontier outside the reduced window ("Rounds with the frontier
+outside the window"). With thresholds at 2047, it admits everything, so it is
+the plain asynchronous arm in effect. The cause is the width: the ln V rule
+gives 19.4, so the 2048 buckets span 39.7K against distances of 2.4–3.8M.
+- **Other graphs:** grid3-30-z leaves the window in 18% of heap rounds
+  (22528376). mesh28-w10-z at the rule width (22528693) and road at width
+  131072 (22527563) stay inside it.
+- **Frontier:** mesh26-z's distances (1.4–1.9M) are equally far past its
+  ln V window, and the Frontier series passes no width. So the multi-node
+  mesh results probably also ran with an inert threshold. That is unverified
+  here, and F10's plain asynchronous arm tests it.
+
+On one node the mesh result is carried by the other mechanisms:
+- **Process sharing** is worth 2.9–4.1×. Without it, edge work grows about
+  12× and wire traffic grows about 3,000×.
+- **The nearest queue over the local one** is worth 1.9–2.4×.
+- **Batching** is worth 1.4–1.5×.
+- **The chunk queue** adds 2.3–2.6×.
+
+The heap slice costs 7–11% at one node, as §5 found on one Frontier node.
+Its measured benefit is multi-node (§8). D4b repeats the admission comparison
+with the weight-rule width, where the window covers the distances. Record:
+`design/onenode-data/delta-ipdps-d4-mesh28-22528885.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D4 mechanism ablation, mesh28-z | `design/onenode-data/delta-ipdps-d4-mesh28-22528885.json`; `benchmarks/delta-ipdps-d4-ablation-variants.json` (predictions); job 22528885 |
 | Delta IPDPS D1 grid3-30-z and D3 width screen | `design/onenode-data/delta-ipdps-d1-grid3-22528376.json`, `design/onenode-data/delta-ipdps-d3-width-22528693.json` (`benchmarks/ipdps_ab_summary.py`); `benchmarks/delta-ipdps-d1-variants.json`, `benchmarks/delta-ipdps-d3-width-variants.json` (predictions); jobs 22528376, 22528693 |
 | Delta IPDPS D1 re-confirmation and D2 counters | `design/onenode-data/delta-ipdps-d1d2-22526239-22527563.json`; `benchmarks/delta-ipdps-d2-{mesh28,road}-variants.json` (predictions); `scripts/delta/ipdps_ab.sbatch`; jobs 22526239, 22527563; campaign `/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928` |
 | Frontier mesh28-z one-node queue replication | `design/onenode-data/frontier-mesh28-chunks-5548095.json` (audit, 96 + 32 solves); `benchmarks/frontier-1n-chunks-mesh-variants.json` (predictions, 3f6133b); `scripts/frontier/chunks_1n.sbatch`; profile job 5546915 (`scripts/frontier/profile_1n.sbatch`; traces under `campaign/profile/mesh28-z-1n-5546915/`) |
