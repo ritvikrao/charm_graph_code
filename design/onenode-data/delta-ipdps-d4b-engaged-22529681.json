@@ -1,0 +1,240 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-mesh28-z-1n-22529681",
+    "graph": "mesh28-z",
+    "hosts": "cn137",
+    "binaries": {
+      "candidate": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "candidate_weight": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "plain_async": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "plain_async_weight": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "chunks": {
+        "binary": "acic_frz_c256",
+        "sha256": "a8950f57d9c1de6316dfb17ca099b598f2ce88233d9e47e413c08c514959c3fa"
+      },
+      "chunks_weight": {
+        "binary": "acic_frz_c256",
+        "sha256": "a8950f57d9c1de6316dfb17ca099b598f2ce88233d9e47e413c08c514959c3fa"
+      },
+      "control": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      }
+    },
+    "solves": 112,
+    "timed": 84,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "candidate",
+    "arms": {
+      "candidate": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.917528,
+          3.543718,
+          3.640556,
+          3.43681
+        ],
+        "median_rounds": 1190.5,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          1.449848,
+          1.596974
+        ],
+        "wire_bytes_per_edge_range": [
+          0.044906,
+          0.047977
+        ],
+        "node_bytes_per_edge_range": [
+          0.099129,
+          0.106227
+        ]
+      },
+      "candidate_weight": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          5.201475,
+          5.002968,
+          5.053025,
+          4.819664
+        ],
+        "median_rounds": 24515.5,
+        "speedup_over_base_by_source": [
+          0.7531571333131467,
+          0.7083231393844615,
+          0.7204706091895449,
+          0.7130808288710582
+        ],
+        "attempts_per_edge_range": [
+          1.049354,
+          1.304026
+        ],
+        "wire_bytes_per_edge_range": [
+          0.040105,
+          0.044146
+        ],
+        "node_bytes_per_edge_range": [
+          0.113637,
+          0.123702
+        ]
+      },
+      "plain_async": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.90273,
+          3.515732,
+          3.620998,
+          3.428165
+        ],
+        "median_rounds": 1078.0,
+        "speedup_over_base_by_source": [
+          1.0037917047810123,
+          1.0079602199485058,
+          1.0054012733506066,
+          1.0025217572666427
+        ],
+        "attempts_per_edge_range": [
+          1.432739,
+          1.609527
+        ],
+        "wire_bytes_per_edge_range": [
+          0.043941,
+          0.046687
+        ],
+        "node_bytes_per_edge_range": [
+          0.096881,
+          0.102526
+        ]
+      },
+      "plain_async_weight": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.982399,
+          3.554979,
+          3.636644,
+          3.435979
+        ],
+        "median_rounds": 1108.5,
+        "speedup_over_base_by_source": [
+          0.9837105724464072,
+          0.9968323300925266,
+          1.0010757170622144,
+          1.0002418524676664
+        ],
+        "attempts_per_edge_range": [
+          1.444645,
+          1.618889
+        ],
+        "wire_bytes_per_edge_range": [
+          0.043751,
+          0.047302
+        ],
+        "node_bytes_per_edge_range": [
+          0.096214,
+          0.103957
+        ]
+      },
+      "chunks": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          1.650686,
+          1.37779,
+          1.409234,
+          1.354912
+        ],
+        "median_rounds": 614.5,
+        "speedup_over_base_by_source": [
+          2.373272687840086,
+          2.5720305706965503,
+          2.583358051253376,
+          2.5365558796438443
+        ],
+        "attempts_per_edge_range": [
+          1.580043,
+          1.738714
+        ],
+        "wire_bytes_per_edge_range": [
+          0.037747,
+          0.040475
+        ],
+        "node_bytes_per_edge_range": [
+          0.079021,
+          0.085437
+        ]
+      },
+      "chunks_weight": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          2.306998,
+          2.257474,
+          2.302429,
+          2.101738
+        ],
+        "median_rounds": 10616.5,
+        "speedup_over_base_by_source": [
+          1.698106370269935,
+          1.5697713462037657,
+          1.581180570606086,
+          1.6352228488993394
+        ],
+        "attempts_per_edge_range": [
+          1.106758,
+          1.394053
+        ],
+        "wire_bytes_per_edge_range": [
+          0.031067,
+          0.035844
+        ],
+        "node_bytes_per_edge_range": [
+          0.085509,
+          0.088549
+        ]
+      },
+      "control": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.961967,
+          3.552551,
+          3.670463,
+          3.484058
+        ],
+        "median_rounds": 1143.0,
+        "speedup_over_base_by_source": [
+          0.9887836016806802,
+          0.9975136176792396,
+          0.9918519816164882,
+          0.9864388021094941
+        ],
+        "attempts_per_edge_range": [
+          1.448943,
+          1.608379
+        ],
+        "wire_bytes_per_edge_range": [
+          0.044124,
+          0.047922
+        ],
+        "node_bytes_per_edge_range": [
+          0.09684,
+          0.105768
+        ]
+      }
+    }
+  }
+]

@@ -2384,10 +2384,56 @@ Its measured benefit is multi-node (§8). D4b repeats the admission comparison
 with the weight-rule width, where the window covers the distances. Record:
 `design/onenode-data/delta-ipdps-d4-mesh28-22528885.json`.
 
+### 29. Delta IPDPS: the histogram threshold engaged (D4b), 2026-09-28
+
+D4 found the threshold inert on mesh28-z at the ln V width (§28). D4b
+engages it with `--bucket-width-rule weight`: width = heaviest edge = 1000,
+so the window spans 2.05M of the 2.4–3.8M distances. The layout and binaries
+are §28's. Job 22529681 ran one warmup and three repetitions; all 112 solves
+are digest-valid. Predictions are in
+`benchmarks/delta-ipdps-d4b-engaged-variants.json`.
+
+| Arm (mesh28-z) | Candidate time / arm time | Rounds | Attempts per edge | Rounds with threshold 2047 |
+|---|---:|---:|---:|---:|
+| candidate (ln V width, inert) | 1.00× (3.44–3.92 s) | 1,191 | 1.45–1.60 | 94% |
+| candidate, weight width (engaged) | **0.708–0.753×** | 24,516 | 1.05–1.30 | 2.6% |
+| plain asynchronous, ln V width | 1.003–1.008× | 1,078 | 1.43–1.61 | 100% |
+| plain asynchronous, weight width | 0.984–1.001× | 1,109 | 1.44–1.62 | 100% |
+| chunks band 256, ln V width | 2.37–2.58× | 615 | 1.58–1.74 | 99.8% |
+| chunks band 256, weight width (engaged) | 1.57–1.70× | 10,617 | 1.11–1.39 | 3.3% |
+| control | 0.986–0.998× | 1,143 | 1.45–1.61 | — |
+
+Engaged, the threshold does what it is designed to do:
+- **It cuts edge work** by 10–28% (1.05–1.30 attempts per edge against
+  1.45–1.60).
+- **It costs about 20× the rounds.** On one node that makes the heap
+  1.33–1.41× slower and the chunk queue 1.51–1.65× slower than their inert
+  versions.
+- **Width acts only through the threshold.** With admission off, the two
+  widths give the same time.
+
+So on one node the process-shared queue already orders work well enough that
+the threshold's work saving cannot pay for its rounds.
+
+The multi-node case is open. At 16 Frontier nodes, edge work grows to 2.8
+attempts per edge (§8), where saving work may be worth rounds. F10, with its
+plain asynchronous arm at scale, decides whether the threshold contributes to
+any accepted result. Until then the paper cannot attribute the mesh results
+to it.
+
+Predictions:
+- **Met:** plain asynchronous is unchanged by width; the control; the engaged
+  arms stayed at most 10% outside the window.
+- **Missed:** both engaged arms' times fell outside 0.8–1.25×, and the heap's
+  attempts per edge fell below the predicted 1.2–1.45.
+
+Record: `design/onenode-data/delta-ipdps-d4b-engaged-22529681.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D4b, threshold engaged | `design/onenode-data/delta-ipdps-d4b-engaged-22529681.json`; `benchmarks/delta-ipdps-d4b-engaged-variants.json` (predictions); job 22529681 |
 | Delta IPDPS D1 terrain crop | `design/onenode-data/delta-ipdps-d1-terrain-22529053.json`; job 22529053; inputs `scripts/delta/fetch_terrain_crop.sh`, `scripts/delta/ipdps_prepare.sbatch` (build 22528231) |
 | Delta IPDPS D4 mechanism ablation, mesh28-z | `design/onenode-data/delta-ipdps-d4-mesh28-22528885.json`; `benchmarks/delta-ipdps-d4-ablation-variants.json` (predictions); job 22528885 |
 | Delta IPDPS D1 grid3-30-z and D3 width screen | `design/onenode-data/delta-ipdps-d1-grid3-22528376.json`, `design/onenode-data/delta-ipdps-d3-width-22528693.json` (`benchmarks/ipdps_ab_summary.py`); `benchmarks/delta-ipdps-d1-variants.json`, `benchmarks/delta-ipdps-d3-width-variants.json` (predictions); jobs 22528376, 22528693 |
