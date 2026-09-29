@@ -12,52 +12,54 @@ Adaptive Asynchronous SSSP on Meshes, Terrain and Road Networks
 
 Distributed single-source shortest path (SSSP) codes are designed, tuned and
 ranked on the Graph500 benchmark: Kronecker graphs with a skewed degree
-distribution, a small diameter and uniformly random edge weights. Many
-graphs that need distributed memory look nothing like this. Simulation
-meshes, 3-D grids, terrain models and road networks have low, uniform
-degree, a diameter in the thousands to millions, and physically derived edge
-weights. We show that on these graphs the Graph500-style distributed codes
-do not scale: in our measurements, one Frontier node running a shared-memory
-SSSP code is often faster than 64 nodes running a distributed one.
+distribution, a small diameter and uniformly random edge weights. Many graphs
+that need distributed memory look nothing like this. Simulation meshes, 3-D
+grids, terrain models and road networks have low, uniform degree, a diameter
+in the thousands to millions, and physically derived edge weights. We show
+that on these graphs the Graph500-style distributed codes do not scale: one
+Frontier node running a shared-memory SSSP code is often faster than 64 nodes
+running a distributed one.
 
-We present ACIC, an asynchronous SSSP algorithm built on a message-driven
-runtime. ACIC replaces per-process priority queues with queues shared by all
-the cores of a process, removes work from them nearest-bucket-first in
-batches, and aggregates the resulting fine-grained updates into large
-messages. Relaxation is asynchronous, with no bulk-synchronous supersteps;
-lightweight reductions only monitor progress and detect termination. Several choices adapt to the input at
-run time, among them whether processes share queues and how vertices are
-placed. These mechanisms are straightforward to express in a
-message-driven parallel programming model, and awkward in bulk-synchronous
-MPI.
+We present ACIC, an asynchronous distributed SSSP algorithm. Shared-memory
+asynchronous codes such as Wasp rely on atomic updates to shared distances and
+on work stealing; neither exists across nodes, where every remote update is a
+message and aggregating messages for throughput delays the priority
+information the algorithm needs. ACIC addresses the three resulting problems.
+It flushes aggregated updates at a cadence that adapts to starvation, trading
+bandwidth against staleness. It deals vertices to processes in small tiles, so
+the moving wavefront keeps every process busy without cross-node stealing. It
+shares one priority queue per process and removes work nearest-bucket-first in
+batches, bounding the extra work asynchrony causes as nodes are added. Each
+mechanism builds on a component a message-driven runtime already provides
+(aggregation, idle-time scheduling, reductions), making them straightforward
+in Charm++ and awkward in bulk-synchronous MPI.
 
 We evaluate ACIC against four distributed codes (Gluon, the RIKEN Graph500
 SSSP code, HavoqGT and Gemini) and two tuned shared-memory codes (GAPBS and
-Wasp) on up to 64 Frontier nodes (3,584 cores). The inputs are 2-D meshes, 3-D
-grids, road networks of North America, Europe and Afro-Eurasia (distance and
-travel-time weights), and Copernicus terrain with Tobler walking-time weights, up to 34
-billion vertices and 275 billion edges. Every baseline is tuned on training
-sources and measured on held-out ones, and every result is checked against a
-reference solution.
+Wasp) on up to 64 Frontier nodes. The inputs are 2-D meshes, 3-D grids, road
+networks of North America, Europe and Afro-Eurasia (distance and travel-time
+weights), and Copernicus terrain with Tobler walking-time weights, up to 34
+billion vertices and 275 billion edges. Baselines are tuned on training
+sources and measured on held-out ones; every result is checked against a
+reference.
 
-On these graphs ACIC is 8–240× faster than Gluon and one to three orders
-of magnitude faster than the RIKEN code, HavoqGT and Gemini. It is also the
-only distributed code in the study that beats a tuned single node: at 64
-nodes it is 5.0–14.5× faster than GAPBS and 2.3–7.9× faster than Wasp on large meshes,
+On these graphs ACIC is 8–240× faster than Gluon and one to three orders of
+magnitude faster than the RIKEN code, HavoqGT and Gemini. It is also the only
+distributed code here that beats a tuned single node: at 64 nodes it is
+5.0–14.5× faster than GAPBS and 2.3–7.9× faster than Wasp on large meshes,
 grids and terrain. On the Kronecker graphs Graph500 uses, the RIKEN code
 remains faster. The two classes of graph need different designs, and a
 benchmark that measures only one misses the other.
 
-An ablation at 16 and 64 nodes attributes the speedup. Queues shared within a
-process give 5–15×, nearest-bucket removal 2.2–3.7×, and batched removal
-1.5–1.6×. A chunked queue gives a further 2× on meshes and terrain. A
-histogram-derived admission threshold, a dynamic-thresholding design,
-admits all work in 89–99% of rounds and gives nothing. Recent work shows that
-synthetic uniform weights misrepresent shared-memory SSSP. We extend that
-finding to distributed memory, across weight ranges from [1, 10] to
-[1, 65,536] and natural road and terrain weights. We also report ACIC's
-limits: its speedup depends on a locality-preserving vertex order, and on
-narrow weight ranges its bucket width costs up to 2×.
+An ablation at 16 and 64 nodes attributes the speedup: shared queues 5–15×,
+nearest-bucket removal 2.2–3.7×, batching 1.5–1.6×, tiled placement 1.7–4.4×,
+and a chunked queue a further 2× on meshes and terrain. A dynamic admission
+threshold admits all work in 89–99% of rounds and gives nothing. Recent work
+shows that synthetic uniform weights misrepresent shared-memory SSSP; we
+extend that finding to distributed memory, across weight ranges from [1, 10]
+to [1, 65,536] and natural road and terrain weights. Limits: ACIC needs a
+locality-preserving vertex order, and its bucket width costs up to 2× on
+narrow weight ranges.
 
 ---
 
@@ -69,6 +71,11 @@ narrow weight ranges its bucket width costs up to 2×.
   one": true for Gluon, RIKEN, HavoqGT and Gemini against GAPBS/Wasp on the
   meshes, grids and terrain (e.g. `grid3-30-z`: Wasp 1 node against Gluon at
   64 nodes). Recheck against F8 before submission.
+- Paragraph 2 (revised 2026-09-29) is organized around the three problems
+  that do not exist in shared memory, so ACIC does not read as distributed
+  Wasp. The flush-cadence claim has only one- and two-node evidence on older
+  code; F11's naive-distribution arm must confirm it at scale, or the sentence
+  goes.
 - "awkward in bulk-synchronous MPI" is an argument, not a measurement. See
   the framing section of sc27-plan.md for the evidence we can add (an
   implementation comparison and an aggregation ablation).
