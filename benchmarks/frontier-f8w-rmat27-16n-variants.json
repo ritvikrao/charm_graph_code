@@ -1,0 +1,54 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.339372"
+    ],
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F8w (design/sc27-plan.md, current-state section 36): F8 rerun with the bucket width ln V / 8, adopted by the user after the width check (5568640/5568642: 1/8x won or tied on every rule-width input). Freeze binaries 601697e, flags as F8 plus --bucket-width = (the rule width printed in F8) / 8. frozen = heap slice 8; c256_s64 = chunks band 256 slice 64 where F8 had them. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; heap against the F8 heap (rule) per source: mesh28-w10-z 1.4-1.8x faster at 16-64 nodes and 1.0-1.3x at 1-4; grid3-30-z 1.03-1.2x; every other input 0.95-1.05x; chunks with the new width within 0.9-1.1x of F8's chunk arm except mesh28-w10-z (0.9-1.6x); scale-free (rule kept as the 'rule' control arm) 1/8x within 0.9-1.1x of the rule."
+  },
+  {
+    "label": "rule",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 16,
+    "rpn": 4,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F8w (design/sc27-plan.md, current-state section 36): F8 rerun with the bucket width ln V / 8, adopted by the user after the width check (5568640/5568642: 1/8x won or tied on every rule-width input). Freeze binaries 601697e, flags as F8 plus --bucket-width = (the rule width printed in F8) / 8. frozen = heap slice 8; c256_s64 = chunks band 256 slice 64 where F8 had them. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; heap against the F8 heap (rule) per source: mesh28-w10-z 1.4-1.8x faster at 16-64 nodes and 1.0-1.3x at 1-4; grid3-30-z 1.03-1.2x; every other input 0.95-1.05x; chunks with the new width within 0.9-1.1x of F8's chunk arm except mesh28-w10-z (0.9-1.6x); scale-free (rule kept as the 'rule' control arm) 1/8x within 0.9-1.1x of the rule."
+  }
+]
