@@ -1,0 +1,56 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_scale64b",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--hub-hints",
+      "auto",
+      "--bucket-width",
+      "131072"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. O1b (design/sc27-plan.md): is ACIC's order cost on row-major mesh26 (107-183x at 16 nodes, 5561485) mostly reader tiling? Tiles of 8192 vertices dealt round-robin to 128 processes make every 128th row one process's on the 8192-wide grid. Same binary and flags as O1 (acic_scale64b); frozen = --reader-tile auto, tile_off = --reader-tile off. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; on mesh26 tile_off is 3-30x faster than auto (order cost falls to 4-40x); on mesh26-z tile_off is 0.7-1.2x of auto; on road-usa tile_off is 1-5x faster than auto; on road-usa-z 0.7-1.2x."
+  },
+  {
+    "label": "tile_off",
+    "binary": "acic_scale64b",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "off",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--heap-slice",
+      "8",
+      "--hub-hints",
+      "auto",
+      "--bucket-width",
+      "131072"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. O1b (design/sc27-plan.md): is ACIC's order cost on row-major mesh26 (107-183x at 16 nodes, 5561485) mostly reader tiling? Tiles of 8192 vertices dealt round-robin to 128 processes make every 128th row one process's on the 8192-wide grid. Same binary and flags as O1 (acic_scale64b); frozen = --reader-tile auto, tile_off = --reader-tile off. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; on mesh26 tile_off is 3-30x faster than auto (order cost falls to 4-40x); on mesh26-z tile_off is 0.7-1.2x of auto; on road-usa tile_off is 1-5x faster than auto; on road-usa-z 0.7-1.2x."
+  }
+]

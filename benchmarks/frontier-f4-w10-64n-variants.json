@@ -1,0 +1,81 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 64,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F5 (design/sc27-plan.md): mesh28-w10-z's plateau (32 -> 64 nodes 1.03-1.05x with the ln V width, 19.41). Delta D3/D3b: the rule is the slowest width from 1/8x to 16x and round-bound; nominated 16x (310.53) and 1/8x (2.426). Heap, slice 8, freeze candidate acic_frz_heap; frozen = the rule. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; 1/8x is 1.1-1.5x faster than the rule at 32 and 64 nodes and restores a 32 -> 64 gain of at least 1.15x; 16x is 0.9-1.2x of the rule."
+  },
+  {
+    "label": "w16x",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "310.529937"
+    ],
+    "nodes": 64,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F5 (design/sc27-plan.md): mesh28-w10-z's plateau (32 -> 64 nodes 1.03-1.05x with the ln V width, 19.41). Delta D3/D3b: the rule is the slowest width from 1/8x to 16x and round-bound; nominated 16x (310.53) and 1/8x (2.426). Heap, slice 8, freeze candidate acic_frz_heap; frozen = the rule. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; 1/8x is 1.1-1.5x faster than the rule at 32 and 64 nodes and restores a 32 -> 64 gain of at least 1.15x; 16x is 0.9-1.2x of the rule."
+  },
+  {
+    "label": "w0p125x",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.426015"
+    ],
+    "nodes": 64,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F5 (design/sc27-plan.md): mesh28-w10-z's plateau (32 -> 64 nodes 1.03-1.05x with the ln V width, 19.41). Delta D3/D3b: the rule is the slowest width from 1/8x to 16x and round-bound; nominated 16x (310.53) and 1/8x (2.426). Heap, slice 8, freeze candidate acic_frz_heap; frozen = the rule. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; 1/8x is 1.1-1.5x faster than the rule at 32 and 64 nodes and restores a 32 -> 64 gain of at least 1.15x; 16x is 0.9-1.2x of the rule."
+  }
+]

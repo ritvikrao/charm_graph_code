@@ -1232,7 +1232,10 @@ class Campaign:
             def riken(rpn, delta):
                 return dict(engine='riken', name=f'riken-r{rpn}-d{delta}', rpn=rpn, threads=machine.threads_per_rank(rpn),
                             cpus=stride(rpn), delta=delta, denominator=denominator, presolve=0)
-            arms['riken'] = ([riken(r, mid) for r in layouts(self.args.riken_layouts)],
+            # --riken-delta pins the layout candidates' delta (the numerator
+            # over the denominator); a pinned run uses the first layout's.
+            pinned = self.args.riken_delta or mid
+            arms['riken'] = ([riken(r, pinned) for r in layouts(self.args.riken_layouts)],
                              lambda layout: [riken(layout['rpn'], d) for d in deltas])
         partitions = ['oec'] if self.nodes == 1 else self.args.gluon_partitions.split(',')
         # Gluon's -delta raises the priority threshold by delta every round
@@ -1535,6 +1538,8 @@ if __name__ == '__main__':
     # Frontier 8,4 / 2,4,8,56 / 1,8 / 14,28,56.
     parser.add_argument('--acic-layouts', default=machine.layout_defaults()['acic'])
     parser.add_argument('--riken-layouts', default=machine.layout_defaults()['riken'])
+    parser.add_argument('--riken-delta', type=int, default=0,
+                        help="RIKEN's delta numerator for the layout candidates (default denominator/16)")
     parser.add_argument('--gluon-layouts', default=machine.layout_defaults()['gluon'])
     parser.add_argument('--gap-threads', default=machine.layout_defaults()['gap'])
     # IPDPS sprint: RIKEN and GAPBS deltas are denominator / each divisor. 8g

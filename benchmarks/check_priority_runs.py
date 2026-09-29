@@ -37,7 +37,10 @@ def main():
                   checked_launches=0, raw_sha256={})
     for job in args.jobs:
         for graph in args.graphs.split(','):
-            directories = list((root/'logs').glob(f'AB-{graph}-*n-{job}'))
+            # AB-GRAPH-<N>n-JOB; the node count must follow GRAPH directly, or
+            # mesh26's pattern would also match mesh26-z's directory.
+            directories = [d for d in (root/'logs').glob(f'AB-{graph}-*n-{job}')
+                           if re.fullmatch(rf'AB-{re.escape(graph)}-\d+n-{job}', d.name)]
             if len(directories) != 1:
                 raise ValueError(f'{job}/{graph}: expected one result directory')
             directory = directories[0]

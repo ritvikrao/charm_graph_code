@@ -103,9 +103,25 @@ is a PPL alumnus; declare a conflict only for recent co-authorship.
 
 **Framing for the Algorithms track:** present ACIC as an algorithm, with
 pseudocode and a correctness and termination argument (monotone frontier,
-collective emptiness). Its parts are the histogram-derived admission
-threshold, bounded heap slices and process-shared priority queues; avoid
-presenting it as runtime tuning.
+collective emptiness). Its parts are process-shared priority queues with
+nearest-bucket batched removal, bounded heap slices, and the chunk queue
+if F4 holds. Avoid presenting it as runtime tuning.
+
+The histogram-derived admission threshold is a mechanism only if F10 shows it
+acts at scale. On one Delta node it is inert at the ln V width (99.9% of
+rounds outside its window, D4) and 1.33–1.41× slower when engaged (D4b). F10
+repeats both arms at 16 and 64 nodes, where asynchrony and round structure
+differ. If it stays inert there, the paper describes it as a safety bound
+and does not claim it as a source of speedup.
+
+**Vertex order (O1, 2026-09-29):**
+- The mesh and road results assume a locality-preserving order (Morton here).
+- Row-major `mesh26` is 107–183× slower for ACIC at 16 nodes, and Gluon wins
+  there (current-state §31).
+- The paper states the assumption and gives every code the same order.
+- O1b tests whether reader tiling causes most of the loss. If it does, the
+  fix (tiling only for locality-preserving inputs) is a rule change for the
+  freeze.
 
 **Early rejects:** the abstract and page 1 carry the regime and the headline
 speedups.
@@ -159,17 +175,23 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 
 | # | Experiment | Status |
 |---|---|---|
-| F1 | Phase A: Gemini and HavoqGT on the series, 4/16/32/64 nodes | Queued: 5560447–5560462 |
-| O1 | Ordering pair: `mesh26` and `road-usa` in generator/DIMACS order against their Morton (`-z`) forms, ACIC and Gluon, 16 nodes, four held-out sources (the same physical sources in both orders) | Submitted: ACIC 5561485, Gluon 5561486 |
-| O2 | HavoqGT (delegate threshold 2^20 and 896) and Gemini on `rmat25` and `rmat26`, 16 nodes, four held-out sources | Submitted: conversion 5561481 (debug), Gemini 5561482, HavoqGT 5561483 and 5561484 |
-| F4 | Chunk queue at 16 and 64 nodes on `mesh28-z`, `mesh32-z` and `terrain30-m-z` | Proposed; after D1 |
-| F5 | Bucket-width probe on `mesh28-w10-z` at 32 and 64 nodes | Optional; after D3 |
-| F6 | RIKEN on the series inputs with max distance below 2^24 (`mesh32-z`, `terrain30-s-z`, both 3-D grids, `mesh28-z`, `mesh28-w10-z`), 16 and 64 nodes, capped launches | Proposed |
-| F7 | Gluon delta check: three deltas, one source of `terrain30-s-z` at 64 nodes | Proposed |
-| F-freeze | Build and validate the frozen binary (debug-queue smoke) | Oct 2 |
-| F8 | Final ACIC matrix with the frozen build: terrain, meshes, grids, roads (including 32 nodes) at 4/16/32/64, and scale-free at 16/64; four or more sources with D2 counters | Oct 3–5 |
-| F9 | One-node Frontier points: ACIC at one node on the inputs that fit, GAPBS and Wasp on `road-planet-z` | Oct 3–5 (debug) |
-| F10 | Ablation at scale: mechanisms off one at a time on `terrain30-m-z` or `mesh32-z`, 16 and 64 nodes, including a plain asynchronous arm | Oct 3–5 |
+| F1 | Phase A: Gemini and HavoqGT on the series, 4/16/32/64 nodes | **Done** (5560447–5560462): ACIC is faster everywhere, 17–24× over HavoqGT on terrain and ≥ 245× over Gemini on the 2-D meshes (current-state §31) |
+| O1 | Ordering pair: `mesh26` and `road-usa` in generator/DIMACS order against their Morton (`-z`) forms, ACIC and Gluon, 16 nodes, four held-out sources (the same physical sources) | **Done** (5561485, 5561486). Order cost to ACIC: 107–183× on `mesh26`, where Gluon wins (ACIC 0.23–0.36×); 20–28× on `road-usa`, where ACIC is still 38–61× faster (§31) |
+| O1b | Reader tiling off against auto on `mesh26`, `mesh26-z`, `road-usa` and `road-usa-z`, 16 nodes, `acic_scale64b` as O1 | Submitted 5565472 |
+| O2 | HavoqGT (delegate threshold 2^20 and 896) and Gemini on `rmat25` and `rmat26`, 16 nodes | **Done** (5561482–5561484). ACIC 1.35–2.59× over Gemini and 4.3–12× over HavoqGT. The upstream threshold makes no delegates; with 896, every solve hung (§31) |
+| O2b | HavoqGT delegate probe: `rmat20`, 2 nodes, thresholds 2^20/65536/4096/896, gdb stacks on a hang | Submitted 5565473 (debug) |
+| F-freeze | Freeze candidate 601697e built on Frontier: `acic_frz_heap`, `acic_frz_c256`, `acic_frz_c65536` (TLS runtime, compact64; manifests beside the binaries). Every F run is digest-checked, so no separate smoke | **Done** 2026-09-29 |
+| F4 | Chunk queue at 16 and 64 nodes: band 256/slice 64 against the heap/slice 8 on `mesh28-z`, `mesh32-z`, `grid3-33-z`, `terrain30-m-z`; band 65536 on `road-planet-z` | Submitted 16n 5565464, 64n 5565465 |
+| F5 | `mesh28-w10-z` widths at 32 and 64 nodes: the ln V rule, 16× (310.5) and ⅛× (2.43), the D3b nominations. Run directly: each solve takes under a second | Submitted 32n 5565466; 64n inside 5565465 |
+| F6 | RIKEN, pinned at 8 ranks per node and delta ≈ 2× the mean edge weight (the ratio its mesh searches chose). Only narrow inputs (the driver reads at most 2^31 − 1 vertices) whose distances stay below 2^24: `terrain30-s-z` (d 2048/65536), `grid3-30-z` (1024/1024), `mesh28-w10-z` (16/16). `mesh32-z`, `grid3-33-z` and the larger terrain crops are wide; `mesh28-w64k-z` exceeds 2^24 | Submitted 16n 5565469, 64n 5565470 (`scripts/frontier/series_riken.sbatch`, `run.py --riken-delta`) |
+| F7 | Gluon delta check on `terrain30-s-z` at 64 nodes: deltas 32, 512 and 2048 on one source, against the series' 128 (499–509 s) | Submitted 5565471 |
+| F8 | Final ACIC matrix with the freeze binaries, flags per family chosen by F4: terrain, meshes, grids, roads (including 32 nodes) at 4/16/32/64, and scale-free at 16/64; four or more sources, D2 counters on every solve | After F4 and O1b |
+| F9 | One-node Frontier points: GAPBS then Wasp on `road-planet-z`, chained after O2b; the debug queue takes one job at a time. ACIC at one node goes with F8 | GAPBS and Wasp submitted in turn by a watcher; ACIC with F8 |
+| F10 | Ablation at scale, the Delta D4/D4b arm set: candidate, no slice, batch 1, local queue, no sharing, plain async (`--admission all`), chunks, and the threshold engaged by `--bucket-width-rule weight`, with and without admission. `mesh32-z` and `terrain30-s-z` at 16 nodes, `mesh32-z` and `terrain30-m-z` at 64; three sources, one warmup, two repetitions. **It checks whether the histogram threshold acts at scale** (round counts in every log) | Submitted 16n 5565467, 64n 5565468 |
+
+The F batch holds about 380 node-hours at its time limits. Predictions are in
+`benchmarks/frontier-{f4,f10,o1b}-*-variants.json`, recorded before
+submission.
 
 **Dropped:**
 - Phase B (lower bounds on the large inputs).
@@ -179,6 +201,8 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 **Limitations section**, a named review criterion rather than work to remove:
 - Roads beyond 16 nodes.
 - The `mesh28-w10-z` plateau, unless F5 fixes it.
+- Vertex order: a locality-preserving order is assumed (O1), unless O1b
+  removes most of the cost.
 - The one-node gap.
 - Scale-free graphs against RIKEN.
 - CPU-only scope.
@@ -199,10 +223,11 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 
 | Dates | Delta | Frontier | Writing |
 |---|---|---|---|
-| Sep 28–30 | D1, D2, D3 | F1, O1, O2 running; F6, F7, F4 on approval | Abstract draft by Sep 30 |
-| Oct 1 AOE | D1/D3 decisions | — | Abstract and tracks registered |
-| Oct 2 | D6 freeze | F-freeze | Methods, algorithm |
-| Oct 3–5 | D4, D5 | F8, F9, F10 in one batch | Evaluation from arriving data |
+| Sep 28 | D1–D5 done | F1, O1, O2 done | — |
+| Sep 29–30 | — | F-freeze done; F4, F5, F6, F7, F10, O1b, O2b, F9 baselines running | Abstract draft by Sep 30 |
+| Oct 1 AOE | — | F4/O1b decide F8's flags | Abstract and tracks registered |
+| Oct 2 | — | F8 submitted as one batch, ACIC one-node F9 points with it | Methods, algorithm |
+| Oct 3–5 | — | F8 running | Evaluation from arriving data |
 | Oct 5–8 | — | Reruns of failed cells only | Full draft, audit, submit |
 
 ### Reviewer-driven jobs submitted 2026-09-28

@@ -1,0 +1,52 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 64,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F4 (design/sc27-plan.md): does the one-node chunk queue hold at scale? Freeze candidate 601697e built on Frontier (acic_frz_heap, acic_frz_c256, acic_frz_c65536; initial-exec TLS runtime, WIRE=compact64). Delta D1 flag sets: band-256 chunks with slice 64 for mesh, 3-D grid and terrain, band-65536 with slice 64 for road; frozen = the heap with slice 8 (the scaling-series profile). 8 x 7, four held-out sources, one warmup and three repetitions, batch launches. Speedup = heap time / chunk time per source. Predictions: every solve returns the reference digest; one node gave 2.3-2.5x on mesh28-z (Delta and Frontier) and 1.8-2.3x on grid/terrain, but at 16+ nodes queue work is a smaller share of the solve, so: mesh28-z and mesh32-z 1.1-1.8x at 16 nodes and 1.0-1.5x at 64; terrain30-m-z 1.1-1.8x at 16 and 1.0-1.6x at 64; grid3-33-z 1.0-1.5x; road-planet-z (band 65536) 0.9-1.2x."
+  },
+  {
+    "label": "c256_s64",
+    "binary": "acic_frz_c256",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "64"
+    ],
+    "nodes": 64,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F4 (design/sc27-plan.md): does the one-node chunk queue hold at scale? Freeze candidate 601697e built on Frontier (acic_frz_heap, acic_frz_c256, acic_frz_c65536; initial-exec TLS runtime, WIRE=compact64). Delta D1 flag sets: band-256 chunks with slice 64 for mesh, 3-D grid and terrain, band-65536 with slice 64 for road; frozen = the heap with slice 8 (the scaling-series profile). 8 x 7, four held-out sources, one warmup and three repetitions, batch launches. Speedup = heap time / chunk time per source. Predictions: every solve returns the reference digest; one node gave 2.3-2.5x on mesh28-z (Delta and Frontier) and 1.8-2.3x on grid/terrain, but at 16+ nodes queue work is a smaller share of the solve, so: mesh28-z and mesh32-z 1.1-1.8x at 16 nodes and 1.0-1.5x at 64; terrain30-m-z 1.1-1.8x at 16 and 1.0-1.6x at 64; grid3-33-z 1.0-1.5x; road-planet-z (band 65536) 0.9-1.2x."
+  }
+]

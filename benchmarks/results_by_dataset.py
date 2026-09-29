@@ -62,21 +62,29 @@ for j in ['5546130', '5546131']:  # terrain-ae-z
 ACIC_JOBS['5548095'] = {'heap': HEAP69, 'c256_s64': CHUNKS}  # one-node mesh28-z queue A/B
 for j in ['5558200', '5558201', '5558202', '5558203', '5558204', '5558205']:  # scaling series 4/16/32/64
     ACIC_JOBS[j] = {'frozen': SCALE}
+ACIC_JOBS['5561485'] = {'frozen': SCALE}  # ordering pair (O1): mesh26, road-usa and their -z forms
 EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900', '5539985',
                  '5541240', '5541195', '5541196', '5541369', '5541370', '5541371', '5541428', '5541429',
                  '5541663', '5541664', '5541665', '5541667', '5541713', '5541714', '5541715', '5541716', '5541717',
                  '5546135', '5546136', '5546137',
                  # scaling series, Gluon-Async pinned (series_gluon.sbatch)
-                 '5558207', '5558208', '5558209', '5558210', '5558211', '5558212', '5558213', '5558214', '5558382']
+                 '5558207', '5558208', '5558209', '5558210', '5558211', '5558212', '5558213', '5558214', '5558382',
+                 # ordering pair (O1), Gluon-Async pinned
+                 '5561486',
+                 # phase A: Gemini (1 x 56) and HavoqGT (56 x 1) on the series (series_baseline.sbatch)
+                 *[str(j) for j in range(5560447, 5560463)],
+                 # O2: Gemini and HavoqGT (upstream delegate threshold) on RMAT, 16 nodes. HavoqGT
+                 # with threshold 896 (5561484) is left out: every launch hit its cap.
+                 '5561482', '5561483']
 ONE_NODE_JOBS = ['5529591', '5538465', '5538410', '5541358', '5541661',
                  '5536541', '5538411', '5541359', '5541662',
                  '5558223', '5558224', '5558225', '5558226']  # scaling series: GAPBS, Wasp
-DATASETS = ['mesh24-z', 'mesh26-z', 'mesh28-z', 'mesh30-z', 'road-usa-z', 'road-na-z', 'road-eu-z',
+DATASETS = ['mesh24-z', 'mesh26', 'mesh26-z', 'mesh28-z', 'mesh30-z', 'road-usa', 'road-usa-z', 'road-na-z', 'road-eu-z',
             'road-planet-z', 'terrain-ae-z',
             'mesh28-w10-z', 'mesh28-w64k-z', 'mesh32-z', 'grid3-30-z', 'grid3-33-z',
             'terrain30-s-z', 'terrain30-m-z', 'terrain30-l-z',
             'orkut', 'uniform25', 'rmat25', 'rmat26', 'rmat27']
-BASELINES = ['GAPBS', 'Wasp', 'Gluon', 'RIKEN']
+BASELINES = ['GAPBS', 'Wasp', 'Gluon', 'RIKEN', 'Gemini', 'HavoqGT']
 
 
 def lines(path):
@@ -121,7 +129,8 @@ for job in EXTERNAL_JOBS + ONE_NODE_JOBS:
                 continue
             c, g, s = r['config'], r['graph'], str(r['source'])
             engine = c['engine']
-            name = {'gap': 'GAPBS', 'wasp': 'Wasp', 'riken': 'RIKEN', 'gluon': 'Gluon'}[engine]
+            name = {'gap': 'GAPBS', 'wasp': 'Wasp', 'riken': 'RIKEN', 'gluon': 'Gluon',
+                    'gemini': 'Gemini', 'havoqgt': 'HavoqGT'}[engine]
             if not r['valid']:
                 if r.get('outcome') == 'hang':
                     bound = r['launch_wall_seconds'] - LOAD_ALLOWANCE
@@ -247,11 +256,14 @@ for g in DATASETS:
                 cell = (cell + '; ' if cell else '') + f'≥ {ratio(min(bounds))}×'
             cells.append(cell or '—')
         if any(c != '—' for c in cells):
-            table.append(f'| {nodes} | {impl} | ' + ' | '.join(cells) + ' |')
+            table.append((nodes, cells, impl))
     if table:
         out.append("ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):\n")
-        out.append('| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |')
-        out.append('|---:|---|---:|---:|---:|---:|')
+        # The four original baselines always; Gemini and HavoqGT where they ran.
+        used = [i for i, b in enumerate(BASELINES) if i < 4 or any(row[1][i] != '—' for row in table)]
+        out.append('| Nodes | ACIC build | ' + ' | '.join(f'over {BASELINES[i]}' for i in used) + ' |')
+        out.append('|---:|---|' + '---:|' * len(used))
+        table = [f'| {nodes} | {impl} | ' + ' | '.join(cells[i] for i in used) + ' |' for nodes, cells, impl in table]
         out += table
         out.append('')
     errors = sorted({round(e, 7) for (gg, _), v in inexact.items() if gg == g for e in v})

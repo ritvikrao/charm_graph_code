@@ -1,6 +1,6 @@
 # ACIC current evidence
 
-*Status 2026-09-28. Results are grouped by dataset, then node count, then
+*Status 2026-09-29. Results are grouped by dataset, then node count, then
 implementation (§ Results by dataset); the mechanism sections that follow keep
 only the measurements specific to each mechanism. Raw summaries remain under
 `design/onenode-data/`; job logs remain in the recorded campaign directories;
@@ -13,11 +13,27 @@ faster; below 1× means it is slower.*
 ## Executive conclusion
 
 **Against distributed SSSP.** ACIC is faster than tuned Gluon (D-Galois) on
-every graph, node count and held-out source measured: 1.5–5.3× on RMAT
+every Morton-ordered and scale-free graph, node count and held-out source
+measured: 1.5–5.3× on RMAT
 25–27, 8.9–17× on `uniform25` and orkut, and 8–244× on meshes and roads
 (4–64 nodes; 44–244× on the OSM planet road graph). It is faster than RIKEN on every mesh and road (54–2,179×;
 RIKEN's answers on the OSM roads are slightly inexact), and slower than RIKEN
-on every scale-free graph (0.29–0.90×).
+on every scale-free graph (0.29–0.90×). It is faster than Gemini and HavoqGT
+on every input and node count measured (§31): 17–24× over HavoqGT on
+`terrain30-s-z` (the strongest distributed baseline there), 69–545× on the
+2-D meshes and 96–131× on `grid3-30-z`; Gemini finishes only on
+`grid3-30-z` and `terrain30-s-z` (50–874×) and hits its cap on the 2-D
+meshes (≥ 245–1216×). On RMAT at 16 nodes (older ACIC builds) it is
+1.35–2.59× faster than Gemini and 4.3–12× faster than HavoqGT.
+
+**Vertex order (2026-09-29).** The mesh and road wins assume a
+locality-preserving vertex order. On `mesh26` in generator (row-major) order,
+ACIC at 16 nodes takes 19–41 s against 0.18–0.22 s on Morton-ordered
+`mesh26-z` (107–183× slower; 299 edge attempts per edge against 2.8), and
+Gluon wins (ACIC 0.23–0.36×). On `road-usa` in DIMACS order ACIC is 20–28×
+slower than on `road-usa-z` but still 38–61× faster than Gluon, which loses
+more (15–39×). Every code was given the same file; the suspected amplifier is
+ACIC's reader tiling (§31).
 
 **Against one-node shared-memory SSSP.** On meshes, ACIC at 16 nodes or more
 beats tuned GAPBS from `mesh26-z` up, and Wasp on every source except one
@@ -74,8 +90,9 @@ Weight range: [1, 65,536] costs ACIC nothing; [1, 10] costs it 1.15× at 4
 nodes and up to 1.9× at 64, where its time stops falling (not yet diagnosed).
 
 **Not yet measured.** Gluon on `terrain-ae-z` (its `.gr` now exists) and ACIC
-on it at 32 and 64 nodes; one-node GAPBS and Wasp on `road-planet-z`; Gemini
-and HavoqGT (phase A submitted, 4–64 nodes).
+on it at 32 and 64 nodes; one-node GAPBS and Wasp on `road-planet-z`; HavoqGT
+with delegates (every launch hung at threshold 896, §31); ACIC on
+`mesh26`/`road-usa` with reader tiling off.
 
 ## Implementations
 
@@ -149,6 +166,22 @@ halves, while shared-memory work follows size, which quarters. Attempts per
 edge rise from 1.30 at one node to 3.3 at 16. `mesh24-z` at 4 nodes is the
 first point of the mesh weak-scaling series (about 4.2M vertices per node).
 
+#### `mesh26` (67.1M vertices, 268.4M edges)
+
+Generator (row-major) order, the same graph and physical sources as
+`mesh26-z`; ordering pair O1 (§31).
+
+| Nodes | Implementation | Time per solve (s) | Sources | Jobs |
+|---:|---|---:|---:|---|
+| 16 | ACIC TLS (acic_scale64b) | 19.4–40.5 | 4 | 5561485 |
+| 16 | Gluon (Async) | 7.00–9.49 | 4 | 5561486 |
+
+ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
+
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
+|---:|---|---:|---:|---:|---:|
+| 16 | ACIC TLS (acic_scale64b) | — | — | 0.23–0.36× | — |
+
 #### `mesh26-z` (67.1M vertices, 268.4M edges)
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
@@ -161,8 +194,9 @@ first point of the mesh weak-scaling series (about 4.2M vertices per node).
 | 8 | ACIC production | 0.332–0.384 | 4 | 5534022, 5534023, 5536321, 5536322 |
 | 16 | ACIC production | 0.223–0.277 | 4 | 5534022, 5534023, 5536321, 5536322, 5541196, 5541240, 5541370 |
 | 16 | ACIC TLS (acic_hint2_tls) | 0.181–0.224 | 4 | 5541196, 5541240 |
+| 16 | ACIC TLS (acic_scale64b) | 0.181–0.222 | 4 | 5561485 |
 | 16 | ACIC TLS (acic_tls) | 0.181–0.223 | 4 | 5541370 |
-| 16 | Gluon (Async) | 12.3–15.8 | 4 | 5541196, 5541240, 5541370 |
+| 16 | Gluon (Async) | 12.3–15.9 | 4 | 5541196, 5541240, 5541370, 5561486 |
 | 16 | RIKEN | 18.9–52.1 | 4 | 5536476, 5541370 |
 | 64 | ACIC production | 0.165–0.223 | 4 | 5541660 |
 | 64 | ACIC TLS (acic_tls) | 0.138–0.181 | 4 | 5541660 |
@@ -179,6 +213,7 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | 8 | ACIC production | 0.91–0.95× | 0.70–0.82× | — | — |
 | 16 | ACIC production | 1.25–1.41× | 0.97–1.22× | 49.3–57.3× | 76.2–169× |
 | 16 | ACIC TLS (acic_hint2_tls) | 1.57–1.74× | 1.21–1.50× | 61.1–71.0× | 104–232× |
+| 16 | ACIC TLS (acic_scale64b) | 1.55–1.75× | 1.19–1.51× | 61.7–71.5× | 104–235× |
 | 16 | ACIC TLS (acic_tls) | 1.55–1.74× | 1.20–1.50× | 61.4–71.8× | 94.0–206× |
 | 64 | ACIC production | 1.56–1.91× | 1.23–1.65× | 44.2–51.0× | 54.4–90.4× |
 | 64 | ACIC TLS (acic_tls) | 1.95–2.29× | 1.52–1.98× | 55.4–62.9× | 65.3–113× |
@@ -200,33 +235,41 @@ and 5541370.
 | 1 | Wasp | 0.905–1.00 | 4 | 5541662, 5558224 |
 | 4 | ACIC TLS (acic_scale64b) | 1.67–1.74 | 4 | 5558200 |
 | 4 | Gluon (Async) | 147–195 | 2 | 5558207 |
+| 4 | Gemini, capped | > 490 (capped) | 2 | 5560447 |
+| 4 | HavoqGT, capped | > 490 (capped) | 2 | 5560455 |
 | 16 | ACIC production | 0.742–0.872 | 4 | 5541663 |
 | 16 | ACIC TLS (acic_scale64b) | 0.599–0.696 | 4 | 5558201 |
 | 16 | ACIC TLS (acic_tls) | 0.595–0.691 | 4 | 5541663 |
 | 16 | Gluon (Async) | 47.5–61.6 | 3 | 5541663, 5558209 |
 | 16 | RIKEN | 368–489 | 2 | 5541663 |
+| 16 | Gemini, capped | > 490 (capped) | 2 | 5560449 |
+| 16 | HavoqGT | 292–380 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 0.412–0.482 | 4 | 5558202 |
 | 32 | Gluon (Async) | 33.3–38.7 | 2 | 5558211 |
+| 32 | Gemini, capped | > 490 (capped) | 2 | 5560451 |
+| 32 | HavoqGT | 155–197 | 2 | 5560459 |
 | 64 | ACIC production | 0.397–0.494 | 4 | 5541664 |
 | 64 | ACIC TLS (acic_scale64b) | 0.327–0.408 | 4 | 5558203 |
 | 64 | ACIC TLS (acic_tls) | 0.327–0.409 | 4 | 5541664 |
 | 64 | Gluon (Async) | 27.1–36.2 | 4 | 5541664, 5558213 |
 | 64 | RIKEN | 101–159 | 4 | 5541664 |
+| 64 | Gemini, capped | > 490 (capped) | 2 | 5560453 |
+| 64 | HavoqGT | 88.1–112 | 2 | 5560461 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 1 | ACIC TLS, chunk queue, slice 64 (acic_c256) | 0.63–0.68× | 0.38–0.45× | — | — |
-| 1 | ACIC TLS, heap queue (acic_heap69) | 0.27–0.30× | 0.16–0.20× | — | — |
-| 4 | ACIC TLS (acic_scale64b) | 0.87–0.91× | 0.52–0.60× | 87.2–112× | — |
-| 16 | ACIC production | 1.74–2.11× | 1.04–1.28× | 61.3–78.1× | 466–625× |
-| 16 | ACIC TLS (acic_scale64b) | 2.18–2.62× | 1.30–1.60× | 75.6–98.3× | 587–777× |
-| 16 | ACIC TLS (acic_tls) | 2.19–2.64× | 1.31–1.60× | 75.7–97.1× | 580–772× |
-| 32 | ACIC TLS (acic_scale64b) | 3.14–3.81× | 1.88–2.36× | 76.1–80.4× | — |
-| 64 | ACIC production | 3.06–3.95× | 1.83–2.40× | 59.3–86.3× | 241–322× |
-| 64 | ACIC TLS (acic_scale64b) | 3.71–4.79× | 2.22–2.91× | 72.4–105× | 293–390× |
-| 64 | ACIC TLS (acic_tls) | 3.70–4.80× | 2.21–2.92× | 71.6–105× | 292–389× |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | ACIC TLS, chunk queue, slice 64 (acic_c256) | 0.63–0.68× | 0.38–0.45× | — | — | — | — |
+| 1 | ACIC TLS, heap queue (acic_heap69) | 0.27–0.30× | 0.16–0.20× | — | — | — | — |
+| 4 | ACIC TLS (acic_scale64b) | 0.87–0.91× | 0.52–0.60× | 87.2–112× | — | ≥ 282× | ≥ 283× |
+| 16 | ACIC production | 1.74–2.11× | 1.04–1.28× | 61.3–78.1× | 466–625× | ≥ 562× | 373–436× |
+| 16 | ACIC TLS (acic_scale64b) | 2.18–2.62× | 1.30–1.60× | 75.6–98.3× | 587–777× | ≥ 705× | 464–547× |
+| 16 | ACIC TLS (acic_tls) | 2.19–2.64× | 1.31–1.60× | 75.7–97.1× | 580–772× | ≥ 709× | 461–550× |
+| 32 | ACIC TLS (acic_scale64b) | 3.14–3.81× | 1.88–2.36× | 76.1–80.4× | — | ≥ 1019× | 355–408× |
+| 64 | ACIC production | 3.06–3.95× | 1.83–2.40× | 59.3–86.3× | 241–322× | ≥ 993× | 208–226× |
+| 64 | ACIC TLS (acic_scale64b) | 3.71–4.79× | 2.22–2.91× | 72.4–105× | 293–390× | ≥ 1201× | 250–273× |
+| 64 | ACIC TLS (acic_tls) | 3.70–4.80× | 2.21–2.92× | 71.6–105× | 292–389× | ≥ 1200× | 255–273× |
 
 At 16 nodes RIKEN covers two of the four sources and Gluon three (two from
 5541663, one more from the series job 5558209): job 5541663 died on a Lustre
@@ -327,21 +370,29 @@ graph and 4× its diameter.
 | 1 | Wasp | 0.860–0.982 | 4 | 5558224 |
 | 4 | ACIC TLS (acic_scale64b) | 1.95–2.01 | 4 | 5558200 |
 | 4 | Gluon (Async) | 146–180 | 2 | 5558207 |
+| 4 | Gemini | 632; > 492 (capped) | 2 | 5560447 |
+| 4 | HavoqGT | 500–655 | 2 | 5560455 |
 | 16 | ACIC TLS (acic_scale64b) | 0.792–0.864 | 4 | 5558201 |
 | 16 | Gluon (Async) | 42.6–49.3 | 2 | 5558209 |
+| 16 | Gemini, capped | > 490 (capped) | 2 | 5560449 |
+| 16 | HavoqGT | 131–169 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 0.636–0.701 | 4 | 5558202 |
 | 32 | Gluon (Async) | 29.1–35.4 | 2 | 5558211 |
+| 32 | Gemini, capped | > 490 (capped) | 2 | 5560451 |
+| 32 | HavoqGT | 70.9–88.9 | 2 | 5560459 |
 | 64 | ACIC TLS (acic_scale64b) | 0.619–0.668 | 4 | 5558203 |
 | 64 | Gluon (Async) | 22.8–27.4 | 2 | 5558213 |
+| 64 | Gemini, capped | > 490 (capped) | 2 | 5560453 |
+| 64 | HavoqGT | 42.7–59.3 | 2 | 5560461 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 4 | ACIC TLS (acic_scale64b) | 0.65–0.69× | 0.43–0.50× | 72.4–89.7× | — |
-| 16 | ACIC TLS (acic_scale64b) | 1.51–1.73× | 0.99–1.19× | 51.9–57.1× | — |
-| 32 | ACIC TLS (acic_scale64b) | 1.86–2.15× | 1.23–1.53× | 45.1–50.5× | — |
-| 64 | ACIC TLS (acic_scale64b) | 1.96–2.21× | 1.29–1.57× | 36.7–41.0× | — |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 4 | ACIC TLS (acic_scale64b) | 0.65–0.69× | 0.43–0.50× | 72.4–89.7× | — | 314×; ≥ 245× | 248–326× |
+| 16 | ACIC TLS (acic_scale64b) | 1.51–1.73× | 0.99–1.19× | 51.9–57.1× | — | ≥ 567× | 159–195× |
+| 32 | ACIC TLS (acic_scale64b) | 1.86–2.15× | 1.23–1.53× | 45.1–50.5× | — | ≥ 701× | 110–127× |
+| 64 | ACIC TLS (acic_scale64b) | 1.96–2.21× | 1.29–1.57× | 36.7–41.0× | — | ≥ 734× | 68.6–88.8× |
 
 #### `mesh28-w64k-z` (268.4M vertices, 1,073.7M edges)
 
@@ -351,21 +402,29 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | 1 | Wasp | 0.894–0.992 | 4 | 5558224 |
 | 4 | ACIC TLS (acic_scale64b) | 1.67–1.79 | 4 | 5558200 |
 | 4 | Gluon (Async) | 166–203 | 2 | 5558207 |
+| 4 | Gemini, capped | > 490 (capped) | 2 | 5560447 |
+| 4 | HavoqGT, capped | > 491 (capped) | 2 | 5560455 |
 | 16 | ACIC TLS (acic_scale64b) | 0.602–0.704 | 4 | 5558201 |
 | 16 | Gluon (Async) | 49.3–54.5 | 2 | 5558209 |
+| 16 | Gemini, capped | > 490 (capped) | 2 | 5560449 |
+| 16 | HavoqGT | 292–383 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 0.405–0.471 | 4 | 5558202 |
 | 32 | Gluon (Async) | 36.1–39.2 | 2 | 5558211 |
+| 32 | Gemini, capped | > 490 (capped) | 2 | 5560451 |
+| 32 | HavoqGT | 153–201 | 2 | 5560459 |
 | 64 | ACIC TLS (acic_scale64b) | 0.321–0.403 | 4 | 5558203 |
 | 64 | Gluon (Async) | 27.4–30.3 | 2 | 5558213 |
+| 64 | Gemini, capped | > 490 (capped) | 2 | 5560453 |
+| 64 | HavoqGT | 88.4–114 | 2 | 5560461 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 4 | ACIC TLS (acic_scale64b) | 0.87–0.92× | 0.51–0.59× | 99.0–116× | — |
-| 16 | ACIC TLS (acic_scale64b) | 2.15–2.62× | 1.27–1.62× | 77.5–79.3× | — |
-| 32 | ACIC TLS (acic_scale64b) | 3.22–3.89× | 1.90–2.38× | 83.2–85.0× | — |
-| 64 | ACIC TLS (acic_scale64b) | 3.76–4.91× | 2.22–2.94× | 75.0–79.7× | — |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 4 | ACIC TLS (acic_scale64b) | 0.87–0.92× | 0.51–0.59× | 99.0–116× | — | ≥ 281× | ≥ 282× |
+| 16 | ACIC TLS (acic_scale64b) | 2.15–2.62× | 1.27–1.62× | 77.5–79.3× | — | ≥ 697× | 469–545× |
+| 32 | ACIC TLS (acic_scale64b) | 3.22–3.89× | 1.90–2.38× | 83.2–85.0× | — | ≥ 1043× | 360–427× |
+| 64 | ACIC TLS (acic_scale64b) | 3.76–4.91× | 2.22–2.94× | 75.0–79.7× | — | ≥ 1216× | 257–282× |
 
 Wide weights cost ACIC nothing: `mesh28-w64k-z`'s time is 0.97–1.03×
 `mesh28-z`'s at every node count, as for GAPBS, Wasp and Gluon. Narrow weights
@@ -395,21 +454,29 @@ Their diameter is far below a 2-D grid's of the same size (maximum distance
 | 1 | Wasp | 5.53–5.59 | 4 | 5558224 |
 | 4 | ACIC TLS (acic_scale64b) | 6.90–7.28 | 4 | 5558200 |
 | 4 | Gluon (Async) | 56.0–64.5 | 2 | 5558207 |
+| 4 | Gemini | 409–469 | 2 | 5560447 |
+| 4 | HavoqGT | 486–505 | 2 | 5560455 |
 | 16 | ACIC TLS (acic_scale64b) | 2.15–2.22 | 4 | 5558201 |
 | 16 | Gluon (Async) | 19.6–31.0 | 2 | 5558209 |
+| 16 | Gemini | 236–294 | 2 | 5560449 |
+| 16 | HavoqGT | 283–290 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 1.21–1.28 | 4 | 5558202 |
 | 32 | Gluon (Async) | 13.2–19.7 | 2 | 5558211 |
+| 32 | Gemini | 235–321 | 2 | 5560451 |
+| 32 | HavoqGT | 151–157 | 2 | 5560459 |
 | 64 | ACIC TLS (acic_scale64b) | 0.707–0.767 | 4 | 5558203 |
 | 64 | Gluon (Async) | 10.8–13.3 | 2 | 5558213 |
+| 64 | Gemini | 565–622 | 2 | 5560453 |
+| 64 | HavoqGT | 68.3–72.2 | 2 | 5560461 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 4 | ACIC TLS (acic_scale64b) | 1.24–1.42× | 0.76–0.81× | 7.69–9.34× | — |
-| 16 | ACIC TLS (acic_scale64b) | 4.03–4.67× | 2.50–2.59× | 8.86–14.2× | — |
-| 32 | ACIC TLS (acic_scale64b) | 7.03–8.39× | 4.38–4.62× | 10.7–16.3× | — |
-| 64 | ACIC TLS (acic_scale64b) | 11.7–14.5× | 7.29–7.87× | 15.1–18.7× | — |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 4 | ACIC TLS (acic_scale64b) | 1.24–1.42× | 0.76–0.81× | 7.69–9.34× | — | 59.2–64.5× | 69.3–70.4× |
+| 16 | ACIC TLS (acic_scale64b) | 4.03–4.67× | 2.50–2.59× | 8.86–14.2× | — | 107–133× | 129–131× |
+| 32 | ACIC TLS (acic_scale64b) | 7.03–8.39× | 4.38–4.62× | 10.7–16.3× | — | 195–261× | 125–128× |
+| 64 | ACIC TLS (acic_scale64b) | 11.7–14.5× | 7.29–7.87× | 15.1–18.7× | — | 796–874× | 96.4–101× |
 
 #### `grid3-33-z` (8,589.9M vertices, 51,514.4M edges)
 
@@ -441,6 +508,22 @@ the same job, and every counted solve is from that rerun.
 
 ### Roads (Morton-ordered by coordinates)
 
+#### `road-usa` (23.9M vertices, 57.7M edges)
+
+DIMACS order, the same graph and physical sources as `road-usa-z`; ordering
+pair O1 (§31).
+
+| Nodes | Implementation | Time per solve (s) | Sources | Jobs |
+|---:|---|---:|---:|---|
+| 16 | ACIC TLS (acic_scale64b) | 2.35–4.51 | 4 | 5561485 |
+| 16 | Gluon (Async) | 130–173 | 4 | 5561486 |
+
+ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
+
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
+|---:|---|---:|---:|---:|---:|
+| 16 | ACIC TLS (acic_scale64b) | — | — | 38.3–61.1× | — |
+
 #### `road-usa-z` (23.9M vertices, 57.7M edges)
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
@@ -453,8 +536,9 @@ the same job, and every counted solve is from that rerun.
 | 8 | ACIC production | 0.162–0.226 | 4 | 5538405, 5538406 |
 | 16 | ACIC production | 0.141–0.196 | 4 | 5538405, 5538406, 5541195, 5541196, 5541370 |
 | 16 | ACIC TLS (acic_hint2_tls) | 0.118–0.165 | 4 | 5541195, 5541196 |
+| 16 | ACIC TLS (acic_scale64b) | 0.118–0.163 | 4 | 5561485 |
 | 16 | ACIC TLS (acic_tls) | 0.118–0.165 | 4 | 5541370 |
-| 16 | Gluon (Async) | 3.91–8.74 | 4 | 5541195, 5541196, 5541370 |
+| 16 | Gluon (Async) | 3.92–8.74 | 4 | 5541195, 5541196, 5541370, 5561486 |
 | 64 | ACIC production | 0.113–0.162 | 4 | 5541660 |
 | 64 | ACIC TLS (acic_tls) | 0.100–0.147 | 4 | 5541660 |
 | 64 | Gluon (Async) | 2.59–5.29 | 4 | 5541371 |
@@ -468,6 +552,7 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | 8 | ACIC production | 0.63–0.73× | 0.34–0.43× | — | — |
 | 16 | ACIC production | 0.72–0.84× | 0.39–0.50× | 26.2–60.0× | — |
 | 16 | ACIC TLS (acic_hint2_tls) | 0.86–1.00× | 0.47–0.59× | 31.2–73.0× | — |
+| 16 | ACIC TLS (acic_scale64b) | 0.87–1.00× | 0.47–0.60× | 31.5–71.3× | — |
 | 16 | ACIC TLS (acic_tls) | 0.86–1.00× | 0.47–0.60× | 31.7–72.1× | — |
 | 64 | ACIC production | 0.88–1.05× | 0.48–0.62× | 21.5–46.5× | — |
 | 64 | ACIC TLS (acic_tls) | 0.97–1.18× | 0.53–0.70× | 24.1–52.4× | — |
@@ -627,21 +712,29 @@ vertices per node at 4, 16 and 64 nodes.
 | 1 | Wasp | 14.9–17.1 | 4 | 5558226 |
 | 4 | ACIC TLS (acic_scale64b) | 17.3–18.1 | 4 | 5558200 |
 | 4 | Gluon (Async) | 2223 | 1 | 5558208 |
+| 4 | Gemini | 894–1060 | 2 | 5560448 |
+| 4 | HavoqGT | 314–413 | 2 | 5560456 |
 | 16 | ACIC TLS (acic_scale64b) | 5.85–6.18 | 4 | 5558201 |
 | 16 | Gluon (Async) | 900–1380 | 2 | 5558209 |
+| 16 | Gemini | 969–1221 | 2 | 5560450 |
+| 16 | HavoqGT | 104–132 | 2 | 5560458 |
 | 32 | ACIC TLS (acic_scale64b) | 3.49–3.90 | 4 | 5558202 |
 | 32 | Gluon (Async) | 663–843 | 2 | 5558211 |
+| 32 | Gemini | 1337–1765 | 2 | 5560452 |
+| 32 | HavoqGT | 64.5–81.9 | 2 | 5560460 |
 | 64 | ACIC TLS (acic_scale64b) | 2.25–2.62 | 4 | 5558203 |
 | 64 | Gluon (Async) | 499–509 | 2 | 5558213 |
+| 64 | Gemini, capped | > 1592 (capped) | 2 | 5560454 |
+| 64 | HavoqGT | 41.8–54.0 | 2 | 5560462 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 4 | ACIC TLS (acic_scale64b) | 0.72–0.87× | 0.84–0.95× | 129× | — |
-| 16 | ACIC TLS (acic_scale64b) | 2.22–2.59× | 2.43–2.81× | 148–226× | — |
-| 32 | ACIC TLS (acic_scale64b) | 3.72–4.25× | 3.89–4.62× | 174–228× | — |
-| 64 | ACIC TLS (acic_scale64b) | 5.62–6.45× | 5.71–7.01× | 196–204× | — |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 4 | ACIC TLS (acic_scale64b) | 0.72–0.87× | 0.84–0.95× | 129× | — | 49.7–61.3× | 17.4–23.9× |
+| 16 | ACIC TLS (acic_scale64b) | 2.22–2.59× | 2.43–2.81× | 148–226× | — | 160–200× | 17.1–21.6× |
+| 32 | ACIC TLS (acic_scale64b) | 3.72–4.25× | 3.89–4.62× | 174–228× | — | 361–462× | 17.4–21.5× |
+| 64 | ACIC TLS (acic_scale64b) | 5.62–6.45× | 5.71–7.01× | 196–204× | — | ≥ 612× | 17.1–20.8× |
 
 #### `terrain30-m-z` (8,654.3M vertices, 69,233.2M edges)
 
@@ -745,13 +838,15 @@ The closest scale-free graph to RIKEN (0.77–0.90×).
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | 0.157–0.168 | 4 | 5539286, 5539985 |
 | 16 | Gluon (Async, Sync) | 0.782–0.849 | 4 | 5539286, 5539985 |
 | 16 | RIKEN | 0.062–0.068 | 4 | 5536474, 5536475 |
+| 16 | Gemini | 0.365–0.393 | 4 | 5561482 |
+| 16 | HavoqGT | 1.64–1.90 | 4 | 5561483 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 16 | ACIC production, 4 × 14 | — | — | 3.75–4.16× | 0.29–0.33× |
-| 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 4.58–5.27× | 0.38–0.43× |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 16 | ACIC production, 4 × 14 | — | — | 3.75–4.16× | 0.29–0.33× | 1.75–1.85× | 8.10–8.93× |
+| 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 4.58–5.27× | 0.38–0.43× | 2.23–2.51× | 10.3–12.1× |
 
 The hub hints (TLS builds) cut `rmat26`'s updates from 1.81B to 0.68B (§11);
 ACIC stays about 2.2–3× slower than RIKEN on RMAT.
@@ -764,13 +859,15 @@ ACIC stays about 2.2–3× slower than RIKEN on RMAT.
 | 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | 0.271–0.307 | 4 | 5539899 |
 | 16 | Gluon (Async, Sync) | 0.966–1.19 | 4 | 5539899, 5539985 |
 | 16 | RIKEN | 0.122–0.124 | 4 | 5536474, 5536475 |
+| 16 | Gemini | 0.519–0.702 | 4 | 5561482 |
+| 16 | HavoqGT | 1.66–2.11 | 4 | 5561483 |
 
 ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS and Wasp on one node):
 
-| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
-|---:|---|---:|---:|---:|---:|
-| 16 | ACIC production, 4 × 14 | — | — | 2.48–3.49× | 0.32–0.35× |
-| 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 3.17–4.44× | 0.40–0.46× |
+| Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 16 | ACIC production, 4 × 14 | — | — | 2.48–3.49× | 0.32–0.35× | 1.35–1.96× | 4.29–5.90× |
+| 16 | ACIC TLS (acic_hint2_tls), 4 × 14 | — | — | 3.17–4.44× | 0.40–0.46× | 1.69–2.59× | 5.40–7.78× |
 
 The TLS row is allocation A only (5539899). Source 27797227 stalled twice,
 in both builds, answering correctly after 0.2–1.8 s (§13); allocation B reran
@@ -809,7 +906,9 @@ speedup over Gluon falls from about 4× on `rmat25` to about 2× here.
 |---|---|---|
 | `road-planet-z` | 199.5M vertices, 496.0M edges | one-node GAPBS and Wasp tuning to rerun (5546133/5546134 crashed at start; harness fixed in 9028c4d) |
 | `terrain-ae-z` | 8.2B vertices, 65.6B edges, 1.11 TB | Gluon (the `.gr` now exists, 5551364) and ACIC at 32 and 64 nodes, not submitted |
-| scaling series | 4–64 nodes | Gemini and HavoqGT phase A (5560446–5560462): the `mesh28-*` inputs, `grid3-30-z`, `terrain30-s-z`; phase B (64-node lower bounds on the largest inputs) not submitted |
+| scaling series | 4–64 nodes | Gemini and HavoqGT phase A done (§31); phase B (64-node lower bounds on the largest inputs) dropped |
+| `mesh26`, `road-usa` | generator/DIMACS order | ACIC with reader tiling off (O1b), to test the tiling explanation of §31 |
+| `rmat25`, `rmat26` | 16 nodes | HavoqGT with delegates: every launch at threshold 896 hung (O2b probe) |
 | `mesh28-w10-z` | 268.4M vertices | why narrow weights stop ACIC's scaling past 32 nodes |
 
 ## Mechanism chain established September 18–23
@@ -2612,12 +2711,137 @@ Reader tiling engaged with two owners, process sharing was on in every
 non-default profile, and the envelope check never fired. Logs:
 `/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/freeze-gate-22544422/`.
 
+### 31. Frontier: Gemini and HavoqGT (phase A, O2) and the ordering pair (O1), 2026-09-29
+
+**Setup.**
+- Gemini runs one rank per node × 56 OpenMP threads (its design), on
+  `GRAPH.gemini32`.
+- HavoqGT runs 56 single-threaded ranks per node. Each graph is first ingested
+  into node-local `/dev/shm` for that layout (3–32 s, outside the timed solve).
+  It uses the upstream delegate threshold, 2^20.
+- Both run through `run.py --external-no-search`, and every solve is checked
+  against the reference digest:
+  - The scaling series: two held-out sources, one launch each, capped at 700 s
+    (1,800 s on `terrain30-s-z`).
+  - RMAT: four sources, capped at 600 s.
+- A capped launch is a lower bound: launch time less 300 s.
+- The ACIC side is `acic_scale64b` from the scaling series (§ Results by
+  dataset). On RMAT it is the older 16-node builds, paired by source across
+  jobs.
+
+**Phase A: ACIC's speedup, range over held-out sources.**
+
+| Input | Nodes | over Gemini | over HavoqGT |
+|---|---:|---:|---:|
+| `terrain30-s-z` | 4 / 16 / 32 / 64 | 50–61× / 160–200× / 361–462× / ≥ 612× | 17–24× / 17–22× / 17–22× / 17–21× |
+| `grid3-30-z` | 4 / 16 / 32 / 64 | 59–65× / 107–133× / 195–261× / 796–874× | 69–70× / 129–131× / 125–128× / 96–101× |
+| `mesh28-z` | 4 / 16 / 32 / 64 | ≥ 282× / ≥ 705× / ≥ 1019× / ≥ 1201× | ≥ 283× / 464–547× / 355–408× / 250–273× |
+| `mesh28-w10-z` | 4 / 16 / 32 / 64 | 314×, ≥ 245× / ≥ 567× / ≥ 701× / ≥ 734× | 248–326× / 159–195× / 110–127× / 69–89× |
+| `mesh28-w64k-z` | 4 / 16 / 32 / 64 | ≥ 281× / ≥ 697× / ≥ 1043× / ≥ 1216× | ≥ 282× / 469–545× / 360–427× / 257–282× |
+
+- **HavoqGT is the strongest distributed baseline on terrain.** It halves its
+  time per doubling of nodes (314–413 s at 4 nodes to 42–54 s at 64), as ACIC
+  does, so the margin stays at 17–24×.
+- **HavoqGT on the 2-D meshes:** it takes 88–383 s from 16 nodes up and hits
+  its cap at 4.
+- **Gemini** finishes on `grid3-30-z` and `terrain30-s-z`, but its time rises
+  beyond 16–32 nodes (terrain: 894–1,060 s at 4 nodes, capped at 64). On the
+  2-D meshes it finishes one launch in 20 (`mesh28-w10-z` at 4 nodes, 632 s).
+- **Round-synchronous Gemini and asynchronous HavoqGT both pay for hop
+  diameter;** Gemini pays more, once per iteration.
+
+**O2: RMAT at 16 nodes.**
+- Gemini takes 0.37–0.39 s (`rmat25`) and 0.52–0.70 s (`rmat26`); HavoqGT
+  takes 1.6–1.9 s and 1.7–2.1 s.
+- ACIC's speedup over Gemini is 1.75–2.51× (`rmat25`) and 1.35–2.59×
+  (`rmat26`); over HavoqGT, 8.1–12.1× and 4.3–7.8×.
+- RIKEN remains the fastest code on RMAT (ACIC 0.29–0.46×).
+- **Delegates:** the upstream threshold 2^20 made no delegates on `rmat25` (0
+  of 33.6M vertices), so these rows are HavoqGT without delegates.
+  - With the threshold at the rank count, 896 (5561484), ingest made 245,506
+    delegates.
+  - Every solve then printed nothing after the graph loaded and hit its 600 s
+    cap (6 launches, 1-hour job limit).
+  - Our patch (`benchmarks/havoqgt.patch`) touches the delegate path only in
+    two places: zero-delegate allocation, and the source loop, which no longer
+    skips to the next vertex. Whether the hang is HavoqGT's or the patch's is
+    not known; O2b probes it.
+
+**O1: vertex order at 16 nodes.** `mesh26` (generator order, row-major) and
+`road-usa` (DIMACS order), against their Morton forms. The four held-out
+sources are the same physical vertices in both orders; the reference distance
+sums match.
+- ACIC: job 5561485, `acic_scale64b`, mesh flags; road adds
+  `--bucket-width 131072`. One warmup and three repetitions; all 64 counted
+  solves are digest-valid.
+- Gluon-Async: job 5561486, 8 ranks, oec, delta 64 (mesh) and 524288 (road),
+  one launch per source.
+- Order cost = time in the given order / time in Morton order.
+
+| Pair (distance sum) | ACIC unordered (s) | ACIC Morton (s) | ACIC order cost | Gluon unordered (s) | Gluon Morton (s) | Gluon order cost | ACIC speedup over Gluon, unordered / Morton |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `mesh26` 43.1T | 19.4 | 0.181 | 107× | 7.0 | 12.5 | 0.56× | 0.36× / 69× |
+| `mesh26` 50.7T | 26.4 | 0.203 | 130× | 7.6 | 12.7 | 0.59× | 0.29× / 63× |
+| `mesh26` 63.1T | 27.3 | 0.220 | 124× | 9.3 | 13.5 | 0.69× | 0.34× / 61× |
+| `mesh26` 64.5T | 40.5 | 0.222 | 183× | 9.5 | 15.9 | 0.60× | 0.23× / 72× |
+| `road-usa` 437T | 2.93 | 0.124 | 24× | 152.5 | 3.9 | 39× | 52× / 32× |
+| `road-usa` 450T | 3.02 | 0.123 | 25× | 129.9 | 8.8 | 15× | 43× / 72× |
+| `road-usa` 486T | 2.35 | 0.118 | 20× | 143.7 | 7.0 | 20× | 61× / 60× |
+| `road-usa` 760T | 4.51 | 0.163 | 28× | 172.7 | 6.4 | 27× | 38× / 39× |
+
+Work (edge attempts per graph edge, median):
+
+| Input | Attempts per edge |
+|---|---:|
+| `mesh26` | 299 |
+| `mesh26-z` | 2.76 |
+| `road-usa` | 17.1 |
+| `road-usa-z` | 3.21 |
+
+The same automatic modes resolve in both orders: tiles of 8192 vertices over
+128 owners, nearest queue, batch 8, slice 8, width 18.0 on the meshes.
+
+**Suspected amplifier: reader tiling.** `--reader-tile auto` deals
+8192-vertex tiles round-robin to the 128 processes. On the 8192-wide
+row-major `mesh26`, one tile is exactly one grid row, so:
+- each process owns every 128th row;
+- nearly every vertical edge crosses processes;
+- each process's local subgraph is a set of disconnected 8192-vertex paths,
+  along which asynchronous relaxation runs far ahead of the global front.
+
+On one Delta node (§30, 16 processes owning strips of rows) the order costs
+2.96–4.21×, so the 16-node effect is about 30–50× larger. O1b (tiling off, 16
+nodes) tests this explanation. Gluon's oec partition cuts row-major `mesh26`
+into strips, which favours its bulk rounds: it is 1.4–1.8× faster than on
+Morton order.
+
+**Predictions (recorded before submission):**
+- **Met:**
+  - Every solve returns the reference digest.
+  - ACIC's speedup over Gluon on `road-usa` stays above 2× (it is 38–61×).
+- **Missed:**
+  - `mesh26` was predicted at 0.8–2.5× Morton's ACIC time; it took 107–183×.
+  - `road-usa` was predicted at 1.0–2.5×; it took 20–28×.
+  - ACIC's speedup over Gluon on `mesh26` was predicted above 5×; it is 0.23–0.36×.
+  - Gluon's order cost was predicted smaller than ACIC's. That holds on
+    `mesh26`, but on `road-usa` it is about the same (15–39× against 20–28×).
+
+**Consequences for the paper:**
+- A locality-preserving vertex order (Morton here, or a partitioner) is an
+  assumption of the mesh and road results. It must be stated, and every
+  baseline gets the same order.
+- ACIC's advantage survives DIMACS order on roads but not row-major order on
+  meshes.
+- The Limitations section carries this unless O1b shows the loss is the
+  tiling rule's.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
 | D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |
 | Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
+| Frontier Gemini/HavoqGT (phase A, O2) and ordering pair (O1) | Gemini 5560447–5560454, 5561482 (conversions 5560446, 5561481); HavoqGT 5560455–5560462, 5561483, 5561484 (threshold 896); ACIC 5561485 (`benchmarks/frontier-order-{mesh,road}-16n-variants.json`, predictions recorded), Gluon 5561486; `scripts/frontier/series_baseline.sbatch`, `series_gluon.sbatch`, `gluon_compare.sbatch`; rows in `design/onenode-data/results-by-dataset.json` |
 | Delta IPDPS D3b width bracket | `design/onenode-data/delta-ipdps-d3b-width-22533655.json`; `benchmarks/delta-ipdps-d3b-width-variants.json` (predictions); job 22533655 |
 | Delta IPDPS D5 ordering pair | `design/onenode-data/delta-ipdps-d5-order-22530871.json`; `benchmarks/delta-ipdps-d5-order-variants.json` (predictions); job 22530871 |
 | Delta IPDPS D4 mechanism ablation, terrain crop | `design/onenode-data/delta-ipdps-d4-terrain-22529683.json`; job 22529683 (REPS=2) |
@@ -2683,7 +2907,8 @@ and paths are consolidated in [configurations.md](configurations.md).
    loss is measured redundant work, not inter-node traffic. Beyond 16 nodes it
    keeps gaining on meshes (`mesh26-z` 1.3× from 16 to 64, `mesh28-z` 1.8×,
    `mesh30-z` 1.4–1.5× from 32 to 64) but barely on roads.
-6. ACIC is faster than tuned Gluon on every graph, node count and held-out
+6. ACIC is faster than tuned Gluon on every Morton-ordered and scale-free
+   graph (row-major `mesh26` is the exception, §31), node count and held-out
    source measured (1.5–244×), and faster than RIKEN on every mesh and road.
    In the scaling series (Gluon pinned, not tuned) it is 7.7–26× faster on the
    3-D grids, 37–116× on the 2-D meshes and 129–228× on `terrain30-s-z`, and at
@@ -2710,6 +2935,11 @@ and paths are consolidated in [configurations.md](configurations.md).
 12. On 3-D grids ACIC strong-scales 9.4–10.2× from 4 to 64 nodes
     (`grid3-30-z`) and beats one-node Wasp from 16 nodes (2.50–2.59×; 7.3–7.9×
     at 64).
+13. ACIC is faster than Gemini and HavoqGT (upstream settings, §31) on every
+    input and node count measured: 17–24× over HavoqGT on `terrain30-s-z`,
+    69–545× on the 2-D meshes, 96–131× on `grid3-30-z`, at least 245× over
+    Gemini on the 2-D meshes; on RMAT 25/26 at 16 nodes 1.35–2.59× over Gemini
+    and 4.3–12× over HavoqGT.
 
 ## Claims not supported
 
@@ -2728,6 +2958,10 @@ and paths are consolidated in [configurations.md](configurations.md).
   `terrain-ae-z` is not yet measured, and no one-node baseline fits it.
 - Any one-node comparison on `road-planet-z` (GAPBS and Wasp not yet run).
 - Multi-node behavior of the one-node chunk queue.
+- ACIC is robust to vertex order: in generator order `mesh26` is 107–183×
+  slower than `mesh26-z` at 16 nodes and loses to Gluon (§31).
+- Any comparison with HavoqGT using vertex delegates: the upstream threshold
+  (2^20) makes no delegates on `rmat25`, and threshold 896 hung (§31).
 - The current candidate is regression-free on RMAT. The Frontier frozen-binary
   gate returned NO-GO by its recorded rule (`rmat26`, `rmat27`, 2.5–5% on
   single sources, §10).

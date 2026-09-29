@@ -264,3 +264,22 @@ Against the recorded predictions (`frontier-series-mesh-<N>n-variants.json`):
 
 Open: Gemini and HavoqGT phase A (submitted); why narrow weights stop ACIC's
 scaling; terrain-ae-z Gluon and ACIC at 32/64 nodes.
+
+## Results, Gemini/HavoqGT phase A and O1/O2 (complete 2026-09-29)
+
+All 16 phase A jobs (5560447–5560462) and the reviewer-driven O1/O2 jobs
+(5561481–5561486) finished. The results are in current-state §31 and the
+regenerated dataset tables, which now carry Gemini and HavoqGT columns.
+- ACIC is faster than both baselines on every input and node count. HavoqGT
+  is the strongest distributed baseline on `terrain30-s-z` (17–24×). Gemini
+  hits its cap on every 2-D mesh launch but one.
+- On RMAT at 16 nodes ACIC is 1.35–2.59× faster than Gemini and 4.3–12×
+  faster than HavoqGT. HavoqGT here runs without delegates: the upstream
+  threshold makes none, and with threshold 896 every solve hung (O2b probes
+  this).
+- Vertex order: row-major `mesh26` costs ACIC 107–183× at 16 nodes, and Gluon
+  wins there. DIMACS-ordered `road-usa` costs ACIC 20–28×, and ACIC still
+  wins by 38–61×. O1b tests reader tiling as the cause.
+
+Phase B is dropped. The follow-up Frontier batch (F4–F10, O1b, O2b) is
+tracked in sc27-plan.md.
