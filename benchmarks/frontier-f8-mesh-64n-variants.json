@@ -1,0 +1,52 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8"
+    ],
+    "nodes": 64,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F8 (design/sc27-plan.md, current-state section 35): the final matrix on the freeze binaries (601697e: acic_frz_heap, acic_frz_c256), 8 x 7 per node unless named, four held-out sources, one warmup and three repetitions. Choices made without a rule change: reader tiling auto and the ln V width unchanged (O1b and F5 are reported as limitations); frozen = the heap with slice 8 on every family; the chunk queue (band 256, slice 64) is a second arm on meshes, terrain and grid3-30-z only, because it stalls on roads and grid3-33-z (F4, C1). Predictions: every counted solve returns the reference digest; heap times within 0.85-1.15x of the scaling series (acic_scale64b, same flags) at the same node count; chunks 1.5-2.2x over the heap on mesh30-z, mesh32-z and terrain, 1.0-1.8x on the 2^28 meshes and grid3-30-z, less at 64 nodes than at 16 on the 2^28 meshes; a chunk stall (a failed check) on at most one input per job."
+  },
+  {
+    "label": "c256_s64",
+    "binary": "acic_frz_c256",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "64"
+    ],
+    "nodes": 64,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F8 (design/sc27-plan.md, current-state section 35): the final matrix on the freeze binaries (601697e: acic_frz_heap, acic_frz_c256), 8 x 7 per node unless named, four held-out sources, one warmup and three repetitions. Choices made without a rule change: reader tiling auto and the ln V width unchanged (O1b and F5 are reported as limitations); frozen = the heap with slice 8 on every family; the chunk queue (band 256, slice 64) is a second arm on meshes, terrain and grid3-30-z only, because it stalls on roads and grid3-33-z (F4, C1). Predictions: every counted solve returns the reference digest; heap times within 0.85-1.15x of the scaling series (acic_scale64b, same flags) at the same node count; chunks 1.5-2.2x over the heap on mesh30-z, mesh32-z and terrain, 1.0-1.8x on the 2^28 meshes and grid3-30-z, less at 64 nodes than at 16 on the 2^28 meshes; a chunk stall (a failed check) on at most one input per job."
+  }
+]
