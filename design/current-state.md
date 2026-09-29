@@ -169,6 +169,9 @@ first point of the mesh weak-scaling series (about 4.2M vertices per node).
 
 #### `mesh26` (67.1M vertices, 268.4M edges)
 
+Generator (row-major) order, the same graph and physical sources as
+`mesh26-z`; ordering pair O1 (§31).
+
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 16 | ACIC TLS (acic_scale64b) | 19.4–40.5 | 4 | 5561485 |
@@ -508,6 +511,9 @@ the same job, and every counted solve is from that rerun.
 
 #### `road-usa` (23.9M vertices, 57.7M edges)
 
+DIMACS order, the same graph and physical sources as `road-usa-z`; ordering
+pair O1 (§31).
+
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
 | 16 | ACIC TLS (acic_scale64b) | 2.35–4.51 | 4 | 5561485 |
@@ -590,8 +596,6 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 RIKEN on `road-na-z` reaches every vertex but its distance sum is high by 3.0e-05–3.7e-05 (relative).
 
-RIKEN on `road-na-z` reaches every vertex but its distance sum is high by 3.0e-05–3.7e-05 (relative).
-
 No Gluon at 4 nodes: the first attempt (5541426) was cancelled after its
 ACIC arms, because 60–85 s Gluon solves left no time for the search, and its
 rerun (5541712) failed at submission (missing `VARIANTS_PREFIX`). RIKEN ran in
@@ -626,8 +630,6 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | 16 | ACIC TLS (acic_tls) | 1.68–2.07× | 0.86–1.24× | 17.9–135× | 286–1187× |
 | 64 | ACIC production | 1.57–1.99× | 0.81–1.19× | 8.24–50.8× | 105–442× |
 | 64 | ACIC TLS (acic_tls) | 1.90–2.39× | 0.98–1.43× | 10.0–60.9× | 126–537× |
-
-RIKEN on `road-eu-z` reaches every vertex but its distance sum is high by 4.9e-05–6.4e-05 (relative).
 
 RIKEN on `road-eu-z` reaches every vertex but its distance sum is high by 4.9e-05–6.4e-05 (relative).
 
