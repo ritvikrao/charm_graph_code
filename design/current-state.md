@@ -2519,10 +2519,77 @@ Predictions:
 
 Record: `design/onenode-data/delta-ipdps-d5-order-22530871.json`.
 
+### 31. Why the engaged threshold is slower on one node: starvation and queue contention (D4c), 2026-09-29
+
+This is a follow-up to §29, testing whether the engaged threshold's slowdown
+on mesh28-z is PE starvation (a fine threshold admits a thin slice, PEs run
+dry and wait out the collective). The binaries are the work-cost builds of the
+freeze candidate (601697e, `-DACIC_WORK_COST -DACIC_COMM_SHARE`), paired with
+production arms. Job 22543996 ran one warmup and two repetitions; all 84
+solves are digest-valid. Predictions are in
+`benchmarks/delta-ipdps-d4c-starvation-variants.json`.
+
+The controls hold:
+- **D4b reproduces:** production weight-width time over candidate time is
+  1.29–1.42× (predicted 1.25–1.5×).
+- **Instrumentation cost** is 1.06–1.08×.
+- **Width alone does nothing:** plain asynchronous at the weight width idles
+  0.079–0.100 of the time, against the candidate's 0.080–0.096.
+
+Engaged (weight width) minus inert (ln V width), in seconds per PE, per source:
+
+| Pair | Extra solve time | Extra idle | Extra work | Of which queue push and pop | Extra other | Idle share |
+|---|---:|---:|---:|---:|---:|---:|
+| heap | 1.23–1.43 | 0.56–0.66 (42–54%) | 0.44–0.64 | 0.66–0.88 | 0.12–0.16 | 0.08–0.10 → 0.17–0.20 |
+| chunks band 256 | 0.60–0.84 | 0.29–0.39 (44–63%) | 0.14–0.36 | 0.45–0.68 | 0.08–0.10 | 0.09–0.12 → 0.20–0.24 |
+
+The work column includes queue calls. Edge relaxations fall, so the queue's
+growth exceeds the work's. Queue behaviour, medians over the timed solves:
+
+| Arm | Items per pop call | Pop calls | Time per pop | Lock misses per pop |
+|---|---:|---:|---:|---:|
+| heap, inert | 3.73 | 151M | 654 ns | 0.24 |
+| heap, engaged | 1.67 | 263M | 892 ns | 1.70 |
+| chunks, inert | 5.21 | 115M | 114 ns | 0.00 |
+| chunks, engaged | 2.56 | 180M | 469 ns | 1.07 |
+
+**Finding.** The collective itself is not the expensive part. The engaged
+threshold concentrates every PE's work on a thin admitted band, and that
+costs time in two roughly equal ways:
+- **Starvation.** 42–63% of the extra time is idle. Idle share doubles, and
+  each extra round leaves a PE idle for 23–39 µs. That is less than the
+  80–90 µs unloaded one-node collective cycle (§15), so PEs sit out part of
+  each round, not all of it.
+- **Queue contention.** Pop calls come back with half as many items, so
+  there are 1.6–1.7× more of them. Each costs 1.4–4.1× as much, with 4–7×
+  the lock misses, because every PE contends for the few buckets holding
+  admitted work.
+- **The remaining 10%** is runtime "other" time, about 6 µs per extra round.
+
+Per extra round, the total cost is 48–77 µs, against the 14–23 µs marginal
+cost of a round at flat work (§27). The expensive part of a round is the
+rationing, not the reduction and broadcast.
+
+Predictions for hypothesis S:
+- **Met:** (1) idle share rises by at least 0.10 on 6 of 8 source pairs (the
+  other two rose 0.091 and 0.097); (5) the chunk pair behaves the same way.
+- **Partly met:** (2) idle is 42–63% of the extra time, about half, not
+  consistently at least half; (3) idle per extra round is 23–39 µs, the low
+  end of 30–90.
+- **Missed:** (4) work did not stay flat. It rose, through the queue
+  contention that hypothesis S did not name.
+- **The alternative, Q, is not supported either,** since idle is far above a
+  quarter of the extra time.
+
+Both mechanisms follow from one cause, a thin admitted band, so on one node
+the threshold's cost is structural rather than a tunable overhead. Record:
+`design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
 | Delta IPDPS D3b width bracket | `design/onenode-data/delta-ipdps-d3b-width-22533655.json`; `benchmarks/delta-ipdps-d3b-width-variants.json` (predictions); job 22533655 |
 | Delta IPDPS D5 ordering pair | `design/onenode-data/delta-ipdps-d5-order-22530871.json`; `benchmarks/delta-ipdps-d5-order-variants.json` (predictions); job 22530871 |
 | Delta IPDPS D4 mechanism ablation, terrain crop | `design/onenode-data/delta-ipdps-d4-terrain-22529683.json`; job 22529683 (REPS=2) |
