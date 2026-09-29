@@ -1,0 +1,272 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-terrain30-c-z-1n-22529683",
+    "graph": "terrain30-c-z",
+    "hosts": "cn137",
+    "binaries": {
+      "candidate": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "no_slice": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "no_batch": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "local_queue": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "no_share": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "plain_async": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      },
+      "chunks": {
+        "binary": "acic_frz_c256",
+        "sha256": "a8950f57d9c1de6316dfb17ca099b598f2ce88233d9e47e413c08c514959c3fa"
+      },
+      "control": {
+        "binary": "acic_frz_heap",
+        "sha256": "4f9a5b1c62df58e2043a8f1a442f550ddf1b2130015192a8cd9130d85c865c06"
+      }
+    },
+    "solves": 96,
+    "timed": 64,
+    "all_digests_valid": true,
+    "reps": 2,
+    "base": "candidate",
+    "arms": {
+      "candidate": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          8.950582,
+          8.641263,
+          8.9521985,
+          9.286239
+        ],
+        "median_rounds": 1657.5,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          1.611951,
+          1.697558
+        ],
+        "wire_bytes_per_edge_range": [
+          0.045467,
+          0.050632
+        ],
+        "node_bytes_per_edge_range": [
+          0.094649,
+          0.105899
+        ]
+      },
+      "no_slice": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          7.939712500000001,
+          7.676957,
+          7.8479659999999996,
+          8.2375535
+        ],
+        "median_rounds": 595.0,
+        "speedup_over_base_by_source": [
+          1.1273181491143414,
+          1.1256104469518327,
+          1.1407030178265298,
+          1.1273054554364956
+        ],
+        "attempts_per_edge_range": [
+          1.57684,
+          1.665431
+        ],
+        "wire_bytes_per_edge_range": [
+          0.036705,
+          0.039225
+        ],
+        "node_bytes_per_edge_range": [
+          0.074788,
+          0.08009
+        ]
+      },
+      "no_batch": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          12.175523,
+          11.816222,
+          11.8939085,
+          12.641567
+        ],
+        "median_rounds": 1706.0,
+        "speedup_over_base_by_source": [
+          0.7351291603654316,
+          0.731305065189195,
+          0.7526708734979758,
+          0.7345797399958407
+        ],
+        "attempts_per_edge_range": [
+          1.570737,
+          1.651871
+        ],
+        "wire_bytes_per_edge_range": [
+          0.044713,
+          0.048231
+        ],
+        "node_bytes_per_edge_range": [
+          0.093647,
+          0.101393
+        ]
+      },
+      "local_queue": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          14.094825,
+          15.57842,
+          16.440272,
+          17.559677999999998
+        ],
+        "median_rounds": 2321.0,
+        "speedup_over_base_by_source": [
+          0.6350261177417953,
+          0.554694442697013,
+          0.5445286124219842,
+          0.5288387976134871
+        ],
+        "attempts_per_edge_range": [
+          5.263099,
+          6.700865
+        ],
+        "wire_bytes_per_edge_range": [
+          0.052888,
+          0.064781
+        ],
+        "node_bytes_per_edge_range": [
+          0.108356,
+          0.13226
+        ]
+      },
+      "no_share": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          20.924563499999998,
+          19.6517595,
+          15.534196,
+          27.2379345
+        ],
+        "median_rounds": 4688.5,
+        "speedup_over_base_by_source": [
+          0.4277547772979829,
+          0.4397195579357665,
+          0.5762897867388824,
+          0.34093036680149147
+        ],
+        "attempts_per_edge_range": [
+          11.667411,
+          21.362675
+        ],
+        "wire_bytes_per_edge_range": [
+          15.561593,
+          28.682974
+        ],
+        "node_bytes_per_edge_range": [
+          31.169407,
+          57.446407
+        ]
+      },
+      "plain_async": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          9.0175275,
+          8.6356195,
+          8.8736185,
+          9.1663265
+        ],
+        "median_rounds": 1538.5,
+        "speedup_over_base_by_source": [
+          0.9925760692163125,
+          1.0006535142035844,
+          1.008855462965869,
+          1.013081849091891
+        ],
+        "attempts_per_edge_range": [
+          1.625339,
+          1.695755
+        ],
+        "wire_bytes_per_edge_range": [
+          0.045572,
+          0.051149
+        ],
+        "node_bytes_per_edge_range": [
+          0.094749,
+          0.107058
+        ]
+      },
+      "chunks": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          3.8761900000000002,
+          3.676081,
+          3.79638,
+          3.9542795
+        ],
+        "median_rounds": 780.5,
+        "speedup_over_base_by_source": [
+          2.3091184900636965,
+          2.350672632077476,
+          2.358088099716045,
+          2.348402281629308
+        ],
+        "attempts_per_edge_range": [
+          1.809123,
+          1.91809
+        ],
+        "wire_bytes_per_edge_range": [
+          0.033902,
+          0.036576
+        ],
+        "node_bytes_per_edge_range": [
+          0.06957,
+          0.075367
+        ]
+      },
+      "control": {
+        "graph": "terrain30-c-z",
+        "median_seconds_by_source": [
+          8.958634,
+          8.704920000000001,
+          8.939835500000001,
+          9.152273999999998
+        ],
+        "median_rounds": 1619.0,
+        "speedup_over_base_by_source": [
+          0.9991012022591838,
+          0.9926872389407368,
+          1.0013829113522277,
+          1.014637345866175
+        ],
+        "attempts_per_edge_range": [
+          1.619962,
+          1.704449
+        ],
+        "wire_bytes_per_edge_range": [
+          0.04589,
+          0.051111
+        ],
+        "node_bytes_per_edge_range": [
+          0.095528,
+          0.107025
+        ]
+      }
+    }
+  }
+]

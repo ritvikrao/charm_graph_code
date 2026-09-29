@@ -2384,6 +2384,26 @@ Its measured benefit is multi-node (§8). D4b repeats the admission comparison
 with the weight-rule width, where the window covers the distances. Record:
 `design/onenode-data/delta-ipdps-d4-mesh28-22528885.json`.
 
+**D4, `terrain30-c-z`** (job 22529683; two timed repetitions to fit the
+interactive hour; 96 of 96 valid):
+
+| Arm | Arm time / candidate time | Attempts per edge | Rounds | Wire bytes per edge |
+|---|---:|---:|---:|---:|
+| candidate | 1.00× (8.64–9.29 s) | 1.61–1.70 | 1,658 | 0.045–0.051 |
+| no heap slice | **0.88–0.89×** | 1.58–1.67 | 595 | 0.037–0.039 |
+| no batching | 1.33–1.37× | 1.57–1.65 | 1,706 | 0.045–0.048 |
+| local queue | 1.57–1.89× | 5.3–6.7 | 2,321 | 0.053–0.065 |
+| process sharing off | 1.74–2.93× | 11.7–21.4 | 4,689 | 15.6–28.7 |
+| plain asynchronous | 0.99–1.01× | 1.63–1.70 | 1,539 | 0.046–0.051 |
+| chunks band 256, slice 64 | 0.42–0.43× (2.31–2.36× faster) | 1.81–1.92 | 781 | 0.034–0.037 |
+| control | 0.99–1.01× | 1.62–1.70 | 1,619 | 0.046–0.051 |
+
+The ordering is the mesh's, with magnitudes within 2× of it, as predicted. The
+threshold is inert here as well: the candidate sets it to 2047 in 99.9% of
+rounds, so plain asynchronous matches the candidate. The heap slice costs 12%
+on one node. Record:
+`design/onenode-data/delta-ipdps-d4-terrain-22529683.json`.
+
 ### 29. Delta IPDPS: the histogram threshold engaged (D4b), 2026-09-28
 
 D4 found the threshold inert on mesh28-z at the ln V width (§28). D4b
@@ -2433,6 +2453,7 @@ Record: `design/onenode-data/delta-ipdps-d4b-engaged-22529681.json`.
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| Delta IPDPS D4 mechanism ablation, terrain crop | `design/onenode-data/delta-ipdps-d4-terrain-22529683.json`; job 22529683 (REPS=2) |
 | Delta IPDPS D4b, threshold engaged | `design/onenode-data/delta-ipdps-d4b-engaged-22529681.json`; `benchmarks/delta-ipdps-d4b-engaged-variants.json` (predictions); job 22529681 |
 | Delta IPDPS D1 terrain crop | `design/onenode-data/delta-ipdps-d1-terrain-22529053.json`; job 22529053; inputs `scripts/delta/fetch_terrain_crop.sh`, `scripts/delta/ipdps_prepare.sbatch` (build 22528231) |
 | Delta IPDPS D4 mechanism ablation, mesh28-z | `design/onenode-data/delta-ipdps-d4-mesh28-22528885.json`; `benchmarks/delta-ipdps-d4-ablation-variants.json` (predictions); job 22528885 |
