@@ -84,8 +84,8 @@ weights. Limit: ACIC needs a locality-preserving vertex order.
   meshes (O1b), which the limitations sentence covers.
 - Numbers use width ln V / 8 on low-degree inputs (F8w, §37); scale-free
   inputs keep ln V. The "bucket width costs up to 2×" limit was dropped. On
-  `mesh28-w10-z` at 64 nodes, ⅛× is still about 1.3× behind the widest width
-  tested (§36), so the paper should say one rule is within 1.35× of the best
+  `mesh28-w10-z` at 64 nodes, ⅛× is still 1.2–1.5× behind the widest width
+  tested (§36, ratio of the range ends), so the paper should say one rule is within 1.5× of the best
   width tested.
 - "8–250× over Gluon" is the heap arm: 8.04× (`grid3-30-z`, 4 nodes) to 246×
   (`road-planet-z`, 4 nodes).
