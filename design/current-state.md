@@ -2585,10 +2585,38 @@ Both mechanisms follow from one cause, a thin admitted band, so on one node
 the threshold's cost is structural rather than a tunable overhead. Record:
 `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`.
 
+### 32. D6 freeze candidate: two-node envelope gate (2026-09-29)
+
+601697e went through `scripts/verify_2node.sh` on two Delta nodes, as
+2 processes × 8 PEs across the two nodes. The gate sweeps htram buffer sizes
+1–2048 and LCI packet sizes 4–64 KB on random, mesh, large-random and RMAT
+graphs, with `--verify` against serial Dijkstra and htram's receive-side
+envelope check.
+- **New file-mode block:** the gate now has an opt-in block (`SSSP_FILE_DIR`)
+  that runs the same check on `.wsg` inputs through the reader, since
+  `--reader-tile` refuses generated graphs. The first attempt, 22544342,
+  aborted on exactly that in every non-default profile before solving.
+- **Result:** job 22544422 passes 147 of 147 runs over seven profiles.
+
+| Profile | Binary |
+|---|---|
+| default | production heap |
+| mesh candidate | production heap |
+| candidate + `--admission all` | production heap |
+| band-256 chunks | band-256 build |
+| band-65536 chunks | band-65536 build |
+| candidate, compact64 wire | heap, `WIRE=compact64` |
+| band-256 chunks, compact64 wire | band 256, `WIRE=compact64` |
+
+Reader tiling engaged with two owners, process sharing was on in every
+non-default profile, and the envelope check never fired. Logs:
+`/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/freeze-gate-22544422/`.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |
 | Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
 | Delta IPDPS D3b width bracket | `design/onenode-data/delta-ipdps-d3b-width-22533655.json`; `benchmarks/delta-ipdps-d3b-width-variants.json` (predictions); job 22533655 |
 | Delta IPDPS D5 ordering pair | `design/onenode-data/delta-ipdps-d5-order-22530871.json`; `benchmarks/delta-ipdps-d5-order-variants.json` (predictions); job 22530871 |
