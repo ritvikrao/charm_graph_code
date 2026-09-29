@@ -88,12 +88,23 @@ and hit its cap on the rest (≥ 93–167×). The 3-D grids narrow
 the Gluon margin to 7.7–26× (low diameter) while ACIC strong-scales best
 there (`grid3-30-z` 4 → 64 nodes 9.4–10.2×, 7.3–7.9× over Wasp at 64).
 Weight range: [1, 65,536] costs ACIC nothing; [1, 10] costs it 1.15× at 4
-nodes and up to 1.9× at 64, where its time stops falling (not yet diagnosed).
+nodes and up to 1.9× at 64, where its time stops falling. The cause is the
+ln V bucket width, which is round-bound there: a 16× width is 1.96–2.21×
+faster at 64 nodes and scales again from 32 to 64 (§35). The frozen rule is
+unchanged.
+
+**Mechanisms at scale (F10, §35).** At 16 and 64 nodes the speedup comes
+from process-shared queues (removing them costs 4.8–15×), the nearest-bucket
+queue (2.2–3.7×), batched removal (1.5–1.6×) and, on meshes and terrain, the
+chunk queue (about 2×). The histogram admission threshold admits everything in
+89–99% of rounds and removing it changes nothing; engaged, it is 1.08–1.67×
+slower. Heap slices are worth nothing on these large inputs (removing them is
+0–9% faster). The chunk queue stalls, correctly but for up to 134 s, on
+`grid3-33-z` and roads.
 
 **Not yet measured.** Gluon on `terrain-ae-z` (its `.gr` now exists) and ACIC
-on it at 32 and 64 nodes; one-node GAPBS and Wasp on `road-planet-z`; HavoqGT
-with delegates (every launch hung at threshold 896, §33); ACIC on
-`mesh26`/`road-usa` with reader tiling off.
+on it at 32 and 64 nodes; RIKEN on `terrain30-s-z` at 16 nodes (it aborts on a
+32-bit size overflow at 128 ranks, §35).
 
 ## Implementations
 
@@ -375,6 +386,7 @@ graph and 4× its diameter.
 | 4 | HavoqGT | 500–655 | 2 | 5560455 |
 | 16 | ACIC TLS (acic_scale64b) | 0.792–0.864 | 4 | 5558201 |
 | 16 | Gluon (Async) | 42.6–49.3 | 2 | 5558209 |
+| 16 | RIKEN | 166–289 | 2 | 5565469 |
 | 16 | Gemini, capped | > 490 (capped) | 2 | 5560449 |
 | 16 | HavoqGT | 131–169 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 0.636–0.701 | 4 | 5558202 |
@@ -383,6 +395,7 @@ graph and 4× its diameter.
 | 32 | HavoqGT | 70.9–88.9 | 2 | 5560459 |
 | 64 | ACIC TLS (acic_scale64b) | 0.619–0.668 | 4 | 5558203 |
 | 64 | Gluon (Async) | 22.8–27.4 | 2 | 5558213 |
+| 64 | RIKEN | 50.6–80.7 | 2 | 5565470 |
 | 64 | Gemini, capped | > 490 (capped) | 2 | 5560453 |
 | 64 | HavoqGT | 42.7–59.3 | 2 | 5560461 |
 
@@ -391,9 +404,9 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
 |---:|---|---:|---:|---:|---:|---:|---:|
 | 4 | ACIC TLS (acic_scale64b) | 0.65–0.69× | 0.43–0.50× | 72.4–89.7× | — | 314×; ≥ 245× | 248–326× |
-| 16 | ACIC TLS (acic_scale64b) | 1.51–1.73× | 0.99–1.19× | 51.9–57.1× | — | ≥ 567× | 159–195× |
+| 16 | ACIC TLS (acic_scale64b) | 1.51–1.73× | 0.99–1.19× | 51.9–57.1× | 202–334× | ≥ 567× | 159–195× |
 | 32 | ACIC TLS (acic_scale64b) | 1.86–2.15× | 1.23–1.53× | 45.1–50.5× | — | ≥ 701× | 110–127× |
-| 64 | ACIC TLS (acic_scale64b) | 1.96–2.21× | 1.29–1.57× | 36.7–41.0× | — | ≥ 734× | 68.6–88.8× |
+| 64 | ACIC TLS (acic_scale64b) | 1.96–2.21× | 1.29–1.57× | 36.7–41.0× | 81.2–121× | ≥ 734× | 68.6–88.8× |
 
 #### `mesh28-w64k-z` (268.4M vertices, 1,073.7M edges)
 
@@ -459,6 +472,7 @@ Their diameter is far below a 2-D grid's of the same size (maximum distance
 | 4 | HavoqGT | 486–505 | 2 | 5560455 |
 | 16 | ACIC TLS (acic_scale64b) | 2.15–2.22 | 4 | 5558201 |
 | 16 | Gluon (Async) | 19.6–31.0 | 2 | 5558209 |
+| 16 | RIKEN | 69.9–122 | 2 | 5565469 |
 | 16 | Gemini | 236–294 | 2 | 5560449 |
 | 16 | HavoqGT | 283–290 | 2 | 5560457 |
 | 32 | ACIC TLS (acic_scale64b) | 1.21–1.28 | 4 | 5558202 |
@@ -467,6 +481,7 @@ Their diameter is far below a 2-D grid's of the same size (maximum distance
 | 32 | HavoqGT | 151–157 | 2 | 5560459 |
 | 64 | ACIC TLS (acic_scale64b) | 0.707–0.767 | 4 | 5558203 |
 | 64 | Gluon (Async) | 10.8–13.3 | 2 | 5558213 |
+| 64 | RIKEN | 19.9–30.7 | 2 | 5565470 |
 | 64 | Gemini | 565–622 | 2 | 5560453 |
 | 64 | HavoqGT | 68.3–72.2 | 2 | 5560461 |
 
@@ -475,9 +490,9 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN | over Gemini | over HavoqGT |
 |---:|---|---:|---:|---:|---:|---:|---:|
 | 4 | ACIC TLS (acic_scale64b) | 1.24–1.42× | 0.76–0.81× | 7.69–9.34× | — | 59.2–64.5× | 69.3–70.4× |
-| 16 | ACIC TLS (acic_scale64b) | 4.03–4.67× | 2.50–2.59× | 8.86–14.2× | — | 107–133× | 129–131× |
+| 16 | ACIC TLS (acic_scale64b) | 4.03–4.67× | 2.50–2.59× | 8.86–14.2× | 31.6–55.5× | 107–133× | 129–131× |
 | 32 | ACIC TLS (acic_scale64b) | 7.03–8.39× | 4.38–4.62× | 10.7–16.3× | — | 195–261× | 125–128× |
-| 64 | ACIC TLS (acic_scale64b) | 11.7–14.5× | 7.29–7.87× | 15.1–18.7× | — | 796–874× | 96.4–101× |
+| 64 | ACIC TLS (acic_scale64b) | 11.7–14.5× | 7.29–7.87× | 15.1–18.7× | 28.0–43.3× | 796–874× | 96.4–101× |
 
 #### `grid3-33-z` (8,589.9M vertices, 51,514.4M edges)
 
@@ -640,6 +655,8 @@ each (up to 1,542 s per solve).
 
 | Nodes | Implementation | Time per solve (s) | Sources | Jobs |
 |---:|---|---:|---:|---|
+| 1 | GAPBS | 1.65–1.91 | 4 | 5565476 |
+| 1 | Wasp | 0.867–0.919 | 4 | 5565797 |
 | 4 | ACIC production | 2.15–2.37 | 4 | 5546135 |
 | 4 | ACIC TLS (acic_tls) | 1.78–1.97 | 4 | 5546135 |
 | 4 | Gluon (Async) | 253–474 | 4 | 5546135 |
@@ -654,12 +671,12 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 
 | Nodes | ACIC build | over GAPBS | over Wasp | over Gluon | over RIKEN |
 |---:|---|---:|---:|---:|---:|
-| 4 | ACIC production | — | — | 114–202× | — |
-| 4 | ACIC TLS (acic_tls) | — | — | 141–244× | — |
-| 16 | ACIC production | — | — | 78.8–142× | — |
-| 16 | ACIC TLS (acic_tls) | — | — | 94.8–172× | — |
-| 64 | ACIC production | — | — | 35.9–71.2× | — |
-| 64 | ACIC TLS (acic_tls) | — | — | 43.5–84.6× | — |
+| 4 | ACIC production | 0.77–0.81× | 0.39–0.41× | 114–202× | — |
+| 4 | ACIC TLS (acic_tls) | 0.93–0.97× | 0.47–0.50× | 141–244× | — |
+| 16 | ACIC production | 1.48–1.58× | 0.73–0.85× | 78.8–142× | — |
+| 16 | ACIC TLS (acic_tls) | 1.78–1.90× | 0.87–1.02× | 94.8–172× | — |
+| 64 | ACIC production | 1.96–2.22× | 0.94–1.19× | 35.9–71.2× | — |
+| 64 | ACIC TLS (acic_tls) | 2.31–2.63× | 1.11–1.42× | 43.5–84.6× | — |
 
 OSM planet 2025-12-29, RoutingKit car graph, largest component
 (Afro-Eurasia); maximum distance 13.0M–18.0M, so RIKEN is excluded (past
@@ -667,9 +684,9 @@ OSM planet 2025-12-29, RoutingKit car graph, largest component
 its 2-hour limit during Gluon's last repetition, so one source has two Gluon
 solves. TLS over production 1.15–1.24×. TLS strong scaling: 4 → 16 nodes
 1.86–2.05×, 16 → 64 nodes 1.27–1.38×. The graph fits one node, but the
-On `road-planet-z` the one-node GAPBS and Wasp tuning jobs (5546133/5546134)
-crashed at start on a harness regression (`run.py --gluon-binary`, fixed in 9028c4d) and have not
-been rerun, so no one-node comparison exists yet.
+The one-node GAPBS and Wasp rows are F9 (5565476, 5565797; §34): 56 threads
+and delta 8192 for both, chosen on training sources. The earlier tuning jobs
+(5546133/5546134) crashed at start on a harness regression.
 
 ### Terrain (Copernicus DEM, past 2^32 vertices)
 
@@ -725,6 +742,7 @@ vertices per node at 4, 16 and 64 nodes.
 | 32 | HavoqGT | 64.5–81.9 | 2 | 5560460 |
 | 64 | ACIC TLS (acic_scale64b) | 2.25–2.62 | 4 | 5558203 |
 | 64 | Gluon (Async) | 499–509 | 2 | 5558213 |
+| 64 | RIKEN | 609–611 | 2 | 5565470 |
 | 64 | Gemini, capped | > 1592 (capped) | 2 | 5560454 |
 | 64 | HavoqGT | 41.8–54.0 | 2 | 5560462 |
 
@@ -735,7 +753,7 @@ ACIC's speedup (baseline time / ACIC time, range over held-out sources; GAPBS an
 | 4 | ACIC TLS (acic_scale64b) | 0.72–0.87× | 0.84–0.95× | 129× | — | 49.7–61.3× | 17.4–23.9× |
 | 16 | ACIC TLS (acic_scale64b) | 2.22–2.59× | 2.43–2.81× | 148–226× | — | 160–200× | 17.1–21.6× |
 | 32 | ACIC TLS (acic_scale64b) | 3.72–4.25× | 3.89–4.62× | 174–228× | — | 361–462× | 17.4–21.5× |
-| 64 | ACIC TLS (acic_scale64b) | 5.62–6.45× | 5.71–7.01× | 196–204× | — | ≥ 612× | 17.1–20.8× |
+| 64 | ACIC TLS (acic_scale64b) | 5.62–6.45× | 5.71–7.01× | 196–204× | 235–250× | ≥ 612× | 17.1–20.8× |
 
 #### `terrain30-m-z` (8,654.3M vertices, 69,233.2M edges)
 
@@ -907,12 +925,11 @@ speedup over Gluon falls from about 4× on `rmat25` to about 2× here.
 
 | Dataset | Size | Status |
 |---|---|---|
-| `road-planet-z` | 199.5M vertices, 496.0M edges | one-node GAPBS and Wasp tuning to rerun (5546133/5546134 crashed at start; harness fixed in 9028c4d) |
 | `terrain-ae-z` | 8.2B vertices, 65.6B edges, 1.11 TB | Gluon (the `.gr` now exists, 5551364) and ACIC at 32 and 64 nodes, not submitted |
 | scaling series | 4–64 nodes | Gemini and HavoqGT phase A done (§33); phase B (64-node lower bounds on the largest inputs) dropped |
-| `mesh26`, `road-usa` | generator/DIMACS order | ACIC with reader tiling off (O1b), to test the tiling explanation of §33 |
-| `rmat25`, `rmat26` | 16 nodes | HavoqGT with delegates: every launch at threshold 896 hung (O2b probe) |
-| `mesh28-w10-z` | 268.4M vertices | why narrow weights stop ACIC's scaling past 32 nodes |
+| `mesh26`, `road-usa` | generator/DIMACS order | RIKEN, HavoqGT and Gemini in native order (only Gluon has both orders, §33) |
+| `terrain30-s-z` | 16 nodes | RIKEN aborts at 128 ranks (32-bit size overflow); more ranks per node not tried |
+| `mesh28-w10-z` | 268.4M vertices | the frozen width loses about 2× at 32–64 nodes (§35); a width change is the user's decision |
 
 ## Mechanism chain established September 18–23
 
@@ -2968,12 +2985,146 @@ solves four sources in sequence, with ACIC's 300 s solve timeout and an
   `grid3-30-z`-sized grids at 16 nodes. It is not safe for roads, or for
   `grid3-33-z` until the cause is known; those keep the heap.
 
+### 35. Frontier F batch: 64 nodes, the ablation at scale and RIKEN (F4, F5, F6, F10), 2026-09-29
+
+The freeze binaries and layout are as in §34 (8 × 7, one warmup). F4 and F5
+use four held-out sources and three repetitions; F10 uses three sources and two
+repetitions. Every counted solve is digest-valid. Speedups are per source, and
+each range is over sources.
+
+**F4, chunk queue at 64 nodes (5565465).**
+
+| Input | Heap, slice 8 (s) | Chunks, slice 64 (s) | Speedup |
+|---|---:|---:|---:|
+| `mesh28-z` | 0.33–0.41 | 0.29–0.40 | 1.04–1.14× |
+| `mesh32-z` | 3.63–4.13 | 1.84–2.11 | **1.91–1.98×** |
+| `terrain30-m-z` | 9.85–11.78 | 5.52–6.85 | **1.72–1.80×** |
+| `grid3-33-z` | 4.62–5.14 | 2.51–2.61 on three sources; the fourth 2.35–134 s | 1.97–1.98× on three; 0.05× on the fourth (median) |
+| `road-planet-z` | 0.64–0.83 | failed: the band-65536 warmup launch hit the 6-minute step limit | — |
+
+- **Large meshes and terrain keep the one-node gain at 64 nodes.** On
+  `mesh28-z` (4.2M vertices per node) chunks do twice the edge work (7.9
+  against 3.9 attempts per edge) and gain only 1.04–1.14×.
+- **The `grid3-33-z` failure is a stall, not extra work.** Source 6583893348
+  took 13.4 s (warmup), 97.2, 133.9 and 2.35 s. All four solves ran the same
+  number of rounds (975–989) and edge attempts (1.91 per edge) as the fast
+  solves. The slow solves wait; they do not do more work. C1's road chunks
+  (correct, 6.7–121 s) look the same, and the 16-node `grid3-33-z` chunk solve
+  never finished. No chunk solve stalled on the meshes or terrain (16–25 chunk
+  solves per input over F4 and F10). That does not exclude rare stalls there.
+- Predictions: met on `mesh28-z` (1.0–1.5×). Missed on `mesh32-z` (1.0–1.5×)
+  and `terrain30-m-z` (1.0–1.6×), both faster than predicted. Missed on
+  `grid3-33-z` (1.0–1.5×) and `road-planet-z` (0.9–1.2×), which stalled.
+
+**F5, `mesh28-w10-z` widths at 64 nodes (5565465).**
+
+| Width | 32 nodes (s) | 64 nodes (s) | Speedup over the rule, 32 / 64 nodes | Attempts per edge, 64 nodes |
+|---|---:|---:|---:|---:|
+| ln V rule (19.41) | 0.64–0.71 | 0.62–0.67 | — | 1.05 |
+| 16× (310.5) | 0.35–0.40 | 0.28–0.34 | 1.75–1.84× / **1.96–2.21×** | 3.29 |
+| ⅛× (2.43) | 0.41–0.46 | 0.37–0.43 | 1.53–1.57× / **1.55–1.68×** | 3.52 |
+
+- **The ln V width leaves about 2× on this input at 32 and 64 nodes.** The
+  rule does the least edge work but is round-bound. At 16× the input also
+  scales again from 32 to 64 nodes, by about 1.2×; the rule gains 1.03–1.06×.
+- `mesh28-w10-z` is the narrow-weight mesh (weights 1–10), one of the paper's
+  varied-weight inputs. Whether the rule loses as much on the other weight
+  ranges is untested.
+- Predictions: ⅛× was predicted 1.1–1.5× faster, missed (faster). It was
+  predicted to restore a 32→64 gain of at least 1.15×, missed (about 1.08×).
+  16× was predicted at 0.9–1.2× of the rule, missed (it is the fastest).
+
+**F10, one mechanism removed at a time (5565467 at 16 nodes; 5565468 at 64
+nodes).** Each entry is the candidate's speedup over the arm (arm time /
+candidate time). Above 1× means the mechanism helps.
+
+| Arm | `mesh32-z` 16n | `terrain30-s-z` 16n | `mesh32-z` 64n | `terrain30-m-z` 64n (warmup only) |
+|---|---:|---:|---:|---:|
+| Candidate (s) | 9.53–10.39 | 5.86–6.10 | 4.01–4.14 | 9.99–11.77 |
+| Process sharing off | **8.3–10×** | **4.8–6.7×** | **7.1–8.3×** | about 8.5–15× (two solves) |
+| Local queue | 3.2–3.4× | 2.2–2.6× | 3.6–3.7× | 3.4–3.6× |
+| Batch 1 | 1.61–1.64× | 1.47–1.49× | 1.56–1.61× | 1.47–1.49× |
+| No heap slice | 0.91–0.94× | 0.91–0.95× | 0.97–1.00× | 0.98–1.00× |
+| Plain asynchronous (`--admission all`) | 1.00× | 0.99–1.00× | 0.97–0.98× | — |
+| Chunks, band 256, slice 64 | 0.47× | 0.50–0.51× | 0.49–0.51× | — |
+| Threshold engaged (`--bucket-width-rule weight`) | 1.09–1.11× | 1.64–1.67× | 1.08–1.10× | — |
+| Weight-rule width, plain asynchronous | 1.00–1.01× | 1.00× | 0.98–0.99× | 1.01× |
+
+- **The histogram threshold does not act at scale either.** The candidate
+  set the heap threshold to the top bucket (2047, everything admitted) in
+  96.6–97.0% of rounds on `mesh32-z` at 16 and 64 nodes, 89.2–95.8% on
+  `terrain30-s-z`, and 96.9–99.2% on `terrain30-m-z`. `--admission all` is
+  within 3% of the candidate.
+- **When engaged it is slower at scale, as on one node.** At the weight-rule
+  width the threshold holds work back: the top bucket in 15–39% of rounds on
+  `mesh32-z` and none on `terrain30-s-z`. It needs 2–9× the rounds (7.6K–16K
+  against 3.3K–3.8K; 16.6K–20.2K against 1.9K–2.6K), cuts edge work 5–50%
+  (terrain 1.26 against 2.50 attempts per edge), and is 1.08–1.11× slower on
+  `mesh32-z` and 1.64–1.67× slower on `terrain30-s-z` than the same width
+  without admission. So the one-node result (D4, D4b) holds at 16 and 64
+  nodes: multi-node asynchrony does not make the threshold useful.
+- **Heap slices do nothing here.** Removing them is 0–9% faster. §8 measured
+  1.47–1.56× from slice 8 on `mesh26-z` at 16 nodes, on older code (acic_slice)
+  with about 0.5M vertices per process. F10's inputs have 33–68M per process.
+  So the slice gain is either specific to small per-process work or has been
+  absorbed by later changes; F10 does not separate the two.
+- **What carries the speedup at scale:** process-shared queues (4.8–10×), the
+  nearest-bucket queue (2.2–3.7×), batched removal (1.5–1.6×), and the chunk
+  queue where it does not stall (about 2×).
+- `terrain30-m-z` at 64 nodes: the no-sharing arm's warmup (three solves in one
+  launch) hit the 6-minute step limit, after which the harness reran the
+  candidate alone. The other arms' warmup solves are listed as diagnostics only.
+  Two no-sharing solves finished, in about 164 s and 100 s against the
+  candidate's 10.7 s and 11.8 s on the same sources; the third was still
+  running. Plain asynchronous, chunks and the engaged threshold have no 64-node
+  terrain rows.
+- Predictions: met for plain asynchronous (0.9–1.2×), batch 1 (1.2–1.6×, at
+  the edge on `mesh32-z`), and the local queue on terrain (1.5–3×). Missed:
+  no sharing on `mesh32-z` (2–5× predicted; 7–10×), the local queue on
+  `mesh32-z` (3.2–3.7×), and no slice (1.2–3× slower predicted; it is no
+  slower). The engaged threshold was predicted at 0.9–1.5× of the same width
+  without admission: met on `mesh32-z` (1.08–1.11×), missed on `terrain30-s-z`
+  (1.64–1.67×).
+
+**F6, RIKEN pinned (5565469 at 16 nodes, 5565470 at 64 nodes).** Eight ranks
+per node, delta about twice the mean edge weight, two held-out sources, one
+launch each, all digests exact.
+
+| Input | 16 nodes (s) | ACIC speedup | 64 nodes (s) | ACIC speedup |
+|---|---:|---:|---:|---:|
+| `grid3-30-z` (d 1024) | 69.9–122 | 31.6–55.5× | 19.9–30.7 | 28.0–43.3× |
+| `mesh28-w10-z` (d 16) | 166–289 | 202–334× | 50.6–80.7 | 81.2–121× |
+| `terrain30-s-z` (d 2048/65536) | aborted | — | 609–611 | 235–250× |
+
+- On `terrain30-s-z` at 16 nodes both launches aborted after about 45 s: every
+  rank failed to allocate 18446744072586526720 bytes (−1,123,024,896 as a
+  signed 64-bit value), a 32-bit size overflow in RIKEN's per-rank buffers at
+  128 ranks. At 512 ranks the per-rank sizes fit. More ranks per node at 16
+  nodes would probably avoid it; that has not been tried.
+- The rows are in the dataset tables (`EXTERNAL_JOBS`). On all three inputs
+  Gluon remains ACIC's closest distributed competitor.
+
+**Consequences for F8 (all awaiting the user's decision):**
+- Chunks: mesh (`mesh32-z` size; on `mesh28-z` at 64 nodes the gain is small)
+  and terrain. The heap for roads and `grid3-33-z`. The stall is a
+  progress defect in the chunk queue at scale: correct answers, the same work,
+  long waits. Using chunks anywhere in the final matrix accepts a small risk of
+  a stalled solve, or waits for a fix.
+- Width: the ln V rule loses about 2× on `mesh28-w10-z` at 32–64 nodes. A
+  wider width, or a rule that responds to the round count, would change the
+  freeze. Changing it needs at least a check on `mesh28-z` and `mesh28-w64k-z`.
+- Paper: the algorithm's speedup comes from process-shared, nearest-bucket,
+  batched queues (plus chunks). The histogram threshold is a safety bound and
+  heap slices a small-scale effect; neither is claimed as a source of speedup
+  at scale.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
 | D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |
 | Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
+| Frontier F batch, 64 nodes, ablation and RIKEN (§35) | F4/F5 64n 5565465; F10 5565467 (16n), 5565468 (64n; `terrain30-m-z` warmup-only in `AB-terrain30-m-z-64n-5565468.failed`); F6 RIKEN 5565469, 5565470 (`EXTERNAL_JOBS`); F9 rows in `ONE_NODE_JOBS`; audits `logs/onenode-audit-55654{65,67,68}-*.json`; predictions in `benchmarks/frontier-{f4,f10}-*-variants.json` |
 | Frontier F batch, first results | O2d 5566503, O2e 5566974 (HavoqGT delegate rows, `DELEGATE_JOBS` in results_by_dataset.py); C1 5566199, C2 5566200, O2c 5566201; F4 16n 5565464, F5 32n 5565466, F7 5565471, F9 5565476/5565797, O1b 5565472, O2b 5565473; `benchmarks/frontier-{f4,f10,o1b}-*-variants.json` (predictions); freeze binaries `campaign/bin/acic_frz_*` with manifests (601697e) |
 | Frontier Gemini/HavoqGT (phase A, O2) and ordering pair (O1) | Gemini 5560447–5560454, 5561482 (conversions 5560446, 5561481); HavoqGT 5560455–5560462, 5561483, 5561484 (threshold 896); ACIC 5561485 (`benchmarks/frontier-order-{mesh,road}-16n-variants.json`, predictions recorded), Gluon 5561486; `scripts/frontier/series_baseline.sbatch`, `series_gluon.sbatch`, `gluon_compare.sbatch`; rows in `design/onenode-data/results-by-dataset.json` |
 | Delta IPDPS D3b width bracket | `design/onenode-data/delta-ipdps-d3b-width-22533655.json`; `benchmarks/delta-ipdps-d3b-width-variants.json` (predictions); job 22533655 |
@@ -3028,6 +3179,10 @@ and paths are consolidated in [configurations.md](configurations.md).
    work, and heap slicing converts that reduction to a distributed mesh gain.
    At 16 Frontier nodes each step of the cumulative ablation is faster than the
    previous one; the candidate's speedup over the local-queue arm is 3.2–3.3×.
+   The slice step is measured on `mesh26-z` with older code. On the freeze
+   candidate with 33–68M vertices per process, removing slices costs nothing
+   (F10, §35), while process sharing, the nearest queue and batching still
+   hold.
 3. On road, a representable global ordering window approaches minimal edge
    work, after which narrow ready work and repeated coordination are the
    supported limits. Reducing round count 8–14% through fresher contributions
@@ -3086,13 +3241,17 @@ and paths are consolidated in [configurations.md](configurations.md).
   Wasp, and on `road-usa-z` it loses to it.
 - ACIC is insensitive to the weight distribution: wide weights ([1, 65,536])
   change nothing, but narrow ones ([1, 10]) cost 1.15× at 4 nodes and up to
-  1.9× at 64, where `mesh28-w10-z`'s time stops falling.
+  1.9× at 64, where `mesh28-w10-z`'s time stops falling. The cause is the
+  frozen bucket width (§35), which is not yet changed.
 - ACIC scales on roads beyond 16 Frontier nodes (1.1–1.2× from 16 to 64), or
   has any strong-scaling curve on Anvil.
 - Any comparison with another code on inputs past one node's memory: Gluon on
   `terrain-ae-z` is not yet measured, and no one-node baseline fits it.
-- Any one-node comparison on `road-planet-z` (GAPBS and Wasp not yet run).
-- Multi-node behavior of the one-node chunk queue.
+- The chunk queue is safe at scale everywhere: on `grid3-33-z` and the roads
+  it stalls, with correct answers and unchanged work, for up to 134 s (§34,
+  §35).
+- The histogram admission threshold, or heap slices on large inputs, as a
+  source of speedup at scale (F10, §35).
 - ACIC is robust to vertex order: in generator order `mesh26` is 107–183×
   slower than `mesh26-z` at 16 nodes and loses to Gluon (§33).
 - HavoqGT with more than about 15k–84k delegates at 896 ranks: it deadlocks

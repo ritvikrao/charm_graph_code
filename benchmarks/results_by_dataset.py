@@ -77,14 +77,19 @@ EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900
                  # with threshold 896 (5561484) is left out: every launch hit its cap.
                  '5561482', '5561483',
                  # O2d/O2e: HavoqGT with delegates (threshold 4096; 16384 on rmat26)
-                 '5566503', '5566974']
+                 '5566503', '5566974',
+                 # F6: RIKEN pinned (8 ranks per node, delta about twice the mean weight) on
+                 # grid3-30-z, mesh28-w10-z and terrain30-s-z (series_riken.sbatch). terrain30-s-z at
+                 # 16 nodes aborts in RIKEN's allocator (a 32-bit size overflow) and has no row.
+                 '5565469', '5565470']
 # HavoqGT runs with delegates are their own rows. Their hung launches
 # (rmat26 at threshold 4096: a deadlock in HavoqGT's collectives past about
 # 15k-84k delegates, current-state section 34) are not lower bounds on a solve.
 DELEGATE_JOBS = {'5566503': 'HavoqGT, delegates 4096', '5566974': 'HavoqGT, delegates 16384'}
 ONE_NODE_JOBS = ['5529591', '5538465', '5538410', '5541358', '5541661',
                  '5536541', '5538411', '5541359', '5541662',
-                 '5558223', '5558224', '5558225', '5558226']  # scaling series: GAPBS, Wasp
+                 '5558223', '5558224', '5558225', '5558226',  # scaling series: GAPBS, Wasp
+                 '5565476', '5565797']  # F9: road-planet-z GAPBS, Wasp
 DATASETS = ['mesh24-z', 'mesh26', 'mesh26-z', 'mesh28-z', 'mesh30-z', 'road-usa', 'road-usa-z', 'road-na-z', 'road-eu-z',
             'road-planet-z', 'terrain-ae-z',
             'mesh28-w10-z', 'mesh28-w64k-z', 'mesh32-z', 'grid3-30-z', 'grid3-33-z',

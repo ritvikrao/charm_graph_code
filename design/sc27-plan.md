@@ -104,15 +104,18 @@ is a PPL alumnus; declare a conflict only for recent co-authorship.
 **Framing for the Algorithms track:** present ACIC as an algorithm, with
 pseudocode and a correctness and termination argument (monotone frontier,
 collective emptiness). Its parts are process-shared priority queues with
-nearest-bucket batched removal, bounded heap slices, and the chunk queue
-if F4 holds. Avoid presenting it as runtime tuning.
+nearest-bucket batched removal, and the chunk queue on meshes and terrain
+(F4 holds there; §35). Avoid presenting it as runtime tuning.
 
-The histogram-derived admission threshold is a mechanism only if F10 shows it
-acts at scale. On one Delta node it is inert at the ln V width (99.9% of
-rounds outside its window, D4) and 1.33–1.41× slower when engaged (D4b). F10
-repeats both arms at 16 and 64 nodes, where asynchrony and round structure
-differ. If it stays inert there, the paper describes it as a safety bound
-and does not claim it as a source of speedup.
+The histogram-derived admission threshold is not a mechanism. It is inert on
+one Delta node (D4) and at 16 and 64 Frontier nodes (F10: top bucket in 89–99%
+of rounds), and 1.08–1.67× slower when engaged (D4b, F10). The paper describes
+it as a safety bound and does not claim it as a source of speedup. Heap slices
+are also worth nothing on F10's large inputs; the paper claims them only for
+the strong-scaling limit, where §8 measured them (`mesh26-z`, older code), or
+not at all. At scale the parts that carry the speedup are process-shared
+queues, nearest-bucket batched removal, and the chunk queue on meshes and
+terrain.
 
 **Vertex order (O1, 2026-09-29):**
 - The mesh and road results assume a locality-preserving order (Morton here).
@@ -183,13 +186,13 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 | O2c | The same thresholds (65536/16384/4096/896) on `rmat25` at 16 nodes, where 896 hung | **Done** (5566201): 4096 (15,276 delegates) is fastest at 1.38 s; 896 deadlocks in HavoqGT's collectives |
 | O2d | HavoqGT at threshold 4096 on `rmat25`/`rmat26`, 16 nodes, four held-out sources: the RMAT row the paper uses | **Done** (5566503): `rmat25` 1.21–1.46 s; `rmat26` (83,682 delegates) hung. O2e (5566974): `rmat26` at 16384 (9,109 delegates) correct but no faster (1.91–2.26 s). The paper uses HavoqGT's best completing setting: ACIC 5.95–9.32× (`rmat25`), 4.29–7.78× (`rmat26`) |
 | F-freeze | Freeze candidate 601697e built on Frontier: `acic_frz_heap`, `acic_frz_c256`, `acic_frz_c65536` (TLS runtime, compact64; manifests beside the binaries). Every F run is digest-checked, so no separate smoke | **Done** 2026-09-29 |
-| F4 | Chunk queue at 16 and 64 nodes: band 256/slice 64 against the heap/slice 8 on `mesh28-z`, `mesh32-z`, `grid3-33-z`, `terrain30-m-z`; band 65536 on `road-planet-z` | 16n **done** (5565464): chunks 1.65–1.73× (`mesh28-z`), 2.12–2.15× (`mesh32-z`), 1.85–1.93× (`terrain30-m-z`). The chunk arm failed on `grid3-33-z` (no progress by the step limit) and `road-planet-z` (one source did not converge in 300 s). Stall probes: C1 5566199 found road chunks correct but 6–100× slower or timing out; C2 5566200 found `grid3-30-z` chunks correct and 1.9× faster. F8 therefore uses chunks for mesh, terrain and grids up to `grid3-30-z` size, and the heap for roads and `grid3-33-z` unless fixed; 64n 5565465 pending |
-| F5 | `mesh28-w10-z` widths at 32 and 64 nodes: the ln V rule, 16× (310.5) and ⅛× (2.43), the D3b nominations. Run directly: each solve takes under a second | 32n **done** (5565466): 16× 1.75–1.84×, ⅛× 1.53–1.57× faster than the rule; 64n inside 5565465 |
-| F6 | RIKEN, pinned at 8 ranks per node and delta ≈ 2× the mean edge weight (the ratio its mesh searches chose). Only narrow inputs (the driver reads at most 2^31 − 1 vertices) whose distances stay below 2^24: `terrain30-s-z` (d 2048/65536), `grid3-30-z` (1024/1024), `mesh28-w10-z` (16/16). `mesh32-z`, `grid3-33-z` and the larger terrain crops are wide; `mesh28-w64k-z` exceeds 2^24 | Submitted 16n 5565469, 64n 5565470 (`scripts/frontier/series_riken.sbatch`, `run.py --riken-delta`) |
+| F4 | Chunk queue at 16 and 64 nodes: band 256/slice 64 against the heap/slice 8 on `mesh28-z`, `mesh32-z`, `grid3-33-z`, `terrain30-m-z`; band 65536 on `road-planet-z` | 16n **done** (5565464): chunks 1.65–1.73× (`mesh28-z`), 2.12–2.15× (`mesh32-z`), 1.85–1.93× (`terrain30-m-z`). The chunk arm failed on `grid3-33-z` (no progress by the step limit) and `road-planet-z` (one source did not converge in 300 s). Stall probes: C1 5566199 found road chunks correct but 6–100× slower or timing out; C2 5566200 found `grid3-30-z` chunks correct and 1.9× faster. 64n **done** (5565465): `mesh32-z` 1.91–1.98×, `terrain30-m-z` 1.72–1.80×, `mesh28-z` only 1.04–1.14×; `grid3-33-z` 1.97–1.98× on three sources, but the fourth stalled (2.35–134 s with the same rounds and work); road chunks hit the step limit. The chunk queue has a progress defect at scale (correct, same work, long waits). Proposed for F8: chunks for mesh and terrain, the heap for roads and 3-D grids unless fixed (current-state §34, §35) |
+| F5 | `mesh28-w10-z` widths at 32 and 64 nodes: the ln V rule, 16× (310.5) and ⅛× (2.43), the D3b nominations. Run directly: each solve takes under a second | **Done.** 32n (5565466): 16× 1.75–1.84×, ⅛× 1.53–1.57×; 64n (5565465): 16× **1.96–2.21×**, ⅛× 1.55–1.68× faster than the rule, and 16× scales again from 32 to 64 (about 1.2×). The ln V width is round-bound on this input at scale. Changing the frozen rule is a decision for F8 (§35) |
+| F6 | RIKEN, pinned at 8 ranks per node and delta ≈ 2× the mean edge weight (the ratio its mesh searches chose). Only narrow inputs (the driver reads at most 2^31 − 1 vertices) whose distances stay below 2^24: `terrain30-s-z` (d 2048/65536), `grid3-30-z` (1024/1024), `mesh28-w10-z` (16/16). `mesh32-z`, `grid3-33-z` and the larger terrain crops are wide; `mesh28-w64k-z` exceeds 2^24 | **Done** (5565469, 5565470), exact digests. ACIC's speedup: `grid3-30-z` 31.6–55.5× (16n) and 28.0–43.3× (64n); `mesh28-w10-z` 202–334× and 81.2–121×; `terrain30-s-z` 235–250× at 64n. At 16n RIKEN aborts on `terrain30-s-z` (32-bit size overflow at 128 ranks) |
 | F7 | Gluon delta check on `terrain30-s-z` at 64 nodes: deltas 32, 512 and 2048 on one source, against the series' 128 (499–509 s) | **Done** (5565471): 32/512/2048 took 577–636 s against 128's 499–509 s; Gluon was not mistuned |
-| F8 | Final ACIC matrix with the freeze binaries, flags per family chosen by F4: terrain, meshes, grids, roads (including 32 nodes) at 4/16/32/64, and scale-free at 16/64; four or more sources, D2 counters on every solve | After F4 and O1b |
+| F8 | Final ACIC matrix with the freeze binaries, flags per family chosen by F4: terrain, meshes, grids, roads (including 32 nodes) at 4/16/32/64, and scale-free at 16/64; four or more sources, D2 counters on every solve | Ready once the user decides: (1) chunks per family (proposed: mesh and terrain only); (2) reader-tiling rule (O1b); (3) the bucket width (F5). Not submitted |
 | F9 | One-node Frontier points: GAPBS then Wasp on `road-planet-z`, chained after O2b; the debug queue takes one job at a time. ACIC at one node goes with F8 | GAPBS **done** 1.64–1.92 s (5565476), Wasp **done** 0.86–0.92 s (5565797); ACIC with F8 |
-| F10 | Ablation at scale, the Delta D4/D4b arm set: candidate, no slice, batch 1, local queue, no sharing, plain async (`--admission all`), chunks, and the threshold engaged by `--bucket-width-rule weight`, with and without admission. `mesh32-z` and `terrain30-s-z` at 16 nodes, `mesh32-z` and `terrain30-m-z` at 64; three sources, one warmup, two repetitions. **It checks whether the histogram threshold acts at scale** (round counts in every log) | Submitted 16n 5565467, 64n 5565468 |
+| F10 | Ablation at scale, the Delta D4/D4b arm set: candidate, no slice, batch 1, local queue, no sharing, plain async (`--admission all`), chunks, and the threshold engaged by `--bucket-width-rule weight`, with and without admission. `mesh32-z` and `terrain30-s-z` at 16 nodes, `mesh32-z` and `terrain30-m-z` at 64; three sources, one warmup, two repetitions. **It checks whether the histogram threshold acts at scale** (round counts in every log) | **Done** (5565467, 5565468; the 64n `terrain30-m-z` cell has warmup solves only). Candidate over the arm: no sharing 4.8–15×, local queue 2.2–3.7×, batch 1 1.5–1.6×, no slice 0.91–1.00×, plain async 0.97–1.00×, chunks about 0.5×. **The threshold is inert at scale too** (top bucket in 89–99% of rounds); engaged, it is 1.08–1.67× slower (§35) |
 
 The F batch holds about 380 node-hours at its time limits. Predictions are in
 `benchmarks/frontier-{f4,f10,o1b}-*-variants.json`, recorded before
@@ -226,7 +229,7 @@ submission.
 | Dates | Delta | Frontier | Writing |
 |---|---|---|---|
 | Sep 28 | D1–D5 done | F1, O1, O2 done | — |
-| Sep 29–30 | — | F-freeze done; F4, F5, F6, F7, F10, O1b, O2b, F9 baselines running | Abstract draft by Sep 30 |
+| Sep 29–30 | — | F-freeze done; F4–F7, F9, F10, O1b, O2b–O2e done 2026-09-29; F8 waits on three decisions (chunks, tiling rule, width) | Abstract draft by Sep 30 |
 | Oct 1 AOE | — | F4/O1b decide F8's flags | Abstract and tracks registered |
 | Oct 2 | — | F8 submitted as one batch, ACIC one-node F9 points with it | Methods, algorithm |
 | Oct 3–5 | — | F8 running | Evaluation from arriving data |
