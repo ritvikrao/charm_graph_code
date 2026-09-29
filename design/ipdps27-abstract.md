@@ -1,7 +1,7 @@
 # IPDPS 2027 abstract (draft, 2026-09-29)
 
 Submission limit: 500 words, due 2026-10-01 AOE. Numbers are from the F8 final
-matrix on the freeze binaries (601697e, heap rows; current-state §33–§36).
+matrix on the freeze binaries (601697e, heap rows; current-state §33–§37).
 
 **Title (working):** Scaling Single-Source Shortest Paths Beyond Graph500:
 Adaptive Asynchronous SSSP on Meshes, Terrain and Road Networks
@@ -44,20 +44,20 @@ reference.
 On these graphs ACIC is 8–250× faster than Gluon and one to three orders of
 magnitude faster than the RIKEN code, HavoqGT and Gemini. It is also the only
 distributed code here that beats a tuned single node: at 64 nodes it is
-5.6–14.5× faster than GAPBS and 2.9–7.8× faster than Wasp on the largest
-meshes, grids and terrain, and up to 24× and 14× with a chunked queue. On
+5.6–16.7× faster than GAPBS and 2.9–9.0× faster than Wasp on the largest
+meshes, grids and terrain, and up to 30× and 16× with a chunked queue. On
 Graph500's Kronecker graphs the RIKEN code remains faster. A benchmark that
 measures only one class of graph misses the other.
 
 An ablation at 16 and 64 nodes attributes the speedup: shared queues 5–14×,
 nearest-bucket removal 2.2–3.7×, batching 1.5–1.6×, tiled placement 1.7–4.4×,
-and a chunked queue up to 2.3× more on most meshes, grids and terrain. A
-dynamic admission threshold admits all work in 89–99% of rounds and gives
-nothing. Recent work shows synthetic uniform weights misrepresent
-shared-memory SSSP; we extend this to distributed memory, across weights from
-[1, 10] to [1, 65,536] and natural road and terrain weights. Limits: ACIC
-needs a locality-preserving vertex order, and its bucket width costs up to 2×
-on narrow weight ranges.
+starvation-gated flushing 1.2–1.7×, and a chunked queue up to 2.3× more on
+most meshes, grids and terrain. Sharing queues but distributing naively is
+4.8–6.9× slower at 64 nodes. A dynamic admission threshold admits all work in
+89–99% of rounds and gives nothing. Recent work shows synthetic uniform
+weights misrepresent shared-memory SSSP; we extend this to distributed memory,
+across weights from [1, 10] to [1, 65,536] and natural road and terrain
+weights. Limit: ACIC needs a locality-preserving vertex order.
 
 ---
 
@@ -71,16 +71,23 @@ on narrow weight ranges.
   64 nodes). Recheck against F8 before submission.
 - Paragraph 2 (revised 2026-09-29) is organized around the three problems
   that do not exist in shared memory, so ACIC does not read as distributed
-  Wasp. The flush-cadence claim has only one- and two-node evidence on older
-  code; F11's naive-distribution arm must confirm it at scale, or the sentence
-  goes.
+  Wasp. F11 (§37) confirms the flush-cadence claim at 16–64 nodes (1.2–1.7×
+  over a fixed cadence on the mesh, terrain and roads). The naive-distribution
+  arm is 4.8–6.9× slower at 64 nodes on the mesh and terrain, so the stop rule
+  was not triggered. The idle-flush settings are inert at scale off RMAT; do
+  not claim them.
 - "awkward in bulk-synchronous MPI" is an argument, not a measurement. See
   the framing section of sc27-plan.md for the evidence we can add (an
   implementation comparison and an aggregation ablation).
 - "adapt to the input at run time": `--process-share auto`, `--reader-tile
   auto`, `--hub-hints auto`. The reader-tiling rule mis-chooses on row-major
   meshes (O1b), which the limitations sentence covers.
-- The weight-range sentence depends on the width-check job (5568640/5568642).
-  If a width change is adopted, the "costs up to 2×" clause changes.
+- Numbers use width ln V / 8 on low-degree inputs (F8w, §37); scale-free
+  inputs keep ln V. The "bucket width costs up to 2×" limit was dropped. On
+  `mesh28-w10-z` at 64 nodes, ⅛× is still about 1.3× behind the widest width
+  tested (§36), so the paper should say one rule is within 1.35× of the best
+  width tested.
+- "8–250× over Gluon" is the heap arm: 8.04× (`grid3-30-z`, 4 nodes) to 246×
+  (`road-planet-z`, 4 nodes).
 - Double-blind: no author names or institution; "our" never refers to prior
   papers; Charm++ may be named as a public system.

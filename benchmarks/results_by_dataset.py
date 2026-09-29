@@ -68,6 +68,13 @@ for j in ['5568653', '5568963', '5568974',  # F8 final matrix (freeze 601697e): 
           '5568629', '5568630', '5568631', '5568632', '5568633', '5568634', '5568635', '5568636',  # 4/16/32/64
           '5568637', '5568638', '5568639', '5568641']:  # terrain30-l-z 32/64; scale-free 16/64
     ACIC_JOBS[j] = {'frozen': FRZ_HEAP, 'c256_s64': FRZ_CHUNKS}
+# F8w: the F8 matrix again with the bucket width ln V / 8 (roads keep 131072 and
+# are not rerun). On the scale-free inputs 'rule' is the unchanged ln V control.
+FRZ_HEAP_W8, FRZ_CHUNKS_W8 = 'ACIC freeze, heap, width ln V / 8', 'ACIC freeze, chunks, width ln V / 8'
+for j in ['5569518', '5569698',  # one node (debug queue)
+          '5569507', '5569508', '5569509', '5569510', '5569511', '5569512',  # 4/16/32/64; terrain30-l-z 32/64
+          '5569513', '5569514']:  # scale-free 16/64
+    ACIC_JOBS[j] = {'frozen': FRZ_HEAP_W8, 'c256_s64': FRZ_CHUNKS_W8, 'rule': FRZ_HEAP}
 EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900', '5539985',
                  '5541240', '5541195', '5541196', '5541369', '5541370', '5541371', '5541428', '5541429',
                  '5541663', '5541664', '5541665', '5541667', '5541713', '5541714', '5541715', '5541716', '5541717',
@@ -88,7 +95,9 @@ EXTERNAL_JOBS = ['5536474', '5536475', '5536476', '5539286', '5539899', '5539900
                  # 16 nodes aborts in RIKEN's allocator (a 32-bit size overflow) and has no row.
                  '5565469', '5565470',
                  # O1c: native order for the other baselines at 16 nodes (RIKEN, Gemini, HavoqGT)
-                 '5568646', '5568648', '5568649']
+                 '5568646', '5568648', '5568649',
+                 # F6b: RIKEN at 56 ranks per node on terrain30-s-z, 16 nodes (avoids the overflow)
+                 '5569517']
 # HavoqGT runs with delegates are their own rows. Their hung launches
 # (rmat26 at threshold 4096: a deadlock in HavoqGT's collectives past about
 # 15k-84k delegates, current-state section 34) are not lower bounds on a solve.
