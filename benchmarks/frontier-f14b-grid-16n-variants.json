@@ -1,0 +1,83 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.599302"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F14b (design/sc27-plan.md): the per-core end of the priority-domain sweep, in its own job because 56 x 1 has never run past one node (896 and 3584 LCI ranks) and a failed arm drops a graph's other arms. Freeze heap, widths as F14. frozen = 8 x 7; no_share = 8 x 7 with --process-share off (56 independent queues per node, distances still shared in memory); p56 = 56 x 1 (56 independent queues, every update between workers a message, the HavoqGT decomposition). Three held-out sources, one warmup, two repetitions. Predictions: every solve returns the reference digest; candidate over no_share 4.8-15x (F10); over p56 5-20x, at least as large as over no_share on every input; attempts per edge for p56 within 1.5x of no_share's."
+  },
+  {
+    "label": "no_share",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "off",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.599302"
+    ],
+    "nodes": 16,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F14b (design/sc27-plan.md): the per-core end of the priority-domain sweep, in its own job because 56 x 1 has never run past one node (896 and 3584 LCI ranks) and a failed arm drops a graph's other arms. Freeze heap, widths as F14. frozen = 8 x 7; no_share = 8 x 7 with --process-share off (56 independent queues per node, distances still shared in memory); p56 = 56 x 1 (56 independent queues, every update between workers a message, the HavoqGT decomposition). Three held-out sources, one warmup, two repetitions. Predictions: every solve returns the reference digest; candidate over no_share 4.8-15x (F10); over p56 5-20x, at least as large as over no_share on every input; attempts per edge for p56 within 1.5x of no_share's."
+  },
+  {
+    "label": "p56",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.599302"
+    ],
+    "nodes": 16,
+    "rpn": 56,
+    "workers": 56,
+    "prediction": "Recorded 2026-09-29 before submission. F14b (design/sc27-plan.md): the per-core end of the priority-domain sweep, in its own job because 56 x 1 has never run past one node (896 and 3584 LCI ranks) and a failed arm drops a graph's other arms. Freeze heap, widths as F14. frozen = 8 x 7; no_share = 8 x 7 with --process-share off (56 independent queues per node, distances still shared in memory); p56 = 56 x 1 (56 independent queues, every update between workers a message, the HavoqGT decomposition). Three held-out sources, one warmup, two repetitions. Predictions: every solve returns the reference digest; candidate over no_share 4.8-15x (F10); over p56 5-20x, at least as large as over no_share on every input; attempts per edge for p56 within 1.5x of no_share's."
+  }
+]
