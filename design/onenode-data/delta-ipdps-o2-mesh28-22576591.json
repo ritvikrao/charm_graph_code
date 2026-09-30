@@ -1,0 +1,176 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-mesh28-z-1n-22576591",
+    "graph": "mesh28-z",
+    "hosts": "cn137",
+    "binaries": {
+      "frz_chunks": {
+        "binary": "acic_frz_c256",
+        "sha256": "a8950f57d9c1de6316dfb17ca099b598f2ce88233d9e47e413c08c514959c3fa"
+      },
+      "o_chunks_msg": {
+        "binary": "acic_o_c256",
+        "sha256": "aa4e678bde6d35c30ecb85c1bdae8103b23c0bbb753ab755532163ba0489a2f8"
+      },
+      "o_chunks_idle": {
+        "binary": "acic_o_c256",
+        "sha256": "aa4e678bde6d35c30ecb85c1bdae8103b23c0bbb753ab755532163ba0489a2f8"
+      },
+      "o_heap_msg": {
+        "binary": "acic_o3_heap",
+        "sha256": "b1abd9fd8ccb229d70b5fe5896590bc8bb8769f95374b8112807fd1fb30baa67"
+      },
+      "o_heap_idle": {
+        "binary": "acic_o3_heap",
+        "sha256": "b1abd9fd8ccb229d70b5fe5896590bc8bb8769f95374b8112807fd1fb30baa67"
+      }
+    },
+    "solves": 80,
+    "timed": 60,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "frz_chunks",
+    "arms": {
+      "frz_chunks": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          1.572066,
+          1.37479,
+          1.38009,
+          1.338813
+        ],
+        "median_rounds": 489.0,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          1.57387,
+          1.765022
+        ],
+        "wire_bytes_per_edge_range": [
+          0.036103,
+          0.040635
+        ],
+        "node_bytes_per_edge_range": [
+          0.075339,
+          0.085671
+        ]
+      },
+      "o_chunks_msg": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          1.544303,
+          1.400795,
+          1.410324,
+          1.354883
+        ],
+        "median_rounds": 503.5,
+        "speedup_over_base_by_source": [
+          1.0179776896114299,
+          0.9814355419601012,
+          0.9785623729015461,
+          0.9881391972590992
+        ],
+        "attempts_per_edge_range": [
+          1.573865,
+          1.803831
+        ],
+        "wire_bytes_per_edge_range": [
+          0.037405,
+          0.039992
+        ],
+        "node_bytes_per_edge_range": [
+          0.078517,
+          0.083595
+        ]
+      },
+      "o_chunks_idle": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          1.699127,
+          1.566213,
+          1.644532,
+          1.565618
+        ],
+        "median_rounds": 14016.0,
+        "speedup_over_base_by_source": [
+          0.9252198334791925,
+          0.8777797145088183,
+          0.8391992372298015,
+          0.8551338832333303
+        ],
+        "attempts_per_edge_range": [
+          1.628133,
+          1.787699
+        ],
+        "wire_bytes_per_edge_range": [
+          0.060447,
+          0.070872
+        ],
+        "node_bytes_per_edge_range": [
+          0.151363,
+          0.181576
+        ]
+      },
+      "o_heap_msg": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          3.820435,
+          3.547819,
+          3.631385,
+          3.463117
+        ],
+        "median_rounds": 1070.0,
+        "speedup_over_base_by_source": [
+          0.41148874408280733,
+          0.3875028573892862,
+          0.38004507921908587,
+          0.3865919055001607
+        ],
+        "attempts_per_edge_range": [
+          1.442943,
+          1.628989
+        ],
+        "wire_bytes_per_edge_range": [
+          0.043365,
+          0.046933
+        ],
+        "node_bytes_per_edge_range": [
+          0.095211,
+          0.102798
+        ]
+      },
+      "o_heap_idle": {
+        "graph": "mesh28-z",
+        "median_seconds_by_source": [
+          4.614117,
+          4.359762,
+          4.382736,
+          4.050787
+        ],
+        "median_rounds": 38224.5,
+        "speedup_over_base_by_source": [
+          0.34070787541798353,
+          0.31533602063598887,
+          0.31489234122246923,
+          0.33050688668646366
+        ],
+        "attempts_per_edge_range": [
+          1.524657,
+          1.702424
+        ],
+        "wire_bytes_per_edge_range": [
+          0.086852,
+          0.105783
+        ],
+        "node_bytes_per_edge_range": [
+          0.248492,
+          0.311548
+        ]
+      }
+    }
+  }
+]
