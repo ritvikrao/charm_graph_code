@@ -48,15 +48,14 @@ Afro-Eurasia, and Copernicus terrain with Tobler walking-time weights, up to
 34 billion vertices and 275 billion edges. At 64 nodes ACIC-SSSP beats the
 strongest distributed code on each class by 56–203× on 2-D meshes, 17–23× on
 3-D grids, 17–21× on terrain and 10–85× on the largest road networks, and the
-others by one to three orders of magnitude. It is also the only distributed
-code here that beats a tuned single node: 1.9–7.1× faster than GAPBS and
-1.5–3.8× faster than Wasp on meshes of 67 million vertices and more, 14–17×
-and 8.5–9.0× on a 3-D grid, 5.6–6.5× and 5.8–7.0× on terrain, and 1.8–2.6×
-faster than GAPBS on the largest road networks, where it ties Wasp. On the
-Kronecker graphs Graph500 uses, ACIC-SSSP is 1.7–12× faster than Gluon, Gemini
-and HavoqGT and within 2.4–3.1× of the Graph500-tuned RIKEN code. It stays
-close to specialized code on the graphs Graph500 measures, and scales on the
-graphs it leaves out.
+others by one to three orders of magnitude. On one node, ACIC-SSSP with its
+chunked queue is within 1.4–2.3× of GAPBS and 1.7–3.1× of Wasp on meshes,
+grids and terrain. From 4 nodes it is faster than both, and it keeps scaling
+to 64 nodes (up to 44× its one-node speed) and to graphs no single node can
+hold, solving 275 billion edges in 24–26 s. On the Kronecker graphs Graph500
+uses, ACIC-SSSP is 1.7–12× faster than Gluon, Gemini and HavoqGT and within
+2.4–3.1× of the Graph500-tuned RIKEN code. It stays close to specialized code
+on the graphs Graph500 measures, and scales on the graphs it leaves out.
 
 ---
 
@@ -87,18 +86,36 @@ graphs it leaves out.
   every Morton-ordered input the rule chooses what `auto` chose.
 - Headline numbers (64 nodes, heap, per source; the strongest distributed
   code per class in brackets):
-  - 2-D meshes, 67M vertices and up: 56–203× (Gluon); 1.9–7.1× over GAPBS and
-    1.5–3.8× over Wasp. `mesh24-z` (16.8M vertices) loses to both at 64 nodes
-    (0.77–0.93×), hence "67 million vertices and more". `mesh32-z` has no
-    one-node baseline.
-  - 3-D grids: `grid3-30-z` 17.4–21.3× and `grid3-33-z` 19.9–22.9× (Gluon);
-    `grid3-30-z` 13.7–16.7× over GAPBS and 8.5–9.0× over Wasp.
-  - Terrain: `terrain30-s-z` 17.1–20.9× (HavoqGT); 5.6–6.5× over GAPBS and
-    5.8–7.0× over Wasp. The larger terrains have only Gluon lower bounds
-    (≥ 109–119×).
+  - 2-D meshes (64 nodes, strongest distributed code): 56–203× (Gluon).
+  - 3-D grids: `grid3-30-z` 17.4–21.3× and `grid3-33-z` 19.9–22.9× (Gluon).
+  - Terrain: `terrain30-s-z` 17.1–20.9× (HavoqGT). The larger terrains have
+    only Gluon lower bounds (≥ 109–119×).
   - Largest roads (`road-na-z`, `road-eu-z`, `road-planet-z`): 10.0–84.7×
-    (Gluon); 1.8–2.6× over GAPBS; 0.76–1.44× over Wasp ("ties").
-    `road-usa-z` loses to Wasp (0.53–0.70×).
+    (Gluon).
+  - **One node against one node** (revised 2026-09-30; the author objected to
+    comparing 64 nodes of ACIC-SSSP with one node of GAPBS and Wasp). Chunk
+    queue, width ln V / 8, on `mesh26-z`, `mesh28-z`, `mesh30-z`,
+    `grid3-30-z` and `terrain30-s-z`:
+    - One node: 0.44–0.74× of GAPBS (so GAPBS is 1.35–2.3× faster) and
+      0.32–0.60× of Wasp (1.7–3.1×).
+    - 4 nodes: 1.35–2.77× faster than GAPBS and 1.01–1.92× faster than Wasp.
+      `mesh30-z` is the narrowest (1.01–1.12×).
+    - 1 → 64 nodes: 3.8× (`mesh26-z`), 8.1×, 15×, 44× (`grid3-30-z`) and 21×
+      (terrain).
+    - Excluded from "meshes, grids and terrain":
+      - `mesh28-w10-z` and `mesh28-w64k-z`, where the chunk queue loses (heap
+        at one node 0.27–0.37× of GAPBS);
+      - `mesh24-z`, which is too small to scale;
+      - the roads, which have no chunk arm. With the heap they are 0.38–0.57×
+        of GAPBS and 0.20–0.27× of Wasp on one node, faster than GAPBS from
+        4–16 nodes, and tie Wasp from 16–32.
+    - With the heap (the headline configuration elsewhere) the one-node gap is
+      2.7–4.3× to GAPBS and 3.2–7× to Wasp. It passes GAPBS at 4–16 nodes and
+      Wasp at 16.
+    - "Graphs no single node can hold": `grid3-33-z` (893 GB file),
+      `terrain30-m-z` and `terrain30-l-z` (275B edges) exceed a Frontier
+      node's 512 GB. `terrain30-l-z` takes 23.7–25.8 s at 64 nodes with
+      chunks (heap 43.4–46.1 s).
   - Kronecker (RMAT 25–27, 16 nodes, width ln V as configured for scale-free
     inputs): Gluon 2.20–5.08×, Gemini 1.66–2.42×, HavoqGT 5.28–11.7×; RIKEN
     0.32–0.42×.
