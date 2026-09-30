@@ -32,6 +32,6 @@ ENG=${ENGINES:-gap,wasp}
 for e in ${ENG//,/ }; do
   echo "== $e $(date -Is)"
   python3 "$APP/benchmarks/onenode_gap_tune.py" "$ROOT" --graphs "$GRAPH" --engine "$e" \
-    --threads "$THREADS" --deltas "$DELTAS" --tune-only --launch-timeout "${LAUNCH_TIMEOUT:-240}"
+    --threads "$THREADS" --deltas "$DELTAS" --tune-only --spread --launch-timeout "${LAUNCH_TIMEOUT:-240}"
 done
 echo "D7 TUNE COMPLETE $SLURM_JOB_ID"

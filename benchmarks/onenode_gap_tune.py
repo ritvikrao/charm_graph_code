@@ -27,6 +27,9 @@ def main():
     ap.add_argument('--selection-job', help='reuse a frozen selection in a second allocation')
     ap.add_argument('--deltas', help='explicit delta candidates (comma list) instead of the denominator grid; '
                     'for graphs whose read makes each launch minutes long')
+    ap.add_argument('--spread', action='store_true',
+                    help='give every candidate the whole node (srun -c NODE_CPUS) with OMP_PROC_BIND=spread, so a '
+                    'run with fewer threads than cores still uses both sockets (D7; the default packs them)')
     ap.add_argument('--tune-only', action='store_true',
                     help='write the frozen selection and stop; a later job runs it with --selection-job '
                     '(on Delta the held-out comparison then shares an allocation with ACIC, D7)')
@@ -64,8 +67,9 @@ def main():
                             | {4 * denominator, 16 * denominator})
             if args.deltas:
                 deltas = sorted({int(d) for d in args.deltas.split(',')})
-            candidates = [dict(engine=args.engine, name=f'{args.engine}-t{t}-d{d}',
-                               threads=t, cpus=t, delta=d, launch_timeout_seconds=args.launch_timeout)
+            place = (dict(cpus=machine.NODE_CPUS, omp_bind='spread'), '-spread') if args.spread else ({}, '')
+            candidates = [dict(dict(engine=args.engine, name=f'{args.engine}-t{t}-d{d}{place[1]}',
+                                    threads=t, cpus=t, delta=d, launch_timeout_seconds=args.launch_timeout), **place[0])
                           for t in threads for d in deltas]
             campaign.run(graph, int(train[0]['source']), candidates[0], train[0], 'external-warmup')
             samples = {c['name']: [] for c in candidates}

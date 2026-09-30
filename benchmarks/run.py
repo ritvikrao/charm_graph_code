@@ -200,6 +200,12 @@ class Campaign:
             ranks = config.get('rpn', 1)
             threads = config.get('threads', workers // ranks)
             env['OMP_NUM_THREADS'] = str(threads)
+            # D7: a shared-memory baseline given the whole node (cpus = every
+            # core) spreads its threads over both sockets instead of packing
+            # them onto the first `threads` cores, which halves the memory
+            # bandwidth a 64-thread run on Delta sees.
+            if 'omp_bind' in config:
+                env['OMP_PROC_BIND'] = config['omp_bind']
             launch = ['srun', '-N', str(self.nodes), '-n', str(self.nodes*ranks),
                       '--ntasks-per-node', str(ranks), '-c', str(config.get('cpus', threads)),
                       '--cpu-bind=cores']
