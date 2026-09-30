@@ -99,8 +99,9 @@ graphs it leaves out.
   - Largest roads (`road-na-z`, `road-eu-z`, `road-planet-z`): 10.0–84.7×
     (Gluon); 1.8–2.6× over GAPBS; 0.76–1.44× over Wasp ("ties").
     `road-usa-z` loses to Wasp (0.53–0.70×).
-  - Kronecker (RMAT 25–27, 16 nodes): Gluon 1.95–5.3×, Gemini 1.6–2.4×,
-    HavoqGT 5.0–11.8×; RIKEN 0.31–0.44×.
+  - Kronecker (RMAT 25–27, 16 nodes, width ln V as configured for scale-free
+    inputs): Gluon 2.20–5.08×, Gemini 1.66–2.42×, HavoqGT 5.28–11.7×; RIKEN
+    0.32–0.42×.
   - "One node … outperforms them on 64 nodes": for example, Wasp on one node
     against Gluon at 64 on `grid3-30-z`, and against HavoqGT at 64 on
     terrain.
