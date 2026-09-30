@@ -1,0 +1,50 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.252728"
+    ],
+    "prediction": "Smoke test 2026-09-29 (debug queue, training sources): acic_frz_tloc (30737e4) runs --reader-tile locality and returns the reference digest; frozen is the unchanged freeze heap. Not a measurement."
+  },
+  {
+    "label": "tloc",
+    "binary": "acic_frz_tloc",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "locality",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.252728"
+    ],
+    "prediction": "Smoke test 2026-09-29 (debug queue, training sources): acic_frz_tloc (30737e4) runs --reader-tile locality and returns the reference digest; frozen is the unchanged freeze heap. Not a measurement."
+  }
+]
