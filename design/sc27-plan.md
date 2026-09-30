@@ -204,6 +204,14 @@ recommendations, and our response to each:
    aggregation structure rather than dynamic thresholds, extending "Mind the
    Gap" from shared to distributed memory.
 
+**Width configuration (2026-09-29).** The paper's configuration is one rule:
+bucket width ln V / 8 when the graph has fewer than 8 edges per vertex, ln V
+otherwise, and a fixed 131072 on the roads. It is the width check's winner on
+low-degree inputs (§36) and F8w's result on scale-free ones (§37). The
+freeze binaries take it as `--bucket-width`. On every input tested it is
+within 1.5× of the best width tried (`mesh28-w10-z` at 64 nodes is the
+largest gap).
+
 #### What to pursue next (none submitted; each needs the user's go-ahead)
 
 | # | Experiment | Why | Cost |
@@ -358,6 +366,10 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 | F11 | Aggregation ablation at 16 and 64 nodes (freeze heap, new width): defaults against `--flush-policy fixed`, `--idle-flush off`, `--idle-flush on`, `--idle-flush-interval 0`, `--bufsize 64`, and the naive-distribution arm (`--flush-policy fixed --idle-flush off --reader-tile off`); `mesh32-z`, `terrain30-s-z`, `road-planet-z`, `rmat26`; three sources, two repetitions | **Done** (§37): the starvation-gated flush is 1.2–1.7× over a fixed cadence on the mesh, terrain and roads (it halves attempts per edge at 64 nodes); the idle-flush settings are inert there (only `rmat26` at 64 nodes pays 1.74× without them); naive distribution is 4.8–6.9× slower at 64 nodes on the mesh and terrain, so the stop rule is not triggered |
 | F10b | F10 `terrain30-m-z` at 64 nodes again, 15-minute step limit | **Done** (5568643): complete; no sharing 9.1–14×, threshold inert (96.8–99.2% top bucket), engaged 1.79–1.89× slower (§36) |
 | F6b | RIKEN `terrain30-s-z` at 16 nodes with 14 and 28 ranks per node (the 8-rank layout overflows) | **Done** at 56 ranks per node (5569517, §37): RIKEN takes 1,212–1,229 s at 16 nodes; ACIC is 200× faster |
+| F13 | Tiling off alone at 64 nodes (the freeze heap, width ln V / 8): candidate, `--reader-tile off`, fixed flush, and F11's naive arm; `mesh32-z`, `terrain30-s-z`, `road-planet-z` | Submitted 5570489 (`frontier-f13-*-variants.json`) |
+| F14 | Priority-domain sweep: 56 workers per node as 8 × 7 (candidate), 4 × 14, 2 × 28 and 1 × 56, sharing on; `mesh32-z`, `terrain30-s-z`, `grid3-30-z`, `road-planet-z` at 16 and 64 nodes | Submitted 5570490 (16n), 5570491 (64n) (`frontier-f14-*-variants.json`) |
+| F14b | The per-core end: 8 × 7, 8 × 7 with `--process-share off`, and 56 × 1 (never run past one node, so in its own jobs); same inputs | Submitted 5570495 (16n, three inputs), 5570496 (16n, `mesh32-z`), 5570492 (64n) (`frontier-f14b-*-variants.json`) |
+| F15 | Locality-aware tiling (`acic_frz_tloc`, 30737e4 = freeze plus `--reader-tile locality`): auto, locality, off (and target 0.8 on `mesh26`) on row-major `mesh26`, `mesh26-z`, DIMACS `road-usa`, `road-usa-z` at 16 and 64 nodes | Smoke test 5570528 (debug); the 16/64-node jobs are submitted after it passes (`frontier-f15-*-variants.json`) |
 | O1c | Native order for the other baselines at 16 nodes: RIKEN on `mesh26`/`mesh26-z`; Gemini and HavoqGT on `mesh26`, `mesh26-z`, `road-usa`, `road-usa-z` | **Done** (5568646, 5568648, 5568649). Gemini prefers row-major on `mesh26` (order cost 0.62–0.84×); RIKEN and HavoqGT prefer Morton. At each code's best order ACIC is 37–43× (Gluon), 251–256× (RIKEN), 362–416× (Gemini), 213–233× (HavoqGT) faster on `mesh26`; 32–342× on `road-usa` (§36) |
 | F9 | One-node Frontier points: GAPBS then Wasp on `road-planet-z`, chained after O2b; the debug queue takes one job at a time. ACIC at one node goes with F8 | GAPBS **done** 1.64–1.92 s (5565476), Wasp **done** 0.86–0.92 s (5565797); ACIC with F8 |
 | F10 | Ablation at scale, the Delta D4/D4b arm set: candidate, no slice, batch 1, local queue, no sharing, plain async (`--admission all`), chunks, and the threshold engaged by `--bucket-width-rule weight`, with and without admission. `mesh32-z` and `terrain30-s-z` at 16 nodes, `mesh32-z` and `terrain30-m-z` at 64; three sources, one warmup, two repetitions. **It checks whether the histogram threshold acts at scale** (round counts in every log) | **Done** (5565467, 5565468; the 64n `terrain30-m-z` cell has warmup solves only). Candidate over the arm: no sharing 4.8–15×, local queue 2.2–3.7×, batch 1 1.5–1.6×, no slice 0.91–1.00×, plain async 0.97–1.00×, chunks about 0.5×. **The threshold is inert at scale too** (top bucket in 89–99% of rounds); engaged, it is 1.08–1.67× slower (§35) |
