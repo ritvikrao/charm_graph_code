@@ -95,6 +95,11 @@ def main():
                     tile = [variant['flags'][i+1] for i,f in enumerate(variant['flags'])
                             if f == '--reader-tile'][-1:] or ['off']
                     tiled = arcs < 8*vertices if tile[0] == 'auto' else tile[0] not in ('off','0')
+                    if tile[0] == 'locality':
+                        # The rule's own line says what it chose (0 = off);
+                        # it prints nothing when the degree test already says off.
+                        chosen = re.findall(r'^Reader tile locality: .* chosen=(\d+)$', text, flags=re.M)
+                        tiled = arcs < 8*vertices and bool(chosen) and int(chosen[0]) > 0
                     if len(re.findall(r'^Reader tiles: ',text,flags=re.M)) != tiled:
                         raise ValueError(f'{launch}: expected reader tiles {"on" if tiled else "off"}')
                     if re.findall(r'Live slack: ([^\r\n]*)',text) != slack:

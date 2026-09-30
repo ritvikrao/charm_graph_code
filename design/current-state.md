@@ -129,6 +129,25 @@ slower. Heap slices are worth nothing on these large inputs (removing them is
 - **RIKEN on `terrain30-s-z`.** At 16 nodes and 56 ranks per node it finishes
   in 1,212–1,229 s, and ACIC is 200× faster.
 
+**Placement, decomposition and tiling rule (F13–F15, §38).**
+- **Tiled placement.** Turning it off alone costs 5.0–7.4× at 64 nodes on
+  the mesh and terrain, and 1.4–1.8× on the planet roads. That is as much as
+  the whole naive arm.
+- **The priority-queue domain.**
+  - One shared queue per 7-core L3 region (8 × 7) beats larger shared
+    domains by 1.1–2.9×.
+  - 56 single-worker processes (56 × 1, one queue per core) are about as fast
+    as 8 × 7: 1.04–1.39× faster on terrain and the grid, equal on `mesh32-z`,
+    and 1.13–1.50× slower on the planet roads.
+  - The "no sharing" arm (`--process-share off`, 5–14×) runs the older
+    threshold-deferred TRAM path for updates inside a process. It does not
+    measure queue count, so "shared queues 5–14×" is withdrawn.
+- **`--reader-tile locality`.** It removes the row-major failure (26–29×
+  faster than auto on `mesh26`) and changes nothing on the Morton inputs. It
+  still misses twice: 16-row tiles on `mesh26` at 16 nodes (2.9× behind
+  tiling off), and 4× tiles on DIMACS `road-usa` at 64 nodes (1.96× behind
+  auto).
+
 **Not yet measured.** Gluon on `terrain-ae-z` (its `.gr` now exists) and ACIC
 on it at 32 and 64 nodes.
 
@@ -3854,10 +3873,150 @@ tiling. Speedup of the candidate over each arm, per source:
 **200–201×** faster (heap) and 394–396× faster (chunks). RIKEN at 64 nodes
 (8 ranks per node, 5565470) takes 609–611 s.
 
+### 38. Tiling alone, the priority-domain sweep and locality-aware tiling (F13, F14, F14b, F15), 2026-09-29
+
+All four use the freeze heap (`acic_frz_heap`, slice 8) at width ln V / 8
+(131072 on roads), three held-out sources, one warmup and two repetitions.
+Speedups are ACIC's (the 8 × 7 candidate's) over each arm, per source. Below
+1× means the arm is faster. **Every counted solve is digest-valid.**
+
+**F13, tiling off alone at 64 nodes (5570489).**
+
+| Arm | `mesh32-z` | `terrain30-s-z` | `road-planet-z` |
+|---|---:|---:|---:|
+| `--reader-tile off` | **6.89–7.37×** | **4.98–6.78×** | 1.37–1.84× |
+| fixed flush cadence | 1.41–1.45× | 1.71–2.83× | 1.39–1.47× |
+| naive (both, and no idle flush) | 6.51–6.97× | 5.06–9.97× | 1.91–2.27× |
+
+- **Tiled placement is the largest distributed mechanism at 64 nodes.** On
+  the mesh, tiling off alone is as slow as the naive arm.
+- **Tiling off wastes less work but leaves processes idle.** Attempts per
+  edge are 1.51 against 3.02 on `mesh32-z`, but rounds are 7,185 against
+  3,071. On the planet roads it also needs fewer rounds, and costs 1.6×.
+- **The two effects do not multiply.** Once tiling is off, the flush policy
+  adds little: naive is 6.7× against tiling off's 7.1× on the mesh.
+- **Predictions** (`frontier-f13-*-variants.json`):
+  - Met: digests; roads 1.3–2.5×; fixed flush and naive reproduce F11 within
+    10% on the mesh and roads; fewer attempts per edge with tiling off.
+  - Missed:
+    - Tiling off on the mesh (7.1×) and terrain (5.8×), predicted 3–5×.
+    - Terrain fixed flush (2.23×, F11 1.67×) and naive (6.95×, F11 5.61×)
+      differ from F11 by more than 10%; the source ranges are wide
+      (1.71–2.83×, 5.06–9.97×).
+    - More rounds with tiling off on roads (1,332 against 1,845).
+    - The two effects multiplying, within 1.3× (mesh 1.5×, terrain 1.9×).
+
+**F14, priority-domain sweep with sharing on (5570490 at 16 nodes, 5570491 at
+64).** The same 56 workers per node, as 8 × 7 (the candidate), 4 × 14, 2 × 28
+and 1 × 56.
+
+| Layout | `mesh32-z` 16n / 64n | `terrain30-s-z` | `grid3-30-z` | `road-planet-z` |
+|---|---:|---:|---:|---:|
+| 4 × 14 | 1.17–1.22× / 1.14–1.17× | 1.11–1.13× / 1.12–1.16× | 1.34–1.37× / 1.27–1.30× | 1.31–1.35× / 1.33–1.34× |
+| 2 × 28 | 1.29–1.35× / 1.28–1.34× | 1.20–1.26× / 1.25–1.33× | 1.55–1.64× / 1.59–1.63× | 1.72–1.76× / 1.74–1.80× |
+| 1 × 56 | 1.93–2.08× / 1.96–1.98× | 1.66–1.79× / 1.80–1.92× | 2.38–2.51× / 2.63–2.69× | 2.73–2.81× / 2.86–2.93× |
+
+- **A shared queue larger than one 7-core L3 region is slower at both node
+  counts.** It costs 1.1–1.4× at 14 cores, 1.2–1.8× at 28 and 1.7–2.9× at
+  56.
+- **Larger domains waste less work but still lose.** On the mesh, terrain
+  and grid, attempts per edge fall steadily as domains grow (`mesh32-z` at
+  16 nodes: 2.11, 1.93, 1.83, 1.69). On the roads they rise.
+- **Predictions** (`frontier-f14-*-variants.json`):
+  - Met: digests; attempts falling steadily (except roads); 4 × 14 within
+    0.8–1.25× on the mesh and terrain.
+  - Missed: 4 × 14 on the grid and roads; 2 × 28 and 1 × 56 within 0.6–1.3×
+    (1.2–2.9× slower); larger domains gaining more at 64 nodes (they gain
+    nothing).
+
+**F14b, the per-core end (5570582 and 5570583 at 16 nodes; 5570584 at 64,
+which hit its 2-hour limit).**
+- The first submission (5570492/5570495/5570496) aborted at LCI start-up,
+  because LCI's packet pool could not be registered at 56 processes per node.
+  56 × 1 therefore runs with `LCI_ATTR_NPACKETS=9362` and one LCI device per
+  process.
+- The 64-node job finished `grid3-30-z` and `road-planet-z`, and one of the
+  two repetitions of `terrain30-s-z` (three solves per arm). `mesh32-z` at 64
+  nodes did not run.
+
+| Arm | `mesh32-z` 16n | `terrain30-s-z` 16n / 64n | `grid3-30-z` 16n / 64n | `road-planet-z` 16n / 64n |
+|---|---:|---:|---:|---:|
+| 8 × 7, `--process-share off` | **9.19–9.51×** | 4.71–6.60× / 8.18–9.92× | 1.04–1.08× / 1.30–1.52× | 6.05–6.92× / 8.26–9.61× |
+| 56 × 1 (sharing on, one worker per process) | 0.96–1.03× | **0.72–0.80×** / 0.90–0.96× | **0.78–0.79× / 0.83–0.86×** | 1.13–1.20× / 1.35–1.50× |
+
+- **56 single-worker processes are about as fast as the 8 × 7 shared queues.**
+  56 × 1 keeps one priority queue per core and makes every update between
+  workers a message.
+  - It is 1.04–1.39× *faster* on terrain and the grid, equal on `mesh32-z`
+    at 16 nodes, and 1.13–1.50× slower on the planet roads.
+  - Its attempts per edge are higher (3.39 against 2.07 on `mesh32-z`), but
+    not enough to lose.
+- **The "no sharing" arm is not a per-core-queue arm.** With
+  `--process-share off`, updates to workers in the same process leave the
+  shared path (`process_shared_update`). They go through TRAM and are
+  deferred behind the histogram threshold (`sendItemPrioDeferredDest`), the
+  pre-sharing code path.
+  - That arm wastes 3.3–123 attempts per edge (16–123 off the grid), where
+    56 × 1 wastes 1.9–14.5.
+  - **So the 5–14× attributed to "shared queues" (F10, §35, and the
+    abstract) measures that code path, not the number of priority queues.**
+- **Predictions** (`frontier-f14b-*-variants.json`):
+  - Met: digests; the candidate 4.8–15× faster than `--process-share off`
+    except on the grid (1.04–1.52×).
+  - Missed: the candidate 5–20× faster than 56 × 1 (0.72–1.50×); 56 × 1
+    attempts per edge within 1.5× of the no-sharing arm's (they are
+    1.8–17× lower).
+
+**F15, locality-aware tiling (5570551 at 16 nodes, 5570552 at 64).**
+`acic_frz_tloc` (30737e4 = the freeze plus `--reader-tile locality`, target
+min(0.9, untiled − 0.05)) against the freeze with `auto` and `off`. The size
+chosen in every log matches `tools/tile_locality.cpp`.
+
+| Input | Chosen size, 16n / 64n (auto's) | Time, auto / locality / off, 16n (s) | Time, auto / locality / off, 64n (s) |
+|---|---|---:|---:|
+| `mesh26` (row-major) | 131072 / off (8192 / 2048) | 31.4 / 1.08 / **0.368** | 9.01 / **0.343** / **0.344** |
+| `mesh26-z` | 8192 / 2048 (same) | **0.204** / **0.201** / 0.721 | **0.161** / **0.159** / 0.393 |
+| `road-usa` (DIMACS) | 2923 / **2920** (2923 / 730) | 3.15 / **2.80** / 7.21 | **1.07** / 2.56 / 3.31 |
+| `road-usa-z` | 2923 / 730 (same) | **0.124** / **0.121** / 0.214 | **0.101** / **0.101** / 0.149 |
+
+(Medians over sources.) Target 0.8 on `mesh26` chooses 32768 at both node
+counts: 3.04 s and 2.57 s.
+
+- **The rule removes the row-major failure.** On `mesh26`, locality is 29×
+  faster than auto at 16 nodes and 26× at 64. It changes nothing on the
+  Morton inputs (0.98–1.00×).
+- **Two misses the current rule does not fix:**
+  - At 16 nodes on `mesh26` it picks 16-row tiles, which are 2.9× slower than
+    tiling off. Target 0.8 (4-row tiles) is slower still. Larger tiles are not
+    the answer: on this order, off is the best measured size.
+  - At 64 nodes on `road-usa` it picks 2920 over auto's 730, and is **1.96×
+    slower** than auto. The untiled layout keeps 0.38, the auto tile 0.33,
+    and 0.05 of slack is too little.
+- **Every measured case fits a simpler rule:**
+  - Tile at the auto size when the auto tile keeps the target (0.9), or when
+    even the untiled layout does not. The order then has no locality to lose.
+  - Otherwise turn tiling off.
+  - This is the recommended revision (not built).
+- **Predictions** (`frontier-f15-*-variants.json`):
+  - Met: digests; locality 20× or more faster than auto on `mesh26` at both
+    node counts, and equal to off at 64; target 0.8 between; locality
+    0.95–1.05× of auto on `mesh26-z` and `road-usa-z`; off 3–5× slower on
+    `mesh26-z` and 1.5–2× on `road-usa-z`.
+  - Missed:
+    - The chosen size on `road-usa` at 64 nodes: the tool gave 2920, and the
+      prediction wrongly said auto.
+    - Locality within 0.5–2× of off on `mesh26` at 16 nodes (2.9×).
+    - `road-usa` within 0.95–1.05× (0.94× at 16 nodes, 1.96× slower at 64).
+    - Off on `road-usa` 2.54× slower at 16 nodes (predicted 2–2.5×).
+- The 64-node audit rejected the `mesh26` locality arm because it expected
+  tiles. `check_priority_runs.py` now reads the rule's choice from the log,
+  and both `mesh26` audits pass.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| F13, F14, F14b, F15 (§38) | F13 5570489; F14 5570490/5570491; F14b 5570582/5570583/5570584 (64n timed out; first submission 5570492/5570495/5570496 aborted at LCI start-up); F15 5570551/5570552, smoke 5570528, `acic_frz_tloc` (30737e4); `benchmarks/frontier-f1{3,4,4b,5}-*-variants.json`; `tools/tile_locality.cpp` |
 | F8w, F11, F6b (§37) | F8w 5569507–5569514, one node 5569518/5569698 (`ACIC_JOBS` labels FRZ_HEAP_W8/FRZ_CHUNKS_W8, `rule` → FRZ_HEAP, in results_by_dataset.py; `benchmarks/frontier-f8w-*-variants.json`); F11 5569515/5569516 (`benchmarks/frontier-f11-*-variants.json`, not in the dataset tables); F6b 5569517 (`EXTERNAL_JOBS`) |
 | D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |
 | Delta IPDPS D4c, engaged-threshold attribution | `design/onenode-data/delta-ipdps-d4c-starvation-22543996.json`; `benchmarks/delta-ipdps-d4c-starvation-variants.json` (predictions); job 22543996; work-cost builds `acic_frz_{heap,c256}_cost` (601697e) |
@@ -3919,8 +4078,12 @@ and paths are consolidated in [configurations.md](configurations.md).
    previous one; the candidate's speedup over the local-queue arm is 3.2–3.3×.
    The slice step is measured on `mesh26-z` with older code. On the freeze
    candidate with 33–68M vertices per process, removing slices costs nothing
-   (F10, §35), while process sharing, the nearest queue and batching still
-   hold.
+   (F10, §35), while the nearest queue and batching still hold. **Qualified
+   (§38):** the process-sharing step measures `--process-share off`, which
+   also switches updates inside a process to the threshold-deferred TRAM path.
+   56 single-worker processes (one queue per core) are about as fast as the
+   shared 8 × 7 queues (0.72–1.50× of its time), so process-wide priority is
+   not shown to beat per-core queues.
 3. On road, a representable global ordering window approaches minimal edge
    work, after which narrow ready work and repeated coordination are the
    supported limits. Reducing round count 8–14% through fresher contributions
@@ -3971,6 +4134,10 @@ and paths are consolidated in [configurations.md](configurations.md).
 
 ## Claims not supported
 
+- Sharing one priority queue per process is what makes ACIC fast (§38): per-core
+  processes (56 × 1) match it within 0.72–1.50×, and shared domains larger than
+  7 cores are 1.1–2.9× slower. The 5–14× "no sharing" figure is a different
+  code path.
 - ACIC is generally faster than GAPBS, Wasp, RIKEN or GPU SSSP systems: RIKEN
   wins on every scale-free graph, and Wasp wins on `road-usa-z` at every node
   count and on `mesh24-z`.

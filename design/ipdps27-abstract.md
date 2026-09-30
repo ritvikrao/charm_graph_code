@@ -63,6 +63,16 @@ weights. Limit: ACIC needs a locality-preserving vertex order.
 
 ## Notes for revision
 
+- **Must change before submission (§38, 2026-09-30).** "Shared queues 5–14×"
+  measures `--process-share off`, which also moves updates inside a process
+  onto the older threshold-deferred TRAM path. 56 single-worker processes (one
+  queue per core) are about as fast as the 8 × 7 shared queues (0.72–1.50× of
+  its time). Paragraph 2's queue sentence and the ablation's first item
+  therefore need rewriting. What F13/F14 support instead:
+  - tiled placement 5.0–7.4× at 64 nodes on the mesh and terrain (tiling off
+    alone);
+  - a queue per 7-core L3 region beating larger shared domains by 1.1–2.9×.
+
 - Word count of the text between the rules: check with
   `awk '/^---$/{f=!f; next} f' design/ipdps27-abstract.md | wc -w` (limit 500).
 - "One Frontier node … is often faster than 64 nodes running a distributed
