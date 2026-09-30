@@ -1,0 +1,350 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-road-usa-z-1n-22576660",
+    "graph": "road-usa-z",
+    "hosts": "cn137",
+    "binaries": {
+      "frz_chunks": {
+        "binary": "acic_frz_c65536",
+        "sha256": "35fa65292f9f6ec56bcc01ce8a95d6300328e496068e42f8d363c61ef3b84f00"
+      },
+      "o_chunks_msg": {
+        "binary": "acic_o3_c65536",
+        "sha256": "5067e3f1ff4cfcae08b9263775937ab00ec13e4cb1304001ff5b5923807f2b3e"
+      },
+      "o_chunks_idle": {
+        "binary": "acic_o3_c65536",
+        "sha256": "5067e3f1ff4cfcae08b9263775937ab00ec13e4cb1304001ff5b5923807f2b3e"
+      },
+      "o_heap_msg": {
+        "binary": "acic_o3_heap",
+        "sha256": "b1abd9fd8ccb229d70b5fe5896590bc8bb8769f95374b8112807fd1fb30baa67"
+      },
+      "o_heap_idle": {
+        "binary": "acic_o3_heap",
+        "sha256": "b1abd9fd8ccb229d70b5fe5896590bc8bb8769f95374b8112807fd1fb30baa67"
+      }
+    },
+    "solves": 80,
+    "timed": 60,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "frz_chunks",
+    "arms": {
+      "frz_chunks": {
+        "graph": "road-usa-z",
+        "median_seconds_by_source": [
+          0.32313,
+          0.292867,
+          0.309353,
+          0.277074
+        ],
+        "median_rounds": 1227.0,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          2.457797,
+          2.978186
+        ],
+        "wire_bytes_per_edge_range": [
+          0.149747,
+          0.177127
+        ],
+        "node_bytes_per_edge_range": [
+          0.356082,
+          0.412589
+        ]
+      },
+      "o_chunks_msg": {
+        "graph": "road-usa-z",
+        "median_seconds_by_source": [
+          0.356767,
+          0.311074,
+          0.293588,
+          0.284606
+        ],
+        "median_rounds": 1276.5,
+        "speedup_over_base_by_source": [
+          0.9057171767568188,
+          0.9414705182689649,
+          1.0536976988160278,
+          0.9735353435978158
+        ],
+        "attempts_per_edge_range": [
+          2.481965,
+          2.960712
+        ],
+        "wire_bytes_per_edge_range": [
+          0.151608,
+          0.176858
+        ],
+        "node_bytes_per_edge_range": [
+          0.357855,
+          0.414371
+        ]
+      },
+      "o_chunks_idle": {
+        "graph": "road-usa-z",
+        "median_seconds_by_source": [
+          0.361375,
+          0.315871,
+          0.298823,
+          0.271696
+        ],
+        "median_rounds": 3060.5,
+        "speedup_over_base_by_source": [
+          0.8941681079211344,
+          0.9271728015550651,
+          1.035238251406351,
+          1.0197941817325247
+        ],
+        "attempts_per_edge_range": [
+          2.538791,
+          3.348926
+        ],
+        "wire_bytes_per_edge_range": [
+          0.164534,
+          0.220904
+        ],
+        "node_bytes_per_edge_range": [
+          0.398412,
+          0.550381
+        ]
+      },
+      "o_heap_msg": {
+        "graph": "road-usa-z",
+        "median_seconds_by_source": [
+          0.463589,
+          0.36782,
+          0.344275,
+          0.317125
+        ],
+        "median_rounds": 676.5,
+        "speedup_over_base_by_source": [
+          0.697018264022658,
+          0.7962236963732261,
+          0.8985636482463147,
+          0.8737059519117067
+        ],
+        "attempts_per_edge_range": [
+          1.498382,
+          1.631371
+        ],
+        "wire_bytes_per_edge_range": [
+          0.14774,
+          0.165542
+        ],
+        "node_bytes_per_edge_range": [
+          0.384,
+          0.432915
+        ]
+      },
+      "o_heap_idle": {
+        "graph": "road-usa-z",
+        "median_seconds_by_source": [
+          0.376799,
+          0.320783,
+          0.32133,
+          0.3174
+        ],
+        "median_rounds": 3174.0,
+        "speedup_over_base_by_source": [
+          0.8575659701856958,
+          0.9129754382245941,
+          0.9627267917716988,
+          0.8729489603024574
+        ],
+        "attempts_per_edge_range": [
+          1.563694,
+          1.958002
+        ],
+        "wire_bytes_per_edge_range": [
+          0.187548,
+          0.258312
+        ],
+        "node_bytes_per_edge_range": [
+          0.539048,
+          0.768547
+        ]
+      }
+    }
+  },
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-road-eu-z-1n-22576660",
+    "graph": "road-eu-z",
+    "hosts": "cn137",
+    "binaries": {
+      "frz_chunks": {
+        "binary": "acic_frz_c65536",
+        "sha256": "35fa65292f9f6ec56bcc01ce8a95d6300328e496068e42f8d363c61ef3b84f00"
+      },
+      "o_chunks_msg": {
+        "binary": "acic_o3_c65536",
+        "sha256": "5067e3f1ff4cfcae08b9263775937ab00ec13e4cb1304001ff5b5923807f2b3e"
+      },
+      "o_chunks_idle": {
+        "binary": "acic_o3_c65536",
+        "sha256": "5067e3f1ff4cfcae08b9263775937ab00ec13e4cb1304001ff5b5923807f2b3e"
+      },
+      "o_heap_msg": {
+        "binary": "acic_o3_heap",
+        "sha256": "b1abd9fd8ccb229d70b5fe5896590bc8bb8769f95374b8112807fd1fb30baa67"
+      },
+      "o_heap_idle": {
+        "binary": "acic_o3_heap",
+        "sha256": "b1abd9fd8ccb229d70b5fe5896590bc8bb8769f95374b8112807fd1fb30baa67"
+      }
+    },
+    "solves": 80,
+    "timed": 60,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "frz_chunks",
+    "arms": {
+      "frz_chunks": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          5.125355,
+          4.427178,
+          4.501827,
+          4.518747
+        ],
+        "median_rounds": 2911.5,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          19.381096,
+          20.104622
+        ],
+        "wire_bytes_per_edge_range": [
+          0.475312,
+          0.500833
+        ],
+        "node_bytes_per_edge_range": [
+          1.02467,
+          1.081486
+        ]
+      },
+      "o_chunks_msg": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          5.599449,
+          4.601933,
+          4.716115,
+          4.728678
+        ],
+        "median_rounds": 2919.5,
+        "speedup_over_base_by_source": [
+          0.915332026419028,
+          0.9620257400531472,
+          0.954562600784756,
+          0.9556047165825206
+        ],
+        "attempts_per_edge_range": [
+          19.429511,
+          20.260653
+        ],
+        "wire_bytes_per_edge_range": [
+          0.475384,
+          0.505754
+        ],
+        "node_bytes_per_edge_range": [
+          1.025225,
+          1.092343
+        ]
+      },
+      "o_chunks_idle": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          5.755832,
+          5.01692,
+          5.138554,
+          5.34916
+        ],
+        "median_rounds": 52743.0,
+        "speedup_over_base_by_source": [
+          0.8904629252556364,
+          0.8824493912599762,
+          0.8760882925429994,
+          0.8447582424156316
+        ],
+        "attempts_per_edge_range": [
+          19.414307,
+          22.42638
+        ],
+        "wire_bytes_per_edge_range": [
+          0.616744,
+          0.761075
+        ],
+        "node_bytes_per_edge_range": [
+          1.459316,
+          1.842058
+        ]
+      },
+      "o_heap_msg": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          1.600442,
+          1.167064,
+          1.154767,
+          1.156094
+        ],
+        "median_rounds": 1690.5,
+        "speedup_over_base_by_source": [
+          3.2024621948186813,
+          3.79343206542229,
+          3.898472159318719,
+          3.9086328620337105
+        ],
+        "attempts_per_edge_range": [
+          1.404358,
+          1.646825
+        ],
+        "wire_bytes_per_edge_range": [
+          0.078925,
+          0.086038
+        ],
+        "node_bytes_per_edge_range": [
+          0.206014,
+          0.217893
+        ]
+      },
+      "o_heap_idle": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          1.38943,
+          1.235369,
+          1.220145,
+          1.206827
+        ],
+        "median_rounds": 12876.5,
+        "speedup_over_base_by_source": [
+          3.688818436337203,
+          3.5836887602003933,
+          3.6895836150621437,
+          3.744320436980611
+        ],
+        "attempts_per_edge_range": [
+          1.379106,
+          1.573716
+        ],
+        "wire_bytes_per_edge_range": [
+          0.103112,
+          0.118835
+        ],
+        "node_bytes_per_edge_range": [
+          0.305339,
+          0.354705
+        ]
+      }
+    }
+  }
+]
