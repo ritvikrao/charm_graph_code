@@ -1,0 +1,26 @@
+[
+  {
+    "label": "frz_heap",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8"
+    ],
+    "rpn": 16,
+    "workers": 112,
+    "prediction": "Recorded 2026-09-30 before submission. D7 (sc27-plan.md, Delta one node round 2): the freeze binaries (601697e) at the paper's per-family flags, plus the round-2 road candidate (acic_o1_bkt, 986c0d8, per-road --chunk-band with --leaf-prune on), against GAPBS (gap_sssp, gapbs 2972aeb) and Wasp (wasp_sssp, SC25 artifact; bit-identical to secs. 16-23's) tuned on this node type (threads x delta on the two training sources, d7_tune.sbatch, then frozen) and run in the same allocation as ACIC (d7_compare.sbatch). Delta one node, ACIC 16 x 7, +old-scheduler, four held-out sources, one warmup, three repetitions. Speedup = baseline time / ACIC time. Timers: ACIC's solve time excludes setup; GAPBS and Wasp time their solve including distance initialization (sec. 16). Width ln V (the configured rule for scale-free inputs, not passed); process sharing resolves off at this degree, so the heap is the only ACIC queue. Predictions: every digest matches; 0.6-0.9x of Wasp (sec. 20: 0.75-0.83x on 87f04af) and 0.7-1.5x of GAPBS."
+  }
+]

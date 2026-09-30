@@ -27,6 +27,9 @@ def main():
     ap.add_argument('--selection-job', help='reuse a frozen selection in a second allocation')
     ap.add_argument('--deltas', help='explicit delta candidates (comma list) instead of the denominator grid; '
                     'for graphs whose read makes each launch minutes long')
+    ap.add_argument('--tune-only', action='store_true',
+                    help='write the frozen selection and stop; a later job runs it with --selection-job '
+                    '(on Delta the held-out comparison then shares an allocation with ACIC, D7)')
     ap.add_argument('--engine', choices=['gap', 'wasp'], default='gap',
                     help='single-node shared-memory baseline: GAPBS or Wasp (same .wsg, timer and digest)')
     args = ap.parse_args()
@@ -91,6 +94,9 @@ def main():
                 candidates={name: dict(valid=all(r['valid'] for r in runs), seconds=[r.get('seconds') for r in runs])
                             for name, runs in samples.items()}))
         selection_path.write_text(json.dumps(selection, indent=2) + '\n')
+        if args.tune_only:
+            print(f'SELECTED {args.engine} {graph} {winner["name"]}', flush=True)
+            continue
         for row in test:
             warm = campaign.run(graph, int(row['source']), winner, row, 'external-test-warmup')
             if not warm['valid']:

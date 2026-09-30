@@ -5,6 +5,7 @@
 #
 #   grid3-30-z     1024^3 Morton 3-D grid, six neighbours, weights [1, 1000]  (D1)
 #   mesh28-w10-z   mesh28-z's topology and ids, weights [1, 10]               (D3)
+#   mesh30-z       2^30-vertex Morton 2-D mesh, weights [1, 1000]              (D7)
 #   mesh28-w64k-z  the same with weights [1, 65536]                           (D3, optional)
 #   terrain30-c-z  GLO-30 crop, lat [3, 9) x lon [24, 31), seed 6N 27E: nested
 #                  in terrain30-s-z, 42 tiles, one node's share of the Frontier
@@ -57,6 +58,7 @@ prepare_one() {
   if [ "$STEP" != reference ] && { [ ! -s "$base.wsg" ] || [ ! -s "$base.meta" ]; }; then
     case $name in
       grid3-30-z)    gridz "$name" 3 1073741824 1 1000 ;;
+      mesh30-z)      gridz "$name" 2 1073741824 1 1000 ;;
       mesh28-w10-z)  gridz "$name" 2 268435456 1 10 ;;
       mesh28-w64k-z) gridz "$name" 2 268435456 1 65536 ;;
       terrain30-c-z) terrainz "$name" 3 9 24 31 6 27 ;;
