@@ -72,4 +72,4 @@ for p in "${profiles[@]}"; do
     echo "PROFILE FAILED $label"; failed=$((failed + 1))
   fi
 done
-[ "$failed" -eq 0 ] && echo "FREEZE 2-NODE GATE PASSED (${#profiles[@]} profiles)" || { echo "FREEZE 2-NODE GATE FAILED ($failed of ${#profiles[@]})"; exit 1; }
+[ "$failed" -eq 0 ] && echo "2-NODE GATE PASSED (${#profiles[@]} profiles)" || { echo "2-NODE GATE FAILED ($failed of ${#profiles[@]})"; exit 1; }

@@ -342,6 +342,20 @@ predictions, and adopted only through the gate below.
 largest measured cost) and O3's leaf count (an hour). O2 and O4 only if time
 remains. D8 can share D7's allocation.
 
+**Round 2 execution (started 2026-09-30; O items first, at the author's
+request).** Code 986c0d8 (all three changes opt-in, off by default); every
+binary in `acic-ipdps27-delta-20260928/bin` with an `o` label is built from
+it. `cpuintqos` now allows one submitted job, so jobs run one at a time.
+
+| # | Job | Status |
+|---|---|---|
+| O3 leaf count | login node | road-usa-z 19.9% leaves, road-eu-z 25.8%; meshes and terrain none |
+| O4 | 22575593 | **Stop.** Every `--round-delay` (0.02–0.5 ms) is 0.88–1.00× on road-usa-z and 0.98–1.01× on road-eu-z, with 1.3–2.8× fewer rounds (current-state §39) |
+| O3 | 22575807 | **Works.** `--leaf-prune on` is 1.10–1.14× (road-usa-z) and 1.10–1.17× (road-eu-z) over off on the band-65536 chunk profile, 1.01–1.10× and 1.11–1.22× on the heap |
+| O1 road-eu-z | 22576060 | **Band, not array.** Bucket queue at band 1024, width 16384: 7.2–8.4× over the paper road profile, 2.1× over the freeze heap at width 16384. The paper road profile runs 19–22 edge attempts per edge on road-eu-z |
+| Two-node gate, O flags | 22576273 | **Passed**, 175/175 runs over seven profiles, including an undirected leafy graph from a degree-1 source |
+| O1 mesh28-z, O2 mesh28-z and roads, O1 road-usa-z, O1b road-eu-z, O1 terrain and grid | queued | — |
+
 #### Delta, one node, can start now
 
 | # | Experiment | Why | Needed by |
