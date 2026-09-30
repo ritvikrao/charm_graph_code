@@ -4083,6 +4083,23 @@ ASan/UBSan and TSan.
   Wasp at 0.23 s on these sources, so band 1024 moves ACIC from about 0.2× to
   about 0.4× of Wasp on road-eu-z. road-planet-z is built by the same OSM
   pipeline and runs at width 131072 on Frontier.
+- *road-eu-z follow-up (22576916),* speedup over band 1024 at width 16384:
+  band 256 0.81–1.11×, band 512 0.88–1.08×, band 2048 0.63–0.82×. At band
+  1024, width 4096 is 0.90–0.99× and **width 131072 is 1.03–1.23×** (0.50–0.63
+  s). On OSM roads the paper's width is right and only its band is wrong.
+  Leaf pruning adds 1.07–1.19×; the idle drain costs 0.93–0.97×.
+- *road-usa-z (22576845, 22577011).* Over the paper road profile (band 65536,
+  0.34–0.41 s): band 1024 0.98–1.16×, 4096 1.26–1.53×, **16384 1.37–1.61×**
+  (0.20–0.27 s), and band 65536 in the bucket queue 1.03–1.11×. Over band
+  16384: 8192 is 1.01–1.11×, 32768 0.80–0.96×, width 32768 0.83–0.97×, leaf
+  pruning 1.00–1.17×. D1 had compared only bands 256 and 65536 on this road.
+- *terrain30-c-z (22577056): band-insensitive.* Bands 64, 256 and 1024 are all
+  0.96–0.99× of the freeze chunk queue (duplicate control 0.995–1.002×).
+- *The best band against the mean edge weight* (sampled from 4M arcs of each
+  file): road-usa-z 8192–16384 at 2974 (2.8–5.5×); road-eu-z 256–1024 at 168
+  (1.5–6×); mesh28-z 256 at 334 (0.8×; 1024, at 3×, costs 0.88–0.95×); terrain
+  flat at 282. "About 3× the mean weight" fits the roads and costs up to 12%
+  on the mesh, so it is not yet a rule.
 
 **O2, idle-hook drain.** `--heap-drain idle`: a shared-queue pass that uses its
 whole slice sends no self message, and the `[whenidle]` callback runs the next
