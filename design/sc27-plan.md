@@ -358,7 +358,8 @@ it. `cpuintqos` now allows one submitted job, so jobs run one at a time.
 | O2 mesh28-z, roads | 22576591, 22576660 | **Reject:** 1.10–1.21× slower on the mesh (rounds 28–36× more often), mixed on roads |
 | O1 road bands | 22576845, 22577011, 22576916 | Best band 8192–16384 on road-usa-z, 256–1024 on road-eu-z, at the paper width 131072 |
 | Road confirmation | 22577196, 22581424 | Bucket queue at the per-road band with leaf pruning, over the paper road profile: **1.38–1.64×** (road-usa-z, band 16384) and **7.22–9.84×** (road-eu-z, band 1024) |
-| O1 grid3-30-z | queued | — |
+| O1 grid3-30-z | 22581589 | running |
+| D7 | queued 2026-09-30 | Per graph: `d7_tune.sbatch` (GAPBS and Wasp threads × Δ on the two training sources, `--tune-only`), then `d7_compare.sbatch` (ACIC arms, then both baselines at their frozen selections, same allocation, four held-out sources). ACIC arms: freeze chunks and heap at width ln V / 8 (meshes, grid, terrain); the paper road profile, the heap and the round-2 candidate (per-road band + leaf pruning) on roads; the heap on `rmat25`. Queued: roads, `rmat25`, `mesh28-z`, `mesh26-z`, and `mesh30-z`'s preparation; terrain, grid and `mesh30-z` once launch times are measured. `gap_sssp` rebuilt with GCC 14; `wasp_sssp` is bit-identical to §§16–23's |
 | Adoption | — | Candidates: O3 (`--leaf-prune`) and a per-road band (the bucket queue's `--chunk-band`). Gate item 2 (Frontier 16/64 nodes, including `road-planet-z` at a narrower band) is the author's |
 
 #### Delta, one node, can start now
