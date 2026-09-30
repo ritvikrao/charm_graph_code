@@ -72,8 +72,10 @@ def main():
                     n, rpn, workers = variant['nodes'], variant['rpn'], variant['workers']
                     # Reconverse writes "1 process" for a single-process layout.
                     plural = 'process' if rpn*n == 1 else 'processes'
+                    # ... and "1 PE per process" when each process has one worker (56 x 1).
+                    per = 'PE' if workers//rpn == 1 else 'PEs'
                     if (f'Starting Reconverse with {rpn*n} {plural}, {workers*n} PEs (1 PE = 1 thread), '
-                            f'and {workers//rpn} PEs per process') not in text:
+                            f'and {workers//rpn} {per} per process') not in text:
                         raise ValueError(f'{launch}: wrong worker layout')
                     # The last --slack-control value on the command line wins.
                     slack = [variant['flags'][i+1] for i,f in enumerate(variant['flags'])
