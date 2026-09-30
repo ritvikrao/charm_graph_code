@@ -6,6 +6,7 @@
 #include "live_slack.h"
 #include "round_profile.h"
 #include "graphlib/tile_layout.h"
+#include "graphlib/tile_locality.h"
 #include "graphlib/edge_partition.h"
 #ifdef PAPI
 #include "acic_prof.h"
@@ -124,8 +125,18 @@ int process_drain_cap = 0;
 // --heap-slice N: shared-queue entries one process_heap() call expands before
 // yielding to the scheduler (1-100; default 100, the long-standing constant).
 int heap_slice = 100;
+// --reader-tile off|auto|locality|T. auto (-1) tiles every graph with fewer
+// than 8 edges per vertex at V / (64 x owners). locality (-2) applies the same
+// degree test, then measures the fraction of edges that stay inside a tile
+// (graphlib/tile_locality.h) and grows the tile 4x at a time until it reaches
+// --reader-tile-locality (default 0.9), or turns tiling off. Every
+// Morton-ordered input keeps 0.95 or more at the auto size for 8-512 owners,
+// so there it chooses what auto chooses; row-major mesh26 keeps 0.50 and the
+// DIMACS road order 0.33-0.40, which auto tiles anyway (107-183x slower on the
+// mesh, current-state section 33).
 long reader_tile_size = 0;
 int reader_tile_owners = 1;
+double reader_tile_locality = 0.9;
 int slack_control_mode = PROCESS_SHARE_OFF;
 static bool slack_control_active() {
   return slack_control_mode == PROCESS_SHARE_ON ||
@@ -1026,12 +1037,21 @@ public:
             ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(14);
         if (value == "off") reader_tile_size = 0;
         else if (value == "auto") reader_tile_size = -1;
+        else if (value == "locality") reader_tile_size = -2;
         else {
           size_t used = 0;
           reader_tile_size = std::stol(value, &used);
           if (used != value.size() || reader_tile_size < 1)
-            CkAbort("--reader-tile must be off, auto, or a positive vertex count");
+            CkAbort("--reader-tile must be off, auto, locality, or a positive vertex count");
         }
+      }
+      else if (arg == "--reader-tile-locality" || arg.rfind("--reader-tile-locality=", 0) == 0) {
+        const std::string value = arg == "--reader-tile-locality"
+            ? (i + 1 < m->argc ? m->argv[++i] : "") : arg.substr(23);
+        size_t used = 0;
+        reader_tile_locality = std::stod(value, &used);
+        if (used != value.size() || !(reader_tile_locality > 0 && reader_tile_locality <= 1))
+          CkAbort("--reader-tile-locality must be in (0, 1]");
       }
       else if (arg == "--slack-control" || arg.rfind("--slack-control=", 0) == 0) {
         const std::string value = arg == "--slack-control"
@@ -1585,7 +1605,7 @@ public:
             << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
-            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--process-queue-batch 1..64] [--admission histogram|all] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|T] [--diag <prefix>]" << endl
+            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--process-queue-batch 1..64] [--admission histogram|all] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|locality|T] [--reader-tile-locality F] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -1850,6 +1870,19 @@ public:
       if (reader_tile_size == -1)
         reader_tile_size = num_global_edges < 8L * V
             ? std::max(1L, V / (64L * reader_tile_owners)) : 0;
+      else if (reader_tile_size == -2) {
+        reader_tile_size = 0;
+        if (num_global_edges < 8L * V) {
+          TileLocality measured;
+          reader_tile_size = choose_tile_by_locality(file_name, header, reader_tile_owners,
+                                                     reader_tile_locality, &measured);
+          ckout << "Reader tile locality: target=" << reader_tile_locality
+                << " edges_sampled=" << measured.edges;
+          for (size_t t = 0; t < measured.tiles.size(); ++t)
+            ckout << " tile" << measured.tiles[t] << "=" << measured.inside[t];
+          ckout << " chosen=" << reader_tile_size << endl;
+        }
+      }
       {
         // Random probes in the tiled layout read small blocks on up to 64
         // threads (owners are independent); the untiled scan is sequential and

@@ -46,3 +46,4 @@ config.mk
 ab-out*/
 acic-ab-*.out
 __pycache__/
+tile_locality

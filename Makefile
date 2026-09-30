@@ -74,7 +74,10 @@ graph_digest: tools/graph_digest.cpp $(wildcard graphlib/*.h)
 graph_convert: tools/graph_convert.cpp $(wildcard graphlib/*.h)
 	$(CXX) $(TOOL_FLAGS) $< -o $@
 
-tools: graph_digest graph_convert
+tile_locality: tools/tile_locality.cpp $(wildcard graphlib/*.h)
+	$(CXX) $(TOOL_FLAGS) -pthread $< -o $@
+
+tools: graph_digest graph_convert tile_locality
 
 # Build the htram graph library in the htram repo, pointing it at this
 # directory for weighted_node_struct.h.
