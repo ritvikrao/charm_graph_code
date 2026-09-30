@@ -4107,8 +4107,13 @@ ASan/UBSan and TSan.
 - *The best band against the mean edge weight* (sampled from 4M arcs of each
   file): road-usa-z 8192–16384 at 2974 (2.8–5.5×); road-eu-z 256–1024 at 168
   (1.5–6×); mesh28-z 256 at 334 (0.8×; 1024, at 3×, costs 0.88–0.95×); terrain
-  flat at 282. "About 3× the mean weight" fits the roads and costs up to 12%
-  on the mesh, so it is not yet a rule.
+  flat at 282; grid3-30-z 64–256 at 334. "About 3× the mean weight" fits the
+  roads, costs up to 12% on the mesh and 1.7× on the grid (below), so the
+  band stays a per-family setting.
+- *grid3-30-z (22581589):* over the freeze chunk queue (7.2–7.6 s), bucket
+  queue band 256 0.97–1.00×, band 64 0.97–1.01×, band 1024 **0.58–0.59×**
+  (attempts per edge 1.8–2.9 against 1.5–1.6). The array alone again gives
+  nothing.
 
 **O2, idle-hook drain.** `--heap-drain idle`: a shared-queue pass that uses its
 whole slice sends no self message, and the `[whenidle]` callback runs the next
