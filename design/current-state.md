@@ -4093,6 +4093,10 @@ ASan/UBSan and TSan.
   (0.20–0.27 s), and band 65536 in the bucket queue 1.03–1.11×. Over band
   16384: 8192 is 1.01–1.11×, 32768 0.80–0.96×, width 32768 0.83–0.97×, leaf
   pruning 1.00–1.17×. D1 had compared only bands 256 and 65536 on this road.
+- *road-usa-z confirmation (22577196),* over the paper road profile: freeze
+  heap 0.80–0.95×, heap with leaf pruning 0.89–1.04× (1.05–1.12× over the
+  plain heap), bucket queue band 16384 1.37–1.60×, and with leaf pruning
+  **1.38–1.64×** (0.23–0.30 s). At band 16384, pruning adds only 1.00–1.03×.
 - *terrain30-c-z (22577056): band-insensitive.* Bands 64, 256 and 1024 are all
   0.96–0.99× of the freeze chunk queue (duplicate control 0.995–1.002×).
 - *The best band against the mean edge weight* (sampled from 4M arcs of each
