@@ -1,0 +1,56 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.252728"
+    ],
+    "prediction": "Smoke test 2026-09-29 (debug queue, training sources, one node): does 56 x 1 start and return the reference digest with LCI_ATTR_NPACKETS=9362 and one LCI device per process? Not a measurement."
+  },
+  {
+    "label": "p56",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.252728"
+    ],
+    "rpn": 56,
+    "workers": 56,
+    "env": {
+      "LCI_ATTR_NPACKETS": "9362",
+      "ACIC_LCI_NDEVICES": "1"
+    },
+    "prediction": "Smoke test 2026-09-29 (debug queue, training sources, one node): does 56 x 1 start and return the reference digest with LCI_ATTR_NPACKETS=9362 and one LCI device per process? Not a measurement."
+  }
+]
