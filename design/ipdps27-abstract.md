@@ -84,6 +84,24 @@ on the graphs Graph500 measures, and scales on the graphs it leaves out.
   (acic_frz_tloc2, auto tile or off). F15b (5573562, 5573563) validates it.
   If it fails, cut the clause. The headline numbers do not depend on it: on
   every Morton-ordered input the rule chooses what `auto` chose.
+- **Delta alternative for the one-node sentence** (author's request,
+  2026-09-30; not swapped in). Swap the first two sentences of the one-node
+  claim for:
+
+  > On one 128-core node, ACIC-SSSP is within 1.4–1.6× of Wasp on a 2-D mesh
+  > and 1.2–1.3× on a Kronecker graph. On Frontier it is faster than GAPBS and
+  > Wasp from 4 nodes, …
+
+  Sources: Delta `mesh28-z` with the chunk queue, 0.61–0.70× of Wasp (§17,
+  22379656); Delta `rmat25`, 0.75–0.83× (§20, 22401925); Wasp tuned on the same
+  node. There is no same-node GAPBS on Delta. **These runs are not newer code
+  than Frontier's one-node runs.** §16/§20/§22 ran on 87f04af (Sept 25). §17's
+  chunk queue was the working tree later committed as 8a6b02c/551571d. The
+  freeze 601697e (Sept 28) behind every Frontier number contains both, plus
+  reader, counter and `--admission` changes; the solver's hot path is the
+  same. The Delta/Frontier difference is the machine (128 against 56 cores,
+  §25). Delta roads are 0.19–0.20× of Wasp (§§22–23), which the alternative
+  leaves out.
 - Headline numbers (64 nodes, heap, per source; the strongest distributed
   code per class in brackets):
   - 2-D meshes (64 nodes, strongest distributed code): 56–203× (Gluon).

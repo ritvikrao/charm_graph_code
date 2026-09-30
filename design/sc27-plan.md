@@ -306,6 +306,42 @@ One-node experimentation runs on **Delta** and scaling on **Frontier**
 scaling use one-node runs on Frontier (the debug queue). Delta binaries do
 not run on Frontier: the frozen source revision is rebuilt there.
 
+#### Delta, one node, round 2 (proposed 2026-09-30; nothing submitted)
+
+Goal: a same-code, same-node one-node comparison for the paper, then cheaper
+one-node execution. The Delta Wasp comparisons so far (§§16–23) ran on
+87f04af or the pre-commit chunk tree, not the freeze. Delta has no same-node
+GAPBS, and the 3-D grid and terrain have no Delta Wasp at all.
+
+**Phase A: measure the freeze (1–2 days, no code change).**
+
+| # | Experiment | Why |
+|---|---|---|
+| D7 | Freeze binaries at the paper's per-family flags (heap slice 8; band-256 chunks slice 64 on the mesh, grid and terrain; band-65536 chunks slice 64 on roads; width ln V / 8 where degree < 8), against **Wasp and GAPBS, both tuned on the same node** (threads × Δ on two training sources, then frozen). Inputs: `mesh26-z`, `mesh28-z`, `mesh30-z`, `grid3-30-z`, `terrain30-c-z`, `road-usa-z`, `road-eu-z`, `rmat25`. Four held-out sources, one warmup, three repetitions, `onenode_ab` plus the audit | Replaces §17/§20 with freeze-code numbers on every family, and gives Delta's first GAPBS column. The abstract's one-node sentence would then rest on the same binaries as every Frontier number |
+| D8 | Layout screen on the freeze: 16 × 7 (current), 8 × 15, 32 × 3, 128 × 1 (`LCI_ATTR_NPACKETS` scaled as in F14b) on `mesh28-z`, `grid3-30-z` and `road-eu-z` | F14 found one queue per L3 region best on Frontier and per-core processes comparable; Delta's 16-core NUMA domains may prefer another split |
+
+**Phase B: one-node improvements, in order of expected gain per effort.**
+Each is an opt-in flag, measured on Delta against the freeze with
+predictions, and adopted only through the gate below.
+
+| # | Change | Evidence | Expected |
+|---|---|---|---|
+| O1 | **Bucket-array bins.** Replace each bin's `std::map<long, priority_queue>` with a circular array of buckets indexed by bucket number (vectors, or the chunk queue's 64-item blocks), as Wasp's buckets are | Heap push 238 ns and pop about 650 ns, 52% of PE time on `mesh28-z` (§16); the chunk queue cut queue CPU from 57% to 23% (§25) | 1.2–1.5× over the chunk queue on the mesh, grid and terrain; also removes the chunk queue's band as a per-family choice |
+| O2 | **Drain from the idle hook** instead of self-sent `process_heap` messages | Self-callback latency p50/p90 0.48/1.61 ms, up to 506 pending per PE (§16); the earlier coalescing prototype failed the gate (§15), so this is a different mechanism, not a retry | Largest on roads, which have 1.5K–2.4K rounds (§23) |
+| O3 | **Degree-1 pruning** (Wasp's leaf pruning). A degree-1 vertex's only edge leads back to its parent, so set its distance without enqueuing it | Wasp does it; the fraction of degree-1 vertices is measured first with a `graph_digest`-style count | Roads only; 1.1–1.3× if 10–25% of road vertices are leaves |
+| O4 | **One-node controller cadence.** Screen `reduction_delay` (the round interval) on one node | Roads are round-bound: fewer rounds did not help at 8–14% (§3 claim), so this is a check, not a bet | 0.9–1.2×; stop if flat |
+
+**Gate for adopting any change into the paper configuration:**
+1. Every digest matches, on Delta one node and on the D7 inputs.
+2. No regression on Frontier: one 16-node and one 64-node job on `mesh32-z`,
+   `terrain30-s-z` and `road-planet-z` against the freeze, within 0.95×.
+3. Ready by 2026-10-05. Otherwise the paper uses the freeze, and the change
+   goes to the final version or the follow-on ACIC paper.
+
+**Order:** D7 first, since it alone fixes the one-node claim. Then O1 (the
+largest measured cost) and O3's leaf count (an hour). O2 and O4 only if time
+remains. D8 can share D7's allocation.
+
 #### Delta, one node, can start now
 
 | # | Experiment | Why | Needed by |
