@@ -128,13 +128,13 @@ int heap_slice = 100;
 // --reader-tile off|auto|locality|T. auto (-1) tiles every graph with fewer
 // than 8 edges per vertex at V / (64 x owners). locality (-2) applies the same
 // degree test, then measures the fraction of edges that stay inside a tile
-// (graphlib/tile_locality.h) and grows the tile 4x at a time until it keeps
-// min(--reader-tile-locality (default 0.9), untiled - 0.05), or turns tiling
-// off. Every Morton-ordered input keeps 0.95 or more at the auto size for
-// 8-512 owners, so there it chooses what auto chooses. Row-major mesh26 keeps
-// 0.50 against 0.98 untiled, so it gets larger tiles or none (auto is 68-123x
-// slower than off there, O1b); DIMACS road-usa keeps 0.33-0.40 at every size,
-// so it stays tiled (off is 2.1-2.4x slower, O1b).
+// (graphlib/tile_locality.h). It keeps the auto size unless the auto tile
+// falls below --reader-tile-locality (default 0.9) while the untiled layout
+// reaches it; then tiling is off. Every Morton-ordered input keeps 0.95 or
+// more at the auto size for 8-512 owners, so there it chooses what auto
+// chooses. Row-major mesh26 keeps 0.50 against 0.98 untiled, so it runs
+// untiled (auto is 68-123x slower than off there, O1b); DIMACS road-usa keeps
+// 0.33-0.40 even untiled, so it stays tiled (off is 2.1-2.9x slower, O1b, F15).
 long reader_tile_size = 0;
 int reader_tile_owners = 1;
 double reader_tile_locality = 0.9;

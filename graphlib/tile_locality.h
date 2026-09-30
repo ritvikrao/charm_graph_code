@@ -104,41 +104,31 @@ inline TileLocality measure_tile_locality(const std::string &path, const GapbsHe
 }
 
 /**
- * The tile size for --reader-tile locality. The ladder is the auto size
- * V / (64 x owners) and its 4x and 16x multiples; the untiled layout (one
- * block of V / owners per owner) is measured too. The rule takes the smallest
- * rung that keeps at least min(target, untiled - slack) of the sampled edges
- * inside a tile:
+ * The tile size for --reader-tile locality: the auto size V / (64 x owners)
+ * or nothing (0, tiling off). The auto tile and the untiled layout (one block
+ * of V / owners per owner) are both measured:
  *
- * - An order with locality at every scale (Morton meshes, grids, terrain and
- *   roads: 0.953 or more at the auto size for 8-512 owners) keeps the auto
- *   size.
- * - An order whose locality only exists at the scale of a whole block
- *   (row-major mesh26: 0.50 at a one-row tile, 0.98 untiled) gets larger
- *   tiles, or none: a rung that fails the target means tiling would cut edges
- *   the untiled layout keeps, so the rule returns 0 (off). O1b: tiling off is
- *   68-123x faster there.
- * - An order with no locality at any scale (DIMACS road-usa: 0.33-0.40 at
- *   every size, untiled included) keeps the auto size, because tiling cuts
- *   nothing the untiled layout would keep and still spreads the front. O1b:
- *   tiling off is 2.1-2.4x slower there.
+ * - The auto tile keeps at least `target` of the sampled edges inside: tile.
+ *   Every Morton-ordered mesh, grid, terrain and road does (0.953 or more at
+ *   8-512 owners).
+ * - It does not, but the untiled layout does: the order has locality only at
+ *   the scale of a whole block, and tiles would cut it. Tiling off. Row-major
+ *   mesh26 keeps 0.50 at one-row tiles and 0.98-0.99 untiled; off is 68-123x
+ *   faster than auto there (O1b, F15).
+ * - Neither does: the order has no locality to lose (DIMACS road-usa, 0.33-0.40
+ *   untiled at 16-64 nodes), and tiles still spread the front. Tile; off is
+ *   2.1-2.9x slower (O1b, F15).
  *
- * `measured` receives the ladder with the untiled size last.
+ * Sizes between the two lost in F15: 16-row tiles were 2.9x slower than off on
+ * row-major mesh26, and 4x tiles 1.96x slower than auto on road-usa.
+ * `measured` receives {auto size, untiled size} and their fractions.
  */
 inline long choose_tile_by_locality(const std::string &path, const GapbsHeader &h, int owners,
-                                    double target, TileLocality *measured = nullptr,
-                                    double slack = 0.05) {
+                                    double target, TileLocality *measured = nullptr) {
   const long V = (long)h.num_nodes;
-  std::vector<long> ladder;
-  for (long tile = std::max(1L, V / (64L * owners)); tile <= V / (2L * owners); tile *= 4)
-    ladder.push_back(tile);
+  const long tile = std::max(1L, V / (64L * owners));
   const long block = std::max(1L, V / owners);
-  std::vector<long> sizes = ladder;
-  sizes.push_back(block);
-  const TileLocality m = measure_tile_locality(path, h, sizes);
+  const TileLocality m = measure_tile_locality(path, h, {tile, block});
   if (measured) *measured = m;
-  const double need = std::min(target, m.inside.back() - slack);
-  for (size_t t = 0; t < ladder.size(); ++t)
-    if (m.inside[t] >= need) return ladder[t];
-  return 0;
+  return m.inside[0] >= target || m.inside[1] < target ? tile : 0;
 }
