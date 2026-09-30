@@ -134,5 +134,59 @@
     "rpn": 16,
     "workers": 112,
     "prediction": "Recorded 2026-09-30 before submission. O1 (sc27-plan.md, Delta one node round 2): the bucket-array queue (process_work_buckets.h, binary acic_o1_bkt, 986c0d8; the chunk queue's private FIFO buckets and published 64-item chunks, held in a circular array indexed by distance band instead of a std::map, band a runtime power of two) against the freeze chunk queue acic_frz_c256 (601697e, band 256). Delta one node, 16 x 7, +old-scheduler, slice 64, batch 8, nearest, width ln V / 8 (the paper configuration), four held-out sources, one warmup, rotated arms. Evidence: after the chunk queue, queue calls were 17.5-17.9% of PE time on mesh28-z (sec. 17); the plan expected 1.2-1.5x. Predictions: every digest matches; o1_b256 1.02-1.12x faster than frz_c256 with attempts per edge within 5%; o1_b64 within 0.9-1.1x of o1_b256; o1_b1024 0.85-1.0x of o1_b256 (width 4096 lost before); the frz duplicate within 0.97-1.03x. The same ordering on grid3-30-z and terrain30-c-z. Adopt only if o1 at its best band is at least 1.05x on every source of mesh, grid and terrain."
+  },
+  {
+    "label": "frz_c256_cost",
+    "binary": "acic_frz_c256_cost",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "64",
+      "--bucket-width",
+      "2.426015"
+    ],
+    "rpn": 16,
+    "workers": 112,
+    "prediction": "Recorded 2026-09-30 before submission. O1 (sc27-plan.md, Delta one node round 2): the bucket-array queue (process_work_buckets.h, binary acic_o1_bkt, 986c0d8; the chunk queue's private FIFO buckets and published 64-item chunks, held in a circular array indexed by distance band instead of a std::map, band a runtime power of two) against the freeze chunk queue acic_frz_c256 (601697e, band 256). Delta one node, 16 x 7, +old-scheduler, slice 64, batch 8, nearest, width ln V / 8 (the paper configuration), four held-out sources, one warmup, rotated arms. Evidence: after the chunk queue, queue calls were 17.5-17.9% of PE time on mesh28-z (sec. 17); the plan expected 1.2-1.5x. Predictions: every digest matches; o1_b256 1.02-1.12x faster than frz_c256 with attempts per edge within 5%; o1_b64 within 0.9-1.1x of o1_b256; o1_b1024 0.85-1.0x of o1_b256 (width 4096 lost before); the frz duplicate within 0.97-1.03x. The same ordering on grid3-30-z and terrain30-c-z. Adopt only if o1 at its best band is at least 1.05x on every source of mesh, grid and terrain. Cost arms (added before submission): work-cost builds for queue attribution only, not timing; o1_b256_cost push and pop ticks per call below frz_c256_cost's."
+  },
+  {
+    "label": "o1_b256_cost",
+    "binary": "acic_o1_bkt_cost",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "64",
+      "--bucket-width",
+      "2.426015",
+      "--chunk-band",
+      "256"
+    ],
+    "rpn": 16,
+    "workers": 112,
+    "prediction": "Recorded 2026-09-30 before submission. O1 (sc27-plan.md, Delta one node round 2): the bucket-array queue (process_work_buckets.h, binary acic_o1_bkt, 986c0d8; the chunk queue's private FIFO buckets and published 64-item chunks, held in a circular array indexed by distance band instead of a std::map, band a runtime power of two) against the freeze chunk queue acic_frz_c256 (601697e, band 256). Delta one node, 16 x 7, +old-scheduler, slice 64, batch 8, nearest, width ln V / 8 (the paper configuration), four held-out sources, one warmup, rotated arms. Evidence: after the chunk queue, queue calls were 17.5-17.9% of PE time on mesh28-z (sec. 17); the plan expected 1.2-1.5x. Predictions: every digest matches; o1_b256 1.02-1.12x faster than frz_c256 with attempts per edge within 5%; o1_b64 within 0.9-1.1x of o1_b256; o1_b1024 0.85-1.0x of o1_b256 (width 4096 lost before); the frz duplicate within 0.97-1.03x. The same ordering on grid3-30-z and terrain30-c-z. Adopt only if o1 at its best band is at least 1.05x on every source of mesh, grid and terrain. Cost arms (added before submission): work-cost builds for queue attribution only, not timing; o1_b256_cost push and pop ticks per call below frz_c256_cost's."
   }
 ]
