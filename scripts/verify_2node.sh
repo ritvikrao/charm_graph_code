@@ -132,12 +132,13 @@ run_one "rmat_bs2048"  8    0-7  $G_RMAT --bufsize 2048
 # graph reader, so the only way --reader-tile (which places vertices by input
 # tile and refuses generated graphs) reaches two nodes. SSSP_FILE_DIR holds
 # uniform.wsg, mesh.wsg and rmat.wsg; SSSP_FILE_ARGS is added to these runs
-# only. Off unless SSSP_FILE_DIR is set.
+# only. Off unless SSSP_FILE_DIR is set. SSSP_FILE_GRAPHS replaces the list of
+# NAME:SOURCE pairs (default: uniform:1 mesh:0 rmat:0).
 if [ -n "${SSSP_FILE_DIR:-}" ]; then
   read -r -a FILE_ARGS <<< "${SSSP_FILE_ARGS:-}"
-  for g in uniform:1 mesh:0 rmat:0; do
+  for g in ${SSSP_FILE_GRAPHS:-uniform:1 mesh:0 rmat:0}; do
     for bs in 63 2048; do
-      run_one "file_${g%%:*}_bs${bs}" 8 0-7 0 "$SSSP_FILE_DIR/${g%%:*}.wsg" 1 "${g##*:}" 4 0.999 0.005 \
+      run_one "file_${g%%:*}_s${g##*:}_bs${bs}" 8 0-7 0 "$SSSP_FILE_DIR/${g%%:*}.wsg" 1 "${g##*:}" 4 0.999 0.005 \
         --verify --timeout 300 --bufsize $bs ${FILE_ARGS[@]+"${FILE_ARGS[@]}"}
     done
   done

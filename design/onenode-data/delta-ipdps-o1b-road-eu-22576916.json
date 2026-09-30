@@ -1,0 +1,272 @@
+[
+  {
+    "directory": "/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/AB-road-eu-z-1n-22576916",
+    "graph": "road-eu-z",
+    "hosts": "cn137",
+    "binaries": {
+      "o1_b1024_w16384": {
+        "binary": "acic_o1_bkt",
+        "sha256": "239c17d0837fcad66f94acc3b6fd428a010e079c009b6ce83395258b08f5de60"
+      },
+      "o1_b256_w16384": {
+        "binary": "acic_o1_bkt",
+        "sha256": "239c17d0837fcad66f94acc3b6fd428a010e079c009b6ce83395258b08f5de60"
+      },
+      "o1_b512_w16384": {
+        "binary": "acic_o1_bkt",
+        "sha256": "239c17d0837fcad66f94acc3b6fd428a010e079c009b6ce83395258b08f5de60"
+      },
+      "o1_b2048_w16384": {
+        "binary": "acic_o1_bkt",
+        "sha256": "239c17d0837fcad66f94acc3b6fd428a010e079c009b6ce83395258b08f5de60"
+      },
+      "o1_b1024_w4096": {
+        "binary": "acic_o1_bkt",
+        "sha256": "239c17d0837fcad66f94acc3b6fd428a010e079c009b6ce83395258b08f5de60"
+      },
+      "o1_b1024_w131072": {
+        "binary": "acic_o1_bkt",
+        "sha256": "239c17d0837fcad66f94acc3b6fd428a010e079c009b6ce83395258b08f5de60"
+      },
+      "o1_b1024_w16384_leaf": {
+        "binary": "acic_o1_bkt",
+        "sha256": "239c17d0837fcad66f94acc3b6fd428a010e079c009b6ce83395258b08f5de60"
+      },
+      "o1_b1024_w16384_idle": {
+        "binary": "acic_o1_bkt",
+        "sha256": "239c17d0837fcad66f94acc3b6fd428a010e079c009b6ce83395258b08f5de60"
+      }
+    },
+    "solves": 128,
+    "timed": 96,
+    "all_digests_valid": true,
+    "reps": 3,
+    "base": "o1_b1024_w16384",
+    "arms": {
+      "o1_b1024_w16384": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          0.645047,
+          0.642069,
+          0.544387,
+          0.559921
+        ],
+        "median_rounds": 1316.5,
+        "speedup_over_base_by_source": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "attempts_per_edge_range": [
+          1.641727,
+          2.403557
+        ],
+        "wire_bytes_per_edge_range": [
+          0.061303,
+          0.074802
+        ],
+        "node_bytes_per_edge_range": [
+          0.147707,
+          0.167227
+        ]
+      },
+      "o1_b256_w16384": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          0.793495,
+          0.589956,
+          0.500798,
+          0.506357
+        ],
+        "median_rounds": 1185.5,
+        "speedup_over_base_by_source": [
+          0.812918795959647,
+          1.0883337062424994,
+          1.0870390856193515,
+          1.1057830739971997
+        ],
+        "attempts_per_edge_range": [
+          1.478253,
+          2.143778
+        ],
+        "wire_bytes_per_edge_range": [
+          0.058486,
+          0.069524
+        ],
+        "node_bytes_per_edge_range": [
+          0.139765,
+          0.155458
+        ]
+      },
+      "o1_b512_w16384": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          0.736193,
+          0.60707,
+          0.505768,
+          0.520873
+        ],
+        "median_rounds": 1265.5,
+        "speedup_over_base_by_source": [
+          0.8761927918358366,
+          1.0576523300443113,
+          1.0763571439869664,
+          1.0749664505551257
+        ],
+        "attempts_per_edge_range": [
+          1.491142,
+          2.189404
+        ],
+        "wire_bytes_per_edge_range": [
+          0.058897,
+          0.070853
+        ],
+        "node_bytes_per_edge_range": [
+          0.142643,
+          0.15864
+        ]
+      },
+      "o1_b2048_w16384": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          1.023016,
+          0.857979,
+          0.660424,
+          0.743384
+        ],
+        "median_rounds": 1750.0,
+        "speedup_over_base_by_source": [
+          0.6305346152943845,
+          0.7483504841027577,
+          0.8242992380652429,
+          0.7532056110973602
+        ],
+        "attempts_per_edge_range": [
+          1.956675,
+          2.75512
+        ],
+        "wire_bytes_per_edge_range": [
+          0.066793,
+          0.082066
+        ],
+        "node_bytes_per_edge_range": [
+          0.160754,
+          0.183266
+        ]
+      },
+      "o1_b1024_w4096": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          0.714923,
+          0.658365,
+          0.549453,
+          0.603854
+        ],
+        "median_rounds": 1581.0,
+        "speedup_over_base_by_source": [
+          0.9022608029116423,
+          0.9752477728919369,
+          0.9907799211215518,
+          0.9272456587188294
+        ],
+        "attempts_per_edge_range": [
+          1.58321,
+          2.212766
+        ],
+        "wire_bytes_per_edge_range": [
+          0.059344,
+          0.071498
+        ],
+        "node_bytes_per_edge_range": [
+          0.145668,
+          0.161456
+        ]
+      },
+      "o1_b1024_w131072": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          0.626094,
+          0.520578,
+          0.512794,
+          0.497331
+        ],
+        "median_rounds": 933.0,
+        "speedup_over_base_by_source": [
+          1.0302718122198904,
+          1.2333771308046058,
+          1.0616095352129704,
+          1.1258517968918085
+        ],
+        "attempts_per_edge_range": [
+          1.961642,
+          2.279158
+        ],
+        "wire_bytes_per_edge_range": [
+          0.067254,
+          0.072768
+        ],
+        "node_bytes_per_edge_range": [
+          0.153984,
+          0.163476
+        ]
+      },
+      "o1_b1024_w16384_leaf": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          0.601935,
+          0.53774,
+          0.45982,
+          0.490563
+        ],
+        "median_rounds": 1006.5,
+        "speedup_over_base_by_source": [
+          1.0716223512505503,
+          1.194013835682672,
+          1.1839132704101605,
+          1.1413844908808857
+        ],
+        "attempts_per_edge_range": [
+          1.557378,
+          2.375816
+        ],
+        "wire_bytes_per_edge_range": [
+          0.058382,
+          0.074128
+        ],
+        "node_bytes_per_edge_range": [
+          0.138632,
+          0.163725
+        ]
+      },
+      "o1_b1024_w16384_idle": {
+        "graph": "road-eu-z",
+        "median_seconds_by_source": [
+          0.697073,
+          0.669943,
+          0.562795,
+          0.57489
+        ],
+        "median_rounds": 5363.5,
+        "speedup_over_base_by_source": [
+          0.9253650621957815,
+          0.9583934752658063,
+          0.9672918202898034,
+          0.9739619753344118
+        ],
+        "attempts_per_edge_range": [
+          1.612784,
+          2.238676
+        ],
+        "wire_bytes_per_edge_range": [
+          0.065978,
+          0.087186
+        ],
+        "node_bytes_per_edge_range": [
+          0.168698,
+          0.22301
+        ]
+      }
+    }
+  }
+]

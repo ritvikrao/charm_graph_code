@@ -43,6 +43,9 @@ mainmodule sssp_smp
   readonly double idle_flush_interval_us;
   readonly long lazy_cut;
   readonly bool warm_links_on;
+  readonly bool leaf_prune;
+  readonly int process_band_shift;
+  readonly int heap_drain_mode;
   readonly int lazy_growth;
   readonly int skip_empty_mode;
   readonly double degree_cv;

@@ -125,6 +125,19 @@ int process_drain_cap = 0;
 // --heap-slice N: shared-queue entries one process_heap() call expands before
 // yielding to the scheduler (1-100; default 100, the long-standing constant).
 int heap_slice = 100;
+// --chunk-band N (ACIC_PROCESS_BUCKETS builds, O1): the distance band of the
+// bucket-array queue, a power of two (default 256, the chunk queue's mesh band).
+int process_band_shift = 8;
+// --heap-drain message|idle (O2; default message). A shared-queue pass that
+// uses its whole --heap-slice has always sent itself a process_heap message to
+// continue. On Delta mesh28-z those self messages waited 0.48/1.61 ms p50/p90
+// with up to 506 pending per PE (sec. 16), because every controller round adds
+// another chain. idle: the pass sends nothing; the PE's persistent [whenidle]
+// callback runs the next slice once the scheduler finds no message waiting, so
+// deliveries go first and there is never more than the per-round message.
+// Shared queues only; the per-PE heap keeps its self messages.
+enum { HEAP_DRAIN_MESSAGE = 0, HEAP_DRAIN_IDLE = 1 };
+int heap_drain_mode = HEAP_DRAIN_MESSAGE;
 // --reader-tile off|auto|locality|T. auto (-1) tiles every graph with fewer
 // than 8 edges per vertex at V / (64 x owners). locality (-2) applies the same
 // degree test, then measures the fraction of edges that stay inside a tile
@@ -337,6 +350,18 @@ bool warm_links_on = false;
 // (other modes) keeps the average-degree rule alone.
 double degree_cv = -1.0;
 double lazy_skew_min = 1.0;
+// --leaf-prune off|on|auto (O3, Wasp's leaf pruning; default off). In an
+// undirected graph a degree-1 vertex's one edge leads back to the neighbour
+// that reached it, so expanding it can only offer that neighbour a distance
+// longer than the one it already has. With pruning on, such a vertex takes its
+// distance and retires its charge without entering the work queue, the way a
+// degree-0 vertex always has. The source is expanded as before: its distance
+// did not come from its neighbour. Directed input is refused: there the one
+// out-edge need not lead back. auto is on for an undirected GAPBS file and
+// off otherwise. road-usa-z is 19.9% leaves; mesh and terrain have none.
+enum { LEAF_PRUNE_OFF = 0, LEAF_PRUNE_ON = 1, LEAF_PRUNE_AUTO = 2 };
+int leaf_prune_mode = LEAF_PRUNE_OFF;
+bool leaf_prune = false; // resolved against the graph once it is read
 static bool lazy_active() {
   return lazy_cut > 0 || lazy_cut == LAZY_ON ||
          (lazy_cut == LAZY_AUTO && num_global_edges >= 8L * V &&
@@ -661,6 +686,7 @@ enum {
   // say whether it came from doing less work or from doing the same work
   // faster answers neither reviewer.
   STAT_EDGE_ATTEMPTS,
+  STAT_LEAVES_PRUNED, // settled leaves --leaf-prune kept out of the queue
   STAT_INSTRUCTIONS,  // PAPI builds only
   STAT_BATCH_ITEMS,   // ACIC_DIAG builds only, from here down
   STAT_BATCH_ABSORBABLE,
@@ -1489,6 +1515,33 @@ public:
           CkExit(1);
           return;
         }
+      } else if (arg == "--heap-drain") {
+        const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
+        if (value == "message") heap_drain_mode = HEAP_DRAIN_MESSAGE;
+        else if (value == "idle") heap_drain_mode = HEAP_DRAIN_IDLE;
+        else {
+          ckout << "--heap-drain needs message or idle" << endl;
+          CkExit(1);
+          return;
+        }
+      } else if (arg == "--chunk-band") {
+        const long band = i + 1 < m->argc ? std::atol(m->argv[++i]) : 0;
+        if (band <= 0 || (band & (band - 1))) {
+          ckout << "--chunk-band needs a power of two" << endl;
+          CkExit(1);
+          return;
+        }
+        process_band_shift = __builtin_ctzl(band);
+      } else if (arg == "--leaf-prune") {
+        const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
+        if (value == "off") leaf_prune_mode = LEAF_PRUNE_OFF;
+        else if (value == "on") leaf_prune_mode = LEAF_PRUNE_ON;
+        else if (value == "auto") leaf_prune_mode = LEAF_PRUNE_AUTO;
+        else {
+          ckout << "--leaf-prune needs off, on or auto" << endl;
+          CkExit(1);
+          return;
+        }
       } else if (arg == "--hub-hints") {
         const std::string value = i + 1 < m->argc ? m->argv[++i] : "";
         if (value == "off")
@@ -1606,7 +1659,7 @@ public:
             << "[--send-filter-bits <n>] [--send-filter auto|off] "
             << "[--combine off|hold] "
             << "[--batch-fold off|on] "
-            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--process-queue-batch 1..64] [--admission histogram|all] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|locality|T] [--reader-tile-locality F] [--diag <prefix>]" << endl
+            << "[--partition-jitter <percent>] [--process-share off|on|auto] [--process-queue local|nearest] [--process-queue-batch 1..64] [--admission histogram|all] [--leaf-prune off|on|auto] [--chunk-band N] [--heap-drain message|idle] [--sources v1,v2,...] [--slack-control off|on|auto] [--reader-tile off|auto|locality|T] [--reader-tile-locality F] [--diag <prefix>]" << endl
             << "  mode 3 takes the edge count in argument 2 and needs a "
             << "power-of-two vertex count." << endl
             << "  mode 4 takes a GAPBS .sg or .wsg path in argument 2; the "
@@ -1856,6 +1909,10 @@ public:
       scale_dest_table_divisor();
       num_global_edges = header.num_edges;
       average_degree = num_global_edges / (V > 0 ? V : 1);
+      if (leaf_prune_mode == LEAF_PRUNE_ON && header.directed)
+        CkAbort("--leaf-prune on needs an undirected graph; %s is directed",
+                file_name.c_str());
+      leaf_prune = leaf_prune_mode != LEAF_PRUNE_OFF && !header.directed;
 #ifdef INFO_PRINTS
       ckout << "Reading " << file_name.c_str() << ": " << V << " vertices, "
             << num_global_edges << (header.directed ? " directed" : " undirected")
@@ -2049,7 +2106,10 @@ public:
     ckout << "Process sharing: " << (process_share_active() ? "on" : "off") << endl;
     ckout << "Process queue: " << (process_queue_policy == PROCESS_QUEUE_NEAREST ? "nearest" : "local")
           << (process_share_active() ? "" : " (inactive)") << endl;
-#ifdef ACIC_PROCESS_CHUNKS
+#if defined(ACIC_PROCESS_BUCKETS)
+    ckout << "Process queue storage: bucket-array chunks64 band "
+          << (1L << process_band_shift) << " (experimental build)" << endl;
+#elif defined(ACIC_PROCESS_CHUNKS)
     ckout << "Process queue storage: private-chunks64 band"
           << ACIC_CHUNK_DISTANCE_WIDTH << " (experimental build)" << endl;
 #ifdef ACIC_CHUNK_PARTIAL
@@ -2058,6 +2118,7 @@ public:
 #else
     ckout << "Process queue storage: heap" << endl;
 #endif
+    ckout << "Heap drain: " << (heap_drain_mode == HEAP_DRAIN_IDLE ? "idle" : "message") << endl;
     ckout << "Process queue batch: " << process_queue_batch
           << (process_share_active() ? "" : " (inactive)") << endl;
     ckout << "Process drain cap: ";
@@ -2922,6 +2983,8 @@ public:
     ckout << "Stall rescues: " << stall_rescues << endl;
     ckout << "Admission: " << (admission_all ? "all (plain asynchronous)" : "histogram")
           << endl;
+    ckout << "Leaf prune: " << (leaf_prune ? "on" : "off") << ", leaves pruned: "
+          << msg_stats[STAT_LEAVES_PRUNED] << endl;
     // 7.6g. Nonzero means some PE was handed an update by a creator a
     // coarsening ahead of it, at the one index the merge skips. With
     // --skew-defer off each one strands a count at floor(2047 / scale).
@@ -3497,6 +3560,7 @@ private:
   bool send_filter_on = false;
   long send_filtered = 0;
   long edge_attempts = 0;  // edges read by generate_updates(), STAT_EDGE_ATTEMPTS
+  long leaves_pruned = 0;  // STAT_LEAVES_PRUNED
   long updates_processed_locally = 0; // number of update messages received
   long *partition_index;   // defines boundaries of indices for each pe
   long wasted_updates = 0; // number of updates that don't have the final answer
@@ -4073,7 +4137,7 @@ public:
     updates_created_locally = updates_processed_locally = processed_at_contribution = 0;
     wasted_updates = rejected_updates = absorbed_updates = folded_updates = 0;
     send_filtered = tokens_created = tokens_stale = clamped_created_locally = 0;
-    edge_attempts = 0;
+    edge_attempts = leaves_pruned = 0;
     hint_filtered = hints_published = 0;
     deferred_peak = deferred_total = skew_top_arrivals = bfs_created = bfs_processed = 0;
     updates_noted = bfs_noted = distance_changes = updates_in_tram = 0;
@@ -4855,7 +4919,7 @@ public:
       if (u.dest_vertex & UPDATE_CROSS_PE_BIT) cross_pe_changes++;
       else same_pe_changes++;
 #endif
-      if (part.graph->degree(index)) {
+      if (queue_worthy(part.graph->degree(index), u.distance)) {
         const long original_bucket = update_overflowed(u)
             ? std::numeric_limits<long>::max()
             : (long)((double)u.distance * bucket_multiplier);
@@ -4872,6 +4936,19 @@ public:
     wasted_updates++;
     histogram[bucket]--;
     updates_processed_locally++;
+  }
+
+  // Whether a vertex that just took a new distance needs expanding: it has an
+  // edge, and under --leaf-prune it is not a leaf. Distance 0 always expands:
+  // the source's distance did not come from its neighbour, and any other leaf
+  // at 0 (zero-weight edges) is merely expanded as before.
+  inline bool queue_worthy(long degree, cost distance) {
+    if (degree == 0) return false;
+    if (degree == 1 && leaf_prune && distance != 0) {
+      leaves_pruned++;
+      return false;
+    }
+    return true;
   }
 
   void process_shared_heap() {
@@ -4944,7 +5021,9 @@ public:
         updates_processed_locally++;
       }
     }
-    if (processed == heap_slice && !heap_queued) {
+    if (processed == heap_slice && heap_drain_mode == HEAP_DRAIN_IDLE) {
+      heap_yielded = true; // the idle callback continues; no flush meanwhile
+    } else if (processed == heap_slice && !heap_queued) {
       heap_yielded = true;
       heap_queued = true;
       thisProxy[thisIndex].process_heap();
@@ -5006,7 +5085,7 @@ public:
 #endif
       updates_noted++;
       int pq_bucket;
-      if (local_graph.degree(local_index) > 0) {
+      if (queue_worthy(local_graph.degree(local_index), this_cost)) {
         COST_ADD(QUEUE_PUSHES, 1);
 #ifdef PQ_EDGE_DIST
         pq_bucket = get_histo_bucket(
@@ -5528,6 +5607,7 @@ public:
     msg_stats[STAT_HINT_FILTERED] = hint_filtered;
     msg_stats[STAT_HINTS_PUBLISHED] = hints_published;
     msg_stats[STAT_EDGE_ATTEMPTS] = edge_attempts;
+    msg_stats[STAT_LEAVES_PRUNED] = leaves_pruned;
 #ifdef PAPI
     msg_stats[STAT_INSTRUCTIONS] = instructions;
 #endif

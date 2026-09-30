@@ -144,7 +144,7 @@ slower. Heap slices are worth nothing on these large inputs (removing them is
     measure queue count, so "shared queues 5–14×" is withdrawn.
 - **`--reader-tile locality`.** The first rule (F15) removed the row-major
   failure (26–29× faster than auto on `mesh26`) but missed twice.
-  - The revised rule (`acic_frz_tloc2`, F15b, §39) uses the auto tile or
+  - The revised rule (`acic_frz_tloc2`, F15b, §40) uses the auto tile or
     turns tiling off, nothing in between. It fixes both misses: 21–92×
     faster than auto on row-major `mesh26`, as fast as off (0.99–1.11×).
   - It keeps auto's tiles on DIMACS `road-usa` (0.95–1.16× of auto, 2.2–2.9×
@@ -4020,7 +4020,129 @@ counts: 3.04 s and 2.57 s.
   tiles. `check_priority_runs.py` now reads the rule's choice from the log,
   and both `mesh26` audits pass.
 
-### 39. The auto-or-off locality rule (F15b) and the 56 × 1 cells at 64 nodes (F14c), 2026-09-30
+### 39. Delta one-node round 2: O1–O4 (2026-09-30)
+
+The four one-node improvements from the plan's round 2, each an opt-in flag in
+986c0d8 and off by default. Delta one node, 16 × 7, `+old-scheduler`, four
+held-out sources, one warmup and three repetitions, rotated arms,
+digest-checked; predictions are in the variant files, recorded before
+submission. Speedups are baseline time over variant time. Campaign:
+`/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928`; archives in
+`design/onenode-data/delta-ipdps-o*`.
+
+**O4, controller cadence (22575593): stop.** `--round-delay` of 0.02–0.5 ms on
+the paper road profile (freeze band-65536 chunks, width 131072):
+
+| Graph | Rounds, delay 0 → 0.5 ms | Speedup, every delay | Duplicate base |
+|---|---:|---:|---:|
+| road-usa-z | 1371 → 488 | 0.88–1.00× | 0.98–1.00× |
+| road-eu-z | 2949 → 2277 | 0.98–1.01× | 0.99–1.00× |
+
+Fewer rounds never help, as §3 found at 8–14%. Every one of 336 solves is
+digest-valid.
+
+**O3, leaf pruning (22575807): works on roads.** `--leaf-prune on` keeps a
+degree-1 vertex out of the work queue on undirected input (its one edge leads
+back to the vertex that reached it). Leaves are 19.9% of road-usa-z's vertices
+and 25.8% of road-eu-z's; meshes and terrain have none. Same binary, on over
+off:
+
+| Queue | road-usa-z | road-eu-z |
+|---|---:|---:|
+| band-65536 chunks, slice 64 | 1.10–1.14× | 1.10–1.17× |
+| heap, slice 8 | 1.01–1.10× | 1.11–1.22× |
+
+Prediction 1.03–1.15×; the heap's low end (1.01×, one road-usa-z source) is
+below it. Edge attempts per edge fall 0.06–0.10 (1.2 on road-eu-z's chunk
+arm, from 19.4–20.1), and rounds fall 9–27%. 160/160 solves valid. The 986c0d8 binary with pruning off ran 0.95–0.98× of
+the freeze binary on road-eu-z (predicted 0.97–1.03×). That is noisy territory
+at 19–22 attempts per edge (below), and was not seen on road-usa-z
+(0.97–1.08×).
+
+**O1, bucket-array queue.** `ACIC_PROCESS_BUCKETS` keeps the chunk queue's
+private FIFO buckets and 64-item published chunks in a circular array indexed
+by distance band instead of a `std::map`, with the band a runtime power of two
+(`--chunk-band`). `tests/test_process_work_buckets.cpp` passes under
+ASan/UBSan and TSan.
+
+- *mesh28-z (22576508): the array gives nothing.* At band 256 it runs
+  0.96–1.03× of the freeze chunk queue (duplicate control 1.00–1.08×); band 64
+  is 0.91–0.96× and band 1024 0.88–0.95×. Prediction 1.02–1.12× missed. The
+  work-cost pair shows why: push 31.6 → 37.9 ns (no cached bucket pointer),
+  pop 117 → 111 ns, items per pop 5.5, queue calls 17.7% → 19.3% of PE time,
+  unchanged edge attempts. The map was not the queue's cost.
+- *road-eu-z (22576060): the band is the lever.* Speedup over the paper road
+  profile, which takes 4.42–4.97 s at 19.4–20.2 edge attempts per edge:
+
+| Arm | Width | Speedup | Attempts per edge |
+|---|---:|---:|---:|
+| freeze heap, slice 8 | 16384 | 3.58–3.97× | 1.26–1.63 |
+| freeze chunks, band 65536 | 16384 | 1.55–1.73× | 6.3–10.6 |
+| bucket queue, band 16384 | 16384 | 1.56–2.32× | 6.3–9.1 |
+| bucket queue, band 4096 | 16384 | 4.11–5.29× | 2.7–3.7 |
+| bucket queue, band 4096 | 131072 | 5.16–5.50× | 3.3–3.8 |
+| **bucket queue, band 1024** | 16384 | **7.19–8.35×** (0.54–0.62 s) | 1.65–2.37 |
+
+  At equal band the two queues match, so the gain is the band, not the array.
+  The array made the band a runtime choice. The paper's road flags (width
+  131072, band 65536) were chosen on road-usa-z. road-eu-z's sampled mean edge
+  weight is 168, against road-usa-z's 2974, mesh28-z's 334 and terrain's 282,
+  so a band of 65536 lets FIFO order run about 400 average edges deep. §23 put
+  Wasp at 0.23 s on these sources, so band 1024 moves ACIC from about 0.2× to
+  about 0.4× of Wasp on road-eu-z. road-planet-z is built by the same OSM
+  pipeline and runs at width 131072 on Frontier.
+- *road-eu-z follow-up (22576916),* speedup over band 1024 at width 16384:
+  band 256 0.81–1.11×, band 512 0.88–1.08×, band 2048 0.63–0.82×. At band
+  1024, width 4096 is 0.90–0.99× and **width 131072 is 1.03–1.23×** (0.50–0.63
+  s). On OSM roads the paper's width is right and only its band is wrong.
+  Leaf pruning adds 1.07–1.19×; the idle drain costs 0.93–0.97×.
+- *road-usa-z (22576845, 22577011).* Over the paper road profile (band 65536,
+  0.34–0.41 s): band 1024 0.98–1.16×, 4096 1.26–1.53×, **16384 1.37–1.61×**
+  (0.20–0.27 s), and band 65536 in the bucket queue 1.03–1.11×. Over band
+  16384: 8192 is 1.01–1.11×, 32768 0.80–0.96×, width 32768 0.83–0.97×, leaf
+  pruning 1.00–1.17×. D1 had compared only bands 256 and 65536 on this road.
+- *terrain30-c-z (22577056): band-insensitive.* Bands 64, 256 and 1024 are all
+  0.96–0.99× of the freeze chunk queue (duplicate control 0.995–1.002×).
+- *The best band against the mean edge weight* (sampled from 4M arcs of each
+  file): road-usa-z 8192–16384 at 2974 (2.8–5.5×); road-eu-z 256–1024 at 168
+  (1.5–6×); mesh28-z 256 at 334 (0.8×; 1024, at 3×, costs 0.88–0.95×); terrain
+  flat at 282. "About 3× the mean weight" fits the roads and costs up to 12%
+  on the mesh, so it is not yet a rule.
+
+**O2, idle-hook drain.** `--heap-drain idle`: a shared-queue pass that uses its
+whole slice sends no self message, and the `[whenidle]` callback runs the next
+slice. Reconverse raises `STILL_IDLE` on the second empty scheduler pass, and
+the generated wrapper re-registers the callback.
+
+- *mesh28-z (22576591): slower.* Idle over message: chunks 0.86–0.91×
+  (1.10–1.17× slower), heap 0.83–0.86× (1.17–1.21× slower). Rounds rise
+  504 → 14,016 (chunks) and 1,070 → 38,224 (heap). The self-message backlog
+  was pacing the controller. Without it the reduction cycles 28–36× more
+  often, and the loop costs more than the queueing delay it removes.
+  Prediction (heap 1.0–1.2× faster) missed.
+- *Roads (22576660): mixed, not adopted.* Idle over message on the same
+  binary: road-usa-z chunks 0.98–1.05×, heap 1.00–1.23×; road-eu-z chunks
+  0.88–0.97×, heap 0.95–1.15×. Rounds rise 2.4–18×. The adoption rule (at
+  least 1.03× on every source of both roads) fails on every arm. 160/160
+  solves valid.
+- *Drift, unexplained.* With identical flags, the 986c0d8 band-65536 binary
+  ran 0.92–0.96× of the freeze binary on road-eu-z here and 0.95–0.98× in O3's
+  job. It was 0.91–1.05× on road-usa-z and 0.98–1.02× on the mesh (band 256).
+  The only other solver changes since 601697e are in `--reader-tile
+  locality`, which these runs do not use. The road-eu-z profile runs 20
+  attempts per edge, where FIFO disorder amplifies small timing differences.
+  The same-binary comparisons above are unaffected.
+
+**Two-node gate for the O flags (22576273): passed**, 175/175 runs. Seven
+profiles on the 986c0d8 binaries: default heap; heap, band-65536 and band-256
+chunks with leaf pruning and idle drain; the bucket queue at band 256 (the
+same), 4096, and 1 (every item beyond the array's span spills). Graphs: the
+gate's generated matrix; its three `.wsg` inputs; and `leafy.wsg`
+(`tools/leafy_graph.py`, undirected, 27.5% leaves) from source 0 and from the
+degree-1 source 199999. Pruning engaged on every leafy run (about 55K leaf
+updates each).
+
+### 40. The auto-or-off locality rule (F15b) and the 56 × 1 cells at 64 nodes (F14c), 2026-09-30
 
 **F15b, the revised rule (5573562 at 16 nodes, 5573563 at 64).**
 `acic_frz_tloc2` (c3dc360 = the freeze plus `--reader-tile locality` as "the
@@ -4077,11 +4199,12 @@ digest-valid.**
   12 minutes per launch, against about 25 s for 8 × 7. It has not been
   diagnosed.
 
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
-| F15b, F14c (§39) | F15b 5573562/5573563, `acic_frz_tloc2` (c3dc360); F14c 5573561 (56 × 1 arm killed at the 12-minute step limit; 8 × 7 only); `benchmarks/frontier-f15b-*-variants.json`, `benchmarks/frontier-f14c-*-variants.json` |
+| F15b, F14c (§40) | F15b 5573562/5573563, `acic_frz_tloc2` (c3dc360); F14c 5573561 (56 × 1 arm killed at the 12-minute step limit; 8 × 7 only); `benchmarks/frontier-f15b-*-variants.json`, `benchmarks/frontier-f14c-*-variants.json` |
 | F13, F14, F14b, F15 (§38) | F13 5570489; F14 5570490/5570491; F14b 5570582/5570583/5570584 (64n timed out; first submission 5570492/5570495/5570496 aborted at LCI start-up); F15 5570551/5570552, smoke 5570528, `acic_frz_tloc` (30737e4); `benchmarks/frontier-f1{3,4,4b,5}-*-variants.json`; `tools/tile_locality.cpp` |
 | F8w, F11, F6b (§37) | F8w 5569507–5569514, one node 5569518/5569698 (`ACIC_JOBS` labels FRZ_HEAP_W8/FRZ_CHUNKS_W8, `rule` → FRZ_HEAP, in results_by_dataset.py; `benchmarks/frontier-f8w-*-variants.json`); F11 5569515/5569516 (`benchmarks/frontier-f11-*-variants.json`, not in the dataset tables); F6b 5569517 (`EXTERNAL_JOBS`) |
 | D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |

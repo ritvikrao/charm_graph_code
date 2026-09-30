@@ -79,7 +79,7 @@ on the graphs Graph500 measures, and scales on the graphs it leaves out.
   - Thresholds: "hold work back only when that view calls for it" is
     accurate. The histogram threshold is at the top bucket in 89–99% of rounds
     (F10, §35); it is a safeguard, not a source of speedup.
-- **Validated (§39):** "measures the locality of the vertex order at load
+- **Validated (§40):** "measures the locality of the vertex order at load
   time to decide whether tiling pays" describes `--reader-tile locality`
   (acic_frz_tloc2, auto tile or off). In F15b (5573562, 5573563) it turned
   tiling off on row-major `mesh26` (21–92× faster than auto, as fast as off)

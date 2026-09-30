@@ -15,7 +15,9 @@ struct ProcessWorkIntegerKey {
   template <class Item> long operator()(const Item &item) const { return (long)item; }
 };
 
-#ifdef ACIC_PROCESS_CHUNKS
+#if defined(ACIC_PROCESS_BUCKETS)
+#include "process_work_buckets.h"
+#elif defined(ACIC_PROCESS_CHUNKS)
 #include "process_work_chunks.h"
 #else
 template <class Item, class Compare, class Key = ProcessWorkIntegerKey> class ProcessWork {
