@@ -142,11 +142,18 @@ slower. Heap slices are worth nothing on these large inputs (removing them is
   - The "no sharing" arm (`--process-share off`, 5–14×) runs the older
     threshold-deferred TRAM path for updates inside a process. It does not
     measure queue count, so "shared queues 5–14×" is withdrawn.
-- **`--reader-tile locality`.** It removes the row-major failure (26–29×
-  faster than auto on `mesh26`) and changes nothing on the Morton inputs. It
-  still misses twice: 16-row tiles on `mesh26` at 16 nodes (2.9× behind
-  tiling off), and 4× tiles on DIMACS `road-usa` at 64 nodes (1.96× behind
-  auto).
+- **`--reader-tile locality`.** The first rule (F15) removed the row-major
+  failure (26–29× faster than auto on `mesh26`) but missed twice.
+  - The revised rule (`acic_frz_tloc2`, F15b, §39) uses the auto tile or
+    turns tiling off, nothing in between. It fixes both misses: 21–92×
+    faster than auto on row-major `mesh26`, as fast as off (0.99–1.11×).
+  - It keeps auto's tiles on DIMACS `road-usa` (0.95–1.16× of auto, 2.2–2.9×
+    faster than off).
+  - It matches the best measured setting on every input and node count
+    tested.
+- **56 × 1 at 64 nodes (F14c)** produced no data: the 12-minute step limit
+  was shorter than one 56 × 1 launch (13–14.5 minutes in F14b, mostly
+  start-up and reading).
 
 **Not yet measured.** Gluon on `terrain-ae-z` (its `.gr` now exists) and ACIC
 on it at 32 and 64 nodes.
@@ -163,6 +170,7 @@ on it at 32 and 64 nodes.
 | ACIC TLS (acic_scale64b) | a1970e4 (the pulled HEAD plus the binary-search reader partition) on the TLS runtime, `WIRE=compact64` | mesh settings plus `--hub-hints auto` (the one-node heap arm's flags); scaling series, jobs 5558200–5558205 |
 | ACIC freeze, heap / chunks (acic_frz_heap, acic_frz_c256) | 601697e on the TLS runtime, `WIRE=compact64`, htram 7db9c0a | production settings plus `--hub-hints auto`; heap slice 8 (heap) or 64 (chunks). Bucket width: the rule ln V ("ACIC freeze, heap", F8) or **the paper's configuration** ("width ln V / 8", F8w onward): ln V / 8 when the graph has fewer than 8 edges per vertex, ln V otherwise, and a fixed 131072 on the roads. The harness passes it as `--bucket-width`; the binary is the same |
 | ACIC freeze + locality tiling (acic_frz_tloc) | 30737e4 = 601697e plus `--reader-tile locality` (graphlib/tile_locality.h), same runtime, wire and htram | freeze heap settings with `--reader-tile locality` (F15) |
+| ACIC freeze + auto-or-off locality tiling (acic_frz_tloc2) | c3dc360 = 601697e plus the revised `--reader-tile locality` (the auto tile, or off), same runtime, wire and htram | freeze heap settings with `--reader-tile locality` (F15b) |
 | GAPBS | `gap_sssp`, one node | 56 threads, Δ tuned on the training sources |
 | Wasp | SC25 artifact `wasp_sssp`, one node | 56 threads, Δ tuned on the training sources |
 | Gluon | D-Galois `sssp-push` (`gluon.patch`: timer and digest only) | ranks per node, partition (oec/cvc) and Δ tuned on training sources per mode; Async and Sync on scale-free, Async only on mesh and road (Sync was 20–40× slower); pinned to 8 ranks, oec, Δ 64 on `mesh28-z`/`mesh30-z`; in the scaling series pinned to 8 ranks, oec, and Δ scaled from the meshes' 64 by typical edge weight (1 on [1, 10], 4096 on [1, 65,536], 128 on terrain), two held-out sources (one on the largest), one repetition, capped launches (`series_gluon.sbatch`); `gluon_sssp64` past 2^32 vertices |
@@ -4012,10 +4020,68 @@ counts: 3.04 s and 2.57 s.
   tiles. `check_priority_runs.py` now reads the rule's choice from the log,
   and both `mesh26` audits pass.
 
+### 39. The auto-or-off locality rule (F15b) and the 56 × 1 cells at 64 nodes (F14c), 2026-09-30
+
+**F15b, the revised rule (5573562 at 16 nodes, 5573563 at 64).**
+`acic_frz_tloc2` (c3dc360 = the freeze plus `--reader-tile locality` as "the
+auto tile, or off when the auto tile keeps less than 0.9 of sampled edges
+inside while the untiled layout keeps 0.9") against the freeze with `auto`
+and `off`. Width ln V / 8 on `mesh26`, 131072 on `road-usa`, 8 × 7, three
+held-out sources, one warmup, two repetitions. **All 108 counted solves are
+digest-valid.**
+
+| Input, nodes | Measured inside (auto tile / untiled) | Chosen | Time, auto / locality / off (s, median) | Locality's speedup over auto | over off |
+|---|---|---|---:|---:|---:|
+| `mesh26`, 16n | 0.50 / 0.99 | off | 26.4 / **0.367** / 0.379 | **67–92×** | 1.02–1.11× |
+| `mesh26`, 64n | 0.50 / 0.98 | off | 9.02 / **0.342** / 0.344 | **21–26×** | 0.99–1.01× |
+| `road-usa`, 16n | 0.36 / 0.39 | 2923 (auto's) | 2.98 / 3.12 / 7.34 | 0.96–1.16× | **2.2–2.8×** |
+| `road-usa`, 64n | 0.33 / 0.38 | 730 (auto's) | 1.08 / 1.11 / 3.14 | 0.95–1.01× | **2.4–2.9×** |
+
+- **Both F15 misses are gone.** On row-major `mesh26` the rule now turns
+  tiling off at 16 nodes too (F15 picked 16-row tiles, 2.9× behind off). On
+  DIMACS `road-usa` at 64 nodes it keeps auto's 730 (F15 picked 2920, 1.96×
+  behind auto).
+- **Where the rule picks the auto tile, the locality arm runs the same layout
+  as `auto`.** The differences on `road-usa` (0.95–1.16×) are launch
+  variation between two binaries with identical settings. The 16-node source
+  at 1.16× has an auto median of 4.67 s against 2.63–2.98 s on the others.
+- The rule now matches the best measured setting on every input in F15 and
+  F15b: row-major and Morton `mesh26`, DIMACS and Morton `road-usa`, at 16 and
+  64 nodes. The Morton cases are from F15, where the auto tile keeps at least
+  0.95 and both rules choose it.
+- **Predictions** (`frontier-f15b-*-variants.json`):
+  - Met: digests; the logged choice matches `tools/tile_locality.cpp` in all
+    four cells; `mesh26` 20× or more faster than auto at both node counts;
+    `mesh26` within 0.9–1.1× of off at 64 nodes; `road-usa` within 0.9–1.1×
+    of auto at 64 nodes; off 2–3.2× slower than auto on `road-usa` (2.1–2.8×
+    at 16 nodes, 2.6–2.9× at 64).
+  - Missed, by one source each and on the fast side: `mesh26` at 16 nodes
+    1.11× of off (limit 1.1×); `road-usa` at 16 nodes 1.16× of auto.
+
+**F14c, 56 × 1 at 64 nodes (5573561): no data, a harness setting.**
+- Both 56 × 1 warmup launches (`terrain30-s-z`, then `mesh32-z`) hit the
+  12-minute step limit. The harness then reran the 8 × 7 arm alone: 2.24–2.60 s
+  on `terrain30-s-z` and 3.88–4.10 s on `mesh32-z`, 18 digest-valid solves.
+- The limit was too short. In F14b (5570584) the 64-node 56 × 1 launches on
+  `terrain30-s-z` took 13:10–14:27 each and completed. Start-up and reading
+  take most of that time at 3,584 processes: the solves themselves take
+  seconds.
+  - When the step was killed, the `terrain30-s-z` launch had printed its
+    `Reading` line and nothing after it.
+  - `mesh32-z` had printed nothing at all.
+- So 56 × 1 at 64 nodes still has only F14b's one `terrain30-s-z` repetition
+  (0.90–0.96× of 8 × 7's time), plus the grid and roads. A rerun needs a step
+  limit of about 20 minutes: three 56 × 1 launches per input at up to 15
+  minutes each. Two inputs do not fit one 2-hour job.
+- The 56 × 1 start-up cost is a separate finding. At 64 nodes it is about
+  12 minutes per launch, against about 25 s for 8 × 7. It has not been
+  diagnosed.
+
 ## Evidence and provenance
 
 | Evidence | Machine-readable record / configuration |
 |---|---|
+| F15b, F14c (§39) | F15b 5573562/5573563, `acic_frz_tloc2` (c3dc360); F14c 5573561 (56 × 1 arm killed at the 12-minute step limit; 8 × 7 only); `benchmarks/frontier-f15b-*-variants.json`, `benchmarks/frontier-f14c-*-variants.json` |
 | F13, F14, F14b, F15 (§38) | F13 5570489; F14 5570490/5570491; F14b 5570582/5570583/5570584 (64n timed out; first submission 5570492/5570495/5570496 aborted at LCI start-up); F15 5570551/5570552, smoke 5570528, `acic_frz_tloc` (30737e4); `benchmarks/frontier-f1{3,4,4b,5}-*-variants.json`; `tools/tile_locality.cpp` |
 | F8w, F11, F6b (§37) | F8w 5569507–5569514, one node 5569518/5569698 (`ACIC_JOBS` labels FRZ_HEAP_W8/FRZ_CHUNKS_W8, `rule` → FRZ_HEAP, in results_by_dataset.py; `benchmarks/frontier-f8w-*-variants.json`); F11 5569515/5569516 (`benchmarks/frontier-f11-*-variants.json`, not in the dataset tables); F6b 5569517 (`EXTERNAL_JOBS`) |
 | D6 freeze two-node gate | job 22544422; `scripts/delta/freeze_gate_2node.sbatch`, `scripts/verify_2node.sh` (file-mode block); logs under the campaign's `logs/freeze-gate-22544422/` |

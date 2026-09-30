@@ -79,11 +79,14 @@ on the graphs Graph500 measures, and scales on the graphs it leaves out.
   - Thresholds: "hold work back only when that view calls for it" is
     accurate. The histogram threshold is at the top bucket in 89–99% of rounds
     (F10, §35); it is a safeguard, not a source of speedup.
-- **Pending (§38):** "measures the locality of the vertex order at load time
-  to decide whether tiling pays" describes `--reader-tile locality`
-  (acic_frz_tloc2, auto tile or off). F15b (5573562, 5573563) validates it.
-  If it fails, cut the clause. The headline numbers do not depend on it: on
-  every Morton-ordered input the rule chooses what `auto` chose.
+- **Validated (§39):** "measures the locality of the vertex order at load
+  time to decide whether tiling pays" describes `--reader-tile locality`
+  (acic_frz_tloc2, auto tile or off). In F15b (5573562, 5573563) it turned
+  tiling off on row-major `mesh26` (21–92× faster than auto, as fast as off)
+  and kept auto's tiles on DIMACS `road-usa` (0.95–1.16× of auto) at 16 and
+  64 nodes. The headline numbers do not depend on it: on every Morton-ordered
+  input the rule chooses what `auto` chose. The headline runs used `auto`,
+  which the paper should say.
 - **Delta alternative for the one-node sentence** (author's request,
   2026-09-30; not swapped in). Swap the first two sentences of the one-node
   claim for:
