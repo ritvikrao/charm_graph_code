@@ -4097,6 +4097,11 @@ ASan/UBSan and TSan.
   heap 0.80–0.95×, heap with leaf pruning 0.89–1.04× (1.05–1.12× over the
   plain heap), bucket queue band 16384 1.37–1.60×, and with leaf pruning
   **1.38–1.64×** (0.23–0.30 s). At band 16384, pruning adds only 1.00–1.03×.
+- *road-eu-z confirmation (22581424),* over the paper road profile (4.36–5.33
+  s): freeze heap 3.15–4.05×, heap with leaf pruning 3.63–4.83× (1.15–1.19×
+  over the plain heap), bucket queue band 1024 6.63–9.02×, and with leaf
+  pruning **7.22–9.84×** (0.45–0.74 s; pruning adds 1.09–1.11×). The
+  predictions for the two bucket arms (8–10× and 9–11×) missed at the low end.
 - *terrain30-c-z (22577056): band-insensitive.* Bands 64, 256 and 1024 are all
   0.96–0.99× of the freeze chunk queue (duplicate control 0.995–1.002×).
 - *The best band against the mean edge weight* (sampled from 4M arcs of each

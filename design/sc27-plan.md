@@ -354,7 +354,12 @@ it. `cpuintqos` now allows one submitted job, so jobs run one at a time.
 | O3 | 22575807 | **Works.** `--leaf-prune on` is 1.10–1.14× (road-usa-z) and 1.10–1.17× (road-eu-z) over off on the band-65536 chunk profile, 1.01–1.10× and 1.11–1.22× on the heap |
 | O1 road-eu-z | 22576060 | **Band, not array.** Bucket queue at band 1024, width 16384: 7.2–8.4× over the paper road profile, 2.1× over the freeze heap at width 16384. The paper road profile runs 19–22 edge attempts per edge on road-eu-z |
 | Two-node gate, O flags | 22576273 | **Passed**, 175/175 runs over seven profiles, including an undirected leafy graph from a degree-1 source |
-| O1 mesh28-z, O2 mesh28-z and roads, O1 road-usa-z, O1b road-eu-z, O1 terrain and grid | queued | — |
+| O1 mesh28-z, terrain | 22576508, 22577056 | **Array flat:** 0.96–1.03× and 0.96–0.99× of the freeze chunk queue at band 256 |
+| O2 mesh28-z, roads | 22576591, 22576660 | **Reject:** 1.10–1.21× slower on the mesh (rounds 28–36× more often), mixed on roads |
+| O1 road bands | 22576845, 22577011, 22576916 | Best band 8192–16384 on road-usa-z, 256–1024 on road-eu-z, at the paper width 131072 |
+| Road confirmation | 22577196, 22581424 | Bucket queue at the per-road band with leaf pruning, over the paper road profile: **1.38–1.64×** (road-usa-z, band 16384) and **7.22–9.84×** (road-eu-z, band 1024) |
+| O1 grid3-30-z | queued | — |
+| Adoption | — | Candidates: O3 (`--leaf-prune`) and a per-road band (the bucket queue's `--chunk-band`). Gate item 2 (Frontier 16/64 nodes, including `road-planet-z` at a narrower band) is the author's |
 
 #### Delta, one node, can start now
 
