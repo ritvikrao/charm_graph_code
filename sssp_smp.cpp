@@ -128,12 +128,13 @@ int heap_slice = 100;
 // --reader-tile off|auto|locality|T. auto (-1) tiles every graph with fewer
 // than 8 edges per vertex at V / (64 x owners). locality (-2) applies the same
 // degree test, then measures the fraction of edges that stay inside a tile
-// (graphlib/tile_locality.h) and grows the tile 4x at a time until it reaches
-// --reader-tile-locality (default 0.9), or turns tiling off. Every
-// Morton-ordered input keeps 0.95 or more at the auto size for 8-512 owners,
-// so there it chooses what auto chooses; row-major mesh26 keeps 0.50 and the
-// DIMACS road order 0.33-0.40, which auto tiles anyway (107-183x slower on the
-// mesh, current-state section 33).
+// (graphlib/tile_locality.h) and grows the tile 4x at a time until it keeps
+// min(--reader-tile-locality (default 0.9), untiled - 0.05), or turns tiling
+// off. Every Morton-ordered input keeps 0.95 or more at the auto size for
+// 8-512 owners, so there it chooses what auto chooses. Row-major mesh26 keeps
+// 0.50 against 0.98 untiled, so it gets larger tiles or none (auto is 68-123x
+// slower than off there, O1b); DIMACS road-usa keeps 0.33-0.40 at every size,
+// so it stays tiled (off is 2.1-2.4x slower, O1b).
 long reader_tile_size = 0;
 int reader_tile_owners = 1;
 double reader_tile_locality = 0.9;
@@ -1878,8 +1879,10 @@ public:
                                                      reader_tile_locality, &measured);
           ckout << "Reader tile locality: target=" << reader_tile_locality
                 << " edges_sampled=" << measured.edges;
-          for (size_t t = 0; t < measured.tiles.size(); ++t)
+          for (size_t t = 0; t + 1 < measured.tiles.size(); ++t)
             ckout << " tile" << measured.tiles[t] << "=" << measured.inside[t];
+          if (!measured.tiles.empty())
+            ckout << " untiled" << measured.tiles.back() << "=" << measured.inside.back();
           ckout << " chosen=" << reader_tile_size << endl;
         }
       }

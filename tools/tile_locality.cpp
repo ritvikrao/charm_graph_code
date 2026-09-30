@@ -1,7 +1,7 @@
 // Print the --reader-tile locality measurement for a GAPBS file: for each
 // owner count, the auto tile size and its 4x and 16x multiples, with the
-// fraction of sampled edges that stay inside a tile, and the size the rule
-// picks at a given target.
+// fraction of sampled edges that stay inside a tile, the untiled layout's,
+// and the size the rule picks at a given target.
 //
 //   tile_locality FILE.wsg TARGET OWNERS [OWNERS...]
 #include "graphlib/gapbs.h"
@@ -24,8 +24,9 @@ int main(int argc, char **argv) {
     const long chosen = choose_tile_by_locality(path, h, owners, target, &m);
     std::printf("file=%s vertices=%lld edges_sampled=%lld owners=%d", path.c_str(),
                 (long long)h.num_nodes, (long long)m.edges, owners);
-    for (size_t t = 0; t < m.tiles.size(); ++t)
+    for (size_t t = 0; t + 1 < m.tiles.size(); ++t)
       std::printf(" tile%ld=%.4f", m.tiles[t], m.inside[t]);
+    std::printf(" untiled%ld=%.4f", m.tiles.back(), m.inside.back());
     std::printf(" chosen=%ld\n", chosen);
   }
   return 0;
