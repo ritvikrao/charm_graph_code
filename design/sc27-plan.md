@@ -37,7 +37,7 @@ Exact weighted SSSP that scales on non-scale-free graphs with varied degree
 and weight ranges: the graph classes Graph500's Kronecker SSSP kernel does not
 exercise. The input matrix spans:
 - **Average degree:** about 2.5 (roads), 4 (2-D meshes), 6 (3-D grids), 8 (terrain).
-- **Weights:** uniform [1, 10], [1, 1000] and [1, 65,536]; OSM travel times; Tobler walking times on terrain.
+- **Weights:** uniform [1, 10], [1, 1000] and [1, 65,536]; road distances (DIMACS `USA-road-d` and OSM `geo_distance`, metres); Tobler walking times on terrain. No input uses road travel times: `osm_to_dimacs` extracts them and does not use them.
 
 Two results need an explanation, not a win:
 - **One node, against GAPBS and Wasp.** Present it COST-style: the node count
@@ -52,8 +52,9 @@ Two results need an explanation, not a win:
 
 ### Paper framing (2026-09-29)
 
-The user's three goals, and how the evidence supports each. The abstract draft
-is `design/ipdps27-abstract.md`.
+The user's three goals, and how the evidence supports each. The abstract
+(author's version, 2026-10-02) is `design/ipdps27-abstract.md`; its notes list
+the phrases to check against the record.
 
 **Thesis.** Distributed SSSP has been designed and ranked on one graph class,
 Graph500's Kronecker graphs with uniform weights. On the graphs that
@@ -93,55 +94,74 @@ natural place to build it.
 
 #### Pillar 2: adaptive fine-grained techniques, and why a message-driven runtime
 
-- **Claim.** For fine-grained, irregular work like SSSP, the speedup comes from
-  scheduling and communication structure that adapts to the input and to load:
-  - shared queues within a process;
-  - nearest-bucket batched removal;
-  - message aggregation whose flush cadence responds to starvation and
-    idleness.
-  These are components a message-driven runtime already has (SMP-mode node
-  sharing, TRAM/htram aggregation, scheduler idle hooks, quiescence
-  detection), so the application-level policy stays small.
-- **Evidence we have:**
-  - F10 at 16 and 64 nodes (§35), from the candidate's speedup over each
-    arm with one mechanism removed: process sharing 5–15×, nearest queue
-    2.2–3.7×, batching 1.5–1.6×.
-  - The chunk queue adds about 2× on meshes and terrain.
-  - The `auto` modes (process sharing, reader tiling, hub hints) choose per
-    input.
-  - Aggregation policies, measured on one and two nodes with older code
-    (code comments in `sssp_smp.cpp`):
-    - adaptive flush cadence: 3.6× (mesh, one node) and 3.8× (two nodes);
-    - starvation-gated idle flush: 1.09× (mesh) and 1.12× (RMAT);
-    - idle-flush interval `auto`: about 2× on `road-usa` at two nodes.
-- **Gaps:**
-  - None of the aggregation policies has been measured at scale, or on the
-    freeze candidate. **F11 below closes this, and it is the most important
-    missing experiment for this pillar.**
-  - "Easier in Charm++ than MPI" is an argument. HavoqGT is asynchronous and
-    aggregates messages in MPI, and its author (Pearce) is on the Algorithms
-    PC, so the argument must not claim MPI cannot do it.
-- **Defensible form of the argument.**
-  - HavoqGT's gap is its one-rank-per-core design: it has no shared queues
-    within a process. F10 shows that sharing is worth 5–15× on these graphs.
-    Sharing needs threads that share queues inside a process, plus a scheduler
-    that interleaves them with communication. Charm++'s SMP mode provides
-    both. In MPI + threads the application builds them itself.
+*Revised 2026-10-02 after F11, F13–F15 and the author's abstract. The
+earlier version credited process sharing (5–15×) and named F11 as missing.*
+
+- **Claim (the abstract's).** ACIC-SSSP adapts to the state of the
+  computation and to its input. Continuous asynchronous reductions give every
+  process a global view of the updates in flight, and that view decides when
+  aggregation buffers are flushed. The vertex order, measured at load time,
+  decides whether the graph is dealt out in tiles. Each part uses something a
+  message-driven runtime already has (TRAM/htram aggregation, scheduler idle
+  hooks, overdecomposition, asynchronous reductions and broadcasts), so the
+  application's policy stays small.
+- **Evidence that it adapts.** The thresholds are not part of it.
+  - **State: starvation-gated flushing** (F11, §37; F13, §38). In rounds
+    where the controller sees too little in flight to fill the buffers, each
+    destination buffer that has not filled since the previous round is
+    flushed; otherwise buffers fill.
+    - Against a fixed cadence at 16 / 64 nodes: `mesh32-z` 1.22–1.23× /
+      1.38–1.47×, `terrain30-s-z` 1.23–1.27× / 1.66–1.69×, `road-planet-z`
+      1.45–1.49× / 1.42–1.49×.
+    - The gain grows with nodes on the mesh and terrain.
+    - The cost it removes is stale priorities, not bandwidth: fixed flushing
+      raises attempts per edge from 2.95 to 4.92 on `mesh32-z` at 64 nodes.
+    - The global gate is what makes it adaptive. The same per-destination rule
+      without the gate (`--flush-policy stale`) cost 12% on RMAT (step 7),
+      since there buffers fill on their own for most of the run.
+  - **Input: one build engages different mechanisms per graph class** (F11).
+    - The idle flush costs 1.56–1.89× when off on `rmat26` at 64 nodes and is
+      within 4% on the mesh, terrain and roads.
+    - Small buffers cost 1.6–3.4× on `rmat26` and nothing on low-degree
+      graphs.
+  - **Load time: locality-aware tiling** (F15, §38). It is 29× faster than
+    always-tiling on row-major `mesh26`, and 0.95–1.05× of it on Morton
+    inputs. F15b (the revised rule) is pending.
+  - **Tiling itself is placement, not adaptation**, and it is the largest
+    distributed mechanism: off costs 6.9–7.4× on `mesh32-z`, 5.0–6.8× on
+    terrain and 1.4–1.8× on roads at 64 nodes (F13). The adaptive part is the
+    rule that turns it on or off.
+  - Within a node: the chunk queue (about 2× on meshes and terrain), and one
+    shared queue per L3 region (F14: larger domains are 1.1–2.9× slower).
+- **Weak points.**
+  - On `rmat26` the gated policy is 0.84–0.93× of fixed flushing at
+    16 nodes and 0.80–1.10× at 64 (F11): the gate does not fully close where
+    buffers fill.
+  - The idle-flush interval `auto` and the starved idle flush show no effect
+    on low-degree graphs at 16–64 nodes; their one- and two-node gains
+    (1.09–1.12×, about 2× on `road-usa` at two nodes) are older code.
+- **Gate A** (stop calling it adaptive unless a live policy wins) is met by
+  the flush policy, a live state-driven policy worth 1.2–1.7× at scale. It
+  still rules out the admission and width rules.
+- **What we must not claim.**
+  - The histogram admission threshold as a source of speedup. It is at the
+    top bucket in 89–99% of rounds (F10) and 1.08–1.67× slower when engaged
+    (D4b, F10). The paper calls it a safety bound.
+  - The buffer-size acceptance policy: it made no changes in the F10 logs.
+  - "Shared queues 5–14×": withdrawn (§38). `--process-share off` is a
+    different code path (threshold-deferred TRAM inside a process), so F10's
+    sharing arm does not measure queue count.
+  - That MPI cannot do this. HavoqGT is asynchronous and aggregates messages
+    in MPI, and its author (Pearce) is on the Algorithms PC.
+- **Defensible form of "easier in a message-driven runtime".**
+  - Argue from the measured mechanisms: tiled placement, which needs
+    overdecomposition, and the gated flush, which needs a global view
+    delivered asynchronously alongside the work. Do not argue from sharing.
   - Gluon is bulk-synchronous, so thousands of rounds on high-diameter graphs
     cost it directly.
-  - Back this with a concrete implementation comparison: the lines of code
-    and runtime components each ACIC mechanism uses, against the equivalent
-    code in HavoqGT (mailbox, termination detection) and Gluon (sync
-    substrate). No allocation is needed; it can be done now.
-- **What we must not claim.**
-  - The histogram admission threshold is inert at every scale (F10: top
-    bucket in 89–99% of rounds), and slower when engaged.
-  - The buffer-size acceptance policy made no changes in the F10 logs.
-  - So "adaptive" means asynchronous execution plus the adaptive aggregation
-    and input-driven modes above, not the admission controller. Gate A's rule
-    (stop calling it adaptive unless a live policy wins) applies to the
-    admission and width rules, not to the aggregation policies, once F11
-    measures them.
+  - Back it with I1: the lines of code and runtime components each ACIC
+    mechanism uses, against the equivalent code in HavoqGT (mailbox,
+    termination detection) and Gluon (sync substrate). No allocation needed.
 
 #### Pillar 3: the "Mind the Gap" recommendations
 
@@ -166,7 +186,7 @@ recommendations, and our response to each:
      baselines'.
 2. **Performance analysts: evaluate on natural weights, or on synthetic
    weights that mirror them (log-normal bodies).**
-   - Roads (DIMACS distance, OSM travel time) and terrain (Tobler walking time
+   - Roads (DIMACS and OSM distance in metres) and terrain (Tobler walking time
      on Copernicus DEM) are natural weights; the meshes span uniform [1, 10],
      [1, 1000] and [1, 65,536].
    - We extend their finding to distributed memory and to topology: Graph500's
@@ -189,19 +209,28 @@ recommendations, and our response to each:
 
 #### Contributions, as the introduction would list them
 
+*Revised 2026-10-02 to match the author's abstract.*
+
 1. A characterization showing that Graph500-style distributed SSSP codes
    (RIKEN, HavoqGT, Gemini, Gluon) lose to a tuned single node on graphs with
-   spatial locality: meshes, 3-D grids, terrain and roads up to 275B edges.
-2. ACIC: asynchronous SSSP with shared queues within a process,
-   nearest-bucket batched removal, a chunked queue, and adaptive aggregation
-   on a message-driven runtime. It has a correctness and termination argument,
-   the Algorithms-track requirement.
-3. An evaluation at up to 64 Frontier nodes: 8–240× over Gluon, one to three
-   orders of magnitude over RIKEN, HavoqGT and Gemini, and the first
-   distributed code in the study to beat tuned GAPBS and Wasp. The regime
-   boundary against RIKEN on Kronecker graphs is included.
-4. An ablation at scale that attributes the speedup to scheduling and
-   aggregation structure rather than dynamic thresholds, extending "Mind the
+   spatial locality and high diameter: meshes, 3-D grids, terrain and roads.
+2. ACIC-SSSP: asynchronous distributed SSSP that adapts to the state of the
+   computation and to its input. Continuous reductions give a global view of
+   updates in flight, which gates message flushing; the graph is dealt out in
+   tiles chosen by a load-time locality rule; inside a process, shared
+   nearest-bucket batched queues and a chunk queue. It has a correctness and
+   termination argument, the Algorithms-track requirement.
+3. An evaluation at up to 64 Frontier nodes against four distributed and two
+   shared-memory codes. Over the strongest distributed code per class:
+   56–203× on 2-D meshes, 17–23× on 3-D grids, 17–21× on terrain and 10–85×
+   on the largest roads. On Kronecker graphs, 1.7–12× over Gluon, Gemini and
+   HavoqGT, with RIKEN 2.4–3.1× faster as the regime boundary. Faster than
+   tuned GAPBS and Wasp from 4 nodes on meshes, grids and terrain, and
+   solving inputs past one node's memory (275B edges).
+4. An ablation at scale that attributes the speedup to tiled placement
+   (5.0–7.4× on meshes and terrain at 64 nodes, 1.4–1.8× on roads) and
+   state-adaptive flushing (1.2–1.7×, growing with nodes), and shows the
+   histogram threshold inert. This extends "Mind the
    Gap" from shared to distributed memory.
 
 **Width configuration (2026-09-29).** The paper's configuration is one rule:
@@ -219,6 +248,83 @@ largest gap).
 | F11 (done, §37) | Aggregation ablation at 16 and 64 nodes on the freeze heap: default (adaptive flush, starved idle flush, interval auto) against `--flush-policy fixed`, `--idle-flush off`, `--idle-flush on`, `--idle-flush-interval 0`, and a small fixed `--bufsize`. Also a **naive-distribution arm**: the Wasp-like core kept (shared, nearest-bucket, batched queues) with every distributed mechanism off (`--flush-policy fixed --idle-flush off --reader-tile off`). Inputs `mesh32-z`, `terrain30-s-z`, `road-planet-z`, `rmat26` | Pillar 2 has no evidence at scale for aggregation. The naive arm is the measurement behind "more than distributed Wasp": if it comes within about 1.2× of ACIC at 64 nodes, the abstract's second paragraph must change | 2 jobs, about 1 h each |
 | F12 | Weight-distribution characterization of road and terrain inputs (log-normal and power-law fits, as "Mind the Gap" does); optionally generate and reference `mesh28-ln-z`, then ACIC, Gluon, GAPBS and Wasp on it | Pillar 3 recommendation 2 | Characterization on a login or debug node; the mesh adds 3–4 short jobs |
 | I1 | Implementation comparison: lines of code and runtime components for sharing, aggregation, flushing and termination in ACIC against HavoqGT and Gluon | Pillar 2 "easier in a message-driven runtime", in a form Pearce will accept | No allocation |
+
+### Paper layout (2026-10-02)
+
+*Replaces the ten-page budget and four-figure plan of the September 23 schedule
+(P3 and the submission checklist below), which were written for a
+diagnosis-first story. Built on the author's abstract of 2026-10-02.*
+
+Ten pages in IEEE two-column format, figures and tables included; references
+do not count. No appendix at submission. Budget about 9.5 pages and leave the
+rest for figure placement.
+
+| § | Section | Pages | CFP criterion it answers | Content |
+|---|---|---:|---|---|
+| 1 | Introduction | 1.25 | Motivation; key contributions | The Graph500 gap; Fig. 1; the four contributions (above) with flagship numbers; one sentence on the regime boundary |
+| 2 | Background and prior approaches | 1.0 | Limitations of the state of the art | Δ-stepping; what RIKEN, HavoqGT, Gluon and Gemini assume (low diameter, uniform weights, bulk rounds or per-core ranks); GAPBS and Wasp; "Mind the Gap"; the IA³@SC24 predecessor and exactly what is new. Table 1. Replaces a separate related-work section |
+| 3 | Key insights | 0.75 | Key insights; novelty; challenges | Why high-diameter, low-degree graphs break Graph500 designs: a narrow moving frontier and thousands of rounds. The insights: (a) aggregation delays priority information, so flushing must follow global work in flight; (b) the frontier must be spread over every process, so tile the graph, but only when the vertex order has locality; (c) a global view can be kept current asynchronously, without rounds. Each maps to a mechanism in §4 |
+| 4 | ACIC-SSSP | 1.75 | Key insights; Algorithms-track requirement | Pseudocode; the controller's continuous reductions; the gated flush; locality-aware tiling; shared nearest-bucket batched queues and the chunk queue; the admission threshold as a safety bound; correctness and termination (monotone frontier, collective emptiness). Fig. 2 |
+| 5 | Methodology | 0.75 | Methodology | Machines; Table 2 (inputs); every baseline tuned on training sources and frozen for held-out ones; digest checks on every solve; the timing boundary (load excluded, stated per code); the same vertex order for every code. Cite the prior evaluations that used the same protocol (GAPBS, "Mind the Gap") |
+| 6 | Evaluation | 3.5 | Flagship results | 6.1 Distributed codes at 16 and 64 nodes, Fig. 3. 6.2 One node and the crossover with GAPBS and Wasp, Fig. 4. 6.3 Past one node's memory (275B edges; small inline table). 6.4 Why it wins: ablation, work and traffic per edge, Fig. 5 |
+| 7 | Limitations | 0.4 | Limitations of the approach | Its own titled section, so reviewers find the criterion. List below |
+| 8 | Conclusion | 0.15 | — | — |
+
+**Figures and tables** (five figures, two tables, plus the small §6.3 table):
+- **Fig. 1 (teaser).** Per class, 64-node times of the distributed codes
+  against one-node GAPBS and Wasp. It is the motivation: one node beats them.
+- **Table 1.** Codes by design feature: asynchrony, aggregation and its flush
+  rule, queue sharing, placement, priority order. Verify every cell against the
+  code or the paper, since Pearce and the Gluon authors will check theirs.
+- **Fig. 2.** One process: shared queues, tiles, aggregation buffers, and the
+  reduction/broadcast loop that gates flushing.
+- **Table 2.** Inputs: vertices, edges, mean degree, weight range and kind,
+  hop diameter, bytes.
+- **Fig. 3.** Speedup over the strongest distributed code against hop
+  diameter, 16 and 64 nodes, RMAT included below 1× against RIKEN. It carries
+  both the headline and the regime boundary.
+- **Fig. 4.** Time from 1 to 64 nodes per input, with one-node GAPBS and Wasp
+  as horizontal lines: the honest one-node gap and the crossover in one figure
+  (COST style). Frontier one-node points, so the machine is the same as the
+  scaling.
+- **Fig. 5.** Ablation at 64 nodes: tiling off, fixed flush, naive, idle flush
+  off, threshold engaged. Second panel: attempts per edge and rounds, which
+  show the costs are staleness and idle processes, not bandwidth.
+
+**Where the adaptivity claim is made.** §3 states it as an insight, §4 gives
+the mechanism, and §6.4 measures it: the gated flush (1.2–1.7×, growing with
+nodes), the per-class behaviour (idle flush on RMAT only), and the tiling rule
+(F15). §4 presents the threshold as a safety bound, and §6.4 shows it inert.
+See Pillar 2.
+
+**The one-node comparison** is no longer in the abstract. It goes in §6.2
+(Fig. 4, Frontier) and §7. Delta's same-node D7 matrix is a second machine:
+use it in §6.2 text or §7, not in Fig. 4.
+
+**Limitations (§7)**, with the conclusions each one affects:
+- **One-node gap.** ACIC-SSSP is 1.35–2.3× slower than GAPBS and 1.7–3.1×
+  slower than Wasp on one Frontier node (chunk queue). On roads it is further
+  behind Wasp: on Delta (D7) 0.42–0.53× on `road-usa-z` and 0.43–0.70× on
+  `road-eu-z`, even with the round-2 band and leaf pruning. The distributed
+  claims do not depend on it; any "competitive everywhere" sentence does.
+- **Roads at scale.** Roads beyond 16 nodes; Wasp still wins on `road-usa-z`
+  at every node count.
+- **Scale-free graphs.** RIKEN is 2.4–3.1× faster on RMAT 25–27. "Regardless
+  of input structure" in the abstract is sensitive to this.
+- **Vertex order.** A locality-preserving order (Morton) is assumed and given
+  to every code. Row-major `mesh26` is 107–183× slower with tiling on, and
+  Gluon wins there. The locality rule recovers 29× (F15; F15b pending). The
+  mesh and road results are sensitive to this assumption.
+- **Bucket width.** One rule (ln V / 8 below degree 8, ln V otherwise, 131072
+  on roads), within 1.5× of the best width tried on every input;
+  `mesh28-w10-z` at 64 nodes is the largest gap and plateaus.
+- **Weights.** Mesh and grid weights are uniform synthetic; only roads and
+  terrain are natural. Roads use distances, not travel times.
+- **Baseline tuning.** Settings chosen at a grid boundary limit any
+  best-possible claim for that baseline; say which ones.
+- **Timing boundary.** Solve time only; graph loading and ingest are reported
+  separately.
+- **Scope.** CPU only; exact single-source SSSP; static graphs.
 
 ### Venue facts ([CFP](https://www.ipdps.org/ipdps2027/2027-call-for-papers.html))
 
@@ -277,15 +383,15 @@ collective emptiness). Its parts are process-shared priority queues with
 nearest-bucket batched removal, and the chunk queue on meshes and terrain
 (F4 holds there; §35). Avoid presenting it as runtime tuning.
 
-The histogram-derived admission threshold is not a mechanism. It is inert on
-one Delta node (D4) and at 16 and 64 Frontier nodes (F10: top bucket in 89–99%
-of rounds), and 1.08–1.67× slower when engaged (D4b, F10). The paper describes
-it as a safety bound and does not claim it as a source of speedup. Heap slices
-are also worth nothing on F10's large inputs; the paper claims them only for
-the strong-scaling limit, where §8 measured them (`mesh26-z`, older code), or
-not at all. At scale the parts that carry the speedup are process-shared
-queues, nearest-bucket batched removal, and the chunk queue on meshes and
-terrain.
+The adaptivity claim rests on the flush policy and the tiling rule (Pillar 2),
+not on the admission threshold. The threshold is inert on one Delta node (D4)
+and at 16 and 64 Frontier nodes (F10: top bucket in 89–99% of rounds), and
+1.08–1.67× slower when engaged (D4b, F10). The paper describes it as a safety
+bound. Heap slices are worth nothing on F10's large inputs; the paper claims
+them only for the strong-scaling limit, where §8 measured them (`mesh26-z`,
+older code), or not at all. At scale the parts that carry the speedup are
+tiled placement (F13), starvation-gated flushing (F11), and, within a process,
+nearest-bucket batched removal and the chunk queue on meshes and terrain.
 
 **Vertex order (O1, 2026-09-29):**
 - The mesh and road results assume a locality-preserving order (Morton here).
@@ -441,14 +547,7 @@ submission.
 - Further `terrain-ae-z` runs: the GLO-30 series supersedes them, and its 8- and 16-node rows stay supplementary.
 - New input families.
 
-**Limitations section**, a named review criterion rather than work to remove:
-- Roads beyond 16 nodes.
-- The `mesh28-w10-z` plateau, unless F5 fixes it.
-- Vertex order: a locality-preserving order is assumed (O1), unless O1b
-  removes most of the cost.
-- The one-node gap.
-- Scale-free graphs against RIKEN.
-- CPU-only scope.
+**Limitations section:** see "Paper layout" above (§7 and its list).
 
 #### Writing and anonymity (no machine)
 
@@ -601,7 +700,7 @@ known runtime uncertainty before freezing the paper candidate.
 
 ### P3. Draft in parallel — September 23–26
 
-Build the paper around four figures/tables:
+*Superseded by "Paper layout" in the IPDPS plan.* Build the paper around four figures/tables:
 
 1. End-to-end time versus GAPBS and distributed CPU baselines, separated by
    mesh, road and scale-free regimes.
@@ -640,9 +739,11 @@ limits; Frontier RMAT instability.
   raw record and parser revision.
 - The main paper includes road and scale-free losses, the CPU-only scope and an
   explicit comparison with the IA³@SC24 contribution.
-- No title or claim says live adaptation caused the mesh result.
+- No claim credits the admission threshold. Adaptivity claims cite the gated
+  flush (F11) and the tiling rule (F15) (revised 2026-10-02; this read "no
+  title or claim says live adaptation caused the mesh result").
 
-A practical ten-page budget is 1 page introduction, 1 background/predecessor,
+*Superseded by "Paper layout".* A practical ten-page budget was 1 page introduction, 1 background/predecessor,
 1.25 diagnosis, 1.5 mechanisms, 1 method, 3.25 evaluation, 0.65 related work
 and 0.35 limitations/conclusion.
 
