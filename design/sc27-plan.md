@@ -134,9 +134,9 @@ earlier version credited process sharing (5–15×) and named F11 as missing.*
   - Within a node: the chunk queue (about 2× on meshes and terrain), and one
     shared queue per L3 region (F14: larger domains are 1.1–2.9× slower).
 - **Weak points.**
-  - On `rmat26` the gated policy is 0.84–0.93× of fixed flushing at
-    16 nodes and 0.80–1.10× at 64 (F11): the gate does not fully close where
-    buffers fill.
+  - On `rmat26` fixed flushing is 1.08–1.19× faster than the gated policy at
+    16 nodes, and between 1.25× faster and 1.10× slower at 64 (F11): the gate
+    does not fully close where buffers fill.
   - The idle-flush interval `auto` and the starved idle flush show no effect
     on low-degree graphs at 16–64 nodes; their one- and two-node gains
     (1.09–1.12×, about 2× on `road-usa` at two nodes) are older code.
@@ -304,8 +304,8 @@ use it in §6.2 text or §7, not in Fig. 4.
 **Limitations (§7)**, with the conclusions each one affects:
 - **One-node gap.** ACIC-SSSP is 1.35–2.3× slower than GAPBS and 1.7–3.1×
   slower than Wasp on one Frontier node (chunk queue). On roads it is further
-  behind Wasp: on Delta (D7) 0.42–0.53× on `road-usa-z` and 0.43–0.70× on
-  `road-eu-z`, even with the round-2 band and leaf pruning. The distributed
+  behind Wasp: on Delta (D7) 1.9–2.4× slower on `road-usa-z` and 1.4–2.3×
+  slower on `road-eu-z`, even with the round-2 band and leaf pruning. The distributed
   claims do not depend on it; any "competitive everywhere" sentence does.
 - **Roads at scale.** Roads beyond 16 nodes; Wasp still wins on `road-usa-z`
   at every node count.
