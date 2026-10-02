@@ -51,12 +51,14 @@ We evaluate ACIC-SSSP against four distributed codes and two tuned shared-memory
     above. The paper should present the RIKEN boundary as the regime limit
     (hop-diameter figure) so the claim is not read as a win on every input.
   - "1.7-12x" uses a hyphen where the other ranges use an en dash.
-- **Pending (§38):** "measures the locality of the vertex order at
+- **Validated (§40):** "measures the locality of the vertex order at
   initialization to decide if tiling will help" describes
-  `--reader-tile locality` (acic_frz_tloc2, auto tile or off). F15b (5573562,
-  5573563) validates it. If it fails, cut the clause. The headline numbers do
-  not depend on it: on every Morton-ordered input the rule chooses what `auto`
-  chose.
+  `--reader-tile locality` (acic_frz_tloc2, auto tile or off). In F15b
+  (5573562, 5573563) it turned tiling off on row-major `mesh26` (21–92× faster
+  than auto, as fast as off) and kept auto's tiles on DIMACS `road-usa`
+  (0.95–1.16× of auto) at 16 and 64 nodes. The headline numbers do not depend
+  on it: on every Morton-ordered input the rule chooses what `auto` chose. The
+  headline runs used `auto`, which the paper should say.
 - **Evidence for "adaptive"** (what the paper cites):
   - Starvation-gated flushing, adapting to the state of the computation:
     1.2–1.7× over a fixed cadence on the mesh, terrain and planet roads, and
@@ -67,8 +69,8 @@ We evaluate ACIC-SSSP against four distributed codes and two tuned shared-memory
     graph class. The starvation gate fires every round on meshes, and only in
     the ramp and tail on RMAT, where the buffers fill on their own. The idle
     flush matters on RMAT (1.56–1.89×) and not on low-degree graphs.
-    Locality-aware tiling picks tiles or none from the vertex order (29× on
-    row-major `mesh26`, F15).
+    Locality-aware tiling picks tiles or none from the vertex order (21–92×
+    over always-tiling on row-major `mesh26`, F15b, §40).
   - Not cited as a source of speedup: the histogram admission threshold. It
     sits at the top bucket in 89–99% of rounds (F10) and is 1.08–1.67× slower
     when engaged (D4b). The paper calls it a safety bound.

@@ -124,9 +124,11 @@ earlier version credited process sharing (5–15×) and named F11 as missing.*
       within 4% on the mesh, terrain and roads.
     - Small buffers cost 1.6–3.4× on `rmat26` and nothing on low-degree
       graphs.
-  - **Load time: locality-aware tiling** (F15, §38). It is 29× faster than
-    always-tiling on row-major `mesh26`, and 0.95–1.05× of it on Morton
-    inputs. F15b (the revised rule) is pending.
+  - **Load time: locality-aware tiling** (F15, §38; F15b, §40). The revised
+    rule turns tiling off on row-major `mesh26` (21–92× faster than
+    always-tiling, as fast as off) and keeps auto's tiles on DIMACS
+    `road-usa` and on Morton inputs, at 16 and 64 nodes. The headline runs
+    used `auto`; the rule chooses the same layout on every Morton input.
   - **Tiling itself is placement, not adaptation**, and it is the largest
     distributed mechanism: off costs 6.9–7.4× on `mesh32-z`, 5.0–6.8× on
     terrain and 1.4–1.8× on roads at 64 nodes (F13). The adaptive part is the
@@ -299,7 +301,7 @@ rest for figure placement.
 **Where the adaptivity claim is made.** §3 states it as an insight, §4 gives
 the mechanism, and §6.4 measures it: the gated flush (1.2–1.7×, growing with
 nodes), the per-class behaviour (idle flush on RMAT only), and the tiling rule
-(F15). §4 presents the threshold as a safety bound, and §6.4 shows it inert.
+(F15b). §4 presents the threshold as a safety bound, and §6.4 shows it inert.
 See Pillar 2.
 
 **The one-node comparison** is no longer in the abstract. It comes from
@@ -319,8 +321,9 @@ as the first point of its scaling series (Fig. 4).
   of input structure" in the abstract is sensitive to this.
 - **Vertex order.** A locality-preserving order (Morton) is assumed and given
   to every code. Row-major `mesh26` is 107–183× slower with tiling on, and
-  Gluon wins there. The locality rule recovers 29× (F15; F15b pending). The
-  mesh and road results are sensitive to this assumption.
+  Gluon wins there. The locality rule turns tiling off there and recovers
+  21–92× (F15b, §40), but untiled ACIC on row-major input is not the headline
+  configuration. The mesh and road results are sensitive to this assumption.
 - **Bucket width.** One rule (ln V / 8 below degree 8, ln V otherwise, 131072
   on roads), within 1.5× of the best width tried on every input;
   `mesh28-w10-z` at 64 nodes is the largest gap and plateaus.
@@ -538,8 +541,8 @@ digest-checked). Predictions are recorded in `benchmarks/delta-ipdps-*-variants.
 | F14 | Priority-domain sweep: 56 workers per node as 8 × 7 (candidate), 4 × 14, 2 × 28 and 1 × 56, sharing on; `mesh32-z`, `terrain30-s-z`, `grid3-30-z`, `road-planet-z` at 16 and 64 nodes | **Done** (§38): larger shared domains are slower: 4 × 14 1.1–1.4×, 2 × 28 1.2–1.8×, 1 × 56 1.7–2.9×, though they waste less work on the mesh, terrain and grid |
 | F14b | The per-core end: 8 × 7, 8 × 7 with `--process-share off`, and 56 × 1 (never run past one node, so in its own jobs); same inputs | **Done at 16 nodes; 64 nodes timed out** (5570584: grid and roads complete, terrain one repetition, `mesh32-z` not run) (§38): 56 × 1 is 0.72–1.50× of 8 × 7's time; `--process-share off` is a different code path (threshold-deferred TRAM inside a process), so the 5–14× 'shared queues' figure is withdrawn. First submission 5570492/5570495/5570496 aborted at LCI start-up (packet pool registration) |
 | F15 | Locality-aware tiling (`acic_frz_tloc`, 30737e4 = freeze plus `--reader-tile locality`): auto, locality, off (and target 0.8 on `mesh26`) on row-major `mesh26`, `mesh26-z`, DIMACS `road-usa`, `road-usa-z` at 16 and 64 nodes | **Done** (5570551, 5570552; §38): `--reader-tile locality` is 26–29× faster than auto on row-major `mesh26` and neutral on the Morton inputs, but its 16-row tiles at 16 nodes are 2.9× behind tiling off, and on DIMACS `road-usa` at 64 nodes it is 1.96× slower than auto. Proposed rule revision: the auto tile or off, nothing in between (not built) |
-| F14c | F14b's missing 64-node cells: 8 × 7 against 56 × 1 (with the LCI pool fix) on `mesh32-z` and `terrain30-s-z` | Submitted 5573561 (`frontier-f14c-*-variants.json`) |
-| F15b | The revised locality rule (`acic_frz_tloc2`, c3dc360: the auto tile or off) against auto and off on row-major `mesh26` and DIMACS `road-usa` at 16 and 64 nodes | Submitted 5573562 (16n), 5573563 (64n) (`frontier-f15b-*-variants.json`) |
+| F14c | F14b's missing 64-node cells: 8 × 7 against 56 × 1 (with the LCI pool fix) on `mesh32-z` and `terrain30-s-z` | **No 56 × 1 data** (5573561, §40): both 56 × 1 warmups hit the 12-minute step limit, shorter than one 56 × 1 launch at 64 nodes (13–14.5 min in F14b, mostly start-up and reading); the harness reran 8 × 7 alone. A rerun needs about a 20-minute step limit and one job per input. Not resubmitted |
+| F15b | The revised locality rule (`acic_frz_tloc2`, c3dc360: the auto tile or off) against auto and off on row-major `mesh26` and DIMACS `road-usa` at 16 and 64 nodes | **Done** (5573562, 5573563; §40): 108 digest-valid solves; the rule chose off on `mesh26` and auto's tile on `road-usa` at both node counts, as the tool predicted. Locality is 21–92× faster than auto on `mesh26` and as fast as off (0.99–1.11×); on `road-usa` 0.95–1.16× of auto and 2.2–2.9× faster than off. Both F15 misses fixed |
 | O1c | Native order for the other baselines at 16 nodes: RIKEN on `mesh26`/`mesh26-z`; Gemini and HavoqGT on `mesh26`, `mesh26-z`, `road-usa`, `road-usa-z` | **Done** (5568646, 5568648, 5568649). Gemini prefers row-major on `mesh26` (order cost 0.62–0.84×); RIKEN and HavoqGT prefer Morton. At each code's best order ACIC is 37–43× (Gluon), 251–256× (RIKEN), 362–416× (Gemini), 213–233× (HavoqGT) faster on `mesh26`; 32–342× on `road-usa` (§36) |
 | F9 | One-node Frontier points: GAPBS then Wasp on `road-planet-z`, chained after O2b; the debug queue takes one job at a time. ACIC at one node goes with F8 | GAPBS **done** 1.64–1.92 s (5565476), Wasp **done** 0.86–0.92 s (5565797); ACIC with F8 |
 | F10 | Ablation at scale, the Delta D4/D4b arm set: candidate, no slice, batch 1, local queue, no sharing, plain async (`--admission all`), chunks, and the threshold engaged by `--bucket-width-rule weight`, with and without admission. `mesh32-z` and `terrain30-s-z` at 16 nodes, `mesh32-z` and `terrain30-m-z` at 64; three sources, one warmup, two repetitions. **It checks whether the histogram threshold acts at scale** (round counts in every log) | **Done** (5565467, 5565468; the 64n `terrain30-m-z` cell has warmup solves only). Candidate over the arm: no sharing 4.8–15×, local queue 2.2–3.7×, batch 1 1.5–1.6×, no slice 0.91–1.00×, plain async 0.97–1.00×, chunks about 0.5×. **The threshold is inert at scale too** (top bucket in 89–99% of rounds); engaged, it is 1.08–1.67× slower (§35) |
@@ -746,7 +749,7 @@ limits; Frontier RMAT instability.
 - The main paper includes road and scale-free losses, the CPU-only scope and an
   explicit comparison with the IA³@SC24 contribution.
 - No claim credits the admission threshold. Adaptivity claims cite the gated
-  flush (F11) and the tiling rule (F15) (revised 2026-10-02; this read "no
+  flush (F11) and the tiling rule (F15b) (revised 2026-10-02; this read "no
   title or claim says live adaptation caused the mesh result").
 
 *Superseded by "Paper layout".* A practical ten-page budget was 1 page introduction, 1 background/predecessor,
