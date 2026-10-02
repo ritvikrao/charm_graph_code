@@ -258,19 +258,20 @@ largest gap).
 diagnosis-first story. Built on the author's abstract of 2026-10-02.*
 
 Ten pages in IEEE two-column format, figures and tables included; references
-do not count. No appendix at submission. Budget about 9.5 pages and leave the
+do not count. No appendix at submission. Budget about 9.65 pages and leave the
 rest for figure placement.
 
 | § | Section | Pages | CFP criterion it answers | Content |
 |---|---|---:|---|---|
 | 1 | Introduction | 1.25 | Motivation; key contributions | The Graph500 gap; Fig. 1; the four contributions (above) with flagship numbers; one sentence on the regime boundary |
-| 2 | Background and prior approaches | 1.0 | Limitations of the state of the art | Δ-stepping; what RIKEN, HavoqGT, Gluon and Gemini assume (low diameter, uniform weights, bulk rounds or per-core ranks); GAPBS and Wasp; "Mind the Gap"; the IA³@SC24 predecessor and exactly what is new. Table 1. Replaces a separate related-work section |
+| 2 | Background and the compared codes | 0.75 | Limitations of the state of the art | Δ-stepping; what RIKEN, HavoqGT, Gluon and Gemini assume (low diameter, uniform weights, bulk rounds or per-core ranks); GAPBS and Wasp; the IA³@SC24 predecessor and exactly what is new. Table 1. Breadth goes in §7 |
 | 3 | Key insights | 0.75 | Key insights; novelty; challenges | Why high-diameter, low-degree graphs break Graph500 designs: a narrow moving frontier and thousands of rounds. The insights: (a) aggregation delays priority information, so flushing must follow global work in flight; (b) the frontier must be spread over every process, so tile the graph, but only when the vertex order has locality; (c) a global view can be kept current asynchronously, without rounds. Each maps to a mechanism in §4 |
 | 4 | ACIC-SSSP | 1.75 | Key insights; Algorithms-track requirement | Pseudocode; the controller's continuous reductions; the gated flush; locality-aware tiling; shared nearest-bucket batched queues and the chunk queue; the admission threshold as a safety bound; correctness and termination (monotone frontier, collective emptiness). Fig. 2 |
 | 5 | Methodology | 0.75 | Methodology | Machines; Table 2 (inputs); every baseline tuned on training sources and frozen for held-out ones; digest checks on every solve; the timing boundary (load excluded, stated per code); the same vertex order for every code. Cite the prior evaluations that used the same protocol (GAPBS, "Mind the Gap") |
-| 6 | Evaluation | 3.5 | Flagship results | 6.1 Distributed codes at 16 and 64 nodes, Fig. 3. 6.2 One node against GAPBS and Wasp on Delta (D7), Table 3; scaling and the crossover on Frontier, Fig. 4. 6.3 Past one node's memory (275B edges; small inline table). 6.4 Why it wins: ablation, work and traffic per edge, Fig. 5 |
-| 7 | Limitations | 0.4 | Limitations of the approach | Its own titled section, so reviewers find the criterion. List below |
-| 8 | Conclusion | 0.15 | — | — |
+| 6 | Evaluation | 3.25 | Flagship results | 6.1 Distributed codes at 16 and 64 nodes, Fig. 3. 6.2 One node against GAPBS and Wasp on Delta (D7), Table 3; scaling and the crossover on Frontier, Fig. 4. 6.3 Past one node's memory (275B edges; small inline table). 6.4 Why it wins: ablation, work and traffic per edge, Fig. 5 |
+| 7 | Related work | 0.6 | Limitations of the state of the art (breadth) | Grouped by area: algorithms, shared-memory CPU, distributed CPU, GPU, runtime and aggregation, placement and order; each group ends with how ACIC-SSSP differs. Table below |
+| 8 | Limitations | 0.4 | Limitations of the approach | Its own titled section, so reviewers find the criterion. List below |
+| 9 | Conclusion | 0.15 | — | — |
 
 **Figures and tables** (five figures, three tables, plus the small §6.3 table):
 - **Fig. 1 (teaser).** Per class, 64-node times of the distributed codes
@@ -305,10 +306,49 @@ nodes), the per-class behaviour (idle flush on RMAT only), and the tiling rule
 See Pillar 2.
 
 **The one-node comparison** is no longer in the abstract. It comes from
-Delta: D7 in §6.2 (Table 3) and §7. Frontier contributes one-node points only
+Delta: D7 in §6.2 (Table 3) and §8. Frontier contributes one-node points only
 as the first point of its scaling series (Fig. 4).
 
-**Limitations (§7)**, with the conclusions each one affects:
+**Related work (§7)**, added 2026-10-02. §2 and §7 have different jobs:
+- §2 covers the codes the paper measures (RIKEN, HavoqGT, Gluon, Gemini,
+  GAPBS, Wasp): their design assumptions, and Table 1. It answers the CFP's
+  "limitations of the state of the art" with work we compare against.
+- §7 gives the breadth, grouped by area. Each group ends with one sentence on
+  how ACIC-SSSP differs.
+
+The entries are candidates. **Every one must be verified against the
+published paper before it is cited** (authors, title, venue, year, and what we
+say it does). The CFP treats inaccurate references as grounds for rejection.
+Mark the last column when done.
+
+| Group | Candidate works | How ACIC-SSSP differs | Verified |
+|---|---|---|---|
+| Algorithms | Dijkstra; Bellman-Ford; Δ-stepping (Meyer and Sanders); radius stepping; Δ*-stepping and ρ-stepping; the recent sequential "sorting barrier" result | A Δ-stepping-family algorithm with asynchronous, globally informed admission instead of synchronized phases | — |
+| Shared-memory CPU | GAPBS; Galois; Ligra, Julienne and GBBS; GraphIt's priority extensions; MultiQueues; Wasp; "Mind the Gap" (D'Antonio, Mai and Vandierendonck, arXiv:2607.26821) | These are the one-node references. They rely on atomics on shared state; ACIC-SSSP carries their queue structure (shared queues, nearest-bucket removal) into distributed memory. "Mind the Gap" is shared-memory only; we extend its weight argument to distributed memory and topology | — |
+| Distributed CPU | Graph500 SSSP and the RIKEN code; Chakaravarthy et al. (IPDPS 2014); HavoqGT; Gluon, D-Galois and Gluon-Async; Gemini; PBGL; Distributed Control (Kanewala, Zalewski, Lumsdaine); Firoz et al. (IPDPS 2018); Pregel-style systems | Most were designed or evaluated on low-diameter Kronecker graphs, with bulk rounds or one rank per core | — |
+| GPU | Davidson et al. (near-far); Gunrock; ADDS. Multi-GPU: Groute; Lux; Gluon's GPU backend | Not compared. The paper's scope is CPU-only distributed SSSP (Limitations) | — |
+| Runtime and aggregation | Charm++; TRAM; Active Pebbles and AM++; Conveyors; YGM; HClib Actor | Aggregation libraries fix the flush policy; ACIC-SSSP's flush is gated by a global view of work in flight | — |
+| Placement and order | Space-filling-curve orderings; CuSP (Gluon's partitioner); streaming partitioners | Tiles are chosen by a load-time locality rule (F15b) | — |
+| Predecessor | The IA³@SC24 ACIC paper, cited in the third person | An explicit statement of what is new | — |
+| Out of scope | Dynamic SSSP (Khanda, Bhowmick) | One line | — |
+
+Notes for writing §7:
+- **GPUs.** Frontier's nodes have GPUs, so "why not GPUs?" is a likely
+  reviewer question. Without a measurement the paper cannot say GPUs lose.
+  State the scope (CPU-only distributed SSSP) and list it in Limitations. The
+  smaller per-node GPU memory would sharpen the capacity regime, but it is
+  unmeasured here, so do not rest an argument on it. Gluon's GPU backend is the
+  most likely "you could have compared" point.
+- **PC members' own work.** Cite it exactly: HavoqGT (Pearce), Chakaravarthy
+  et al. (Checconi), "Mind the Gap" and possibly Wasp (Vandierendonck), Firoz
+  et al. (Firoz). See "Expected reviewers".
+- **Madduri et al.** is listed in this plan as distributed prior work. It may
+  have run on the shared-memory Cray MTA-2; check before placing it in a
+  group.
+- References do not count toward the ten pages, so breadth costs no page
+  budget; the prose does.
+
+**Limitations (§8)**, with the conclusions each one affects:
 - **One-node gap** (Delta, D7). Fill from D7 when it completes; the mesh,
   rmat25 and large-graph rows are being rerun with packed baselines. So far,
   on roads, ACIC-SSSP is 1.9–2.4× slower than Wasp on `road-usa-z` and
@@ -333,7 +373,8 @@ as the first point of its scaling series (Fig. 4).
   best-possible claim for that baseline; say which ones.
 - **Timing boundary.** Solve time only; graph loading and ingest are reported
   separately.
-- **Scope.** CPU only; exact single-source SSSP; static graphs.
+- **Scope.** CPU only (no GPU comparison; see §7's notes); exact
+  single-source SSSP; static graphs.
 
 ### Venue facts ([CFP](https://www.ipdps.org/ipdps2027/2027-call-for-papers.html))
 
@@ -556,7 +597,7 @@ submission.
 - Further `terrain-ae-z` runs: the GLO-30 series supersedes them, and its 8- and 16-node rows stay supplementary.
 - New input families.
 
-**Limitations section:** see "Paper layout" above (§7 and its list).
+**Limitations section:** see "Paper layout" above (§8 and its list).
 
 #### Writing and anonymity (no machine)
 
@@ -566,9 +607,7 @@ submission.
   workshop paper is in doubt, ask pc2027@ipdps.org.
 - Make the public repository private or anonymized before Oct 8; it holds
   `design/acic_2024paper.pdf`.
-- Related work: Chakaravarthy et al.; Firoz et al.; Distributed Control;
-  Madduri et al.; HavoqGT; Gemini; Gluon/Gluon-Async; Δ-stepping; GAPBS; Wasp.
-  Verify every entry.
+- Related work: see "Paper layout", §7 and its table. Verify every entry.
 
 ### Timeline
 
