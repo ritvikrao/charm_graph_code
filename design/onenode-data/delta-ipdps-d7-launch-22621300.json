@@ -1,0 +1,73 @@
+{
+ "job": "22621300",
+ "host": "cn022",
+ "purpose": "D7 launch check: sec. 23 launch vs D7 spread/packed and one-change variants",
+ "solves": 144,
+ "valid": 144,
+ "median_seconds": {
+  "wasp road-eu-z t64 d1024 s2593536": {
+   "s23": 0.412328974,
+   "d7spread": 0.413386083,
+   "d7packed": 0.373300624,
+   "s23_cores": 0.395321877,
+   "s23_campenv": 0.41497881,
+   "s23_spread": 0.406895217
+  },
+  "wasp road-eu-z t64 d1024 s3094710": {
+   "s23": 0.38508414,
+   "d7spread": 0.420123462,
+   "d7packed": 0.40631743,
+   "s23_cores": 0.40523874,
+   "s23_campenv": 0.382124379,
+   "s23_spread": 0.416187055
+  },
+  "wasp road-eu-z t96 d4096 s2593536": {
+   "s23": 0.322115776,
+   "d7spread": 0.3466823,
+   "d7packed": 0.325840526,
+   "s23_cores": 0.324799657,
+   "s23_campenv": 0.325578763,
+   "s23_spread": 0.337125905
+  },
+  "wasp road-eu-z t96 d4096 s3094710": {
+   "s23": 0.333668428,
+   "d7spread": 0.341291835,
+   "d7packed": 0.328128021,
+   "s23_cores": 0.32756969,
+   "s23_campenv": 0.330037766,
+   "s23_spread": 0.341325348
+  },
+  "wasp road-usa-z t64 d32768 s1294456": {
+   "s23": 0.101760438,
+   "d7spread": 0.131192328,
+   "d7packed": 0.098438687,
+   "s23_cores": 0.099435212,
+   "s23_campenv": 0.100561882,
+   "s23_spread": 0.135298115
+  },
+  "wasp road-usa-z t64 d32768 s5620086": {
+   "s23": 0.08955547,
+   "d7spread": 0.116225691,
+   "d7packed": 0.089195532,
+   "s23_cores": 0.091203119,
+   "s23_campenv": 0.088552712,
+   "s23_spread": 0.114661428
+  },
+  "gap road-usa-z t64 d32768 s1294456": {
+   "s23": 0.249308036,
+   "d7spread": 0.268848661,
+   "d7packed": 0.252865601,
+   "s23_cores": 0.256580642,
+   "s23_campenv": 0.253924644,
+   "s23_spread": 0.269798598
+  },
+  "gap road-usa-z t64 d32768 s5620086": {
+   "s23": 0.188885784,
+   "d7spread": 0.223947118,
+   "d7packed": 0.196746417,
+   "s23_cores": 0.196960541,
+   "s23_campenv": 0.192559307,
+   "s23_spread": 0.218356597
+  }
+ }
+}

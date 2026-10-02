@@ -10,6 +10,9 @@
 #   sbatch scripts/delta/d7_tune.sbatch CAMPAIGN GRAPH THREADS DELTAS
 #   e.g. ... road-usa-z 32,64,96,128 2048,8192,32768,131072
 # ENGINES (default gap,wasp) picks the engines; LAUNCH_TIMEOUT caps a launch.
+# Candidates pack onto the first THREADS cores, as in secs. 16-23; SPREAD=1
+# gives them the whole node with OMP_PROC_BIND=spread instead, which job
+# 22621300 measured 1.06-1.30x slower at 64 threads on both roads.
 #SBATCH --account=rfp-delta-cpu
 #SBATCH --partition=cpu-interactive
 #SBATCH --nodes=1
@@ -32,6 +35,6 @@ ENG=${ENGINES:-gap,wasp}
 for e in ${ENG//,/ }; do
   echo "== $e $(date -Is)"
   python3 "$APP/benchmarks/onenode_gap_tune.py" "$ROOT" --graphs "$GRAPH" --engine "$e" \
-    --threads "$THREADS" --deltas "$DELTAS" --tune-only --spread --launch-timeout "${LAUNCH_TIMEOUT:-240}"
+    --threads "$THREADS" --deltas "$DELTAS" --tune-only ${SPREAD:+--spread} --launch-timeout "${LAUNCH_TIMEOUT:-240}"
 done
 echo "D7 TUNE COMPLETE $SLURM_JOB_ID"

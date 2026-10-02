@@ -29,7 +29,8 @@ def main():
                     'for graphs whose read makes each launch minutes long')
     ap.add_argument('--spread', action='store_true',
                     help='give every candidate the whole node (srun -c NODE_CPUS) with OMP_PROC_BIND=spread, so a '
-                    'run with fewer threads than cores still uses both sockets (D7; the default packs them)')
+                    'run with fewer threads than cores still uses both sockets. Measured slower than the packed default '
+                    '(job 22621300: 1.06-1.30x at 64 threads on road-usa-z), so kept only as a sensitivity check')
     ap.add_argument('--tune-only', action='store_true',
                     help='write the frozen selection and stop; a later job runs it with --selection-job '
                     '(on Delta the held-out comparison then shares an allocation with ACIC, D7)')
