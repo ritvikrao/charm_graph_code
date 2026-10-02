@@ -266,11 +266,11 @@ rest for figure placement.
 | 3 | Key insights | 0.75 | Key insights; novelty; challenges | Why high-diameter, low-degree graphs break Graph500 designs: a narrow moving frontier and thousands of rounds. The insights: (a) aggregation delays priority information, so flushing must follow global work in flight; (b) the frontier must be spread over every process, so tile the graph, but only when the vertex order has locality; (c) a global view can be kept current asynchronously, without rounds. Each maps to a mechanism in §4 |
 | 4 | ACIC-SSSP | 1.75 | Key insights; Algorithms-track requirement | Pseudocode; the controller's continuous reductions; the gated flush; locality-aware tiling; shared nearest-bucket batched queues and the chunk queue; the admission threshold as a safety bound; correctness and termination (monotone frontier, collective emptiness). Fig. 2 |
 | 5 | Methodology | 0.75 | Methodology | Machines; Table 2 (inputs); every baseline tuned on training sources and frozen for held-out ones; digest checks on every solve; the timing boundary (load excluded, stated per code); the same vertex order for every code. Cite the prior evaluations that used the same protocol (GAPBS, "Mind the Gap") |
-| 6 | Evaluation | 3.5 | Flagship results | 6.1 Distributed codes at 16 and 64 nodes, Fig. 3. 6.2 One node and the crossover with GAPBS and Wasp, Fig. 4. 6.3 Past one node's memory (275B edges; small inline table). 6.4 Why it wins: ablation, work and traffic per edge, Fig. 5 |
+| 6 | Evaluation | 3.5 | Flagship results | 6.1 Distributed codes at 16 and 64 nodes, Fig. 3. 6.2 One node against GAPBS and Wasp on Delta (D7), Table 3; scaling and the crossover on Frontier, Fig. 4. 6.3 Past one node's memory (275B edges; small inline table). 6.4 Why it wins: ablation, work and traffic per edge, Fig. 5 |
 | 7 | Limitations | 0.4 | Limitations of the approach | Its own titled section, so reviewers find the criterion. List below |
 | 8 | Conclusion | 0.15 | — | — |
 
-**Figures and tables** (five figures, two tables, plus the small §6.3 table):
+**Figures and tables** (five figures, three tables, plus the small §6.3 table):
 - **Fig. 1 (teaser).** Per class, 64-node times of the distributed codes
   against one-node GAPBS and Wasp. It is the motivation: one node beats them.
 - **Table 1.** Codes by design feature: asynchrony, aggregation and its flush
@@ -283,10 +283,15 @@ rest for figure placement.
 - **Fig. 3.** Speedup over the strongest distributed code against hop
   diameter, 16 and 64 nodes, RMAT included below 1× against RIKEN. It carries
   both the headline and the regime boundary.
-- **Fig. 4.** Time from 1 to 64 nodes per input, with one-node GAPBS and Wasp
-  as horizontal lines: the honest one-node gap and the crossover in one figure
-  (COST style). Frontier one-node points, so the machine is the same as the
-  scaling.
+- **Table 3 (Delta, D7).** One node, same node for every code: ACIC-SSSP's
+  paper configuration against GAPBS and Wasp, both tuned on that node, on the
+  eight D7 inputs, per held-out source. This is the paper's one-node
+  comparison (user, 2026-09-28: one-node runs come from Delta).
+- **Fig. 4 (Frontier).** Time from 1 to 64 nodes per input. Its one-node
+  points are part of the scaling series, so they are Frontier runs. One-node
+  GAPBS and Wasp appear as horizontal lines so the crossover node count
+  (COST style) is read on one machine; if the user prefers, drop the lines
+  and give the crossover in the text.
 - **Fig. 5.** Ablation at 64 nodes: tiling off, fixed flush, naive, idle flush
   off, threshold engaged. Second panel: attempts per edge and rounds, which
   show the costs are staleness and idle processes, not bandwidth.
@@ -297,15 +302,16 @@ nodes), the per-class behaviour (idle flush on RMAT only), and the tiling rule
 (F15). §4 presents the threshold as a safety bound, and §6.4 shows it inert.
 See Pillar 2.
 
-**The one-node comparison** is no longer in the abstract. It goes in §6.2
-(Fig. 4, Frontier) and §7. Delta's same-node D7 matrix is a second machine:
-use it in §6.2 text or §7, not in Fig. 4.
+**The one-node comparison** is no longer in the abstract. It comes from
+Delta: D7 in §6.2 (Table 3) and §7. Frontier contributes one-node points only
+as the first point of its scaling series (Fig. 4).
 
 **Limitations (§7)**, with the conclusions each one affects:
-- **One-node gap.** ACIC-SSSP is 1.35–2.3× slower than GAPBS and 1.7–3.1×
-  slower than Wasp on one Frontier node (chunk queue). On roads it is further
-  behind Wasp: on Delta (D7) 1.9–2.4× slower on `road-usa-z` and 1.4–2.3×
-  slower on `road-eu-z`, even with the round-2 band and leaf pruning. The distributed
+- **One-node gap** (Delta, D7). Fill from D7 when it completes; the mesh,
+  rmat25 and large-graph rows are being rerun with packed baselines. So far,
+  on roads, ACIC-SSSP is 1.9–2.4× slower than Wasp on `road-usa-z` and
+  1.4–2.3× slower on `road-eu-z`, even with the round-2 band and leaf
+  pruning. The distributed
   claims do not depend on it; any "competitive everywhere" sentence does.
 - **Roads at scale.** Roads beyond 16 nodes; Wasp still wins on `road-usa-z`
   at every node count.

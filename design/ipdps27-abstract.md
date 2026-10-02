@@ -87,10 +87,10 @@ We evaluate ACIC-SSSP against four distributed codes and two tuned shared-memory
     example, Wasp on one node against Gluon at 64 on `grid3-30-z`, and against
     HavoqGT at 64 on terrain.
 - **The one-node comparison is no longer in the abstract.** It moves to the
-  evaluation and the limitations section (plan: "Paper layout"). On Frontier,
-  with the chunk queue, ACIC-SSSP is 1.35–2.3× slower than GAPBS and 1.7–3.1×
-  slower than Wasp on one node on meshes, grids and terrain, faster than both
-  from 4 nodes, and scales 3.8–44× from 1 to 64 nodes. Delta's same-node D7
-  matrix (in progress) is the second machine.
+  evaluation and the limitations section (plan: "Paper layout"). One-node
+  numbers come from Delta's same-node D7 matrix (in progress). Frontier's
+  one-node points appear only as the start of its scaling series, where
+  ACIC-SSSP passes GAPBS and Wasp from 4 nodes and scales 3.8–44× from 1 to
+  64 nodes.
 - Double-blind: no author names or institution; "our" never refers to prior
   papers; Charm++ may be named as a public system.
