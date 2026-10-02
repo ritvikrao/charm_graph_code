@@ -5,7 +5,9 @@
   d7_summary.py CAMPAIGN GRAPH COMPARE_JOB [OUT.json]
 
 Per held-out source: median seconds of every arm, and each baseline's time
-over each ACIC arm's (above 1 means ACIC is faster). Fails on any invalid solve.
+over each ACIC arm's (above 1 means ACIC is faster). Fails on any invalid solve,
+and on any baseline solve whose thread count differs from ACIC's worker PE
+count: comparisons use equal PEs/threads (user, 2026-10-02).
 """
 import json, statistics, sys
 from pathlib import Path
@@ -14,6 +16,11 @@ acic = [json.loads(l) for l in (root/'logs'/f'AB-{graph}-1n-{job}'/'runs.jsonl')
 ext = [json.loads(l) for l in (root/'logs'/f'external-1n-120w-{job}.jsonl').open()]
 assert all(r['valid'] for r in acic), 'invalid ACIC solve'
 assert all(r['valid'] for r in ext if r['graph'] == graph), 'invalid baseline solve'
+workers = {r['workers'] for r in acic}
+assert len(workers) == 1, f'ACIC arms differ in worker count: {workers}'
+workers = workers.pop()
+threads = {r['config']['threads'] for r in ext if r['graph'] == graph and r['phase'] == 'external'}
+assert threads == {workers}, f'baseline threads {threads} != ACIC workers {workers}'
 sources = []
 for r in acic:
     if str(r['source']) not in sources: sources.append(str(r['source']))
@@ -28,10 +35,10 @@ sel = {}
 for suffix, engine in [('', 'gap'), ('-wasp', 'wasp')]:
     p = root/'logs'/f'external-1n-120w-{job}-{graph}-selected{suffix}.json'
     if p.exists(): sel[engine] = json.loads(p.read_text())['arms'][0]['name']
-out = dict(graph=graph, job=job, sources=sources, selections=sel,
+out = dict(graph=graph, job=job, sources=sources, selections=sel, pes=workers,
            acic_solves=len(acic), baseline_solves=sum(1 for r in ext if r['graph'] == graph),
            median_seconds=med, speedup={})
-print(f"{graph} job {job}: {len(acic)} ACIC + {out['baseline_solves']} baseline solves, all valid; selections {sel}")
+print(f"{graph} job {job}: {len(acic)} ACIC + {out['baseline_solves']} baseline solves, all valid, {workers} PEs/threads each; selections {sel}")
 for a in med:
     print(f"  {a:18s} " + ' '.join(f"{med[a][s]:.3f}" for s in sources))
 for b in ('gap', 'wasp'):

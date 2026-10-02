@@ -8,7 +8,9 @@
 # the same allocation as ACIC.
 #
 #   sbatch scripts/delta/d7_tune.sbatch CAMPAIGN GRAPH THREADS DELTAS
-#   e.g. ... road-usa-z 32,64,96,128 2048,8192,32768,131072
+#   e.g. ... road-usa-z 112 4096,8192,16384,32768,65536,131072
+# THREADS is ACIC's worker PE count (16 x 7 = 112): comparisons use equal
+# PEs/threads (user, 2026-10-02), so only delta is tuned. d7_summary.py checks it.
 # ENGINES (default gap,wasp) picks the engines; LAUNCH_TIMEOUT caps a launch.
 # Candidates pack onto the first THREADS cores, as in secs. 16-23; SPREAD=1
 # gives them the whole node with OMP_PROC_BIND=spread instead, which job
