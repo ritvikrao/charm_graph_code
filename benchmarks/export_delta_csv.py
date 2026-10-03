@@ -202,10 +202,19 @@ def harness_of(p):
     return re.sub(r'-?\d{7,8}$', '', p.parent.name) or 'runs'
 
 
-def main():
+def delta_campaign(root):
+    return root.name if root.name.startswith('acic-') else 'ipdps27-onenode-tmp'
+
+
+def main(roots=CAMPAIGN_ROOTS, outdir=OUT, prefix='delta', campaign_of=delta_campaign, superseded=None, failed_outcome=None):
+    """Write OUTDIR/<prefix>_solves.csv and OUTDIR/<prefix>_jobs.csv from the records under ROOTS.
+
+    failed_outcome: if set, the outcome of every row from a `*.failed` record directory (an A/B
+    attempt whose audit failed and was rerun), so those rows cannot pass for audited ones."""
+    superseded = SUPERSEDED if superseded is None else superseded
     rows = []
-    for root in CAMPAIGN_ROOTS:
-        campaign = root.name if root.name.startswith('acic-') else 'ipdps27-onenode-tmp'
+    for root in roots:
+        campaign = campaign_of(root)
         for p in record_files(root):
             harness = harness_of(p)
             d = p.parent
@@ -231,9 +240,11 @@ def main():
                                           record_dir=str(d), manifest={}, variants={}))
                 continue
             for r in recs:
-                rows.append(normalize(r, campaign=campaign, job=job_of(p if harness == 'run.py' else d),
-                                      harness=harness, record_dir=str(d), manifest=manifest, variants=variants))
-    OUT.mkdir(parents=True, exist_ok=True)
+                row = normalize(r, campaign=campaign, job=job_of(p if harness == 'run.py' else d),
+                                harness=harness, record_dir=str(d), manifest=manifest, variants=variants)
+                if failed_outcome and d.name.endswith('.failed'): row['outcome'] = failed_outcome
+                rows.append(row)
+    outdir.mkdir(parents=True, exist_ok=True)
     # One row per job: sacct metadata and the current-state section that reports it.
     jobs = sorted({str(r['job']) for r in rows if r['job']})
     acct = {}
@@ -246,7 +257,7 @@ def main():
             if len(f) == 9: acct[f[0]] = f[1:]
     for r in rows:
         if not r['host'] and str(r['job']) in acct: r['host'] = acct[str(r['job'])][7]
-    with (OUT / 'delta_solves.csv').open('w', newline='') as f:
+    with (outdir / f'{prefix}_solves.csv').open('w', newline='') as f:
         w = csv.DictWriter(f, COLUMNS); w.writeheader(); w.writerows(rows)
     # The first design document (in this order) and heading that cites each job.
     sections = {}
@@ -268,7 +279,7 @@ def main():
         t, c = str(r['selection_job']), str(r['job'])
         if t and t != c and t not in sections and c in sections:
             sections[t] = f'tune for job {c}; {sections[c]}'
-    with (OUT / 'delta_jobs.csv').open('w', newline='') as f:
+    with (outdir / f'{prefix}_jobs.csv').open('w', newline='') as f:
         w = csv.writer(f)
         w.writerow(['job', 'campaign', 'harnesses', 'solves', 'valid_solves', 'graphs', 'engines', 'arms', 'hosts',
                     'slurm_name', 'account', 'partition', 'state', 'start', 'end', 'elapsed', 'nodelist',
@@ -276,13 +287,12 @@ def main():
         for j in jobs:
             rs = [r for r in rows if str(r['job']) == j]
             a = acct.get(j, [''] * 8)
-            status = 'superseded' if j in SUPERSEDED else ''
             w.writerow([j, rs[0]['campaign'], ';'.join(sorted({r['harness'] for r in rs})), len(rs),
                         sum(1 for r in rs if r['valid'] is True), ';'.join(sorted({str(r['graph']) for r in rs})),
                         ';'.join(sorted({str(r['engine']) for r in rs})), ';'.join(sorted({str(r['arm']) for r in rs})),
                         ';'.join(sorted({str(r['host']) for r in rs if r['host']})), *a, sections.get(j, ''),
-                        commits.get(j, ''), SUPERSEDED.get(j, status)])
-    print(f'{len(rows)} solves from {len(jobs)} jobs -> {OUT}')
+                        commits.get(j, ''), superseded.get(j, '')])
+    print(f'{len(rows)} solves from {len(jobs)} jobs -> {outdir}')
 
 
 # Jobs whose results a later job replaces (current-state.md says why).

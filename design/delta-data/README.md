@@ -87,5 +87,5 @@ d7 = med[med.job.isin([22625422, 22624600, 22623920, 22627666, 22623916, 2262397
 Runs that left only `.out` logs and no structured record: the R0/R1/D0
 diagnostics in `ipdps27-onenode-tmp` (their compact summaries are
 `design/onenode-data/r0-*`, `r1-*`), the step 6 campaigns (`acic-step6*`),
-`sssp-2node` and the Projections traces. Frontier and Anvil data are not in
-this directory.
+`sssp-2node` and the Projections traces. Frontier data is in `design/frontier-data`
+(same schema); Anvil data is not exported.
