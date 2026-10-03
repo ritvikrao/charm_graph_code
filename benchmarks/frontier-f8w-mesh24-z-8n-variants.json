@@ -1,0 +1,56 @@
+[
+  {
+    "label": "frozen",
+    "binary": "acic_frz_heap",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "8",
+      "--bucket-width",
+      "2.079442"
+    ],
+    "nodes": 8,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-10-03 before submission. F8w-8n (design/sc27-plan.md): the 8-node point of the Fig. 4 scaling series, which had 1/4/16/32/64 nodes. Configuration unchanged from F8w (freeze 601697e, width ln V / 8); this file is the 4n file with nodes 8. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; frozen median 0.0686-0.124 s (between F8w's 16n and 4n medians, 5569508/5569507)."
+  },
+  {
+    "label": "c256_s64",
+    "binary": "acic_frz_c256",
+    "flags": [
+      "--process-share",
+      "auto",
+      "--reader-tile",
+      "auto",
+      "--slack-control",
+      "off",
+      "--process-queue",
+      "nearest",
+      "--process-queue-batch",
+      "8",
+      "+old-scheduler",
+      "--hub-hints",
+      "auto",
+      "--heap-slice",
+      "64",
+      "--bucket-width",
+      "2.079442"
+    ],
+    "nodes": 8,
+    "rpn": 8,
+    "workers": 56,
+    "prediction": "Recorded 2026-10-03 before submission. F8w-8n (design/sc27-plan.md): the 8-node point of the Fig. 4 scaling series, which had 1/4/16/32/64 nodes. Configuration unchanged from F8w (freeze 601697e, width ln V / 8); this file is the 4n file with nodes 8. Four held-out sources, one warmup, three repetitions. Predictions: every solve returns the reference digest; c256_s64 median 0.0626-0.078 s (between F8w's 16n and 4n medians, 5569508/5569507)."
+  }
+]
