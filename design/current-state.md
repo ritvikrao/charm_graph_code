@@ -4213,6 +4213,94 @@ digest-valid.**
   12 minutes per launch, against about 25 s for 8 × 7. It has not been
   diagnosed.
 
+### 41. D7: one Delta node, ACIC against GAPBS and Wasp at equal PEs (2026-10-02)
+
+The paper's one-node comparison (user, 2026-09-28: one-node runs come from
+Delta). Every comparison runs ACIC and both baselines in one exclusive
+`cpu-interactive` or `cpu` allocation on the same node. ACIC is 16 processes ×
+7 workers = **112 worker PEs**; GAPBS and Wasp run **112 OpenMP threads**,
+packed (`srun -c 112`, `OMP_PROC_BIND=close`, `OMP_PLACES=cores`), and only Δ
+is tuned (user, 2026-10-02: equal PEs/threads). Δ was chosen on the two
+training sources (`d7_tune.sbatch`, a grid in steps of 2 then the top three
+repeated) and frozen; the four held-out sources each get a warmup and three
+timed repetitions. ACIC arms are the freeze binaries at the paper flags
+(chunks band 256 slice 64 and heap slice 8 at width ln V / 8; on roads the
+paper road profile, the heap, and the round-2 candidate). Timing excludes
+graph loading. **Every counted solve is digest-valid** (48 ACIC + 32 baseline
+on roads, 16 + 32 on `rmat25`, 32 + 32 elsewhere), and `d7_summary.py`
+asserts the equal thread count.
+
+Speedup is the baseline's time over ACIC's, per source (above 1×, ACIC is
+faster). "Best ACIC" is the chunk queue on the meshes, grid and terrain, the
+round-2 candidate on roads (per-road band, `--leaf-prune on`), and the heap on
+`rmat25`.
+
+| Input | Δ GAPBS / Wasp | Best ACIC (s) | GAPBS (s) | Wasp (s) | Best ACIC vs GAPBS | Best ACIC vs Wasp | Heap vs GAPBS | Heap vs Wasp |
+|---|---|---:|---:|---:|---|---|---|---|
+| `mesh26-z` | 4096 / 2048 | 0.41–0.52 | 0.41–0.42 | 0.28–0.30 | 1.01–1.23× slower | 1.44–1.75× slower | 2.10–2.90× slower | 2.96–4.34× slower |
+| `mesh28-z` | 4096 / 4096 | 1.38–1.76 | 1.64–1.66 | 0.91–0.98 | 1.07× slower to 1.19× faster | 1.42–1.93× slower | 2.13–2.44× slower | 3.59–4.41× slower |
+| `mesh30-z` | 2048 / 4096 | 5.21–5.63 | 6.01–10.14 | 2.38–2.62 | **1.07–1.80× faster** | 2.09–2.31× slower | 1.42–2.40× slower | 5.46–5.90× slower |
+| `grid3-30-z` | 256 / 1024 | 6.94–7.44 | 13.19–17.09 | 3.49–3.63 | **1.77–2.46× faster** | 1.99–2.11× slower | 1.05× slower to 1.35× faster | 3.63–3.94× slower |
+| `terrain30-c-z` | 4096 / 4096 | 3.65–4.00 | 3.38–4.92 | 4.06–4.62 | 1.19× slower to 1.31× faster | **1.10–1.15× faster** | 1.80–2.75× slower | 2.01–2.14× slower |
+| `road-usa-z` | 32768 / 65536 | 0.20–0.29 | 0.22–0.30 | 0.10–0.13 | **1.03–1.16× faster** | 1.97–2.24× slower | 1.57–1.70× slower | 3.51–3.84× slower |
+| `road-eu-z` | 2048 / 4096 | 0.44–0.76 | 0.61–0.73 | 0.30–0.33 | 1.03× slower to 1.47× faster | 1.41–2.29× slower | 1.74–2.31× slower | 3.59–5.12× slower |
+| `rmat25` | 2 / 1 | 0.75–0.90 | 0.92–0.97 | 0.70–0.72 | **1.04–1.26× faster** | 1.04–1.25× slower | (heap is best) | (heap is best) |
+
+- **On one node ACIC ties or beats GAPBS on six of eight inputs** and is
+  behind on `mesh26-z` (1.01–1.23× slower). It is faster on every source of
+  `mesh30-z`, `grid3-30-z`, `road-usa-z` and `rmat25`.
+- **Wasp is faster than ACIC on seven of eight inputs**, by 1.04–1.25× on
+  `rmat25` and 1.4–2.3× on the meshes, grid and roads. On `terrain30-c-z`,
+  where Wasp is slower than GAPBS, the chunk queue is 1.10–1.15× faster than
+  Wasp.
+- **The heap is not the one-node configuration** on meshes, grid, terrain or
+  roads: 1.4–2.9× slower than GAPBS and 2.0–5.9× slower than Wasp.
+- **The paper's road profile (band 65536) is wrong for `road-eu-z`** on one
+  node: 7.0–7.3× slower than GAPBS. The round-2 candidate (band 1024 + leaf
+  pruning) is what makes ACIC competitive there; adopting it is gate item 2
+  (Frontier, the user's).
+- **Δ selections are interior to their grids** except `rmat25`'s Wasp Δ 1, the
+  smallest integer. `grid3-30-z` needed a second tune (22627665) at
+  Δ 128–2048 after the first (22623917, Δ 1024–16384) timed out with GAPBS at
+  its lower boundary.
+- **Equal threads penalize GAPBS on `rmat25`.** At 112 threads it takes
+  0.92–0.97 s, against 0.68 s at its preferred 64 (22623748, superseded by the
+  equal-PE rule). At 64 threads ACIC would be 1.08–1.15× slower than GAPBS.
+  The paper should give that as a sensitivity. Elsewhere 112 threads changed
+  the baselines little (Wasp on `road-usa-z` 0.10–0.13 s at both counts).
+
+**Node-to-node variation (22621300 on cn022, 22625443 on cn099; 144/144
+valid each).** The same launch, binary, graph and source run much faster on
+cn099, the node §23 ran on:
+
+| Cell (64 threads, D7 packed launch) | cn022 (s) | cn099 (s) | cn099 speedup |
+|---|---:|---:|---:|
+| Wasp `road-eu-z`, Δ 1024 | 0.373–0.406 | 0.238–0.242 | 1.6–1.7× |
+| Wasp `road-usa-z`, Δ 32768 | 0.089–0.098 | 0.065–0.072 | 1.4× |
+| GAPBS `road-usa-z`, Δ 32768 | 0.197–0.253 | 0.119–0.143 | 1.7–1.8× |
+
+- This explains why D7's road-eu-z Wasp (0.30–0.33 s) differs from §23's
+  0.24 s: the node, not the code or harness. Both nodes report the same
+  hardware (EPYC 7763, 8 NUMA domains, 257 GB, same features).
+- On cn099 packing is 1.4× faster than whole-node spread; on cn022 the two
+  tied. That pattern fits a node-state effect on the first socket (for
+  example its memory already filled), but nothing here tests that.
+- Every D7 comparison is same-node, so ratios do not mix nodes. Whether the
+  variation also changes ratios (does ACIC speed up on cn099 as much as the
+  baselines?) is **not measured**; absolute one-node times should be quoted
+  with the node.
+
+Superseded D7 runs: 22582308, 22582508, 22582937, 22583102, 22583270,
+22583538, 22583809 and 22623748. Their baselines picked their own thread
+counts (64–128), and those after aed4cd6 also ran whole-node spread.
+
+Raw records: `/work/hdd/mzu/rao1/acic-ipdps27-delta-20260928/logs/`
+(`d7-tune-*`, `d7-compare-*`, `AB-*-1n-<job>`, `external-1n-120w-<job>*`,
+`d7-launch-*`). Compact summaries:
+`design/onenode-data/delta-ipdps-d7-<graph>-<job>.json` for compare jobs
+22625422, 22624600, 22623920, 22627666, 22623916, 22623971, 22624107 and
+22624395, and `delta-ipdps-d7-launch{,-cn099}-*.json`. Reproduce with
+`benchmarks/d7_summary.py CAMPAIGN GRAPH COMPARE_JOB`.
 
 ## Evidence and provenance
 

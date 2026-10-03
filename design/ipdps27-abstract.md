@@ -90,7 +90,7 @@ We evaluate ACIC-SSSP against four distributed codes and two tuned shared-memory
     HavoqGT at 64 on terrain.
 - **The one-node comparison is no longer in the abstract.** It moves to the
   evaluation and the limitations section (plan: "Paper layout"). One-node
-  numbers come from Delta's same-node D7 matrix (in progress). Frontier's
+  numbers come from Delta's same-node D7 matrix (current-state §41). Frontier's
   one-node points appear only as the start of its scaling series, where
   ACIC-SSSP passes GAPBS and Wasp from 4 nodes and scales 3.8–44× from 1 to
   64 nodes.

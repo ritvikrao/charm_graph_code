@@ -349,11 +349,14 @@ Notes for writing §7:
   budget; the prose does.
 
 **Limitations (§8)**, with the conclusions each one affects:
-- **One-node gap** (Delta, D7). Fill from D7 when it completes; the mesh,
-  rmat25 and large-graph rows are being rerun with packed baselines. So far,
-  on roads, ACIC-SSSP is 1.9–2.4× slower than Wasp on `road-usa-z` and
-  1.4–2.3× slower on `road-eu-z`, even with the round-2 band and leaf
-  pruning. The distributed
+- **One-node gap** (Delta, D7, current-state §41; 112 PEs and threads).
+  ACIC-SSSP ties or beats GAPBS on six of eight inputs (1.01–1.23× slower on
+  `mesh26-z`). Wasp is faster on seven of eight: 1.04–1.25× on `rmat25` and
+  1.4–2.3× on the meshes, grid and roads. ACIC-SSSP is 1.10–1.15× faster than
+  Wasp only on `terrain30-c-z`. On roads this needs the round-2 band and leaf
+  pruning. On `rmat25` equal threads cost GAPBS 1.4×; at its preferred 64
+  threads ACIC-SSSP is 1.08–1.15× slower than it. Absolute one-node times
+  vary up to 1.8× between Delta nodes (cn099 against cn022). The distributed
   claims do not depend on it; any "competitive everywhere" sentence does.
 - **Roads at scale.** Roads beyond 16 nodes; Wasp still wins on `road-usa-z`
   at every node count.
@@ -515,7 +518,7 @@ it. `cpuintqos` now allows one submitted job, so jobs run one at a time.
 | O1 road bands | 22576845, 22577011, 22576916 | Best band 8192–16384 on road-usa-z, 256–1024 on road-eu-z, at the paper width 131072 |
 | Road confirmation | 22577196, 22581424 | Bucket queue at the per-road band with leaf pruning, over the paper road profile: **1.38–1.64×** (road-usa-z, band 16384) and **7.22–9.84×** (road-eu-z, band 1024) |
 | O1 grid3-30-z | 22581589 | **Array flat** (band 256 0.97–1.00×); band 1024 is 1.7× slower, so no weight-proportional band rule |
-| D7 | rerun 2026-10-02 at equal PEs | **Comparisons use equal PEs/threads (user, 2026-10-02): GAPBS and Wasp run at 112 threads, ACIC's 16 × 7 = 112 workers, packed (`srun -c 112`, OMP close), and only Δ is tuned** (steps of 2, two training sources, `--tune-only`); `d7_summary.py` rejects any comparison whose baseline threads differ from ACIC's workers. Then `d7_compare.sbatch` (ACIC arms, then both baselines at their frozen selections, same allocation, four held-out sources). ACIC arms: freeze chunks and heap at width ln V / 8 (meshes, grid, terrain); the paper road profile, the heap and the round-2 candidate (per-road band + leaf pruning) on roads; the heap on `rmat25`. Superseded: every earlier D7 comparison (22582308, 22582508, 22582937, 22583102, 22583270, 22583538, 22583809, 22623748), whose baselines ran at their own best thread count (64–128); the spread runs also ran with whole-node OMP spread, measured 1.06–1.4× slower than packed (22621300, 22623748). Running: the five smaller inputs through the cpu-interactive feeder; terrain, grid and `mesh30-z` on `cpu` (mzu-delta-cpu). `gap_sssp` rebuilt with GCC 14; `wasp_sssp` is bit-identical to §§16–23's |
+| D7 | **Done** 2026-10-02 (current-state §41) | **Comparisons use equal PEs/threads (user, 2026-10-02): GAPBS and Wasp run at 112 threads, ACIC's 16 × 7 = 112 workers, packed (`srun -c 112`, OMP close), and only Δ is tuned** (steps of 2, two training sources, `--tune-only`); `d7_summary.py` rejects any comparison whose baseline threads differ from ACIC's workers. Then `d7_compare.sbatch` (ACIC arms, then both baselines at their frozen selections, same allocation, four held-out sources). ACIC arms: freeze chunks and heap at width ln V / 8 (meshes, grid, terrain); the paper road profile, the heap and the round-2 candidate (per-road band + leaf pruning) on roads; the heap on `rmat25`. Superseded: every earlier D7 comparison (22582308, 22582508, 22582937, 22583102, 22583270, 22583538, 22583809, 22623748), whose baselines ran at their own best thread count (64–128); the spread runs also ran with whole-node OMP spread, measured 1.06–1.4× slower than packed (22621300, 22623748). All eight inputs complete at 112 PEs and threads, every solve valid. Best ACIC ties or beats GAPBS on six of eight; Wasp is faster on seven of eight (not on `terrain30-c-z`). `grid3-30-z` needed a second tune (22627665, Δ 128–2048). The cn099 check (22625443) shows 1.4–1.8× node-to-node variation in baseline times, which explains the §23 road-eu-z Wasp gap. `gap_sssp` rebuilt with GCC 14; `wasp_sssp` is bit-identical to §§16–23's |
 | Adoption | — | Candidates: O3 (`--leaf-prune`) and a per-road band (the bucket queue's `--chunk-band`). Gate item 2 (Frontier 16/64 nodes, including `road-planet-z` at a narrower band) is the author's |
 
 #### Delta, one node, can start now
